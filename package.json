@@ -17,7 +17,7 @@
     },
     "scripts": {
         "clean": "npm run -ws clean && rm -rf ./node_modules",
-        "build": "npm run -ws build",
+        "build": "npm run -ws generate-api-types && npm run -ws build",
         "start": "cd packages/server && npm run start",
         "generate-api-types": "npm run -ws generate-api-types",
         "lint": "npm run -ws lint",
