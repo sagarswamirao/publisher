@@ -1,0 +1,166 @@
+// Information courtesy of IMDb (https://www.imdb.com).
+// Used with permission. 
+// For personal / educational use only
+//
+//  Github: https://github.com/lloydtabb/imdb_fiddle
+//  About Fiddles: https://github.com/lloydtabb/malloy_fiddle_dist/
+
+source: people is duckdb.table('data/names.parquet') extend {
+// cast, crew, everyone involved in movies
+  primary_key: nconst
+}
+
+source: principals is duckdb.table('data/principals.parquet') extend {
+// a mapping table that links people to movies, along with their job on that movie.
+  join_one: people is people on nconst = people.nconst
+}
+
+query: genre_movie_map is duckdb.table('data/titles.parquet') -> {
+  group_by:
+    tconst
+    genre is genres.value
+}
+
+source: movies is duckdb.table('data/titles.parquet') extend {
+// all the movies
+  join_many: principals on tconst = principals.tconst
+  join_many: principals2 is principals on tconst = principals2.tconst
+  join_many: genre_movie_map on tconst = genre_movie_map.tconst
+  primary_key: tconst
+
+  measure:
+    title_count is count(tconst)
+    row_count is count()
+    # format="#,###""
+    total_ratings is sum(numVotes/1000.0)
+    average_rating is averageRating.avg()
+    # percent
+    percent_of_titles is title_count/all(title_count)
+
+  dimension:
+    # image {width="150px"}
+    movie_image is concat('https://artifacts.flyxit.com/flyx-artifacts/',tconst,'.jpg')
+    # link
+    movie_url is concat('https://www.imdb.com/title/',tconst)
+    genre is genres.value
+    genre2 is genre_movie_map.genre
+    job is principals.category
+    job2 is principals2.category
+    name is principals.people.primaryName
+    name2 is principals2.people.primaryName
+
+  view: by_title is {
+    group_by: 
+      # image {width="30px" }
+      movie_image
+      primaryTitle, startYear, numVotes
+    order_by: 4 desc
+  }
+
+  # list
+  view: movie_grid is {
+    # image{ width="30px"}
+    # href=movie_url
+    group_by: 
+      movie_image
+      # hidden 
+      movie_url
+    aggregate: total_ratings
+  }
+
+  # bar_chart
+  view: genre_and_time is {
+    group_by: genre is genre2
+    aggregate: title_count
+    aggregate: avg_year is startYear.avg()
+  }
+
+  # line_chart
+  view: by_year is {
+    group_by: startYear
+    aggregate: title_count
+    order_by: startYear desc
+  }
+
+  view: by_name is {
+    group_by:
+      principals.people.primaryName, principals.nconst
+    aggregate:
+      total_ratings
+      title_count
+  }
+
+  view: by_job_category is {
+    group_by: job
+    aggregate: title_count
+  }
+
+  # list
+  view: job_list is by_job_category
+
+  # list
+  view: title_list is {
+    group_by: primaryTitle
+    aggregate: total_ratings
+  }
+
+  view: works_with is {
+    group_by: principals2.people.primaryName
+    aggregate:
+      title_count
+      percent_of_titles
+    # list
+    nest: by_job is {
+      group_by: job is principals2.category
+      aggregate: title_count
+    }
+    limit: 10
+  }
+
+
+  view: by_genre is {
+    group_by: genre is genres.value
+    aggregate: 
+      title_count, 
+      total_ratings
+      percent_of_titles
+
+  }
+
+  # list_detail
+  view: top_directors is  {
+    limit: 5
+    where: job = 'director'
+    group_by: name
+    aggregate: total_ratings
+  }
+
+    # list_detail
+  view: top_actors is  {
+    limit: 5
+    where: job = 'actor'
+    group_by: name
+    aggregate: total_ratings
+  }
+
+  # dashboard
+  view: titles_dashboard is {
+    group_by: 
+      movie_image
+      production_year is startYear
+      primaryTitle
+      runtimeMinutes
+      movie_url 
+    nest:
+      genre_list is by_genre
+      by_cast is by_job_category + {
+        # list
+        nest: names is by_name + {limit: 200}
+      }
+    limit: 20
+    order_by: 2 desc
+  }
+}
+
+// example query
+run: movies -> by_name
