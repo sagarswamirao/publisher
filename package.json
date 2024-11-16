@@ -1,0 +1,26 @@
+{
+    "version": "0.0.1",
+    "license": "MIT",
+    "name": "malloy-publisher",
+    "workspaces": {
+        "packages": [
+            "packages/api",
+            "packages/cli",
+            "packages/sdk",
+            "packages/app",
+            "packages/server"
+        ]
+    },
+    "engines": {
+        "node": ">=20",
+        "npm": ">=10"
+    },
+    "scripts": {
+        "clean": "npm run -ws clean && rm -rf ./node_modules",
+        "build": "npm run -ws build",
+        "start": "cd packages/server && npm run start",
+        "generate-api-types": "npm run -ws generate-api-types",
+        "lint": "npm run -ws lint",
+        "format": "npm run -ws format"
+    }
+}
