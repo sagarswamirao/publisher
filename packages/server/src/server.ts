@@ -18,8 +18,8 @@ import { PackageService } from "./service/package.service";
 const app = express();
 app.use(morgan("tiny"));
 
-const PACKAGE_SERVER_PORT = Number(process.env.PACKAGE_SERVER_PORT || 4000);
-const PACKAGE_SERVER_HOST = process.env.PACKAGE_SERVER_HOST || "localhost";
+const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
+const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const ROOT = path.join(__dirname, "../../app/dist/");
 const API_PREFIX = "/api/v0";
 const VERSION_ID_HEADER = "X-Version-Id";
@@ -177,7 +177,7 @@ app.get(`${API_PREFIX}/packages/:id/databases`, async (req, res) => {
 app.get("*", (_req, res) => res.sendFile(path.resolve(ROOT, "index.html")));
 
 const server = http.createServer(app);
-server.listen(PACKAGE_SERVER_PORT, PACKAGE_SERVER_HOST, () => {
+server.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
    const address = server.address() as AddressInfo;
    console.log(
       `Server is running at http://${address.address}:${address.port}`,
