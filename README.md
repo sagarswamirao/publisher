@@ -1,20 +1,19 @@
 # Malloy Publisher
 
-The Malloy Publisher is a basic semantic model server and application.  The aim of the project are:
+The Malloy Publisher is a basic semantic model server and web application for exploring Malloy packages.  The aim of the project are:
 1. Create a local development environment for Malloy data app development.
 1. Develop & standardize Malloy's package format and serving APIs.
 1. Activate the Malloy open source community!
 
-
-The diagram below illustrates the Publisher's basic components: Publisher Web App, Publisher SDK, and Publisher Server. 
+The diagram below illustrates the Publisher's basic components: Publisher App, Publisher SDK, and Publisher Server. 
 
 <center><img src="publisher.png" width=300></center>
 
-The [Publisher app](packages/app/) allows you to browse packages, their contents, and generate code snippets that can be embedded in an application. See the screenshots below. 
+The [Publisher app](packages/app/) allows you to browse packages, their contents, and generate code snippets that can be embedded into a data application. See the screenshots below.
 
-The Publisher is a data app composed of a set React components. The React components form an [SDK](packages/sdk) that can be embedded in other data applications.  The SDK's React components call the Publisher server's [APIs](api-doc.yaml) to fetch package metadata and query results.
+The Publisher app is composed of a set React components. The React components form an [SDK](packages/sdk) that can be embedded in other data applications.  The SDK's React components call the Publisher server's [APIs](api-doc.yaml) to fetch package metadata and query results.
 
-The [Publisher server](packages/sdk) is a simple semantic layer.  While its primary purpose is to facilitate local data app development, it can easily be bundled with a set of Malloy packages in docker image in order to serve Malloy models and packages (coming soon).
+The [Publisher server](packages/sdk) is a simple semantic layer.  While its primary purpose is to facilitate local data app development, it can easily be bundled with a set of Malloy packages in a docker image in order to serve Malloy models and packages (coming soon).
 
 As mentioned above, one goal of the Publisher project is to develop and standardize a Malloy package format.  Currently, a Malloy package consists of a set of files in a directory with a publisher.json file.  The publisher.json only supports two fields at the moment (name & description).  We intend to add more fields as we build out Publisher functionality.
 
@@ -45,6 +44,7 @@ git submodule update
 
 Then build and run the package server:
 ```
+npm install
 npm run build
 npm run start
 ```
