@@ -21,8 +21,8 @@
     "@emotion/styled": "^11.13.0"
   },
   "dependencies": {
-    "@malloydata/malloy": "^0.0.211",
-    "@malloydata/render": "^0.0.211",
+    "@malloydata/malloy": "^0.0.217",
+    "@malloydata/render": "^0.0.217",
     "@mui/icons-material": "^6.0.1",
     "@mui/material": "^6.0.1",
     "@mui/x-tree-view": "^7.16.0",
