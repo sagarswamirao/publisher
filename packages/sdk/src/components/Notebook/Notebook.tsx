@@ -14,6 +14,7 @@ interface NotebookProps {
    packageName: string;
    notebookPath: string;
    versionId?: string;
+   accessToken?: string;
 }
 
 export default function Notebook({
@@ -21,6 +22,7 @@ export default function Notebook({
    packageName,
    notebookPath,
    versionId,
+   accessToken,
 }: NotebookProps) {
    const {
       data: notebook,
@@ -33,7 +35,10 @@ export default function Notebook({
          queryFn: () =>
             modelsApi.getModel(packageName, notebookPath, versionId, {
                baseURL: server,
-               withCredentials: true,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
             }),
          retry: false,
       },

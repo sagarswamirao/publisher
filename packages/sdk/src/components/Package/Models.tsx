@@ -16,6 +16,7 @@ interface ModelsProps {
    packageName: string;
    versionId?: string;
    navigate: (to: string) => void;
+   accessToken?: string;
 }
 
 export default function Models({
@@ -23,6 +24,7 @@ export default function Models({
    packageName,
    versionId,
    navigate,
+   accessToken,
 }: ModelsProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
@@ -30,7 +32,10 @@ export default function Models({
          queryFn: () =>
             modelsApi.listModels(packageName, versionId, {
                baseURL: server,
-               withCredentials: true,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
             }),
          retry: false,
       },

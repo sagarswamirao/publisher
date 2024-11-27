@@ -18,6 +18,7 @@ interface QueryResultProps {
    query?: string;
    sourceName?: string;
    queryName?: string;
+   accessToken?: string;
 }
 
 export default function QueryResult({
@@ -28,6 +29,7 @@ export default function QueryResult({
    query,
    sourceName,
    queryName,
+   accessToken,
 }: QueryResultProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
@@ -40,6 +42,7 @@ export default function QueryResult({
             query,
             sourceName,
             queryName,
+            accessToken,
          ],
          queryFn: () =>
             queryResultsApi.executeQuery(
@@ -51,7 +54,10 @@ export default function QueryResult({
                queryName,
                {
                   baseURL: server,
-                  withCredentials: true,
+                  withCredentials: !accessToken,
+                  headers: {
+                     Authorization: accessToken && `Bearer ${accessToken}`,
+                  },
                },
             ),
       },

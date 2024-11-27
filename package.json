@@ -4,8 +4,6 @@
     "name": "malloy-publisher",
     "workspaces": {
         "packages": [
-            "packages/api",
-            "packages/cli",
             "packages/sdk",
             "packages/app",
             "packages/server"
