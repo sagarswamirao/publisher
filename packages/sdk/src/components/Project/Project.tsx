@@ -5,9 +5,14 @@ import Packages from "./Packages";
 interface ProjectProps {
    server?: string;
    navigate?: (to: string) => void;
+   accessToken?: string;
 }
 
-export default function Project({ server, navigate }: ProjectProps) {
+export default function Project({
+   server,
+   navigate,
+   accessToken,
+}: ProjectProps) {
    return (
       <Grid2
          container
@@ -16,10 +21,14 @@ export default function Project({ server, navigate }: ProjectProps) {
          sx={{ mb: (theme) => theme.spacing(2) }}
       >
          <Grid2 size={{ xs: 12, md: 12 }}>
-            <Packages server={server} navigate={navigate} />
+            <Packages
+               server={server}
+               navigate={navigate}
+               accessToken={accessToken}
+            />
          </Grid2>
          <Grid2 size={{ xs: 12, md: 12 }}>
-            <About server={server} />
+            <About server={server} accessToken={accessToken} />
          </Grid2>
       </Grid2>
    );

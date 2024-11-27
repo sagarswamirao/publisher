@@ -20,12 +20,14 @@ interface PackageProps {
    server?: string;
    packageName: string;
    versionId?: string;
+   accessToken?: string;
 }
 
 export default function Package({
    server,
    packageName,
    versionId,
+   accessToken,
 }: PackageProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
@@ -33,7 +35,10 @@ export default function Package({
          queryFn: () =>
             packagesApi.getPackage(packageName, versionId, {
                baseURL: server,
-               withCredentials: true,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
             }),
          retry: false,
       },

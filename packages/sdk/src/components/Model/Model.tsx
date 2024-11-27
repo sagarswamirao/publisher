@@ -14,6 +14,7 @@ interface ModelProps {
    packageName: string;
    modelPath: string;
    versionId?: string;
+   accessToken?: string;
 }
 
 export default function Model({
@@ -21,6 +22,7 @@ export default function Model({
    packageName,
    modelPath,
    versionId,
+   accessToken,
 }: ModelProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
@@ -28,7 +30,10 @@ export default function Model({
          queryFn: () =>
             modelsApi.getModel(packageName, modelPath, versionId, {
                baseURL: server,
-               withCredentials: true,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
             }),
       },
       queryClient,
@@ -68,6 +73,7 @@ export default function Model({
                                  modelPath={modelPath}
                                  sourceName={source.name}
                                  queryName={view.name}
+                                 accessToken={accessToken}
                               />
                            ))}
                      </Stack>
@@ -92,6 +98,7 @@ export default function Model({
                               packageName={packageName}
                               modelPath={modelPath}
                               queryName={query.name}
+                              accessToken={accessToken}
                            />
                         ))}
                      </Stack>

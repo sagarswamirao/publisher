@@ -30,6 +30,7 @@ interface ModelCellProps {
    modelPath: string;
    sourceName?: string;
    queryName: string;
+   accessToken?: string;
 }
 
 export function ModelCell({
@@ -38,6 +39,7 @@ export function ModelCell({
    modelPath,
    sourceName,
    queryName,
+   accessToken,
 }: ModelCellProps) {
    const [resultsExpanded, setResultsExpanded] = React.useState(false);
    const [sharingExpanded, setSharingExpanded] = React.useState(false);
@@ -156,6 +158,7 @@ export function ModelCell({
                      modelPath={modelPath}
                      sourceName={sourceName}
                      queryName={queryName}
+                     accessToken={accessToken}
                   />
                </CardContent>
             </Collapse>

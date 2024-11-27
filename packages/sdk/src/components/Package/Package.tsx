@@ -12,6 +12,7 @@ interface PackageProps {
    packageName: string;
    versionId?: string;
    navigate?: (to: string) => void;
+   accessToken?: string;
 }
 
 export default function Package({
@@ -19,6 +20,7 @@ export default function Package({
    packageName,
    versionId,
    navigate,
+   accessToken,
 }: PackageProps) {
    if (!navigate) {
       navigate = (to: string) => {
@@ -38,6 +40,7 @@ export default function Package({
                server={server}
                packageName={packageName}
                versionId={versionId}
+               accessToken={accessToken}
             />
          </Grid2>
          <Grid2 size={{ md: 12, lg: 4 }}>
@@ -46,6 +49,7 @@ export default function Package({
                packageName={packageName}
                versionId={versionId}
                navigate={navigate}
+               accessToken={accessToken}
             />
          </Grid2>
          <Grid2 size={{ md: 12, lg: 4 }}>
@@ -53,6 +57,7 @@ export default function Package({
                server={server}
                packageName={packageName}
                versionId={versionId}
+               accessToken={accessToken}
             />
          </Grid2>
          <Grid2 size={{ md: 12 }}>
@@ -69,6 +74,7 @@ export default function Package({
                      packageName={packageName}
                      notebookPath={README_NOTEBOOK}
                      versionId={versionId}
+                     accessToken={accessToken}
                   />
                </StyledCardMedia>
             </StyledCard>

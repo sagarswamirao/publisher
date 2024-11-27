@@ -11,9 +11,10 @@ const queryClient = new QueryClient();
 
 interface AboutProps {
    server?: string;
+   accessToken?: string;
 }
 
-export default function About({ server }: AboutProps) {
+export default function About({ server, accessToken }: AboutProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["about", server],
@@ -21,6 +22,9 @@ export default function About({ server }: AboutProps) {
             aboutApi.about({
                baseURL: server,
                withCredentials: true,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
             }),
       },
       queryClient,
