@@ -26,6 +26,10 @@ interface NotebookCellProps {
    modelDef: string;
    dataStyles: string;
    queryResultCodeSnippet: string;
+   expandCodeCell?: boolean;
+   hideCodeCellIcon?: boolean;
+   expandEmbedding?: boolean;
+   hideEmbeddingIcon?: boolean;
 }
 
 export function NotebookCell({
@@ -33,9 +37,15 @@ export function NotebookCell({
    modelDef,
    dataStyles,
    queryResultCodeSnippet,
+   expandCodeCell,
+   hideCodeCellIcon,
+   expandEmbedding,
+   hideEmbeddingIcon,
 }: NotebookCellProps) {
-   const [codeExpanded, setCodeExpanded] = React.useState<boolean>(false);
-   const [sharingExpanded, setSharingExpanded] = React.useState<boolean>(false);
+   const [codeExpanded, setCodeExpanded] =
+      React.useState<boolean>(expandCodeCell);
+   const [embeddingExpanded, setEmbeddingExpanded] =
+      React.useState<boolean>(expandEmbedding);
    const [highlightedMalloyCode, setHighlightedMalloyCode] =
       React.useState<string>();
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
@@ -63,82 +73,58 @@ export function NotebookCell({
       )) ||
       (cell.type === "code" && (
          <StyledCard variant="outlined">
-            <Stack
-               sx={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-               <Typography variant="overline" sx={{ ml: "10px" }}>
-                  Code {cell.queryResult && "+ Results"} Cell
-               </Typography>
-               <Stack>
-                  <CardActions
-                     sx={{
-                        padding: "0px 10px 0px 10px",
-                        mb: "auto",
-                        mt: "auto",
-                     }}
-                  >
-                     <Tooltip title={codeExpanded ? "Hide Code" : "View Code"}>
-                        <IconButton
-                           size="small"
-                           onClick={() => {
-                              setCodeExpanded(!codeExpanded);
-                           }}
-                        >
-                           <CodeIcon />
-                        </IconButton>
-                     </Tooltip>
-                     {cell.queryResult && (
-                        <Tooltip
-                           title={
-                              sharingExpanded ? "Hide Sharing" : "View Sharing"
-                           }
-                        >
-                           <IconButton
-                              size="small"
-                              onClick={() => {
-                                 setSharingExpanded(!sharingExpanded);
-                              }}
-                           >
-                              <ShareIcon />
-                           </IconButton>
-                        </Tooltip>
-                     )}
-                  </CardActions>
-               </Stack>
-            </Stack>
-            <Collapse in={codeExpanded} timeout="auto" unmountOnExit>
-               <Divider />
+            {(!hideCodeCellIcon || (!hideEmbeddingIcon && cell.queryResult)) && (
                <Stack
-                  sx={{
-                     p: "10px",
-                     borderRadius: 0,
-                     flexDirection: "row",
-                     justifyContent: "space-between",
-                  }}
+                  sx={{ flexDirection: "row", justifyContent: "space-between" }}
                >
-                  <Typography
-                     sx={{ fontSize: "12px", "& .line": { textWrap: "wrap" } }}
-                  >
-                     <div
-                        className="content"
-                        dangerouslySetInnerHTML={{
-                           __html: highlightedMalloyCode,
-                        }}
-                     />
+                  <Typography variant="overline" sx={{ ml: "10px" }}>
+                     Code {cell.queryResult && "+ Results"} Cell
                   </Typography>
-                  <Tooltip title="View Code">
-                     <IconButton
-                        sx={{ width: "24px", height: "24px" }}
-                        onClick={() => {
-                           navigator.clipboard.writeText(cell.text);
+                  <Stack>
+                     <CardActions
+                        sx={{
+                           padding: "0px 10px 0px 10px",
+                           mb: "auto",
+                           mt: "auto",
                         }}
                      >
-                        <ContentCopyIcon />
-                     </IconButton>
-                  </Tooltip>
+                        {!hideCodeCellIcon && (
+                           <Tooltip
+                              title={codeExpanded ? "Hide Code" : "View Code"}
+                           >
+                              <IconButton
+                                 size="small"
+                                 onClick={() => {
+                                    setCodeExpanded(!codeExpanded);
+                                 }}
+                              >
+                                 <CodeIcon />
+                              </IconButton>
+                           </Tooltip>
+                        )}
+                        {!hideEmbeddingIcon && cell.queryResult && (
+                           <Tooltip
+                              title={
+                                 embeddingExpanded
+                                    ? "Hide Embedding"
+                                    : "View Embedding"
+                              }
+                           >
+                              <IconButton
+                                 size="small"
+                                 onClick={() => {
+                                    setEmbeddingExpanded(!embeddingExpanded);
+                                 }}
+                              >
+                                 <ShareIcon />
+                              </IconButton>
+                           </Tooltip>
+                        )}
+                     </CardActions>
+                  </Stack>
                </Stack>
-            </Collapse>
-            <Collapse in={sharingExpanded} timeout="auto" unmountOnExit>
+            )}
+            <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
                <Divider />
                <Stack
                   sx={{
@@ -167,6 +153,38 @@ export function NotebookCell({
                            navigator.clipboard.writeText(
                               queryResultCodeSnippet,
                            );
+                        }}
+                     >
+                        <ContentCopyIcon />
+                     </IconButton>
+                  </Tooltip>
+               </Stack>
+            </Collapse>
+            <Collapse in={codeExpanded} timeout="auto" unmountOnExit>
+               <Divider />
+               <Stack
+                  sx={{
+                     p: "10px",
+                     borderRadius: 0,
+                     flexDirection: "row",
+                     justifyContent: "space-between",
+                  }}
+               >
+                  <Typography
+                     sx={{ fontSize: "12px", "& .line": { textWrap: "wrap" } }}
+                  >
+                     <div
+                        className="content"
+                        dangerouslySetInnerHTML={{
+                           __html: highlightedMalloyCode,
+                        }}
+                     />
+                  </Typography>
+                  <Tooltip title="View Code">
+                     <IconButton
+                        sx={{ width: "24px", height: "24px" }}
+                        onClick={() => {
+                           navigator.clipboard.writeText(cell.text);
                         }}
                      >
                         <ContentCopyIcon />

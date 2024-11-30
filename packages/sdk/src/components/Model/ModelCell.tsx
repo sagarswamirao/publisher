@@ -30,6 +30,10 @@ interface ModelCellProps {
    modelPath: string;
    sourceName?: string;
    queryName: string;
+   expandResult?: boolean;
+   hideResultIcon?: boolean;
+   expandEmbedding?: boolean;
+   hideEmbeddingIcon?: boolean;
    accessToken?: string;
 }
 
@@ -39,10 +43,15 @@ export function ModelCell({
    modelPath,
    sourceName,
    queryName,
+   expandResult,
+   hideResultIcon,
+   expandEmbedding,
+   hideEmbeddingIcon,
    accessToken,
 }: ModelCellProps) {
-   const [resultsExpanded, setResultsExpanded] = React.useState(false);
-   const [sharingExpanded, setSharingExpanded] = React.useState(false);
+   const [resultsExpanded, setResultsExpanded] = React.useState(expandResult);
+   const [embeddingExpanded, setEmbeddingExpanded] =
+      React.useState(expandEmbedding);
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
    useEffect(() => {
@@ -82,33 +91,41 @@ export function ModelCell({
                   sx={{ mt: "auto", mb: "auto" }}
                >{`View > ${queryName}`}</Typography>
                <CardActions sx={{ padding: "0px" }}>
-                  <Tooltip
-                     title={resultsExpanded ? "Hide Results" : "Show Results"}
-                  >
-                     <IconButton
-                        size="small"
-                        onClick={() => {
-                           setResultsExpanded(!resultsExpanded);
-                        }}
+                  {!hideResultIcon && (
+                     <Tooltip
+                        title={
+                           resultsExpanded ? "Hide Results" : "Show Results"
+                        }
                      >
-                        <AnalyticsOutlinedIcon />
-                     </IconButton>
-                  </Tooltip>
-                  <Tooltip
-                     title={sharingExpanded ? "Hide Sharing" : "Show Sharing"}
-                  >
-                     <IconButton
-                        size="small"
-                        onClick={() => {
-                           setSharingExpanded(!sharingExpanded);
-                        }}
+                        <IconButton
+                           size="small"
+                           onClick={() => {
+                              setResultsExpanded(!resultsExpanded);
+                           }}
+                        >
+                           <AnalyticsOutlinedIcon />
+                        </IconButton>
+                     </Tooltip>
+                  )}
+                  {!hideEmbeddingIcon && (
+                     <Tooltip
+                        title={
+                           embeddingExpanded ? "Hide Sharing" : "Show Sharing"
+                        }
                      >
-                        <ShareOutlinedIcon />
-                     </IconButton>
-                  </Tooltip>
+                        <IconButton
+                           size="small"
+                           onClick={() => {
+                              setEmbeddingExpanded(!embeddingExpanded);
+                           }}
+                        >
+                           <ShareOutlinedIcon />
+                        </IconButton>
+                     </Tooltip>
+                  )}
                </CardActions>
             </Stack>
-            <Collapse in={sharingExpanded} timeout="auto" unmountOnExit>
+            <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
                <Divider sx={{ mb: "10px" }} />
                <Stack
                   sx={{
@@ -174,5 +191,5 @@ function getQueryResultCodeSnippet(
    sourceName: string,
    queryName: string,
 ): string {
-   return `<QueryResult server="${server}" packageName="${packageName}" modelPath="${modelPath}" sourceName="${sourceName}" queryName="${queryName}"/>`;
+   return `<QueryResult server="${server}" accessToken={accessToken} packageName="${packageName}" modelPath="${modelPath}" sourceName="${sourceName}" queryName="${queryName}"/>`;
 }
