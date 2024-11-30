@@ -14,6 +14,10 @@ interface ModelProps {
    packageName: string;
    modelPath: string;
    versionId?: string;
+   expandResults?: boolean;
+   hideResultIcons?: boolean;
+   expandEmbeddings?: boolean;
+   hideEmbeddingIcons?: boolean;
    accessToken?: string;
 }
 
@@ -22,6 +26,10 @@ export default function Model({
    packageName,
    modelPath,
    versionId,
+   expandResults,
+   hideResultIcons,
+   expandEmbeddings,
+   hideEmbeddingIcons,
    accessToken,
 }: ModelProps) {
    const { data, isSuccess, isError, error } = useQuery(
@@ -73,6 +81,10 @@ export default function Model({
                                  modelPath={modelPath}
                                  sourceName={source.name}
                                  queryName={view.name}
+                                 expandResult={expandResults}
+                                 hideResultIcon={hideResultIcons}
+                                 expandEmbedding={expandEmbeddings}
+                                 hideEmbeddingIcon={hideEmbeddingIcons}
                                  accessToken={accessToken}
                               />
                            ))}
@@ -98,6 +110,10 @@ export default function Model({
                               packageName={packageName}
                               modelPath={modelPath}
                               queryName={query.name}
+                              expandResult={expandResults}
+                              hideResultIcon={hideResultIcons}
+                              expandEmbedding={expandEmbeddings}
+                              hideEmbeddingIcon={hideEmbeddingIcons}
                               accessToken={accessToken}
                            />
                         ))}

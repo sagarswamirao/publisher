@@ -74,6 +74,7 @@ export default function Package({
                      packageName={packageName}
                      notebookPath={README_NOTEBOOK}
                      versionId={versionId}
+                     expandCodeCells={true}
                      accessToken={accessToken}
                   />
                </StyledCardMedia>

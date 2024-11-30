@@ -14,6 +14,10 @@ interface NotebookProps {
    packageName: string;
    notebookPath: string;
    versionId?: string;
+   expandCodeCells?: boolean;
+   hideCodeCellIcons?: boolean;
+   expandEmbeddings?: boolean;
+   hideEmbeddingIcons?: boolean;
    accessToken?: string;
 }
 
@@ -22,6 +26,10 @@ export default function Notebook({
    packageName,
    notebookPath,
    versionId,
+   expandCodeCells,
+   hideCodeCellIcons,
+   expandEmbeddings,
+   hideEmbeddingIcons,
    accessToken,
 }: NotebookProps) {
    const {
@@ -64,6 +72,10 @@ export default function Notebook({
                      notebookPath,
                      cell.text,
                   )}
+                  expandCodeCell={expandCodeCells}
+                  hideCodeCellIcon={hideCodeCellIcons}
+                  expandEmbedding={expandEmbeddings}
+                  hideEmbeddingIcon={hideEmbeddingIcons}
                   key={index}
                />
             ))}
@@ -84,6 +96,6 @@ function getQueryResultCodeSnippet(
    modelPath: string,
    query: string,
 ): string {
-   const queryResultsString = `<QueryResult server="${server}" packageName="${packageName}" modelPath="${modelPath}" query="${query}"/>`;
+   const queryResultsString = `<QueryResult server="${server}" accessToken={accessToken} packageName="${packageName}" modelPath="${modelPath}" query="${query}"/>`;
    return queryResultsString.replace(/\n/g, "");
 }
