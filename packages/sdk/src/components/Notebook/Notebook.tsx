@@ -96,6 +96,12 @@ function getQueryResultCodeSnippet(
    modelPath: string,
    query: string,
 ): string {
-   const queryResultsString = `<QueryResult server="${server}" accessToken={accessToken} packageName="${packageName}" modelPath="${modelPath}" query="${query}"/>`;
-   return queryResultsString.replace(/\n/g, "");
+   return`<QueryResult
+server="${server}"
+accessToken={accessToken}
+packageName="${packageName}"
+modelPath="${modelPath}"
+query="
+${query}
+"/>`;
 }

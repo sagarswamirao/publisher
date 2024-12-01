@@ -191,5 +191,12 @@ function getQueryResultCodeSnippet(
    sourceName: string,
    queryName: string,
 ): string {
-   return `<QueryResult server="${server}" accessToken={accessToken} packageName="${packageName}" modelPath="${modelPath}" sourceName="${sourceName}" queryName="${queryName}"/>`;
+   return `<QueryResult
+server="${server}"
+accessToken={accessToken}
+packageName="${packageName}"
+modelPath="${modelPath}"
+sourceName="${sourceName}"
+queryName="${queryName}"
+/>`;
 }

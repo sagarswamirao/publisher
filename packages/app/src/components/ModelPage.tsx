@@ -9,11 +9,13 @@ export function ModelPage({ server }: ModelPageProps) {
    const params = useParams();
    const modelPath = params["*"];
 
-   if (modelPath?.endsWith(".malloy")) {
+   if (!params.packageName) {
+      return (<div><h2>Missing package name</h2></div>);
+   } else if (modelPath?.endsWith(".malloy")) {
       return (
          <Model
             server={server}
-            packageName={params.packageName as string}
+            packageName={params.packageName}
             modelPath={modelPath}
          />
       );
@@ -21,15 +23,11 @@ export function ModelPage({ server }: ModelPageProps) {
       return (
          <Notebook
             server={server}
-            packageName={params.packageName as string}
+            packageName={params.packageName}
             notebookPath={modelPath}
          />
       );
    } else {
-      return (
-         <div>
-            <h2>Unrecognized file type: {modelPath}</h2>
-         </div>
-      );
+      return (<div><h2>Unrecognized file type: {modelPath}</h2></div>);
    }
 }
