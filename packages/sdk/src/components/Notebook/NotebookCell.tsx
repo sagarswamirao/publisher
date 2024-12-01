@@ -73,55 +73,51 @@ export function NotebookCell({
       )) ||
       (cell.type === "code" && (
          <StyledCard variant="outlined">
-            {(!hideCodeCellIcon || (!hideEmbeddingIcon && cell.queryResult)) && (
+            {(!hideCodeCellIcon ||
+               (!hideEmbeddingIcon && cell.queryResult)) && (
                <Stack
-                  sx={{ flexDirection: "row", justifyContent: "space-between" }}
+                  sx={{ flexDirection: "row", justifyContent: "right" }}
                >
-                  <Typography variant="overline" sx={{ ml: "10px" }}>
-                     Code {cell.queryResult && "+ Results"} Cell
-                  </Typography>
-                  <Stack>
-                     <CardActions
-                        sx={{
-                           padding: "0px 10px 0px 10px",
-                           mb: "auto",
-                           mt: "auto",
-                        }}
-                     >
-                        {!hideCodeCellIcon && (
-                           <Tooltip
-                              title={codeExpanded ? "Hide Code" : "View Code"}
+                  <CardActions
+                     sx={{
+                        padding: "0px 10px 0px 10px",
+                        mb: "auto",
+                        mt: "auto",
+                     }}
+                  >
+                     {!hideCodeCellIcon && (
+                        <Tooltip
+                           title={codeExpanded ? "Hide Code" : "View Code"}
+                        >
+                           <IconButton
+                              size="small"
+                              onClick={() => {
+                                 setCodeExpanded(!codeExpanded);
+                              }}
                            >
-                              <IconButton
-                                 size="small"
-                                 onClick={() => {
-                                    setCodeExpanded(!codeExpanded);
-                                 }}
-                              >
-                                 <CodeIcon />
-                              </IconButton>
-                           </Tooltip>
-                        )}
-                        {!hideEmbeddingIcon && cell.queryResult && (
-                           <Tooltip
-                              title={
-                                 embeddingExpanded
-                                    ? "Hide Embedding"
-                                    : "View Embedding"
-                              }
+                              <CodeIcon />
+                           </IconButton>
+                        </Tooltip>
+                     )}
+                     {!hideEmbeddingIcon && cell.queryResult && (
+                        <Tooltip
+                           title={
+                              embeddingExpanded
+                                 ? "Hide Embedding"
+                                 : "View Embedding"
+                           }
+                        >
+                           <IconButton
+                              size="small"
+                              onClick={() => {
+                                 setEmbeddingExpanded(!embeddingExpanded);
+                              }}
                            >
-                              <IconButton
-                                 size="small"
-                                 onClick={() => {
-                                    setEmbeddingExpanded(!embeddingExpanded);
-                                 }}
-                              >
-                                 <ShareIcon />
-                              </IconButton>
-                           </Tooltip>
-                        )}
-                     </CardActions>
-                  </Stack>
+                              <ShareIcon />
+                           </IconButton>
+                        </Tooltip>
+                     )}
+                  </CardActions>
                </Stack>
             )}
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
