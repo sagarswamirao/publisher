@@ -11,28 +11,33 @@ import {
    NOTEBOOK_FILE_SUFFIX,
    getWorkingDirectory,
 } from "../utils";
+import { Scheduler } from "./scheduler";
 
-type ApiPackage = components["schemas"]["Package"];
+type ApiConnection = components["schemas"]["Connection"];
 type ApiDatabase = components["schemas"]["Database"];
 type ApiModel = components["schemas"]["Model"];
-type ApiConnection = components["schemas"]["Connection"];
+type ApiPackage = components["schemas"]["Package"];
+type ApiSchedule = components["schemas"]["Schedule"];
 
 export class Package {
    private packageName: string;
    private packageMetadata: ApiPackage;
    private databases: ApiDatabase[];
    private models: Map<string, Model> = new Map();
+   private scheduler: Scheduler | undefined;
 
    private constructor(
       packageName: string,
       packageMetadata: ApiPackage,
       databases: ApiDatabase[],
       models: Map<string, Model>,
+      scheduler: Scheduler | undefined,
    ) {
       this.packageName = packageName;
       this.packageMetadata = packageMetadata;
       this.databases = databases;
       this.models = models;
+      this.scheduler = scheduler;
    }
 
    static async create(packageName: string): Promise<Package> {
@@ -46,7 +51,8 @@ export class Package {
             await Package.readConnectionConfig(packageName);
          const databases = await Package.readDatabases(packageName);
          const models = await Package.loadModels(packageName, connectionConfig);
-         return new Package(packageName, packageConfig, databases, models);
+         const scheduler = Scheduler.create(models);
+         return new Package(packageName, packageConfig, databases, models, scheduler);
       } catch (error) {
          console.error(error);
          return new Package(
@@ -58,6 +64,7 @@ export class Package {
             },
             new Array<ApiDatabase>(),
             new Map<string, Model>(),
+            undefined,
          );
       }
    }
@@ -72,6 +79,10 @@ export class Package {
 
    public listDatabases(): ApiDatabase[] {
       return this.databases;
+   }
+
+   public listSchedules(): ApiSchedule[] {
+      return this.scheduler ? this.scheduler.list() : [];
    }
 
    public getModel(modelPath: string): Model | undefined {

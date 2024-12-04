@@ -157,21 +157,7 @@ export interface Database {
      * @memberof Database
      */
     'size'?: number;
-    /**
-     * Type of database -- i.e., embedded in the package or materialized afte the package was created.
-     * @type {string}
-     * @memberof Database
-     */
-    'type'?: DatabaseTypeEnum;
 }
-
-export const DatabaseTypeEnum = {
-    Embedded: 'embedded',
-    Materialized: 'materialized'
-} as const;
-
-export type DatabaseTypeEnum = typeof DatabaseTypeEnum[keyof typeof DatabaseTypeEnum];
-
 /**
  * Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent.
  * @export
@@ -190,6 +176,12 @@ export interface Model {
      * @memberof Model
      */
     'path'?: string;
+    /**
+     * Array of materialized views.
+     * @type {Array<Database>}
+     * @memberof Model
+     */
+    'materializedViews'?: Array<Database>;
     /**
      * Type of malloy model file -- source file or notebook file.
      * @type {string}
@@ -338,17 +330,11 @@ export interface Query {
      */
     'name'?: string;
     /**
-     * Description of the query.
-     * @type {string}
+     * Annotations attached to query.
+     * @type {Array<string>}
      * @memberof Query
      */
-    'description'?: string;
-    /**
-     * Query\'s code.
-     * @type {string}
-     * @memberof Query
-     */
-    'code'?: string;
+    'annotations'?: Array<string>;
 }
 /**
  * A Malloy query\'s results, its model def, and its data styles.
@@ -376,6 +362,49 @@ export interface QueryResult {
     'queryResult'?: string;
 }
 /**
+ * A scheduled task.
+ * @export
+ * @interface Schedule
+ */
+export interface Schedule {
+    /**
+     * Resource in package that the schedule is attached to.
+     * @type {string}
+     * @memberof Schedule
+     */
+    'resource'?: string;
+    /**
+     * Schedule (cron format) for executing task.
+     * @type {string}
+     * @memberof Schedule
+     */
+    'schedule'?: string;
+    /**
+     * Action to execute.
+     * @type {string}
+     * @memberof Schedule
+     */
+    'action'?: string;
+    /**
+     * Connect to perform action on.
+     * @type {string}
+     * @memberof Schedule
+     */
+    'connection'?: string;
+    /**
+     * Timestamp in milliseconds of last run.
+     * @type {number}
+     * @memberof Schedule
+     */
+    'lastRunTime'?: number;
+    /**
+     * Status of last run.
+     * @type {string}
+     * @memberof Schedule
+     */
+    'lastRunStatus'?: string;
+}
+/**
  * Model source.
  * @export
  * @interface Source
@@ -388,11 +417,11 @@ export interface Source {
      */
     'name'?: string;
     /**
-     * Description of the source.
-     * @type {string}
+     * Annotations attached to source.
+     * @type {Array<string>}
      * @memberof Source
      */
-    'description'?: string;
+    'annotations'?: Array<string>;
     /**
      * List of views in the source.\\
      * @type {Array<View>}
@@ -413,17 +442,11 @@ export interface View {
      */
     'name'?: string;
     /**
-     * Description of the view.
-     * @type {string}
+     * Annotations attached to view.
+     * @type {Array<string>}
      * @memberof View
      */
-    'description'?: string;
-    /**
-     * View\'s code.
-     * @type {string}
-     * @memberof View
-     */
-    'view'?: string;
+    'annotations'?: Array<string>;
 }
 
 /**
@@ -1163,6 +1186,122 @@ export class QueryresultsApi extends BaseAPI {
      */
     public executeQuery(name: string, path: string, xVersionId?: string, query?: string, sourceName?: string, queryName?: string, options?: RawAxiosRequestConfig) {
         return QueryresultsApiFp(this.configuration).executeQuery(name, path, xVersionId, query, sourceName, queryName, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * SchedulesApi - axios parameter creator
+ * @export
+ */
+export const SchedulesApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Returns a list of relative paths to the databases embedded in the package.
+         * @param {string} name Name of package
+         * @param {string} [xVersionId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listSchedules: async (name: string, xVersionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'name' is not null or undefined
+            assertParamExists('listSchedules', 'name', name)
+            const localVarPath = `/packages/{name}/schedules`
+                .replace(`{${"name"}}`, encodeURIComponent(String(name)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (xVersionId != null) {
+                localVarHeaderParameter['X-Version-Id'] = String(xVersionId);
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * SchedulesApi - functional programming interface
+ * @export
+ */
+export const SchedulesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SchedulesApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Returns a list of relative paths to the databases embedded in the package.
+         * @param {string} name Name of package
+         * @param {string} [xVersionId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listSchedules(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Schedule>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listSchedules(name, xVersionId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SchedulesApi.listSchedules']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * SchedulesApi - factory interface
+ * @export
+ */
+export const SchedulesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = SchedulesApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Returns a list of relative paths to the databases embedded in the package.
+         * @param {string} name Name of package
+         * @param {string} [xVersionId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listSchedules(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Schedule>> {
+            return localVarFp.listSchedules(name, xVersionId, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * SchedulesApi - object-oriented interface
+ * @export
+ * @class SchedulesApi
+ * @extends {BaseAPI}
+ */
+export class SchedulesApi extends BaseAPI {
+    /**
+     * 
+     * @summary Returns a list of relative paths to the databases embedded in the package.
+     * @param {string} name Name of package
+     * @param {string} [xVersionId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SchedulesApi
+     */
+    public listSchedules(name: string, xVersionId?: string, options?: RawAxiosRequestConfig) {
+        return SchedulesApiFp(this.configuration).listSchedules(name, xVersionId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

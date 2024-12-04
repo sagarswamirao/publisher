@@ -52,7 +52,7 @@ export default function Models({
             <Box
                sx={{
                   mt: "10px",
-                  maxHeight: "300px",
+                  maxHeight: "200px",
                   overflowY: "auto",
                }}
             >

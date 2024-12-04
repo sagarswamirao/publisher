@@ -265,6 +265,43 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         501:
           $ref: "#/components/responses/NotImplementedError"
+  
+  /packages/{name}/schedules:
+    get:
+      tags:
+      - schedules
+      operationId: list-schedules
+      summary: 
+        Returns a list of running schedules.
+      parameters:
+        - name: X-Version-Id
+          in: header
+          schema:
+            type: string
+        - name: name
+          in: path
+          description: Name of package
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A list of running schedules.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: "#/components/schemas/Schedule"
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        501:
+          $ref: "#/components/responses/NotImplementedError"
 
 components:
   responses:
@@ -380,9 +417,11 @@ components:
         name:
           type: string
           description: Source's name.
-        description:
-          type: string
-          description: Description of the source.
+        annotations:
+          type: array
+          description: Annotations attached to source.
+          items:
+            type: string
         views:
           type: array
           description: List of views in the source.\
@@ -396,12 +435,11 @@ components:
         name:
           type: string
           description: View's name.
-        description:
-          type: string
-          description: Description of the view.
-        view:
-          type: string
-          description: View's code.
+        annotations:
+          type: array
+          description: Annotations attached to view.
+          items:
+            type: string
 
     Query:
       type: object
@@ -410,12 +448,11 @@ components:
         name:
           type: string
           description: Query's name.
-        description:
-          type: string
-          description: Description of the query.
-        code:
-          type: string
-          description: Query's code.
+        annotations:
+          type: array
+          description: Annotations attached to query.
+          items:
+            type: string
 
     NotebookCell:
       type: object
@@ -463,10 +500,29 @@ components:
         size:
           type: integer
           description: Size of the embedded database in bytes.
-        type:
+    
+    Schedule:
+      type: object
+      description: A scheduled task.
+      properties:
+        resource:
           type: string
-          enum: [ embedded, materialized ]
-          description: Type of database -- i.e., embedded in the package or materialized afte the package was created.
+          description: Resource in the package that the schedule is attached to.
+        schedule:
+          type: string
+          description: Schedule (cron format) for executing task.
+        action:
+          type: string
+          description: Action to execute.
+        connection:
+          type: string
+          description: Connection to perform action on.
+        lastRunTime:
+          type: integer
+          description: Timestamp in milliseconds of the last run.
+        lastRunStatus:
+          type: string
+          description: Status of the last run.
 
     Connection:
       type: object

@@ -4,6 +4,7 @@ import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import Config from "./Config";
 import Models from "./Models";
 import Databases from "./Databases";
+import Schedules from "./Schedules";
 
 const README_NOTEBOOK = "README.malloynb";
 
@@ -54,6 +55,14 @@ export default function Package({
          </Grid2>
          <Grid2 size={{ md: 12, lg: 4 }}>
             <Databases
+               server={server}
+               packageName={packageName}
+               versionId={versionId}
+               accessToken={accessToken}
+            />
+         </Grid2>
+         <Grid2 size={{ md: 12 }}>
+            <Schedules
                server={server}
                packageName={packageName}
                versionId={versionId}

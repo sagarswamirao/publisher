@@ -66,9 +66,6 @@ export default function Model({
                         <Typography variant="subtitle1">
                            {"Source > " + source.name}
                         </Typography>
-                        <Typography variant="body2">
-                           {source.description}
-                        </Typography>
                      </StyledCardContent>
                      <Stack spacing={1} component="section">
                         {source.views &&

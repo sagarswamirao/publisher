@@ -115,8 +115,8 @@ export class Model {
          let queries = undefined;
          if (modelMaterializer) {
             modelDef = (await modelMaterializer.getModel())._modelDef;
-            sources = Model.getSources(modelDef);
-            queries = Model.getQueries(modelDef);
+            sources = Model.getSources(modelPath, modelDef);
+            queries = Model.getQueries(modelPath, modelDef);
          }
 
          return new Model(
@@ -153,6 +153,14 @@ export class Model {
 
    public getType(): ModelType {
       return this.modelType;
+   }
+
+   public getSources(): ApiSource[] | undefined {
+      return this.sources;
+   }
+
+   public getQueries(): ApiQuery[] | undefined {
+      return this.sources;
    }
 
    public async getModel(): Promise<ApiCompiledModel> {
@@ -209,7 +217,7 @@ export class Model {
       };
    }
 
-   private async getStandardModel(): Promise<ApiCompiledModel> {
+   private getStandardModel(): ApiCompiledModel {
       return {
          type: "source",
          packageName: this.packageName,
@@ -365,32 +373,35 @@ export class Model {
       return new FixedConnectionMap(connectionMap, "duckdb");
    }
 
-   private static getQueries(modelDef: ModelDef): ApiQuery[] {
+   private static getQueries(
+      modelPath: string,
+      modelDef: ModelDef,
+   ): ApiQuery[] {
       const isNamedQuery = (object: NamedModelObject): object is NamedQuery =>
          object.type === "query";
       return Object.values(modelDef.contents)
          .filter(isNamedQuery)
          .map((queryObj: NamedQuery) => ({
             name: queryObj.as || queryObj.name,
-            description:
-               queryObj?.annotation?.blockNotes
-                  ?.map((note) => note.text)
-                  .join(" ") || "",
-            code: "TODO: Add code. Need to discuss with Will.",
+            annotations: queryObj?.annotation?.blockNotes
+               ?.filter((note) => note.at.url.includes(modelPath))
+               .map((note) => note.text),
          }));
    }
 
-   private static getSources(modelDef: ModelDef): ApiSource[] {
+   private static getSources(
+      modelPath: string,
+      modelDef: ModelDef,
+   ): ApiSource[] {
       return Object.values(modelDef.contents)
          .filter((obj) => isSourceDef(obj))
          .map(
             (sourceObj) =>
                ({
                   name: sourceObj.as || sourceObj.name,
-                  description:
-                     (sourceObj as StructDef).annotation?.blockNotes
-                        ?.map((note) => note.text)
-                        .join(" ") || "",
+                  annotations: (sourceObj as StructDef).annotation?.blockNotes
+                     ?.filter((note) => note.at.url.includes(modelPath))
+                     .map((note) => note.text),
                   views: (sourceObj as StructDef).fields
                      .filter((turtleObj) => turtleObj.type === "turtle")
                      .filter((turtleObj) =>
@@ -404,11 +415,11 @@ export class Model {
                         (turtleObj) =>
                            ({
                               name: turtleObj.as || turtleObj.name,
-                              description:
-                                 turtleObj?.annotation?.blockNotes
-                                    ?.map((note) => note.text)
-                                    .join(" ") || "",
-                              code: "TODO: Add code. Need to discuss with Will.",
+                              annotations: turtleObj?.annotation?.blockNotes
+                                 ?.filter((note) =>
+                                    note.at.url.includes(modelPath),
+                                 )
+                                 .map((note) => note.text),
                            }) as ApiView,
                      ),
                }) as ApiSource,
@@ -516,50 +527,4 @@ export class Model {
          runnableNotebookCells: runnableNotebookCells,
       };
    }
-
-      /* Do not support materialized views for the time being.  Revisit this code 
-   when we start doing materialization.
-   
-      public async getMaterializedViews(): Promise<
-      {
-         modelPath: string;
-         sources: { sourceName: string; views: string[] }[];
-      }[]
-   > {
-      const modelPaths = (await this.getModelPaths()).filter((modelPath) =>
-         modelPath.endsWith(".malloy"),
-      );
-      return await Promise.all(
-         modelPaths.map(async (modelPath) => {
-            const { modelDef } =
-               await this.getModelDefDataStylesAndSources(modelPath);
-            return {
-               modelPath: modelPath,
-               sources: this.getMaterializedViewsFromModelDef(modelDef),
-            };
-         }),
-      );
-   }
-
-   private getMaterializedViewsFromModelDef(
-      modelDef: ModelDef,
-   ): { sourceName: string; views: string[] }[] {
-      // TODO: This should use the Model interface instead of reaching into the modelDef.
-      return Object.values(modelDef.contents)
-         .filter((obj) => isSourceDef(obj))
-         .map((sourceObj) => ({
-            sourceName: sourceObj.as || sourceObj.name,
-            views: (sourceObj as StructDef).fields
-               .filter((turtleObj) => turtleObj.type === "turtle")
-               .filter((turtleObj) =>
-                  turtleObj?.annotation?.blockNotes?.reduce(
-                     (materialize, note) =>
-                        materialize || note.text.startsWith("# materialize"),
-                     false,
-                  ),
-               )
-               .map((turtleObj) => turtleObj.as || turtleObj.name),
-         }));
-   }
-         */ 
 }
