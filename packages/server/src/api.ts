@@ -33,6 +33,10 @@ export interface paths {
     /** Returns a list of relative paths to the databases embedded in the package. */
     get: operations["list-databases"];
   };
+  "/packages/{name}/schedules": {
+    /** Returns a list of relative paths to the databases embedded in the package. */
+    get: operations["list-schedules"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -55,6 +59,8 @@ export interface components {
       packageName?: string;
       /** @description Model's relative path in its package directory. */
       path?: string;
+      /** @description Array of materialized views. */
+      materializedViews?: components["schemas"]["Database"][];
       /**
        * @description Type of malloy model file -- source file or notebook file.
        * @enum {string}
@@ -88,8 +94,8 @@ export interface components {
     Source: {
       /** @description Source's name. */
       name?: string;
-      /** @description Description of the source. */
-      description?: string;
+      /** @description Annotations attached to source. */
+      annotations?: string[];
       /** @description List of views in the source.\ */
       views?: components["schemas"]["View"][];
     };
@@ -97,19 +103,15 @@ export interface components {
     View: {
       /** @description View's name. */
       name?: string;
-      /** @description Description of the view. */
-      description?: string;
-      /** @description View's code. */
-      view?: string;
+      /** @description Annotations attached to view. */
+      annotations?: string[];
     };
     /** @description Named model query. */
     Query: {
       /** @description Query's name. */
       name?: string;
-      /** @description Description of the query. */
-      description?: string;
-      /** @description Query's code. */
-      code?: string;
+      /** @description Annotations attached to query. */
+      annotations?: string[];
     };
     /** @description Notebook cell. */
     NotebookCell: {
@@ -140,11 +142,21 @@ export interface components {
       path?: string;
       /** @description Size of the embedded database in bytes. */
       size?: number;
-      /**
-       * @description Type of database -- i.e., embedded in the package or materialized afte the package was created.
-       * @enum {string}
-       */
-      type?: "embedded" | "materialized";
+    };
+    /** @description A scheduled task. */
+    Schedule: {
+      /** @description Resource in package that the schedule is attached to. */
+      resource?: string;
+      /** @description Schedule (cron format) for executing task. */
+      schedule?: string;
+      /** @description Action to execute. */
+      action?: string;
+      /** @description Connect to perform action on. */
+      connection?: string;
+      /** @description Timestamp in milliseconds of last run. */
+      lastRunTime?: number;
+      /** @description Status of last run. */
+      lastRunStatus?: string;
     };
     Connection: {
       name?: string;
@@ -361,6 +373,30 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["Database"][];
+        };
+      };
+      401: components["responses"]["UnauthorizedError"];
+      404: components["responses"]["NotFoundError"];
+      500: components["responses"]["InternalServerError"];
+      501: components["responses"]["NotImplementedError"];
+    };
+  };
+  /** Returns a list of relative paths to the databases embedded in the package. */
+  "list-schedules": {
+    parameters: {
+      header?: {
+        "X-Version-Id"?: string;
+      };
+      path: {
+        /** @description Name of package */
+        name: string;
+      };
+    };
+    responses: {
+      /** @description A list of running schedules in package. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Schedule"][];
         };
       };
       401: components["responses"]["UnauthorizedError"];

@@ -11,19 +11,19 @@ const queryClient = new QueryClient();
 
 const DEFAULT_EXPANDED_FOLDERS = ["data/"];
 
-interface PackageProps {
+interface DatabaseProps {
    server?: string;
    packageName: string;
    versionId?: string;
    accessToken: string;
 }
 
-export default function Package({
+export default function Database({
    server,
    packageName,
    versionId,
    accessToken,
-}: PackageProps) {
+}: DatabaseProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["databases", server, packageName, versionId],
@@ -50,7 +50,7 @@ export default function Package({
             <Box
                sx={{
                   mt: "10px",
-                  maxHeight: "300px",
+                  maxHeight: "200px",
                   overflowY: "auto",
                }}
             >

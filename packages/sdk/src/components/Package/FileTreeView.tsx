@@ -186,12 +186,12 @@ function getTreeViewRecursive(
 ): TreeViewBaseItem<ExtendedTreeItemProps>[] {
    const treeViewItems: TreeViewBaseItem<ExtendedTreeItemProps>[] = [];
    node.forEach((value, key) => {
-      if ((value as Model | Database).type !== undefined) {
-         const fileType =
-            (key.endsWith(".malloy") && "model") ||
-            (key.endsWith(".malloynb") && "notebook") ||
-            (key.endsWith(".parquet") && "database") ||
-            "unknown";
+      const fileType =
+         (key.endsWith(".malloy") && "model") ||
+         (key.endsWith(".malloynb") && "notebook") ||
+         (key.endsWith(".parquet") && "database") ||
+         "unknown";
+      if (fileType !== "unknown") {
          // This is a model or database.
          treeViewItems.push({
             id: path + key,

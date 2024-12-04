@@ -9,6 +9,7 @@ import { DatabaseController } from "./controller/database.controller";
 import { ModelController } from "./controller/model.controller";
 import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
+import { ScheduleController } from "./controller/schedule.controller";
 import { getWorkingDirectory } from "./utils";
 import cors from "cors";
 import * as fs from "fs";
@@ -30,6 +31,7 @@ const modelController = new ModelController(packageService);
 const packageController = new PackageController(packageService);
 const databaseController = new DatabaseController(packageService);
 const queryController = new QueryController(packageService);
+const scheduleController = new ScheduleController(packageService);
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -148,6 +150,25 @@ app.get(`${API_PREFIX}/packages/:id/queryResults/*?`, async (req, res) => {
             req.query.queryName as string,
             req.query.query as string,
          ),
+      );
+   } catch (error) {
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.get(`${API_PREFIX}/packages/:id/schedules`, async (req, res) => {
+   if (req.header(VERSION_ID_HEADER)) {
+      const { json, status } = internalErrorToHttpError(
+         new NotImplementedError("Version IDs not implemented."),
+      );
+      res.status(status).json(json);
+      return;
+   }
+
+   try {
+      res.status(200).json(
+         await scheduleController.listSchedules(req.params.id),
       );
    } catch (error) {
       const { json, status } = internalErrorToHttpError(error as Error);
