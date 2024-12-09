@@ -42,7 +42,6 @@ class Schedule {
       this.lastRunStatus = "unknown";
 
       this.task = cron.schedule(cronSchedule, () => {
-         console.log("RUNNING");
          this.lastRunTime = Date.now();
          this.lastRunStatus = "ok";
       });

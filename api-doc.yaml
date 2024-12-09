@@ -518,7 +518,7 @@ components:
           type: string
           description: Connection to perform action on.
         lastRunTime:
-          type: integer
+          type: number
           description: Timestamp in milliseconds of the last run.
         lastRunStatus:
           type: string

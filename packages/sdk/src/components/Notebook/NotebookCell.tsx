@@ -17,7 +17,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { highlight } from "../highlighter";
 import { useEffect } from "react";
 import CodeIcon from "@mui/icons-material/Code";
-import ShareIcon from "@mui/icons-material/ShareOutlined";
+import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
@@ -113,7 +113,7 @@ export function NotebookCell({
                                  setEmbeddingExpanded(!embeddingExpanded);
                               }}
                            >
-                              <ShareIcon />
+                              <LinkOutlinedIcon  />
                            </IconButton>
                         </Tooltip>
                      )}

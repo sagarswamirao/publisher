@@ -19,12 +19,12 @@
    "dependencies": {
       "@eslint/compat": "^1.1.1",
       "@eslint/eslintrc": "^3.1.0",
-      "@malloydata/db-bigquery": "^0.0.217",
-      "@malloydata/db-duckdb": "^0.0.217",
-      "@malloydata/db-postgres": "^0.0.217",
-      "@malloydata/malloy": "^0.0.217",
-      "@malloydata/malloy-sql": "^0.0.217",
-      "@malloydata/render": "^0.0.217",
+      "@malloydata/db-bigquery": "^0.0.220",
+      "@malloydata/db-duckdb": "^0.0.220",
+      "@malloydata/db-postgres": "^0.0.220",
+      "@malloydata/malloy": "^0.0.220",
+      "@malloydata/malloy-sql": "^0.0.220",
+      "@malloydata/render": "^0.0.220",
       "@popperjs/core": "^2.11.4",
       "@types/archiver": "^5.3.1",
       "@types/cors": "^2.8.12",
@@ -38,6 +38,7 @@
       "@types/tar-stream": "^2.2.2",
       "@typescript-eslint/eslint-plugin": "^8.6.0",
       "@typescript-eslint/parser": "^8.6.0",
+      "@types/node-cron": "^3.0.11",
       "archiver": "^5.3.1",
       "body-parser": "^1.20.2",
       "chai": "^4.3.10",
@@ -76,7 +77,6 @@
    },
    "devDependencies": {
       "@types/chai": "^4.3.10",
-      "@types/mocha": "^10.0.9",
-      "@types/node-cron": "^3.0.11"
+      "@types/mocha": "^10.0.9"
    }
 }
