@@ -142,7 +142,7 @@ export function NotebookCell({
                         }}
                      />
                   </Typography>
-                  <Tooltip title="View Code">
+                  <Tooltip title="Copy Embeddable Code">
                      <IconButton
                         sx={{ width: "24px", height: "24px" }}
                         onClick={() => {
@@ -176,16 +176,6 @@ export function NotebookCell({
                         }}
                      />
                   </Typography>
-                  <Tooltip title="View Code">
-                     <IconButton
-                        sx={{ width: "24px", height: "24px" }}
-                        onClick={() => {
-                           navigator.clipboard.writeText(cell.text);
-                        }}
-                     >
-                        <ContentCopyIcon />
-                     </IconButton>
-                  </Tooltip>
                </Stack>
             </Collapse>
             {cell.queryResult && (
