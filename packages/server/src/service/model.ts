@@ -378,7 +378,7 @@ export class Model {
 
                   // BigQuery requires a service account key file.  We persist it to disk
                   // and pass the path to the BigQueryConnection.
-                  const serviceAccountKeyPath = path.join("tmp", `${connection.name}-${uuidv4()}-service-account-key.json`);
+                  const serviceAccountKeyPath = path.join("/tmp", `${connection.name}-${uuidv4()}-service-account-key.json`);
                   await fs.writeFile(serviceAccountKeyPath, connection.bigqueryConnection.serviceAccountKeyJson as string);
                   const bigqueryConnectionOptions = {
                      projectId: connection.bigqueryConnection.defaultProjectId,

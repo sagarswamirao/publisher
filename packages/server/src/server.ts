@@ -50,6 +50,7 @@ app.get(`${API_PREFIX}/about`, async (_req, res) => {
    try {
       res.status(200).json(await aboutController.getAbout());
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -67,6 +68,7 @@ app.get(`${API_PREFIX}/packages`, async (req, res) => {
    try {
       res.status(200).json(await packageController.listPackages());
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -84,6 +86,7 @@ app.get(`${API_PREFIX}/packages/:name`, async (req, res) => {
    try {
       res.status(200).json(await packageController.getPackage(req.params.name));
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -101,6 +104,7 @@ app.get(`${API_PREFIX}/packages/:name/models`, async (req, res) => {
    try {
       res.status(200).json(await modelController.listModels(req.params.name));
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -125,6 +129,7 @@ app.get(`${API_PREFIX}/packages/:name/models/*?`, async (req, res) => {
          ),
       );
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -152,6 +157,7 @@ app.get(`${API_PREFIX}/packages/:id/queryResults/*?`, async (req, res) => {
          ),
       );
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -171,6 +177,7 @@ app.get(`${API_PREFIX}/packages/:id/schedules`, async (req, res) => {
          await scheduleController.listSchedules(req.params.id),
       );
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -190,6 +197,7 @@ app.get(`${API_PREFIX}/packages/:id/databases`, async (req, res) => {
          await databaseController.listDatabases(req.params.id),
       );
    } catch (error) {
+      console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
