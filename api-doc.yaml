@@ -534,6 +534,10 @@ components:
           enum: [postgres, bigquery, snowflake]
         postgresConnection:
           $ref: "#/components/schemas/PostgresConnection"
+        bigqueryConnection:
+          $ref: "#/components/schemas/BigqueryConnection"
+        snowflakeConnection:
+          $ref: "#/components/schemas/SnowflakeConnection"
   
     PostgresConnection:
       type: object
@@ -548,8 +552,42 @@ components:
           type: string
         password:
           type: string
-        url:
+        connectionString:
           type: string
+
+    BigqueryConnection:
+      type: object
+      properties:
+        defaultProjectId:
+          type: string
+        billingProjectId:
+          type: string
+        location:
+          type: string
+        serviceAccountKeyJson:
+          type: string
+        maximumBytesBilled:
+          type: string
+        queryTimeoutMilliseconds:
+          type: string
+      
+    SnowflakeConnection:
+      type: object
+      properties:
+        account:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        warehouse:
+          type: string
+        database:
+          type: string
+        schema:
+          type: string
+        responseTimeoutMilliseconds:
+          type: integer
 
     Error:
       type: object
