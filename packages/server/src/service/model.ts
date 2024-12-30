@@ -1,5 +1,8 @@
 import { DuckDBConnection } from "@malloydata/db-duckdb";
 import { PostgresConnection } from "@malloydata/db-postgres";
+import { BigQueryConnection } from "@malloydata/db-bigquery";
+import { SnowflakeConnection } from "@malloydata/db-snowflake";
+import { v4 as uuidv4 } from "uuid";
 import {
    Connection,
    FixedConnectionMap,
@@ -240,7 +243,7 @@ export class Model {
                   try {
                      const rowLimit = cell.runnable
                         ? (await cell.runnable.getPreparedResult())
-                             .resultExplore.limit
+                           .resultExplore.limit
                         : undefined;
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
@@ -342,31 +345,74 @@ export class Model {
          "duckdb",
          new DuckDBConnection("duckdb", ":memory:", modelDirectory),
       );
-
+      console.log(JSON.stringify(connectionConfig));
       if (connectionConfig) {
-         connectionConfig.map((connection) => {
+         connectionConfig.map(async (connection) => {
             // This case shouldn't happen.  The package validation logic should
             // catch it.
             if (!connection.name) {
                throw "Invalid connection configuration.  No name.";
             }
-            const configReader = async () => {
-               return {
-                  host: connection.postgresConnection?.host,
-                  port: connection.postgresConnection?.port,
-                  username: connection.postgresConnection?.userName,
-                  password: connection.postgresConnection?.password,
-                  databaseName: connection.postgresConnection?.databaseName,
-                  connectionString: connection.postgresConnection?.url,
-               };
-            };
 
-            const postgresConnection = new PostgresConnection(
-               connection.name,
-               () => ({}),
-               configReader,
-            );
-            connectionMap.set(connection.name, postgresConnection);
+            switch (connection.type) {
+               case "postgres": {
+                  const configReader = async () => {
+                     if (!connection.postgresConnection) {
+                        throw "Invalid connection configuration.  No postgres connection.";
+                     }
+                     return connection.postgresConnection;
+                  };
+                  const postgresConnection = new PostgresConnection(
+                     connection.name,
+                     () => ({}),
+                     configReader,
+                  );
+                  connectionMap.set(connection.name, postgresConnection);
+                  break;
+               }
+
+               case "bigquery": {
+                  if (!connection.bigqueryConnection) {
+                     throw "Invalid connection configuration.  No bigquery connection.";
+                  }
+
+                  // BigQuery requires a service account key file.  We persist it to disk
+                  // and pass the path to the BigQueryConnection.
+                  const serviceAccountKeyPath = path.join("tmp", `${connection.name}-${uuidv4()}-service-account-key.json`);
+                  await fs.writeFile(serviceAccountKeyPath, connection.bigqueryConnection.serviceAccountKeyJson as string);
+                  const bigqueryConnectionOptions = {
+                     projectId: connection.bigqueryConnection.defaultProjectId,
+                     serviceAccountKeyPath: serviceAccountKeyPath,
+                     location: connection.bigqueryConnection.location,
+                     maximumBytesBilled: connection.bigqueryConnection.maximumBytesBilled,
+                     timeoutMs: connection.bigqueryConnection.queryTimeoutMilliseconds,
+                     billingProjectId: connection.bigqueryConnection.billingProjectId,
+                  };
+                  const bigqueryConnection = new BigQueryConnection(
+                     connection.name,
+                     () => ({}),
+                     bigqueryConnectionOptions,
+                  );
+                  connectionMap.set(connection.name, bigqueryConnection);
+                  break;
+               }
+
+               case "snowflake": {
+                  const snowflakeConnectionOptions = {
+                     // TODO: Add snowflake connection options.
+                  };
+                  const snowflakeConnection = new SnowflakeConnection(
+                     connection.name,
+                     snowflakeConnectionOptions,
+                  );
+                  connectionMap.set(connection.name, snowflakeConnection);
+                  break;
+               }
+
+               default: {
+                  throw new Error(`Unsupported connection type: ${connection.type}`);
+               }
+            }
          });
       }
 

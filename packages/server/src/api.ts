@@ -34,7 +34,7 @@ export interface paths {
     get: operations["list-databases"];
   };
   "/packages/{name}/schedules": {
-    /** Returns a list of relative paths to the databases embedded in the package. */
+    /** Returns a list of running schedules. */
     get: operations["list-schedules"];
   };
 }
@@ -59,8 +59,6 @@ export interface components {
       packageName?: string;
       /** @description Model's relative path in its package directory. */
       path?: string;
-      /** @description Array of materialized views. */
-      materializedViews?: components["schemas"]["Database"][];
       /**
        * @description Type of malloy model file -- source file or notebook file.
        * @enum {string}
@@ -145,17 +143,17 @@ export interface components {
     };
     /** @description A scheduled task. */
     Schedule: {
-      /** @description Resource in package that the schedule is attached to. */
+      /** @description Resource in the package that the schedule is attached to. */
       resource?: string;
       /** @description Schedule (cron format) for executing task. */
       schedule?: string;
       /** @description Action to execute. */
       action?: string;
-      /** @description Connect to perform action on. */
+      /** @description Connection to perform action on. */
       connection?: string;
-      /** @description Timestamp in milliseconds of last run. */
+      /** @description Timestamp in milliseconds of the last run. */
       lastRunTime?: number;
-      /** @description Status of last run. */
+      /** @description Status of the last run. */
       lastRunStatus?: string;
     };
     Connection: {
@@ -163,6 +161,8 @@ export interface components {
       /** @enum {string} */
       type?: "postgres" | "bigquery" | "snowflake";
       postgresConnection?: components["schemas"]["PostgresConnection"];
+      bigqueryConnection?: components["schemas"]["BigqueryConnection"];
+      snowflakeConnection?: components["schemas"]["SnowflakeConnection"];
     };
     PostgresConnection: {
       host?: string;
@@ -170,7 +170,24 @@ export interface components {
       databaseName?: string;
       userName?: string;
       password?: string;
-      url?: string;
+      connectionString?: string;
+    };
+    BigqueryConnection: {
+      defaultProjectId?: string;
+      billingProjectId?: string;
+      location?: string;
+      serviceAccountKeyJson?: string;
+      maximumBytesBilled?: string;
+      queryTimeoutMilliseconds?: string;
+    };
+    SnowflakeConnection: {
+      account?: string;
+      username?: string;
+      password?: string;
+      warehouse?: string;
+      database?: string;
+      schema?: string;
+      responseTimeoutMilliseconds?: number;
     };
     Error: {
       code?: string;
@@ -381,7 +398,7 @@ export interface operations {
       501: components["responses"]["NotImplementedError"];
     };
   };
-  /** Returns a list of relative paths to the databases embedded in the package. */
+  /** Returns a list of running schedules. */
   "list-schedules": {
     parameters: {
       header?: {
@@ -393,7 +410,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description A list of running schedules in package. */
+      /** @description A list of running schedules. */
       200: {
         content: {
           "application/json": components["schemas"]["Schedule"][];

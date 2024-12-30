@@ -37,6 +37,49 @@ export interface About {
     'readme'?: string;
 }
 /**
+ * 
+ * @export
+ * @interface BigqueryConnection
+ */
+export interface BigqueryConnection {
+    /**
+     * 
+     * @type {string}
+     * @memberof BigqueryConnection
+     */
+    'defaultProjectId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BigqueryConnection
+     */
+    'billingProjectId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BigqueryConnection
+     */
+    'location'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BigqueryConnection
+     */
+    'serviceAccountKeyJson'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BigqueryConnection
+     */
+    'maximumBytesBilled'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BigqueryConnection
+     */
+    'queryTimeoutMilliseconds'?: string;
+}
+/**
  * Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent.
  * @export
  * @interface CompiledModel
@@ -129,6 +172,18 @@ export interface Connection {
      * @memberof Connection
      */
     'postgresConnection'?: PostgresConnection;
+    /**
+     * 
+     * @type {BigqueryConnection}
+     * @memberof Connection
+     */
+    'bigqueryConnection'?: BigqueryConnection;
+    /**
+     * 
+     * @type {SnowflakeConnection}
+     * @memberof Connection
+     */
+    'snowflakeConnection'?: SnowflakeConnection;
 }
 
 export const ConnectionTypeEnum = {
@@ -176,12 +231,6 @@ export interface Model {
      * @memberof Model
      */
     'path'?: string;
-    /**
-     * Array of materialized views.
-     * @type {Array<Database>}
-     * @memberof Model
-     */
-    'materializedViews'?: Array<Database>;
     /**
      * Type of malloy model file -- source file or notebook file.
      * @type {string}
@@ -315,7 +364,7 @@ export interface PostgresConnection {
      * @type {string}
      * @memberof PostgresConnection
      */
-    'url'?: string;
+    'connectionString'?: string;
 }
 /**
  * Named model query.
@@ -368,7 +417,7 @@ export interface QueryResult {
  */
 export interface Schedule {
     /**
-     * Resource in package that the schedule is attached to.
+     * Resource in the package that the schedule is attached to.
      * @type {string}
      * @memberof Schedule
      */
@@ -386,23 +435,72 @@ export interface Schedule {
      */
     'action'?: string;
     /**
-     * Connect to perform action on.
+     * Connection to perform action on.
      * @type {string}
      * @memberof Schedule
      */
     'connection'?: string;
     /**
-     * Timestamp in milliseconds of last run.
+     * Timestamp in milliseconds of the last run.
      * @type {number}
      * @memberof Schedule
      */
     'lastRunTime'?: number;
     /**
-     * Status of last run.
+     * Status of the last run.
      * @type {string}
      * @memberof Schedule
      */
     'lastRunStatus'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface SnowflakeConnection
+ */
+export interface SnowflakeConnection {
+    /**
+     * 
+     * @type {string}
+     * @memberof SnowflakeConnection
+     */
+    'account'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SnowflakeConnection
+     */
+    'username'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SnowflakeConnection
+     */
+    'password'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SnowflakeConnection
+     */
+    'warehouse'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SnowflakeConnection
+     */
+    'database'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SnowflakeConnection
+     */
+    'schema'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof SnowflakeConnection
+     */
+    'responseTimeoutMilliseconds'?: number;
 }
 /**
  * Model source.
@@ -1199,7 +1297,7 @@ export const SchedulesApiAxiosParamCreator = function (configuration?: Configura
     return {
         /**
          * 
-         * @summary Returns a list of relative paths to the databases embedded in the package.
+         * @summary Returns a list of running schedules.
          * @param {string} name Name of package
          * @param {string} [xVersionId] 
          * @param {*} [options] Override http request option.
@@ -1248,7 +1346,7 @@ export const SchedulesApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary Returns a list of relative paths to the databases embedded in the package.
+         * @summary Returns a list of running schedules.
          * @param {string} name Name of package
          * @param {string} [xVersionId] 
          * @param {*} [options] Override http request option.
@@ -1272,7 +1370,7 @@ export const SchedulesApiFactory = function (configuration?: Configuration, base
     return {
         /**
          * 
-         * @summary Returns a list of relative paths to the databases embedded in the package.
+         * @summary Returns a list of running schedules.
          * @param {string} name Name of package
          * @param {string} [xVersionId] 
          * @param {*} [options] Override http request option.
@@ -1293,7 +1391,7 @@ export const SchedulesApiFactory = function (configuration?: Configuration, base
 export class SchedulesApi extends BaseAPI {
     /**
      * 
-     * @summary Returns a list of relative paths to the databases embedded in the package.
+     * @summary Returns a list of running schedules.
      * @param {string} name Name of package
      * @param {string} [xVersionId] 
      * @param {*} [options] Override http request option.
