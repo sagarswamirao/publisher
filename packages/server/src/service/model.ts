@@ -360,7 +360,14 @@ export class Model {
                      if (!connection.postgresConnection) {
                         throw "Invalid connection configuration.  No postgres connection.";
                      }
-                     return connection.postgresConnection;
+                     return {
+                        host: connection.postgresConnection.host,
+                        port: connection.postgresConnection.port,
+                        username: connection.postgresConnection.userName,
+                        password: connection.postgresConnection.password,
+                        databaseName: connection.postgresConnection.databaseName,
+                        connectionString: connection.postgresConnection.connectionString,
+                     };
                   };
                   const postgresConnection = new PostgresConnection(
                      connection.name,
