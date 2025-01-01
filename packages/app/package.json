@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build --mode ${NODE_ENV:=development}",
-    "clean": "rm -rf ./dist && rm -rf ./node_modules && rm -f package-lock.json",
+    "test": "",
     "lint": "eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
     "format": "prettier --write --parser typescript '**/*.{ts,tsx}'",
     "dev": "vite",
@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.9",
-    "typescript": "^5.7.2",
     "vite": "^6.0.1"
   }
 }

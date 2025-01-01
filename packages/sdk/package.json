@@ -8,7 +8,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && vite build --mode ${NODE_ENV:=development}",
-    "clean": "rm -rf ./dist && rm -rf ./node_modules && rm -f package-lock.json",
+    "test": "",
     "lint": "eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
     "format": "prettier --write --parser typescript '**/*.{ts,tsx}'",
     "analyze": "vite-bundle-visualizer",
@@ -51,7 +51,6 @@
     "prettier": "^3.3.3",
     "shiki": "^1.16.3",
     "styled-components": "^6.1.12",
-    "typescript": "^5.7.2",
     "vite-bundle-visualizer": "^1.2.1"
   }
 }
