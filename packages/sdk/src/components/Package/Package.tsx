@@ -1,6 +1,5 @@
-import { Divider, Grid2, Typography } from "@mui/material";
+import { Grid2 } from "@mui/material";
 import { Notebook } from "../Notebook";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import Config from "./Config";
 import Models from "./Models";
 import Databases from "./Databases";
@@ -70,24 +69,14 @@ export default function Package({
             />
          </Grid2>
          <Grid2 size={{ md: 12 }}>
-            <StyledCard variant="outlined">
-               <StyledCardContent>
-                  <Typography variant="overline" fontWeight="bold">
-                     Readme
-                  </Typography>
-                  <Divider />
-               </StyledCardContent>
-               <StyledCardMedia>
-                  <Notebook
-                     server={server}
-                     packageName={packageName}
-                     notebookPath={README_NOTEBOOK}
-                     versionId={versionId}
-                     expandCodeCells={true}
-                     accessToken={accessToken}
-                  />
-               </StyledCardMedia>
-            </StyledCard>
+            <Notebook
+               server={server}
+               packageName={packageName}
+               notebookPath={README_NOTEBOOK}
+               versionId={versionId}
+               expandCodeCells={true}
+               accessToken={accessToken}
+            />
          </Grid2>
       </Grid2>
    );
