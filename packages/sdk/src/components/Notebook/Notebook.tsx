@@ -49,7 +49,7 @@ export default function Notebook({
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
 
-   const packageCodeSnippet = getNotebookCodeSnippet(
+   const notebookCodeSnippet = getNotebookCodeSnippet(
       server,
       packageName,
       notebookPath,
@@ -57,7 +57,7 @@ export default function Notebook({
    );
 
    useEffect(() => {
-      highlight(packageCodeSnippet, "typescript").then((code) => {
+      highlight(notebookCodeSnippet, "typescript").then((code) => {
          setHighlightedEmbedCode(code);
       });
    }, [embeddingExpanded]);
@@ -144,7 +144,7 @@ export default function Notebook({
                      <IconButton
                         sx={{ width: "24px", height: "24px" }}
                         onClick={() => {
-                           navigator.clipboard.writeText(packageCodeSnippet);
+                           navigator.clipboard.writeText(notebookCodeSnippet);
                         }}
                      >
                         <ContentCopyIcon />
