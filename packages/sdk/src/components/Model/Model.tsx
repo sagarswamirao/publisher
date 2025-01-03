@@ -1,9 +1,22 @@
-import { Box, Typography, Stack } from "@mui/material";
-import { Configuration, ModelsApi } from "../../client";
-import axios from "axios";
-import { ModelCell } from "./ModelCell";
-import { StyledCard, StyledCardContent } from "../styles";
+import React, { useEffect } from "react";
+import {
+   Box,
+   Typography,
+   Stack,
+   CardActions,
+   Tooltip,
+   IconButton,
+   Collapse,
+   Divider,
+} from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import axios from "axios";
+import { Configuration, ModelsApi } from "../../client";
+import { ModelCell } from "./ModelCell";
+import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import { highlight } from "../highlighter";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
@@ -32,7 +45,20 @@ export default function Model({
    hideEmbeddingIcons,
    accessToken,
 }: ModelProps) {
-   const { data, isSuccess, isError, error } = useQuery(
+   const [embeddingExpanded, setEmbeddingExpanded] =
+      React.useState<boolean>(false);
+   const [highlightedEmbedCode, setHighlightedEmbedCode] =
+      React.useState<string>();
+
+   const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
+
+   useEffect(() => {
+      highlight(modelCodeSnippet, "typescript").then((code) => {
+         setHighlightedEmbedCode(code);
+      });
+   }, [embeddingExpanded]);
+
+   const { data, isError, isLoading, error } = useQuery(
       {
          queryKey: ["package", server, packageName, versionId],
          queryFn: () =>
@@ -47,14 +73,94 @@ export default function Model({
       queryClient,
    );
 
+   if (isLoading) {
+      return (
+         <Typography sx={{ p: "20px", m: "auto" }}>
+            Fetching Model...
+         </Typography>
+      );
+   }
+
+   if (isError) {
+      return (
+         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+            {`${packageName} > ${modelPath} > ${versionId} - ${error.message}`}
+         </Typography>
+      );
+   }
+
    return (
-      <>
-         {!isSuccess && !isError && (
-            <Typography sx={{ p: "20px", m: "auto" }}>
-               Fetching Model...
-            </Typography>
-         )}
-         {isSuccess && (
+      <StyledCard variant="outlined">
+         <StyledCardContent>
+            <Stack
+               sx={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+               }}
+            >
+               <Typography variant="overline" fontWeight="bold">
+                  Model
+               </Typography>
+               <CardActions
+                  sx={{
+                     padding: "0px 10px 0px 10px",
+                     mb: "auto",
+                     mt: "auto",
+                  }}
+               >
+                  <Tooltip
+                     title={
+                        embeddingExpanded ? "Hide Embedding" : "View Embedding"
+                     }
+                  >
+                     <IconButton
+                        size="small"
+                        onClick={() => {
+                           setEmbeddingExpanded(!embeddingExpanded);
+                        }}
+                     >
+                        <LinkOutlinedIcon />
+                     </IconButton>
+                  </Tooltip>
+               </CardActions>
+            </Stack>
+            <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
+               <Divider />
+               <Stack
+                  sx={{
+                     p: "10px",
+                     borderRadius: 0,
+                     flexDirection: "row",
+                     justifyContent: "space-between",
+                  }}
+               >
+                  <Typography
+                     sx={{
+                        fontSize: "12px",
+                        "& .line": { textWrap: "wrap" },
+                     }}
+                  >
+                     <div
+                        dangerouslySetInnerHTML={{
+                           __html: highlightedEmbedCode,
+                        }}
+                     />
+                  </Typography>
+                  <Tooltip title="Copy Embeddable Code">
+                     <IconButton
+                        sx={{ width: "24px", height: "24px" }}
+                        onClick={() => {
+                           navigator.clipboard.writeText(modelCodeSnippet);
+                        }}
+                     >
+                        <ContentCopyIcon />
+                     </IconButton>
+                  </Tooltip>
+               </Stack>
+            </Collapse>
+            <Divider />
+         </StyledCardContent>
+         <StyledCardMedia>
             <Stack spacing={2} component="section">
                {data.data.sources?.map((source) => (
                   <StyledCard
@@ -89,6 +195,7 @@ export default function Model({
                      <Box height="10px" />
                   </StyledCard>
                ))}
+               <Box height="5px" />
                {data.data.queries?.length > 0 && (
                   <StyledCard
                      variant="outlined"
@@ -119,12 +226,20 @@ export default function Model({
                   </StyledCard>
                )}
             </Stack>
-         )}
-         {isError && (
-            <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-               {`${packageName} > ${modelPath} > ${versionId} - ${error.message}`}
-            </Typography>
-         )}
-      </>
+         </StyledCardMedia>
+      </StyledCard>
    );
+}
+
+function getModelCodeSnippet(
+   server: string,
+   packageName: string,
+   modelPath: string,
+): string {
+   return `<Model
+   server="${server}"
+   packageName="${packageName}"
+   modelPath="${modelPath}"
+   accessToken={accessToken}
+/>`;
 }
