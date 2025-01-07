@@ -196,7 +196,6 @@ export default function Model({
                      <Box height="10px" />
                   </StyledCard>
                ))}
-               <Box height="5px" />
                {data.data.queries?.length > 0 && (
                   <StyledCard
                      variant="outlined"
@@ -228,6 +227,7 @@ export default function Model({
                      <Box height="10px" />
                   </StyledCard>
                )}
+               <Box height="5px" />
             </Stack>
          </StyledCardMedia>
       </StyledCard>
