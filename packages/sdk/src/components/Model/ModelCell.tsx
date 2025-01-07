@@ -35,6 +35,8 @@ interface ModelCellProps {
    expandEmbedding?: boolean;
    hideEmbeddingIcon?: boolean;
    accessToken?: string;
+   noView?: boolean;
+   annotations?: string[];
 }
 
 export function ModelCell({
@@ -48,12 +50,17 @@ export function ModelCell({
    expandEmbedding,
    hideEmbeddingIcon,
    accessToken,
+   noView,
+   annotations,
 }: ModelCellProps) {
    const [resultsExpanded, setResultsExpanded] = React.useState(expandResult);
    const [embeddingExpanded, setEmbeddingExpanded] =
       React.useState(expandEmbedding);
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
+   const [highlightedAnnotations, setHighlightedAnnotations] =
+      React.useState<string>();
+
    useEffect(() => {
       highlight(
          getQueryResultCodeSnippet(
@@ -68,6 +75,14 @@ export function ModelCell({
          setHighlightedEmbedCode(code);
       });
    }, [server, packageName, modelPath, sourceName, queryName]);
+
+   useEffect(() => {
+      if (annotations) {
+         highlight(getAnnotations(annotations), "malloy").then((code) => {
+            setHighlightedAnnotations(code);
+         });
+      }
+   }, []);
 
    return (
       <>
@@ -89,7 +104,7 @@ export function ModelCell({
                <Typography
                   variant="subtitle2"
                   sx={{ mt: "auto", mb: "auto" }}
-               >{`View > ${queryName}`}</Typography>
+               >{`${noView ? "" : "View >"} ${queryName}`}</Typography>
                <CardActions sx={{ padding: "0px" }}>
                   {!hideResultIcon && (
                      <Tooltip
@@ -168,6 +183,34 @@ export function ModelCell({
             </Collapse>
             <Collapse in={resultsExpanded} timeout="auto" unmountOnExit>
                <Divider sx={{ mb: "10px" }} />
+               {highlightedAnnotations && (
+                  <>
+                     <Stack
+                        sx={{
+                           p: "10px",
+                           borderRadius: 0,
+                           flexDirection: "row",
+                           justifyContent: "space-between",
+                        }}
+                     >
+                        <Typography
+                           fontSize="12px"
+                           sx={{
+                              fontSize: "12px",
+                              "& .line": { textWrap: "wrap" },
+                           }}
+                        >
+                           <div
+                              className="content"
+                              dangerouslySetInnerHTML={{
+                                 __html: highlightedAnnotations,
+                              }}
+                           />
+                        </Typography>
+                     </Stack>
+                     <Divider sx={{ mb: "10px" }} />
+                  </>
+               )}
                <CardContent>
                   <QueryResult
                      server={server}
@@ -192,11 +235,21 @@ function getQueryResultCodeSnippet(
    queryName: string,
 ): string {
    return `<QueryResult
-server="${server}"
-accessToken={accessToken}
-packageName="${packageName}"
-modelPath="${modelPath}"
-sourceName="${sourceName}"
-queryName="${queryName}"
+   server="${server}"
+   accessToken={accessToken}
+   packageName="${packageName}"
+   modelPath="${modelPath}"
+   sourceName="${sourceName}"
+   queryName="${queryName}"
 />`;
+}
+
+function getAnnotations(annotations: string[]): string {
+   let res = "";
+
+   for (const an of annotations) {
+      res += an;
+   }
+
+   return res;
 }

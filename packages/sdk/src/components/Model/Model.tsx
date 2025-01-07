@@ -189,6 +189,7 @@ export default function Model({
                                  expandEmbedding={expandEmbeddings}
                                  hideEmbeddingIcon={hideEmbeddingIcons}
                                  accessToken={accessToken}
+                                 annotations={view.annotations}
                               />
                            ))}
                      </Stack>
@@ -219,6 +220,8 @@ export default function Model({
                               expandEmbedding={expandEmbeddings}
                               hideEmbeddingIcon={hideEmbeddingIcons}
                               accessToken={accessToken}
+                              noView={true}
+                              annotations={query.annotations}
                            />
                         ))}
                      </Stack>
