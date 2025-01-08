@@ -144,7 +144,6 @@ export function ModelCell({
                <Divider sx={{ mb: "10px" }} />
                <Stack
                   sx={{
-                     p: "10px",
                      borderRadius: 0,
                      flexDirection: "row",
                      justifyContent: "space-between",
@@ -187,7 +186,6 @@ export function ModelCell({
                   <>
                      <Stack
                         sx={{
-                           p: "10px",
                            borderRadius: 0,
                            flexDirection: "row",
                            justifyContent: "space-between",
