@@ -23,7 +23,7 @@ const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const ROOT = path.join(__dirname, "../../app/dist/");
 const API_PREFIX = "/api/v0";
-const VERSION_ID_HEADER = "X-Version-Id";
+const PROJECT_NAME = "home";
 
 const packageService = new PackageService();
 const aboutController = new AboutController();
@@ -46,7 +46,36 @@ if (!fs.existsSync(getWorkingDirectory())) {
    );
 }
 
-app.get(`${API_PREFIX}/about`, async (_req, res) => {
+const setVersionIdError = (res: express.Response) => {
+   const { json, status } = internalErrorToHttpError(
+      new NotImplementedError("Version IDs not implemented."),
+   );
+   res.status(status).json(json);
+};
+
+const setProjectNameError = (res: express.Response) => {
+   const { json, status } = internalErrorToHttpError(
+      new NotImplementedError("Project names other than 'default' not implemented."),
+   );
+   res.status(status).json(json);
+};
+
+app.get(`${API_PREFIX}/projects`, async (_req, res) => {
+   try {
+      res.status(200).json([{"name": "default"}]);
+   } catch (error) {
+      console.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+
    try {
       res.status(200).json(await aboutController.getAbout());
    } catch (error) {
@@ -56,12 +85,13 @@ app.get(`${API_PREFIX}/about`, async (_req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/packages`, async (req, res) => {
-   if (req.header(VERSION_ID_HEADER)) {
-      const { json, status } = internalErrorToHttpError(
-         new NotImplementedError("Version IDs not implemented."),
-      );
-      res.status(status).json(json);
+app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+   if (req.query.versionId) {
+      setVersionIdError(res);
       return;
    }
 
@@ -74,17 +104,18 @@ app.get(`${API_PREFIX}/packages`, async (req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/packages/:name`, async (req, res) => {
-   if (req.header(VERSION_ID_HEADER)) {
-      const { json, status } = internalErrorToHttpError(
-         new NotImplementedError("Version IDs not implemented."),
-      );
-      res.status(status).json(json);
+app.get(`${API_PREFIX}/projects/:projectName/packages/:packageName`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+   if (req.query.versionId) {   
+      setVersionIdError(res);
       return;
    }
 
    try {
-      res.status(200).json(await packageController.getPackage(req.params.name));
+      res.status(200).json(await packageController.getPackage(req.params.packageName));
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -92,17 +123,18 @@ app.get(`${API_PREFIX}/packages/:name`, async (req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/packages/:name/models`, async (req, res) => {
-   if (req.header(VERSION_ID_HEADER)) {
-      const { json, status } = internalErrorToHttpError(
-         new NotImplementedError("Version IDs not implemented."),
-      );
-      res.status(status).json(json);
+app.get(`${API_PREFIX}/projects/:projectName/packages/:packageName/models`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+   if (req.query.versionId) {
+      setVersionIdError(res);
       return;
    }
 
    try {
-      res.status(200).json(await modelController.listModels(req.params.name));
+      res.status(200).json(await modelController.listModels(req.params.packageName));
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -110,12 +142,13 @@ app.get(`${API_PREFIX}/packages/:name/models`, async (req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/packages/:name/models/*?`, async (req, res) => {
-   if (req.header(VERSION_ID_HEADER)) {
-      const { json, status } = internalErrorToHttpError(
-         new NotImplementedError("Version IDs not implemented."),
-      );
-      res.status(status).json(json);
+app.get(`${API_PREFIX}/projects/:projectName/packages/:packageName/models/*?`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+   if (req.query.versionId) {
+      setVersionIdError(res);
       return;
    }
 
@@ -124,7 +157,7 @@ app.get(`${API_PREFIX}/packages/:name/models/*?`, async (req, res) => {
       const zero = 0 as unknown;
       res.status(200).json(
          await modelController.getModel(
-            req.params.name,
+            req.params.packageName,
             req.params[zero as keyof typeof req.params],
          ),
       );
@@ -135,12 +168,13 @@ app.get(`${API_PREFIX}/packages/:name/models/*?`, async (req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/packages/:id/queryResults/*?`, async (req, res) => {
-   if (req.header(VERSION_ID_HEADER)) {
-      const { json, status } = internalErrorToHttpError(
-         new NotImplementedError("Version IDs not implemented."),
-      );
-      res.status(status).json(json);
+app.get(`${API_PREFIX}/projects/:projectName/packages/:packageName/queryResults/*?`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+   if (req.query.versionId) {
+      setVersionIdError(res);
       return;
    }
 
@@ -149,7 +183,7 @@ app.get(`${API_PREFIX}/packages/:id/queryResults/*?`, async (req, res) => {
       const zero = 0 as unknown;
       res.status(200).json(
          await queryController.getQuery(
-            req.params.id,
+            req.params.packageName,
             req.params[zero as keyof typeof req.params],
             req.query.sourceName as string,
             req.query.queryName as string,
@@ -163,18 +197,19 @@ app.get(`${API_PREFIX}/packages/:id/queryResults/*?`, async (req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/packages/:id/schedules`, async (req, res) => {
-   if (req.header(VERSION_ID_HEADER)) {
-      const { json, status } = internalErrorToHttpError(
-         new NotImplementedError("Version IDs not implemented."),
-      );
-      res.status(status).json(json);
+app.get(`${API_PREFIX}/projects/:projectName/packages/:packageName/schedules`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+   if (req.query.versionId) {
+      setVersionIdError(res);
       return;
    }
 
    try {
       res.status(200).json(
-         await scheduleController.listSchedules(req.params.id),
+         await scheduleController.listSchedules(req.params.packageName),
       );
    } catch (error) {
       console.error(error);
@@ -183,18 +218,19 @@ app.get(`${API_PREFIX}/packages/:id/schedules`, async (req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/packages/:id/databases`, async (req, res) => {
-   if (req.header(VERSION_ID_HEADER)) {
-      const { json, status } = internalErrorToHttpError(
-         new NotImplementedError("Version IDs not implemented."),
-      );
-      res.status(status).json(json);
+app.get(`${API_PREFIX}/projects/:projectName/packages/:packageName/databases`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+   if (req.query.versionId) {
+      setVersionIdError(res);
       return;
    }
 
    try {
       res.status(200).json(
-         await databaseController.listDatabases(req.params.id),
+         await databaseController.listDatabases(req.params.packageName),
       );
    } catch (error) {
       console.error(error);

@@ -11,15 +11,16 @@ const queryClient = new QueryClient();
 
 interface AboutProps {
    server?: string;
+   projectName: string;
    accessToken?: string;
 }
 
-export default function About({ server, accessToken }: AboutProps) {
+export default function About({ server, projectName, accessToken }: AboutProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
-         queryKey: ["about", server],
+         queryKey: ["about", server, projectName],
          queryFn: () =>
-            aboutApi.about({
+            aboutApi.about(projectName, {
                baseURL: server,
                withCredentials: true,
                headers: {

@@ -23,6 +23,7 @@ const queryClient = new QueryClient();
 
 interface NotebookProps {
    server?: string;
+   projectName: string;
    packageName: string;
    notebookPath: string;
    versionId?: string;
@@ -35,6 +36,7 @@ interface NotebookProps {
 
 export default function Notebook({
    server,
+   projectName,
    packageName,
    notebookPath,
    versionId,
@@ -69,9 +71,9 @@ export default function Notebook({
       error,
    } = useQuery(
       {
-         queryKey: [server, packageName, notebookPath, versionId],
+         queryKey: ["notebook", server, projectName, packageName, notebookPath, versionId],
          queryFn: () =>
-            modelsApi.getModel(packageName, notebookPath, versionId, {
+            modelsApi.getModel(projectName, packageName, notebookPath, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
@@ -169,7 +171,8 @@ export default function Notebook({
                         dataStyles={notebook.data.dataStyles}
                         queryResultCodeSnippet={getQueryResultCodeSnippet(
                            server,
-                           packageName,
+                           projectName,
+                        packageName,
                            notebookPath,
                            cell.text,
                         )}
@@ -184,7 +187,7 @@ export default function Notebook({
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
                      {(error.message.includes("404") &&
                         `${notebookPath} does not exist`) ||
-                        `${packageName} > ${notebookPath} > ${versionId} - ${error.message}`}
+                        `${projectName} > ${packageName} > ${notebookPath} > ${versionId} - ${error.message}`}
                   </Typography>
                )}
             </Stack>
@@ -195,6 +198,7 @@ export default function Notebook({
 
 function getQueryResultCodeSnippet(
    server: string,
+   projectName: string,
    packageName: string,
    modelPath: string,
    query: string,
@@ -202,7 +206,8 @@ function getQueryResultCodeSnippet(
    return `<QueryResult
    server="${server}"
    accessToken={accessToken}
-   packageName="${packageName}"
+   projectName="${projectName}"
+packageName="${packageName}"
    modelPath="${modelPath}"
    query="
       ${query}

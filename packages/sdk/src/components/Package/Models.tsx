@@ -13,6 +13,7 @@ const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
 
 interface ModelsProps {
    server?: string;
+   projectName: string;
    packageName: string;
    versionId?: string;
    navigate: (to: string) => void;
@@ -21,6 +22,7 @@ interface ModelsProps {
 
 export default function Models({
    server,
+   projectName,
    packageName,
    versionId,
    navigate,
@@ -28,9 +30,9 @@ export default function Models({
 }: ModelsProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
-         queryKey: ["models", server, packageName, versionId],
+         queryKey: ["models", server, projectName, packageName, versionId],
          queryFn: () =>
-            modelsApi.listModels(packageName, versionId, {
+            modelsApi.listModels(projectName, packageName, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
@@ -72,7 +74,7 @@ export default function Models({
                )}
                {isError && (
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {`${packageName} > ${versionId} - ${error.message}`}
+                     {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
                   </Typography>
                )}
             </Box>

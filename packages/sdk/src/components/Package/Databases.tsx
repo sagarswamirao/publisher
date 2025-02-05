@@ -13,6 +13,7 @@ const DEFAULT_EXPANDED_FOLDERS = ["data/"];
 
 interface DatabaseProps {
    server?: string;
+   projectName: string;
    packageName: string;
    versionId?: string;
    accessToken: string;
@@ -20,15 +21,16 @@ interface DatabaseProps {
 
 export default function Database({
    server,
+   projectName,
    packageName,
    versionId,
    accessToken,
 }: DatabaseProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
-         queryKey: ["databases", server, packageName, versionId],
+         queryKey: ["databases", server, projectName, packageName, versionId],
          queryFn: () =>
-            databasesApi.listDatabases(packageName, versionId, {
+            databasesApi.listDatabases(projectName, packageName, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
@@ -70,7 +72,7 @@ export default function Database({
                )}
                {isError && (
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {`${packageName} > ${versionId} - ${error.message}`}
+                     {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
                   </Typography>
                )}
             </Box>

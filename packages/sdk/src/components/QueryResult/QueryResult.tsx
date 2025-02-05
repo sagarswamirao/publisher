@@ -12,6 +12,7 @@ const queryClient = new QueryClient();
 
 interface QueryResultProps {
    server?: string;
+   projectName: string;
    packageName: string;
    modelPath: string;
    versionId?: string;
@@ -23,6 +24,7 @@ interface QueryResultProps {
 
 export default function QueryResult({
    server,
+   projectName,
    packageName,
    modelPath,
    versionId,
@@ -36,6 +38,7 @@ export default function QueryResult({
          queryKey: [
             "queryResult",
             server,
+            projectName,
             packageName,
             modelPath,
             versionId,
@@ -46,12 +49,13 @@ export default function QueryResult({
          ],
          queryFn: () =>
             queryResultsApi.executeQuery(
+               projectName,
                packageName,
                modelPath,
-               versionId,
                query,
                sourceName,
                queryName,
+               versionId,
                {
                   baseURL: server,
                   withCredentials: !accessToken,
@@ -82,7 +86,7 @@ export default function QueryResult({
          )}
          {isError && (
             <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-               {`${packageName} > ${modelPath} > ${versionId} - ${error.message}`}
+               {`${projectName} > ${packageName} > ${modelPath} > ${versionId} - ${error.message}`}
             </Typography>
          )}
       </>

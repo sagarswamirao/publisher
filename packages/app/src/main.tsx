@@ -8,7 +8,7 @@ import { RouteError } from "./components/RouteError";
 import { PackagePage } from "./components/PackagePage";
 import { ProjectPage } from "./components/ProjectPage";
 import { ModelPage } from "./components/ModelPage";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 
 const server = `${window.location.protocol}//${window.location.host}/api/v0`;
 const router = createBrowserRouter([
@@ -25,14 +25,18 @@ const router = createBrowserRouter([
       children: [
          {
             path: "",
+            element: <Navigate to="/home/" />,
+         },
+         {
+            path: ":projectName",
             element: <ProjectPage server={server} />,
          },
          {
-            path: ":packageName",
+            path: ":projectName/:packageName",
             element: <PackagePage server={server} />,
          },
          {
-            path: ":packageName/*",
+            path: ":projectName/:packageName/*",
             element: <ModelPage server={server} />,
          },
       ],

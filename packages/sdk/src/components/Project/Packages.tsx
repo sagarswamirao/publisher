@@ -10,20 +10,22 @@ const queryClient = new QueryClient();
 
 interface ProjectProps {
    server?: string;
+   projectName: string;
    navigate?: (to: string) => void;
    accessToken?: string;
 }
 
 export default function Project({
    server,
+   projectName,
    navigate,
    accessToken,
 }: ProjectProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
-         queryKey: ["packages", server],
+         queryKey: ["packages", server, projectName],
          queryFn: () =>
-            packagesApi.listPackages({
+            packagesApi.listPackages(projectName, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {

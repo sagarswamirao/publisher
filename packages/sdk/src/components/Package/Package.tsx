@@ -9,6 +9,7 @@ const README_NOTEBOOK = "README.malloynb";
 
 interface PackageProps {
    server?: string;
+   projectName: string;
    packageName: string;
    versionId?: string;
    navigate?: (to: string) => void;
@@ -17,6 +18,7 @@ interface PackageProps {
 
 export default function Package({
    server,
+   projectName,
    packageName,
    versionId,
    navigate,
@@ -38,6 +40,7 @@ export default function Package({
          <Grid2 size={{ md: 12, lg: 4 }}>
             <Config
                server={server}
+               projectName={projectName}
                packageName={packageName}
                versionId={versionId}
                accessToken={accessToken}
@@ -46,6 +49,7 @@ export default function Package({
          <Grid2 size={{ md: 12, lg: 4 }}>
             <Models
                server={server}
+               projectName={projectName}
                packageName={packageName}
                versionId={versionId}
                navigate={navigate}
@@ -55,6 +59,7 @@ export default function Package({
          <Grid2 size={{ md: 12, lg: 4 }}>
             <Databases
                server={server}
+               projectName={projectName}
                packageName={packageName}
                versionId={versionId}
                accessToken={accessToken}
@@ -63,6 +68,7 @@ export default function Package({
          <Grid2 size={{ md: 12 }}>
             <Schedules
                server={server}
+               projectName={projectName}
                packageName={packageName}
                versionId={versionId}
                accessToken={accessToken}
@@ -71,6 +77,7 @@ export default function Package({
          <Grid2 size={{ md: 12 }}>
             <Notebook
                server={server}
+                     projectName={projectName}
                packageName={packageName}
                notebookPath={README_NOTEBOOK}
                versionId={versionId}
