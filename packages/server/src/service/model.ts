@@ -344,7 +344,7 @@ export class Model {
          "duckdb",
          new DuckDBConnection("duckdb", ":memory:", modelDirectory),
       );
-      console.log(JSON.stringify(connectionConfig));
+
       if (connectionConfig) {
          connectionConfig.map(async (connection) => {
             // This case shouldn't happen.  The package validation logic should
