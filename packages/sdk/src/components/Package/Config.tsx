@@ -18,6 +18,7 @@ const queryClient = new QueryClient();
 
 interface PackageProps {
    server?: string;
+   projectName: string;
    packageName: string;
    versionId?: string;
    accessToken?: string;
@@ -25,15 +26,16 @@ interface PackageProps {
 
 export default function Package({
    server,
+   projectName,
    packageName,
    versionId,
    accessToken,
 }: PackageProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
-         queryKey: ["package", server, packageName, versionId],
+         queryKey: ["package", server, projectName, packageName, versionId],
          queryFn: () =>
-            packagesApi.getPackage(packageName, versionId, {
+            packagesApi.getPackage(projectName, packageName, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
@@ -93,7 +95,7 @@ export default function Package({
                      ))}
                   {isError && (
                      <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                        {`${packageName} > ${versionId} - ${error.message}`}
+                        {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
                      </Typography>
                   )}
                </List>

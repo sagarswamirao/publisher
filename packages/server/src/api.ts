@@ -9,31 +9,35 @@ export interface paths {
     /** Returns metadata about the publisher service. */
     get: operations["about"];
   };
-  "/packages": {
+  "/projects": {
+    /** Returns a list of the Projects hosted on this server. */
+    get: operations["list-projects"];
+  };
+  "/projects/{projectName}/packages": {
     /** Returns a list of the Packages hosted on this server. */
     get: operations["list-packages"];
   };
-  "/packages/{name}": {
+  "/projects/{projectName}/packages/{packageName}": {
     /** Returns the package metadata. */
     get: operations["get-package"];
   };
-  "/packages/{name}/models": {
+  "/projects/{projectName}/packages/{packageName}/models": {
     /** Returns a list of relative paths to the models in the package. */
     get: operations["list-models"];
   };
-  "/packages/{name}/models/{path}": {
+  "/projects/{projectName}/packages/{packageName}/models/{path}": {
     /** Returns a Malloy model. */
     get: operations["get-model"];
   };
-  "/packages/{name}/queryResults/{path}": {
+  "/projects/{projectName}/packages/{packageName}/queryResults/{path}": {
     /** Returns a query and its results. */
     get: operations["execute-query"];
   };
-  "/packages/{name}/databases": {
+  "/projects/{projectName}/packages/{packageName}/databases": {
     /** Returns a list of relative paths to the databases embedded in the package. */
     get: operations["list-databases"];
   };
-  "/packages/{name}/schedules": {
+  "/projects/{projectName}/packages/{packageName}/schedules": {
     /** Returns a list of running schedules. */
     get: operations["list-schedules"];
   };
@@ -46,6 +50,10 @@ export interface components {
     About: {
       /** @description Readme markdown. */
       readme?: string;
+    };
+    Project: {
+      /** @description Project name. */
+      name?: string;
     };
     Package: {
       /** @description Package name. */
@@ -251,8 +259,27 @@ export interface operations {
       500: components["responses"]["InternalServerError"];
     };
   };
+  /** Returns a list of the Projects hosted on this server. */
+  "list-projects": {
+    responses: {
+      /** @description A list of the Projects names. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Project"][];
+        };
+      };
+      401: components["responses"]["UnauthorizedError"];
+      500: components["responses"]["InternalServerError"];
+    };
+  };
   /** Returns a list of the Packages hosted on this server. */
   "list-packages": {
+    parameters: {
+      path: {
+        /** @description Name of project */
+        projectName: string;
+      };
+    };
     responses: {
       /** @description A list of the Packages names. */
       200: {
@@ -268,12 +295,15 @@ export interface operations {
   /** Returns the package metadata. */
   "get-package": {
     parameters: {
-      header?: {
-        "X-Version-Id"?: string;
+      query?: {
+        /** @description Version ID */
+        versionId?: string;
       };
       path: {
+        /** @description Name of project */
+        projectName: string;
         /** @description Package name */
-        name: string;
+        packageName: string;
       };
     };
     responses: {
@@ -292,12 +322,15 @@ export interface operations {
   /** Returns a list of relative paths to the models in the package. */
   "list-models": {
     parameters: {
-      header?: {
-        "X-Version-Id"?: string;
+      query?: {
+        /** @description Version ID */
+        versionId?: string;
       };
       path: {
+        /** @description Name of project */
+        projectName: string;
         /** @description Name of package */
-        name: string;
+        packageName: string;
       };
     };
     responses: {
@@ -316,12 +349,15 @@ export interface operations {
   /** Returns a Malloy model. */
   "get-model": {
     parameters: {
-      header?: {
-        "X-Version-Id"?: string;
+      query?: {
+        /** @description Version ID */
+        versionId?: string;
       };
       path: {
+        /** @description Name of project */
+        projectName: string;
         /** @description Name of package. */
-        name: string;
+        packageName: string;
         /** @description Path to model wihin the package. */
         path: string;
       };
@@ -349,13 +385,14 @@ export interface operations {
         sourceName?: string;
         /** @description Name of a query to execute on a source in the model.  Requires the sourceName parameter is set.  If the queryName is paramter is set, the query parameter must be empty. */
         queryName?: string;
-      };
-      header?: {
-        "X-Version-Id"?: string;
+        /** @description Version ID */
+        versionId?: string;
       };
       path: {
+        /** @description Name of project */
+        projectName: string;
         /** @description Name of package */
-        name: string;
+        packageName: string;
         /** @description Path to model within the package. */
         path: string;
       };
@@ -377,12 +414,15 @@ export interface operations {
   /** Returns a list of relative paths to the databases embedded in the package. */
   "list-databases": {
     parameters: {
-      header?: {
-        "X-Version-Id"?: string;
+      query?: {
+        /** @description Version ID */
+        versionId?: string;
       };
       path: {
+        /** @description Name of project */
+        projectName: string;
         /** @description Name of package */
-        name: string;
+        packageName: string;
       };
     };
     responses: {
@@ -401,12 +441,15 @@ export interface operations {
   /** Returns a list of running schedules. */
   "list-schedules": {
     parameters: {
-      header?: {
-        "X-Version-Id"?: string;
+      query?: {
+        /** @description Version ID */
+        versionId?: string;
       };
       path: {
+        /** @description Name of project */
+        projectName: string;
         /** @description Name of package */
-        name: string;
+        packageName: string;
       };
     };
     responses: {

@@ -6,13 +6,20 @@ interface PackagePageProps {
 }
 
 export function PackagePage({ server }: PackagePageProps) {
-   const { packageName } = useParams();
+   const { projectName, packageName } = useParams();
    const navigate = useNavigate();
-   return (
-      <Package
-         server={server}
-         packageName={packageName as string}
-         navigate={navigate}
-      />
-   );
+   if (!projectName) {
+      return (<div><h2>Missing project name</h2></div>);
+   } else if (!packageName) {
+      return (<div><h2>Missing package name</h2></div>);
+   } else {
+      return (
+         <Package
+            server={server}
+            projectName={projectName}
+            packageName={packageName}
+            navigate={navigate}
+         />
+      );
+   }
 }

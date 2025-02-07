@@ -26,8 +26,10 @@ const StyledCard = styled(Card)({
 
 interface ModelCellProps {
    server: string;
+   projectName: string;
    packageName: string;
    modelPath: string;
+   versionId: string;
    sourceName?: string;
    queryName: string;
    expandResult?: boolean;
@@ -41,8 +43,10 @@ interface ModelCellProps {
 
 export function ModelCell({
    server,
+   projectName,
    packageName,
    modelPath,
+   versionId,
    sourceName,
    queryName,
    expandResult,
@@ -65,8 +69,10 @@ export function ModelCell({
       highlight(
          getQueryResultCodeSnippet(
             server,
+            projectName,
             packageName,
             modelPath,
+            versionId,
             sourceName,
             queryName,
          ),
@@ -74,7 +80,7 @@ export function ModelCell({
       ).then((code) => {
          setHighlightedEmbedCode(code);
       });
-   }, [server, packageName, modelPath, sourceName, queryName]);
+   }, [server, projectName, packageName, modelPath, versionId, sourceName, queryName]);
 
    useEffect(() => {
       if (annotations) {
@@ -167,8 +173,10 @@ export function ModelCell({
                            navigator.clipboard.writeText(
                               getQueryResultCodeSnippet(
                                  server,
+                                 projectName,
                                  packageName,
                                  modelPath,
+                                 versionId,
                                  sourceName,
                                  queryName,
                               ),
@@ -212,8 +220,10 @@ export function ModelCell({
                <CardContent>
                   <QueryResult
                      server={server}
+                     projectName={projectName}
                      packageName={packageName}
                      modelPath={modelPath}
+                     versionId={versionId}
                      sourceName={sourceName}
                      queryName={queryName}
                      accessToken={accessToken}
@@ -227,18 +237,22 @@ export function ModelCell({
 
 function getQueryResultCodeSnippet(
    server: string,
+   projectName: string,
    packageName: string,
    modelPath: string,
+   versionId: string,
    sourceName: string,
    queryName: string,
 ): string {
    return `<QueryResult
-   server="${server}"
-   accessToken={accessToken}
-   packageName="${packageName}"
-   modelPath="${modelPath}"
-   sourceName="${sourceName}"
-   queryName="${queryName}"
+server="${server}"
+accessToken={accessToken}
+projectName="${projectName}"
+packageName="${packageName}"
+modelPath="${modelPath}"
+versionId="${versionId}"
+sourceName="${sourceName}"
+queryName="${queryName}"
 />`;
 }
 

@@ -22,6 +22,7 @@ const queryClient = new QueryClient();
 
 interface PackageProps {
    server?: string;
+   projectName: string;
    packageName: string;
    versionId?: string;
    accessToken: string;
@@ -29,15 +30,16 @@ interface PackageProps {
 
 export default function Package({
    server,
+   projectName,
    packageName,
    versionId,
    accessToken,
 }: PackageProps) {
    const { data, isError, isLoading, error } = useQuery(
       {
-         queryKey: ["databases", server, packageName, versionId],
+         queryKey: ["schedules", server, projectName, packageName, versionId],
          queryFn: () =>
-            schedulesApi.listSchedules(packageName, versionId, {
+            schedulesApi.listSchedules(projectName, packageName, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {

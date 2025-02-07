@@ -4,12 +4,14 @@ import Packages from "./Packages";
 
 interface ProjectProps {
    server?: string;
+   projectName: string;
    navigate?: (to: string) => void;
    accessToken?: string;
 }
 
 export default function Project({
    server,
+   projectName,
    navigate,
    accessToken,
 }: ProjectProps) {
@@ -23,12 +25,17 @@ export default function Project({
          <Grid2 size={{ xs: 12, md: 12 }}>
             <Packages
                server={server}
+               projectName={projectName}
                navigate={navigate}
                accessToken={accessToken}
             />
          </Grid2>
          <Grid2 size={{ xs: 12, md: 12 }}>
-            <About server={server} accessToken={accessToken} />
+            <About
+               server={server}
+               projectName={projectName}
+               accessToken={accessToken}
+            />
          </Grid2>
       </Grid2>
    );

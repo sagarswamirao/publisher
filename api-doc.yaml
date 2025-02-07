@@ -10,13 +10,42 @@ servers:
   - url: /api/v0/
 
 paths:
-  /about:
+  /projects:
+    get:
+      tags:
+      - projects
+      operationId: list-projects
+      summary:
+        Returns a list of the Projects hosted on this server.
+      responses:
+        200:
+          description:
+            A list of the Projects names.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /projects/{projectName}/about:
     get:
       tags:
       - about:
       operationId: about
       summary:
         Returns metadata about the publisher service.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description:
@@ -30,13 +59,20 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
 
-  /packages:
+  /projects/{projectName}/packages:
     get:
       tags:
       - packages
       operationId: list-packages
       summary:
         Returns a list of the Packages hosted on this server.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description:
@@ -54,7 +90,7 @@ paths:
         501:
           $ref: "#/components/responses/NotImplementedError"
 
-  /packages/{name}:
+  /projects/{projectName}/packages/{packageName}:
     get:
       tags:
       - packages
@@ -62,14 +98,22 @@ paths:
       summary:
         Returns the package metadata.
       parameters:
-        - in: header
-          name: X-Version-Id
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
           schema:
             type: string
-        - name: name
+        - name: packageName
           in: path
           description: Package name
           required: true
+          schema:
+            type: string
+        - name: versionId
+          in: query
+          description: Version ID
+          required: false
           schema:
             type: string
       responses:
@@ -89,7 +133,7 @@ paths:
         501:
           $ref: "#/components/responses/NotImplementedError"
   
-  /packages/{name}/models:
+  /projects/{projectName}/packages/{packageName}/models:
     get:
       tags:
       - models
@@ -97,14 +141,22 @@ paths:
       summary: 
         Returns a list of relative paths to the models in the package.
       parameters:
-        - in: header
-          name: X-Version-Id
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
           schema:
             type: string
-        - name: name
+        - name: packageName
           in: path
           description: Name of package
           required: true
+          schema:
+            type: string
+        - name: versionId
+          in: query
+          description: Version ID
+          required: false
           schema:
             type: string
       responses:
@@ -126,7 +178,7 @@ paths:
         501:
           $ref: "#/components/responses/NotImplementedError"
 
-  /packages/{name}/models/{path}:
+  /projects/{projectName}/packages/{packageName}/models/{path}:
     get:
       tags:
       - models
@@ -134,11 +186,13 @@ paths:
       summary: 
         Returns a Malloy model.
       parameters:
-        - name: X-Version-Id
-          in: header
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
           schema:
             type: string
-        - name: name
+        - name: packageName
           in: path
           description: Name of package.
           required: true
@@ -148,6 +202,12 @@ paths:
           in: path
           description: Path to model wihin the package.
           required: true
+          schema:
+            type: string
+        - name: versionId
+          in: query
+          description: Version ID
+          required: false
           schema:
             type: string
       responses:
@@ -167,7 +227,7 @@ paths:
         501:
           $ref: "#/components/responses/NotImplementedError"
 
-  /packages/{name}/queryResults/{path}:
+  /projects/{projectName}/packages/{packageName}/queryResults/{path}:
     get:
       tags:
       - queryresults
@@ -175,11 +235,13 @@ paths:
       summary: 
         Returns a query and its results.
       parameters:
-        - name: X-Version-Id
-          in: header
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
           schema:
             type: string
-        - name: name
+        - name: packageName
           in: path
           description: Name of package
           required: true
@@ -210,6 +272,12 @@ paths:
           required: false
           schema:
             type: string
+        - in: query
+          name: versionId
+          description: Version ID
+          required: false
+          schema:
+            type: string
       responses:
         200:
           description:
@@ -229,7 +297,7 @@ paths:
         501:
           $ref: "#/components/responses/NotImplementedError"
 
-  /packages/{name}/databases:
+  /projects/{projectName}/packages/{packageName}/databases:
     get:
       tags:
       - databases
@@ -237,14 +305,22 @@ paths:
       summary: 
         Returns a list of relative paths to the databases embedded in the package.
       parameters:
-        - name: X-Version-Id
-          in: header
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
           schema:
             type: string
-        - name: name
+        - name: packageName
           in: path
           description: Name of package
           required: true
+          schema:
+            type: string
+        - name: versionId
+          in: query
+          description: Version ID
+          required: false
           schema:
             type: string
       responses:
@@ -266,7 +342,7 @@ paths:
         501:
           $ref: "#/components/responses/NotImplementedError"
   
-  /packages/{name}/schedules:
+  /projects/{projectName}/packages/{packageName}/schedules:
     get:
       tags:
       - schedules
@@ -274,14 +350,22 @@ paths:
       summary: 
         Returns a list of running schedules.
       parameters:
-        - name: X-Version-Id
-          in: header
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
           schema:
             type: string
-        - name: name
+        - name: packageName
           in: path
           description: Name of package
           required: true
+          schema:
+            type: string
+        - name: versionId
+          in: query
+          description: Version ID
+          required: false
           schema:
             type: string
       responses:
@@ -344,6 +428,13 @@ components:
           type: string
           description: Readme markdown.
   
+    Project:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Project name.
+    
     Package:
       type: object
       properties:

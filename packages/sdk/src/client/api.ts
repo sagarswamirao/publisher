@@ -367,6 +367,19 @@ export interface PostgresConnection {
     'connectionString'?: string;
 }
 /**
+ * 
+ * @export
+ * @interface Project
+ */
+export interface Project {
+    /**
+     * Project name.
+     * @type {string}
+     * @memberof Project
+     */
+    'name'?: string;
+}
+/**
  * Named model query.
  * @export
  * @interface Query
@@ -556,16 +569,20 @@ export const DatabasesApiAxiosParamCreator = function (configuration?: Configura
         /**
          * 
          * @summary Returns a list of relative paths to the databases embedded in the package.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listDatabases: async (name: string, xVersionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'name' is not null or undefined
-            assertParamExists('listDatabases', 'name', name)
-            const localVarPath = `/packages/{name}/databases`
-                .replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        listDatabases: async (projectName: string, packageName: string, versionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('listDatabases', 'projectName', projectName)
+            // verify required parameter 'packageName' is not null or undefined
+            assertParamExists('listDatabases', 'packageName', packageName)
+            const localVarPath = `/projects/{projectName}/packages/{packageName}/databases`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"packageName"}}`, encodeURIComponent(String(packageName)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -577,8 +594,8 @@ export const DatabasesApiAxiosParamCreator = function (configuration?: Configura
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (xVersionId != null) {
-                localVarHeaderParameter['X-Version-Id'] = String(xVersionId);
+            if (versionId !== undefined) {
+                localVarQueryParameter['versionId'] = versionId;
             }
 
 
@@ -605,13 +622,14 @@ export const DatabasesApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns a list of relative paths to the databases embedded in the package.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listDatabases(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Database>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listDatabases(name, xVersionId, options);
+        async listDatabases(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Database>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listDatabases(projectName, packageName, versionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DatabasesApi.listDatabases']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -629,13 +647,14 @@ export const DatabasesApiFactory = function (configuration?: Configuration, base
         /**
          * 
          * @summary Returns a list of relative paths to the databases embedded in the package.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listDatabases(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Database>> {
-            return localVarFp.listDatabases(name, xVersionId, options).then((request) => request(axios, basePath));
+        listDatabases(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Database>> {
+            return localVarFp.listDatabases(projectName, packageName, versionId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -650,14 +669,15 @@ export class DatabasesApi extends BaseAPI {
     /**
      * 
      * @summary Returns a list of relative paths to the databases embedded in the package.
-     * @param {string} name Name of package
-     * @param {string} [xVersionId] 
+     * @param {string} projectName Name of project
+     * @param {string} packageName Name of package
+     * @param {string} [versionId] Version ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DatabasesApi
      */
-    public listDatabases(name: string, xVersionId?: string, options?: RawAxiosRequestConfig) {
-        return DatabasesApiFp(this.configuration).listDatabases(name, xVersionId, options).then((request) => request(this.axios, this.basePath));
+    public listDatabases(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig) {
+        return DatabasesApiFp(this.configuration).listDatabases(projectName, packageName, versionId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -672,11 +692,15 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary Returns metadata about the publisher service.
+         * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        about: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/about`;
+        about: async (projectName: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('about', 'projectName', projectName)
+            const localVarPath = `/projects/{projectName}/about`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -712,11 +736,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns metadata about the publisher service.
+         * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async about(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<About>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.about(options);
+        async about(projectName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<About>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.about(projectName, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.about']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -734,11 +759,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary Returns metadata about the publisher service.
+         * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        about(options?: RawAxiosRequestConfig): AxiosPromise<About> {
-            return localVarFp.about(options).then((request) => request(axios, basePath));
+        about(projectName: string, options?: RawAxiosRequestConfig): AxiosPromise<About> {
+            return localVarFp.about(projectName, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -753,12 +779,13 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary Returns metadata about the publisher service.
+     * @param {string} projectName Name of project
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public about(options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).about(options).then((request) => request(this.axios, this.basePath));
+    public about(projectName: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).about(projectName, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -773,19 +800,23 @@ export const ModelsApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @summary Returns a Malloy model.
-         * @param {string} name Name of package.
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package.
          * @param {string} path Path to model wihin the package.
-         * @param {string} [xVersionId] 
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModel: async (name: string, path: string, xVersionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'name' is not null or undefined
-            assertParamExists('getModel', 'name', name)
+        getModel: async (projectName: string, packageName: string, path: string, versionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getModel', 'projectName', projectName)
+            // verify required parameter 'packageName' is not null or undefined
+            assertParamExists('getModel', 'packageName', packageName)
             // verify required parameter 'path' is not null or undefined
             assertParamExists('getModel', 'path', path)
-            const localVarPath = `/packages/{name}/models/{path}`
-                .replace(`{${"name"}}`, encodeURIComponent(String(name)))
+            const localVarPath = `/projects/{projectName}/packages/{packageName}/models/{path}`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"packageName"}}`, encodeURIComponent(String(packageName)))
                 .replace(`{${"path"}}`, encodeURIComponent(String(path)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -798,8 +829,8 @@ export const ModelsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (xVersionId != null) {
-                localVarHeaderParameter['X-Version-Id'] = String(xVersionId);
+            if (versionId !== undefined) {
+                localVarQueryParameter['versionId'] = versionId;
             }
 
 
@@ -816,16 +847,20 @@ export const ModelsApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @summary Returns a list of relative paths to the models in the package.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listModels: async (name: string, xVersionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'name' is not null or undefined
-            assertParamExists('listModels', 'name', name)
-            const localVarPath = `/packages/{name}/models`
-                .replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        listModels: async (projectName: string, packageName: string, versionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('listModels', 'projectName', projectName)
+            // verify required parameter 'packageName' is not null or undefined
+            assertParamExists('listModels', 'packageName', packageName)
+            const localVarPath = `/projects/{projectName}/packages/{packageName}/models`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"packageName"}}`, encodeURIComponent(String(packageName)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -837,8 +872,8 @@ export const ModelsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (xVersionId != null) {
-                localVarHeaderParameter['X-Version-Id'] = String(xVersionId);
+            if (versionId !== undefined) {
+                localVarQueryParameter['versionId'] = versionId;
             }
 
 
@@ -865,14 +900,15 @@ export const ModelsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns a Malloy model.
-         * @param {string} name Name of package.
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package.
          * @param {string} path Path to model wihin the package.
-         * @param {string} [xVersionId] 
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getModel(name: string, path: string, xVersionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompiledModel>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getModel(name, path, xVersionId, options);
+        async getModel(projectName: string, packageName: string, path: string, versionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompiledModel>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getModel(projectName, packageName, path, versionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ModelsApi.getModel']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -880,13 +916,14 @@ export const ModelsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns a list of relative paths to the models in the package.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listModels(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Model>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listModels(name, xVersionId, options);
+        async listModels(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Model>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listModels(projectName, packageName, versionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ModelsApi.listModels']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -904,25 +941,27 @@ export const ModelsApiFactory = function (configuration?: Configuration, basePat
         /**
          * 
          * @summary Returns a Malloy model.
-         * @param {string} name Name of package.
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package.
          * @param {string} path Path to model wihin the package.
-         * @param {string} [xVersionId] 
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getModel(name: string, path: string, xVersionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<CompiledModel> {
-            return localVarFp.getModel(name, path, xVersionId, options).then((request) => request(axios, basePath));
+        getModel(projectName: string, packageName: string, path: string, versionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<CompiledModel> {
+            return localVarFp.getModel(projectName, packageName, path, versionId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @summary Returns a list of relative paths to the models in the package.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listModels(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Model>> {
-            return localVarFp.listModels(name, xVersionId, options).then((request) => request(axios, basePath));
+        listModels(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Model>> {
+            return localVarFp.listModels(projectName, packageName, versionId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -937,28 +976,30 @@ export class ModelsApi extends BaseAPI {
     /**
      * 
      * @summary Returns a Malloy model.
-     * @param {string} name Name of package.
+     * @param {string} projectName Name of project
+     * @param {string} packageName Name of package.
      * @param {string} path Path to model wihin the package.
-     * @param {string} [xVersionId] 
+     * @param {string} [versionId] Version ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ModelsApi
      */
-    public getModel(name: string, path: string, xVersionId?: string, options?: RawAxiosRequestConfig) {
-        return ModelsApiFp(this.configuration).getModel(name, path, xVersionId, options).then((request) => request(this.axios, this.basePath));
+    public getModel(projectName: string, packageName: string, path: string, versionId?: string, options?: RawAxiosRequestConfig) {
+        return ModelsApiFp(this.configuration).getModel(projectName, packageName, path, versionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Returns a list of relative paths to the models in the package.
-     * @param {string} name Name of package
-     * @param {string} [xVersionId] 
+     * @param {string} projectName Name of project
+     * @param {string} packageName Name of package
+     * @param {string} [versionId] Version ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ModelsApi
      */
-    public listModels(name: string, xVersionId?: string, options?: RawAxiosRequestConfig) {
-        return ModelsApiFp(this.configuration).listModels(name, xVersionId, options).then((request) => request(this.axios, this.basePath));
+    public listModels(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig) {
+        return ModelsApiFp(this.configuration).listModels(projectName, packageName, versionId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -973,16 +1014,20 @@ export const PackagesApiAxiosParamCreator = function (configuration?: Configurat
         /**
          * 
          * @summary Returns the package metadata.
-         * @param {string} name Package name
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Package name
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPackage: async (name: string, xVersionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'name' is not null or undefined
-            assertParamExists('getPackage', 'name', name)
-            const localVarPath = `/packages/{name}`
-                .replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        getPackage: async (projectName: string, packageName: string, versionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getPackage', 'projectName', projectName)
+            // verify required parameter 'packageName' is not null or undefined
+            assertParamExists('getPackage', 'packageName', packageName)
+            const localVarPath = `/projects/{projectName}/packages/{packageName}`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"packageName"}}`, encodeURIComponent(String(packageName)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -994,8 +1039,8 @@ export const PackagesApiAxiosParamCreator = function (configuration?: Configurat
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (xVersionId != null) {
-                localVarHeaderParameter['X-Version-Id'] = String(xVersionId);
+            if (versionId !== undefined) {
+                localVarQueryParameter['versionId'] = versionId;
             }
 
 
@@ -1012,11 +1057,15 @@ export const PackagesApiAxiosParamCreator = function (configuration?: Configurat
         /**
          * 
          * @summary Returns a list of the Packages hosted on this server.
+         * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listPackages: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/packages`;
+        listPackages: async (projectName: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('listPackages', 'projectName', projectName)
+            const localVarPath = `/projects/{projectName}/packages`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -1052,13 +1101,14 @@ export const PackagesApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns the package metadata.
-         * @param {string} name Package name
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Package name
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPackage(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Package>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPackage(name, xVersionId, options);
+        async getPackage(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Package>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPackage(projectName, packageName, versionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['PackagesApi.getPackage']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1066,11 +1116,12 @@ export const PackagesApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns a list of the Packages hosted on this server.
+         * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listPackages(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Package>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listPackages(options);
+        async listPackages(projectName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Package>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listPackages(projectName, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['PackagesApi.listPackages']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1088,22 +1139,24 @@ export const PackagesApiFactory = function (configuration?: Configuration, baseP
         /**
          * 
          * @summary Returns the package metadata.
-         * @param {string} name Package name
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Package name
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPackage(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Package> {
-            return localVarFp.getPackage(name, xVersionId, options).then((request) => request(axios, basePath));
+        getPackage(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Package> {
+            return localVarFp.getPackage(projectName, packageName, versionId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @summary Returns a list of the Packages hosted on this server.
+         * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listPackages(options?: RawAxiosRequestConfig): AxiosPromise<Array<Package>> {
-            return localVarFp.listPackages(options).then((request) => request(axios, basePath));
+        listPackages(projectName: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Package>> {
+            return localVarFp.listPackages(projectName, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1118,25 +1171,128 @@ export class PackagesApi extends BaseAPI {
     /**
      * 
      * @summary Returns the package metadata.
-     * @param {string} name Package name
-     * @param {string} [xVersionId] 
+     * @param {string} projectName Name of project
+     * @param {string} packageName Package name
+     * @param {string} [versionId] Version ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PackagesApi
      */
-    public getPackage(name: string, xVersionId?: string, options?: RawAxiosRequestConfig) {
-        return PackagesApiFp(this.configuration).getPackage(name, xVersionId, options).then((request) => request(this.axios, this.basePath));
+    public getPackage(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig) {
+        return PackagesApiFp(this.configuration).getPackage(projectName, packageName, versionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Returns a list of the Packages hosted on this server.
+     * @param {string} projectName Name of project
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PackagesApi
      */
-    public listPackages(options?: RawAxiosRequestConfig) {
-        return PackagesApiFp(this.configuration).listPackages(options).then((request) => request(this.axios, this.basePath));
+    public listPackages(projectName: string, options?: RawAxiosRequestConfig) {
+        return PackagesApiFp(this.configuration).listPackages(projectName, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * ProjectsApi - axios parameter creator
+ * @export
+ */
+export const ProjectsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Returns a list of the Projects hosted on this server.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listProjects: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/projects`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * ProjectsApi - functional programming interface
+ * @export
+ */
+export const ProjectsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = ProjectsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Returns a list of the Projects hosted on this server.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listProjects(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Project>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listProjects(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProjectsApi.listProjects']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * ProjectsApi - factory interface
+ * @export
+ */
+export const ProjectsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = ProjectsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Returns a list of the Projects hosted on this server.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listProjects(options?: RawAxiosRequestConfig): AxiosPromise<Array<Project>> {
+            return localVarFp.listProjects(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * ProjectsApi - object-oriented interface
+ * @export
+ * @class ProjectsApi
+ * @extends {BaseAPI}
+ */
+export class ProjectsApi extends BaseAPI {
+    /**
+     * 
+     * @summary Returns a list of the Projects hosted on this server.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProjectsApi
+     */
+    public listProjects(options?: RawAxiosRequestConfig) {
+        return ProjectsApiFp(this.configuration).listProjects(options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1151,22 +1307,26 @@ export const QueryresultsApiAxiosParamCreator = function (configuration?: Config
         /**
          * 
          * @summary Returns a query and its results.
-         * @param {string} name Name of package
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
          * @param {string} path Path to model within the package.
-         * @param {string} [xVersionId] 
          * @param {string} [query] Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty.
          * @param {string} [sourceName] Name of the source in the model to use for queryName, search, and topValue requests.
          * @param {string} [queryName] Name of a query to execute on a source in the model.  Requires the sourceName parameter is set.  If the queryName is paramter is set, the query parameter must be empty.
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        executeQuery: async (name: string, path: string, xVersionId?: string, query?: string, sourceName?: string, queryName?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'name' is not null or undefined
-            assertParamExists('executeQuery', 'name', name)
+        executeQuery: async (projectName: string, packageName: string, path: string, query?: string, sourceName?: string, queryName?: string, versionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('executeQuery', 'projectName', projectName)
+            // verify required parameter 'packageName' is not null or undefined
+            assertParamExists('executeQuery', 'packageName', packageName)
             // verify required parameter 'path' is not null or undefined
             assertParamExists('executeQuery', 'path', path)
-            const localVarPath = `/packages/{name}/queryResults/{path}`
-                .replace(`{${"name"}}`, encodeURIComponent(String(name)))
+            const localVarPath = `/projects/{projectName}/packages/{packageName}/queryResults/{path}`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"packageName"}}`, encodeURIComponent(String(packageName)))
                 .replace(`{${"path"}}`, encodeURIComponent(String(path)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1191,8 +1351,8 @@ export const QueryresultsApiAxiosParamCreator = function (configuration?: Config
                 localVarQueryParameter['queryName'] = queryName;
             }
 
-            if (xVersionId != null) {
-                localVarHeaderParameter['X-Version-Id'] = String(xVersionId);
+            if (versionId !== undefined) {
+                localVarQueryParameter['versionId'] = versionId;
             }
 
 
@@ -1219,17 +1379,18 @@ export const QueryresultsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns a query and its results.
-         * @param {string} name Name of package
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
          * @param {string} path Path to model within the package.
-         * @param {string} [xVersionId] 
          * @param {string} [query] Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty.
          * @param {string} [sourceName] Name of the source in the model to use for queryName, search, and topValue requests.
          * @param {string} [queryName] Name of a query to execute on a source in the model.  Requires the sourceName parameter is set.  If the queryName is paramter is set, the query parameter must be empty.
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async executeQuery(name: string, path: string, xVersionId?: string, query?: string, sourceName?: string, queryName?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<QueryResult>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.executeQuery(name, path, xVersionId, query, sourceName, queryName, options);
+        async executeQuery(projectName: string, packageName: string, path: string, query?: string, sourceName?: string, queryName?: string, versionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<QueryResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.executeQuery(projectName, packageName, path, query, sourceName, queryName, versionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['QueryresultsApi.executeQuery']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1247,17 +1408,18 @@ export const QueryresultsApiFactory = function (configuration?: Configuration, b
         /**
          * 
          * @summary Returns a query and its results.
-         * @param {string} name Name of package
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
          * @param {string} path Path to model within the package.
-         * @param {string} [xVersionId] 
          * @param {string} [query] Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty.
          * @param {string} [sourceName] Name of the source in the model to use for queryName, search, and topValue requests.
          * @param {string} [queryName] Name of a query to execute on a source in the model.  Requires the sourceName parameter is set.  If the queryName is paramter is set, the query parameter must be empty.
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        executeQuery(name: string, path: string, xVersionId?: string, query?: string, sourceName?: string, queryName?: string, options?: RawAxiosRequestConfig): AxiosPromise<QueryResult> {
-            return localVarFp.executeQuery(name, path, xVersionId, query, sourceName, queryName, options).then((request) => request(axios, basePath));
+        executeQuery(projectName: string, packageName: string, path: string, query?: string, sourceName?: string, queryName?: string, versionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<QueryResult> {
+            return localVarFp.executeQuery(projectName, packageName, path, query, sourceName, queryName, versionId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1272,18 +1434,19 @@ export class QueryresultsApi extends BaseAPI {
     /**
      * 
      * @summary Returns a query and its results.
-     * @param {string} name Name of package
+     * @param {string} projectName Name of project
+     * @param {string} packageName Name of package
      * @param {string} path Path to model within the package.
-     * @param {string} [xVersionId] 
      * @param {string} [query] Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty.
      * @param {string} [sourceName] Name of the source in the model to use for queryName, search, and topValue requests.
      * @param {string} [queryName] Name of a query to execute on a source in the model.  Requires the sourceName parameter is set.  If the queryName is paramter is set, the query parameter must be empty.
+     * @param {string} [versionId] Version ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof QueryresultsApi
      */
-    public executeQuery(name: string, path: string, xVersionId?: string, query?: string, sourceName?: string, queryName?: string, options?: RawAxiosRequestConfig) {
-        return QueryresultsApiFp(this.configuration).executeQuery(name, path, xVersionId, query, sourceName, queryName, options).then((request) => request(this.axios, this.basePath));
+    public executeQuery(projectName: string, packageName: string, path: string, query?: string, sourceName?: string, queryName?: string, versionId?: string, options?: RawAxiosRequestConfig) {
+        return QueryresultsApiFp(this.configuration).executeQuery(projectName, packageName, path, query, sourceName, queryName, versionId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1298,16 +1461,20 @@ export const SchedulesApiAxiosParamCreator = function (configuration?: Configura
         /**
          * 
          * @summary Returns a list of running schedules.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listSchedules: async (name: string, xVersionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'name' is not null or undefined
-            assertParamExists('listSchedules', 'name', name)
-            const localVarPath = `/packages/{name}/schedules`
-                .replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        listSchedules: async (projectName: string, packageName: string, versionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('listSchedules', 'projectName', projectName)
+            // verify required parameter 'packageName' is not null or undefined
+            assertParamExists('listSchedules', 'packageName', packageName)
+            const localVarPath = `/projects/{projectName}/packages/{packageName}/schedules`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"packageName"}}`, encodeURIComponent(String(packageName)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -1319,8 +1486,8 @@ export const SchedulesApiAxiosParamCreator = function (configuration?: Configura
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (xVersionId != null) {
-                localVarHeaderParameter['X-Version-Id'] = String(xVersionId);
+            if (versionId !== undefined) {
+                localVarQueryParameter['versionId'] = versionId;
             }
 
 
@@ -1347,13 +1514,14 @@ export const SchedulesApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Returns a list of running schedules.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listSchedules(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Schedule>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listSchedules(name, xVersionId, options);
+        async listSchedules(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Schedule>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listSchedules(projectName, packageName, versionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SchedulesApi.listSchedules']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1371,13 +1539,14 @@ export const SchedulesApiFactory = function (configuration?: Configuration, base
         /**
          * 
          * @summary Returns a list of running schedules.
-         * @param {string} name Name of package
-         * @param {string} [xVersionId] 
+         * @param {string} projectName Name of project
+         * @param {string} packageName Name of package
+         * @param {string} [versionId] Version ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listSchedules(name: string, xVersionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Schedule>> {
-            return localVarFp.listSchedules(name, xVersionId, options).then((request) => request(axios, basePath));
+        listSchedules(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Schedule>> {
+            return localVarFp.listSchedules(projectName, packageName, versionId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1392,14 +1561,15 @@ export class SchedulesApi extends BaseAPI {
     /**
      * 
      * @summary Returns a list of running schedules.
-     * @param {string} name Name of package
-     * @param {string} [xVersionId] 
+     * @param {string} projectName Name of project
+     * @param {string} packageName Name of package
+     * @param {string} [versionId] Version ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SchedulesApi
      */
-    public listSchedules(name: string, xVersionId?: string, options?: RawAxiosRequestConfig) {
-        return SchedulesApiFp(this.configuration).listSchedules(name, xVersionId, options).then((request) => request(this.axios, this.basePath));
+    public listSchedules(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig) {
+        return SchedulesApiFp(this.configuration).listSchedules(projectName, packageName, versionId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

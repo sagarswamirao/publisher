@@ -24,6 +24,7 @@ const queryClient = new QueryClient();
 
 interface ModelProps {
    server?: string;
+   projectName: string;
    packageName: string;
    modelPath: string;
    versionId?: string;
@@ -36,6 +37,7 @@ interface ModelProps {
 
 export default function Model({
    server,
+   projectName,
    packageName,
    modelPath,
    versionId,
@@ -60,9 +62,9 @@ export default function Model({
 
    const { data, isError, isLoading, error } = useQuery(
       {
-         queryKey: ["package", server, packageName, versionId],
+         queryKey: ["package", server, projectName, packageName, modelPath, versionId],
          queryFn: () =>
-            modelsApi.getModel(packageName, modelPath, versionId, {
+            modelsApi.getModel(projectName, packageName, modelPath, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
@@ -180,8 +182,10 @@ export default function Model({
                               <ModelCell
                                  key={`${source.name}-${view.name}`}
                                  server={server}
+                                 projectName={projectName}
                                  packageName={packageName}
                                  modelPath={modelPath}
+                                 versionId={versionId}
                                  sourceName={source.name}
                                  queryName={view.name}
                                  expandResult={expandResults}
@@ -211,8 +215,10 @@ export default function Model({
                            <ModelCell
                               key={query.name}
                               server={server}
+                              projectName={projectName}
                               packageName={packageName}
                               modelPath={modelPath}
+                              versionId={versionId}
                               queryName={query.name}
                               expandResult={expandResults}
                               hideResultIcon={hideResultIcons}
