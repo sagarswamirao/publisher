@@ -60,6 +60,7 @@ npm run start
 * Scheduled report generation
 * Dockerfile
 * In-browser
+* DBT integration
 
 ---
 
