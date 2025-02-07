@@ -61,6 +61,7 @@ npm run start
 * Dockerfile
 * In-browser
 * DBT integration
+* Ariflow integration
 
 ---
 
