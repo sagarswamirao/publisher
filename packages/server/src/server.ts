@@ -62,7 +62,7 @@ const setProjectNameError = (res: express.Response) => {
 
 app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    try {
-      res.status(200).json([{"name": "default"}]);
+      res.status(200).json([{"name": PROJECT_NAME}]);
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
