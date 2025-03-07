@@ -98,7 +98,7 @@ export class TrinoConnectionDto {
 
    @IsOptional()
    @IsString()
-   port?: string;
+   port?: number;
 
    @IsOptional()
    @IsString()
