@@ -200,7 +200,7 @@ export interface components {
     };
     TrinoConnection: {
       server?: string;
-      port?: string;
+      port?: number;
       catalog?: string;
       schema?: string;
       user?: string;

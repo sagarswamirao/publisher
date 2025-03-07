@@ -561,10 +561,10 @@ export interface TrinoConnection {
     'server'?: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof TrinoConnection
      */
-    'port'?: string;
+    'port'?: number;
     /**
      * 
      * @type {string}

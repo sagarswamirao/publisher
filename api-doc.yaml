@@ -688,7 +688,7 @@ components:
         server:
           type: string
         port:
-          type: string
+          type: number
         catalog:
           type: string
         schema:
