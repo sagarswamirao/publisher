@@ -42,7 +42,6 @@ To build and run the package server, first load the malloy-samples.
 ```
 git submodule init
 git submodule update
-
 ```
 
 Then build and run the package server:
