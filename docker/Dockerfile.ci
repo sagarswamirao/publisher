@@ -1,6 +1,6 @@
 FROM oven/bun:latest
 
-RUN apt-get update && apt-get install -y bash libc6-compat
+RUN apt-get update && apt-get install -y bash libc6
 
 
 WORKDIR /usr/src/app
