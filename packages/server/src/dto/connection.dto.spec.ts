@@ -1,4 +1,5 @@
-import { expect } from "chai";
+import { expect, it, describe } from "bun:test";
+
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import {
@@ -7,6 +8,7 @@ import {
    PostgresConnectionDto,
    SnowflakeConnectionDto,
 } from "./connection.dto";
+
 
 describe("dto/connection", () => {
    describe("Connection Validation", () => {
@@ -25,7 +27,7 @@ describe("dto/connection", () => {
          );
 
          const errors = await validate(postgresConnection);
-         expect(errors).to.be.empty;
+         expect(errors).toBe.empty;
       });
 
       it("should return errors for invalid PostgresConnection object", async () => {
@@ -39,8 +41,8 @@ describe("dto/connection", () => {
          );
 
          const errors = await validate(postgresConnection);
-         expect(errors).to.not.be.empty;
-         expect(errors).to.have.lengthOf(2);
+         expect(errors).not.toHaveLength(0);
+         expect(errors).toHaveLength(2);
       });
 
       it("should validate a valid BigqueryConnection object", async () => {
@@ -58,7 +60,7 @@ describe("dto/connection", () => {
          );
 
          const errors = await validate(bigqueryConnection);
-         expect(errors).to.be.empty;
+         expect(errors).toHaveLength(0);
       });
 
       it("should validate a valid SnowflakeConnection object", async () => {
@@ -77,7 +79,7 @@ describe("dto/connection", () => {
          );
 
          const errors = await validate(snowflakeConnection);
-         expect(errors).to.be.empty;
+         expect(errors).toHaveLength(0);
       });
 
       it("should validate a valid Connection object with postgres type", async () => {
@@ -95,7 +97,7 @@ describe("dto/connection", () => {
          const connection = plainToInstance(ConnectionDto, validData);
 
          const errors = await validate(connection);
-         expect(errors).to.be.empty;
+         expect(errors).toHaveLength(0);
       });
 
       it("should return errors for invalid Connection object", async () => {
@@ -108,8 +110,8 @@ describe("dto/connection", () => {
          const connection = plainToInstance(ConnectionDto, invalidData);
 
          const errors = await validate(connection);
-         expect(errors).to.not.be.empty;
-         expect(errors).to.have.length.greaterThan(0);
+         expect(errors).not.toHaveLength(0);
+         expect(errors.length).toBeGreaterThan(0);
       });
    });
 });
