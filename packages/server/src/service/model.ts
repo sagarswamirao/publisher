@@ -331,7 +331,7 @@ export class Model {
          modelDirectory,
          connectionConfig,
       );
-      const runtime = new Runtime(urlReader, connections);
+      const runtime = new Runtime({urlReader, connections});
       const dataStyles = urlReader.getHackyAccumulatedDataStyles();
       return { runtime, modelURL, importBaseURL, dataStyles, modelType };
    }
