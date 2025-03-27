@@ -15,10 +15,6 @@ import cors from "cors";
 import * as fs from "fs";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { PackageService } from "./service/package.service";
-import { instrumentationSdk } from "./instrumentation";
-
-instrumentationSdk.start();
-console.log("Initialized OpenTelemetry SDK");
 
 const app = express();
 app.use(morgan("tiny"));

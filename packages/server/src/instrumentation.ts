@@ -42,11 +42,13 @@ if (otelCollectorUrl) {
     logExporter = new ConsoleLogRecordExporter();
 }
 
-export const instrumentationSdk = new NodeSDK({
+const sdk = new NodeSDK({
+  serviceName: "publisher",
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: "publisher",
     [ATTR_SERVICE_VERSION]: "1.0.0",
   }),
+  autoDetectResources: true,
   traceExporter: traceExporter,
   metricReader: new PeriodicExportingMetricReader({
     exporter: metricExporter,
@@ -56,3 +58,5 @@ export const instrumentationSdk = new NodeSDK({
   logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],
 });
 
+sdk.start();
+console.log("Initialized OpenTelemetry SDK");

@@ -8,8 +8,9 @@
   },
   "scripts": {
     "test": "bun test",
-    "build": "bun build src/server.ts --outdir dist --target bun",
+    "build": "bun build src/server.ts src/instrumentation.ts --outdir dist --target bun",
     "start": "bun run ./dist/server.js",
+    "start:instrumented": "bun run --preload ./dist/instrumentation.js ./dist/server.js",
     "lint": "bunx eslint \"./src/**/*.ts\"",
     "format": "bunx prettier --write '**/*.{ts,tsx}'",
     "generate-api-types": "bunx openapi-typescript ../../api-doc.yaml --output src/api.ts"
