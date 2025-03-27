@@ -32,12 +32,5 @@
     "eslint": "^8.50.0",
     "sinon": "^19.0.4",
     "prettier": "^3.0.0"
-  },
-  "dependencies": {
-    "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.57.0",
-    "@opentelemetry/sdk-metrics": "^2.0.0",
-    "@opentelemetry/sdk-node": "^0.200.0",
-    "@opentelemetry/sdk-trace-node": "^2.0.0"
   }
 }
