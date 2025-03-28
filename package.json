@@ -30,7 +30,6 @@
     "format:app": "cd packages/app && bun run format",
     "format:server": "cd packages/server && bun run format",
     "format": "bun run format:sdk && bun run format:app && bun run format:server"
-
   },
   "devDependencies": {
     "rimraf": "^5.0.1",
