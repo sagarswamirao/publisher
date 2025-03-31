@@ -7,7 +7,7 @@
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "bunx vite build --mode development",
+    "build": "bun run k6-tests/generatePackages.ts && bunx vite build --mode development",
     "test": "",
     "lint": "bunx eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
     "format": "bunx prettier --write --parser typescript '**/*.{ts,tsx}'",
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.13.5",
+    "@types/k6": "^1.0.2",
     "@types/react": "^18.3.1",
     "@typescript-eslint/eslint-plugin": "8.16.0",
     "@typescript-eslint/parser": "8.16.0",
