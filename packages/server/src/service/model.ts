@@ -2,7 +2,7 @@ import { DuckDBConnection } from "@malloydata/db-duckdb";
 import { PostgresConnection } from "@malloydata/db-postgres";
 import { BigQueryConnection } from "@malloydata/db-bigquery";
 import { SnowflakeConnection } from "@malloydata/db-snowflake";
-import { TrinoConnection } from '@malloydata/db-trino';
+import { TrinoConnection } from "@malloydata/db-trino";
 import { v4 as uuidv4 } from "uuid";
 import {
    Connection,
@@ -331,7 +331,7 @@ export class Model {
          modelDirectory,
          connectionConfig,
       );
-      const runtime = new Runtime({urlReader, connections});
+      const runtime = new Runtime({ urlReader, connections });
       const dataStyles = urlReader.getHackyAccumulatedDataStyles();
       return { runtime, modelURL, importBaseURL, dataStyles, modelType };
    }
@@ -345,7 +345,7 @@ export class Model {
          "duckdb",
          new DuckDBConnection("duckdb", ":memory:", modelDirectory),
       );
-      
+
       if (connectionConfig) {
          connectionConfig.map(async (connection) => {
             // This case shouldn't happen.  The package validation logic should
@@ -418,16 +418,18 @@ export class Model {
 
                case "snowflake": {
                   if (!connection.snowflakeConnection) {
-                     throw new Error("Snowflake connection configuration is missing.");
+                     throw new Error(
+                        "Snowflake connection configuration is missing.",
+                     );
                   }
                   if (!connection.snowflakeConnection.account) {
                      throw new Error("Snowflake account is required.");
                   }
-                 
+
                   if (!connection.snowflakeConnection.username) {
                      throw new Error("Snowflake username is required.");
                   }
-                 
+
                   if (!connection.snowflakeConnection.password) {
                      throw new Error("Snowflake password is required.");
                   }
@@ -438,14 +440,16 @@ export class Model {
 
                   const snowflakeConnectionOptions = {
                      connOptions: {
-                        account: connection.snowflakeConnection.account,    
+                        account: connection.snowflakeConnection.account,
                         username: connection.snowflakeConnection.username,
                         password: connection.snowflakeConnection.password,
                         warehouse: connection.snowflakeConnection.warehouse,
                         database: connection.snowflakeConnection.database,
                         schema: connection.snowflakeConnection.schema,
-                        timeout: connection.snowflakeConnection.responseTimeoutMilliseconds,
-                    }
+                        timeout:
+                           connection.snowflakeConnection
+                              .responseTimeoutMilliseconds,
+                     },
                   };
                   const snowflakeConnection = new SnowflakeConnection(
                      connection.name,
@@ -454,10 +458,12 @@ export class Model {
                   connectionMap.set(connection.name, snowflakeConnection);
                   break;
                }
-               
+
                case "trino": {
                   if (!connection.trinoConnection) {
-                     throw new Error("Trino connection configuration is missing.");
+                     throw new Error(
+                        "Trino connection configuration is missing.",
+                     );
                   }
                   const trinoConnectionOptions = {
                      server: connection.trinoConnection.server,
@@ -470,7 +476,7 @@ export class Model {
                   const trinoConnection: Connection = new TrinoConnection(
                      connection.name,
                      {},
-                     trinoConnectionOptions
+                     trinoConnectionOptions,
                   );
                   connectionMap.set(connection.name, trinoConnection);
                   break;
