@@ -10,7 +10,6 @@ import {
    ModelNotFoundError,
 } from "../errors";
 
-
 describe("service/model", () => {
    const packageName = "test-package";
    const mockPackageName = "mockPackage";
@@ -47,7 +46,7 @@ describe("service/model", () => {
 
    describe("instance methods", () => {
       describe("getPath", () => {
-         it("should return the correct modelPath", async() => {
+         it("should return the correct modelPath", async () => {
             const model = new Model(
                packageName,
                mockModelPath,
