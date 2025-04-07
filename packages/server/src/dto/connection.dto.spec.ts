@@ -9,7 +9,6 @@ import {
    SnowflakeConnectionDto,
 } from "./connection.dto";
 
-
 describe("dto/connection", () => {
    describe("Connection Validation", () => {
       it("should validate a valid PostgresConnection object", async () => {

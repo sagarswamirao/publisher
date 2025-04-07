@@ -51,7 +51,7 @@ describe("dto/validate", () => {
             },
          ];
          expect(response.body.errors).toEqual(
-            expect.arrayContaining(expectedErrors)
+            expect.arrayContaining(expectedErrors),
          );
       });
 
@@ -68,8 +68,9 @@ describe("dto/validate", () => {
                constraints: { isString: "description must be a string" },
             },
          ];
-         expect(response.body.errors).toEqual(expect.arrayContaining(expectedErrors));
-
+         expect(response.body.errors).toEqual(
+            expect.arrayContaining(expectedErrors),
+         );
       });
    });
 });
