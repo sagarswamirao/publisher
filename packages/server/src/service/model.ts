@@ -244,7 +244,7 @@ export class Model {
                   try {
                      const rowLimit = cell.runnable
                         ? (await cell.runnable.getPreparedResult())
-                             .resultExplore.limit
+                           .resultExplore.limit
                         : undefined;
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
@@ -331,7 +331,7 @@ export class Model {
          modelDirectory,
          connectionConfig,
       );
-      const runtime = new Runtime({urlReader, connections});
+      const runtime = new Runtime({ urlReader, connections });
       const dataStyles = urlReader.getHackyAccumulatedDataStyles();
       return { runtime, modelURL, importBaseURL, dataStyles, modelType };
    }
@@ -345,7 +345,7 @@ export class Model {
          "duckdb",
          new DuckDBConnection("duckdb", ":memory:", modelDirectory),
       );
-      
+
       if (connectionConfig) {
          connectionConfig.map(async (connection) => {
             // This case shouldn't happen.  The package validation logic should
@@ -385,17 +385,21 @@ export class Model {
                      throw "Invalid connection configuration.  No bigquery connection.";
                   }
 
-                  // BigQuery requires a service account key file.  We persist it to disk
+                  // If a service account key file is provided, we persist it to disk
                   // and pass the path to the BigQueryConnection.
-                  const serviceAccountKeyPath = path.join(
-                     "/tmp",
-                     `${connection.name}-${uuidv4()}-service-account-key.json`,
-                  );
-                  await fs.writeFile(
-                     serviceAccountKeyPath,
-                     connection.bigqueryConnection
-                        .serviceAccountKeyJson as string,
-                  );
+                  let serviceAccountKeyPath = undefined;
+                  if (connection.bigqueryConnection.serviceAccountKeyJson) {
+                     serviceAccountKeyPath = path.join(
+                        "/tmp",
+                        `${connection.name}-${uuidv4()}-service-account-key.json`,
+                     );
+                     await fs.writeFile(
+                        serviceAccountKeyPath,
+                        connection.bigqueryConnection
+                           .serviceAccountKeyJson as string,
+                     );
+                  }
+
                   const bigqueryConnectionOptions = {
                      projectId: connection.bigqueryConnection.defaultProjectId,
                      serviceAccountKeyPath: serviceAccountKeyPath,
@@ -423,11 +427,11 @@ export class Model {
                   if (!connection.snowflakeConnection.account) {
                      throw new Error("Snowflake account is required.");
                   }
-                 
+
                   if (!connection.snowflakeConnection.username) {
                      throw new Error("Snowflake username is required.");
                   }
-                 
+
                   if (!connection.snowflakeConnection.password) {
                      throw new Error("Snowflake password is required.");
                   }
@@ -438,14 +442,14 @@ export class Model {
 
                   const snowflakeConnectionOptions = {
                      connOptions: {
-                        account: connection.snowflakeConnection.account,    
+                        account: connection.snowflakeConnection.account,
                         username: connection.snowflakeConnection.username,
                         password: connection.snowflakeConnection.password,
                         warehouse: connection.snowflakeConnection.warehouse,
                         database: connection.snowflakeConnection.database,
                         schema: connection.snowflakeConnection.schema,
                         timeout: connection.snowflakeConnection.responseTimeoutMilliseconds,
-                    }
+                     }
                   };
                   const snowflakeConnection = new SnowflakeConnection(
                      connection.name,
@@ -454,7 +458,7 @@ export class Model {
                   connectionMap.set(connection.name, snowflakeConnection);
                   break;
                }
-               
+
                case "trino": {
                   if (!connection.trinoConnection) {
                      throw new Error("Trino connection configuration is missing.");
