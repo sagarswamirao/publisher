@@ -244,7 +244,7 @@ export class Model {
                   try {
                      const rowLimit = cell.runnable
                         ? (await cell.runnable.getPreparedResult())
-                             .resultExplore.limit
+                           .resultExplore.limit
                         : undefined;
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
@@ -385,17 +385,21 @@ export class Model {
                      throw "Invalid connection configuration.  No bigquery connection.";
                   }
 
-                  // BigQuery requires a service account key file.  We persist it to disk
+                  // If a service account key file is provided, we persist it to disk
                   // and pass the path to the BigQueryConnection.
-                  const serviceAccountKeyPath = path.join(
-                     "/tmp",
-                     `${connection.name}-${uuidv4()}-service-account-key.json`,
-                  );
-                  await fs.writeFile(
-                     serviceAccountKeyPath,
-                     connection.bigqueryConnection
-                        .serviceAccountKeyJson as string,
-                  );
+                  let serviceAccountKeyPath = undefined;
+                  if (connection.bigqueryConnection.serviceAccountKeyJson) {
+                     serviceAccountKeyPath = path.join(
+                        "/tmp",
+                        `${connection.name}-${uuidv4()}-service-account-key.json`,
+                     );
+                     await fs.writeFile(
+                        serviceAccountKeyPath,
+                        connection.bigqueryConnection
+                           .serviceAccountKeyJson as string,
+                     );
+                  }
+
                   const bigqueryConnectionOptions = {
                      projectId: connection.bigqueryConnection.defaultProjectId,
                      serviceAccountKeyPath: serviceAccountKeyPath,
