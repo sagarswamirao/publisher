@@ -63,7 +63,6 @@ describe("service/package", () => {
                PackageNotFoundError,
                "Package manifest for testPackage does not exist.",
             );
-
          });
          it("should return a Package object if the package exists", async () => {
             sinon.stub(fs, "stat").resolves();
@@ -134,7 +133,9 @@ describe("service/package", () => {
 
       describe("readConnectionConfig", () => {
          it("should return an empty array if the connection manifest does not exist", async () => {
-            await fs.rm(join(testPackageDirectory, "publisher-connections.json"));
+            await fs.rm(
+               join(testPackageDirectory, "publisher-connections.json"),
+            );
 
             sinon.stub(fs, "stat").rejects(new Error("File not found"));
 
@@ -144,7 +145,6 @@ describe("service/package", () => {
          });
 
          it("should return the parsed connection config if it exists", async () => {
-
             sinon.stub(fs, "stat").resolves();
             const config = await Package.readConnectionConfig("testPackage");
 
