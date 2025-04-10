@@ -1,5 +1,4 @@
 import { check, sleep } from "k6";
-import { TestPreset } from "./types";
 import {
    loadPackage,
    queryPackage,
@@ -41,7 +40,7 @@ export const breakpointTest: TestPreset = {
       for (const sampleName of sampleNames) {
          const loadedPackage = loadPackage(sampleName);
          check(queryPackage(loadedPackage.id), {
-            [`package ${sampleName} uploaded`]: (p) => p.status === "serving",
+            [`package ${sampleName} uploaded`]: (p) => p?.status === "serving",
          });
          unloadPackage(sampleName, loadedPackage.id);
          check(queryPackage(loadedPackage.id), {

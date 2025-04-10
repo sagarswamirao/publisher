@@ -1,30 +1,29 @@
 import { check, sleep } from "k6";
-import { TestPreset } from "./types";
 import {
    loadPackage,
-   queryPackage,
    unloadPackage,
+   queryPackage,
    sampleNames,
 } from "./common.ts";
 
 /**
- * Smoke Test - Basic functionality test with minimal load
+ * Soak Test - Testing system under sustained load
  *
- * This test verifies that the system works under minimal load conditions.
- * It uses a single virtual user to ensure basic functionality.
+ * This test verifies system stability and performance over an extended period
+ * to identify memory leaks, resource exhaustion, or degradation over time.
  *
  * Default configuration:
- * - 1 virtual user
- * - 1 minute duration
- * - 95th percentile response time < 500ms
+ * - 10 virtual users
+ * - 1 hour duration
+ * - 95th percentile response time < 1s
  * - Error rate < 1%
  */
-export const smokeTest: TestPreset = {
+export const soakTest: TestPreset = {
    defaultOptions: {
-      vus: 1,
-      duration: "1m",
+      vus: 10,
+      duration: "1h",
       thresholds: {
-         http_req_duration: ["p(95)<500"],
+         http_req_duration: ["p(95)<1000"],
          http_req_failed: ["rate<0.01"],
       },
    },
@@ -32,7 +31,7 @@ export const smokeTest: TestPreset = {
       for (const sampleName of sampleNames) {
          const loadedPackage = loadPackage(sampleName);
          check(queryPackage(loadedPackage.id), {
-            [`package ${sampleName} uploaded`]: (p) => p.status === "serving",
+            [`package ${sampleName} uploaded`]: (p) => p?.status === "serving",
          });
          unloadPackage(sampleName, loadedPackage.id);
          check(queryPackage(loadedPackage.id), {
@@ -43,5 +42,5 @@ export const smokeTest: TestPreset = {
    },
 };
 
-export const options = smokeTest.defaultOptions;
-export default smokeTest.run;
+export const options = soakTest.defaultOptions;
+export default soakTest.run;

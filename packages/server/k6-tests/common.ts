@@ -1,37 +1,41 @@
 import http from "k6/http";
 import { check } from "k6";
-// @ts-ignore
-import { uuidv4 } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
 
 type ApiPackage = {
-   id: string;
-   loadTimestamp: number;
-   status: "loading" | "serving" | "unloading";
+   name: string;
+   description: string;
 };
 
 const samples = {
-   auto_recalls: open("../dist/auto_recalls.zip", "b"),
-   ecommerce: open("../dist/ecommerce.zip", "b"),
-   faa: open("../dist/faa.zip", "b"),
-   ga4: open("../dist/ga4.zip", "b"),
-   imdb: open("../dist/imdb.zip", "b"),
-   names: open("../dist/names.zip", "b"),
-   patterns: open("../dist/patterns.zip", "b"),
-   bq_ga4: open("../dist/bq_ga4.zip", "b"),
-   bq_ga_sessions: open("../dist/bq_ga_sessions.zip", "b"),
-   bq_hackernews: open("../dist/bq_hackernews.zip", "b"),
-   bq_the_met: open("../dist/bq_the_met.zip", "b"),
+   auto_recalls: open("./packages/auto_recalls.zip", "b"),
+   ecommerce: open("./packages/ecommerce.zip", "b"),
+   faa: open("./packages/faa.zip", "b"),
+   ga4: open("./packages/ga4.zip", "b"),
+   imdb: open("./packages/imdb.zip", "b"),
+   names: open("./packages/names.zip", "b"),
+   patterns: open("./packages/patterns.zip", "b"),
+   bq_ga4: open("./packages/bq_ga4.zip", "b"),
+   bq_ga_sessions: open("./packages/bq_ga_sessions.zip", "b"),
+   bq_hackernews: open("./packages/bq_hackernews.zip", "b"),
+   bq_the_met: open("./packages/bq_the_met.zip", "b"),
 };
 type SampleName = keyof typeof samples;
 export const sampleNames = Object.keys(samples) as SampleName[];
 
-const SIDECAR_URL = __ENV.SIDECAR_URL || "http://localhost:4001";
+const PUBLISHER_URL = __ENV.PUBLISHER_URL || "http://localhost:4000";
+
+export const getPackages = () => {
+   const response = http.get(`${PUBLISHER_URL}/api/v0/projects/home/packages`);
+   return response.json() as Array<{
+      name: SampleName;
+      description: string;
+   }>;
+};
 
 export const loadPackage = (packageName: SampleName) => {
    const apiPackage: ApiPackage = {
-      id: uuidv4(),
-      loadTimestamp: new Date().getTime(),
-      status: "loading",
+      name: packageName,
+      description: "",
    };
    const formData = {
       package: JSON.stringify(apiPackage),
@@ -45,7 +49,7 @@ export const loadPackage = (packageName: SampleName) => {
       packageFile: http.file(samples[packageName], packageName + ".zip"),
    };
 
-   const response = http.post(`${SIDECAR_URL}/packages`, formData);
+   const response = http.post(`${PUBLISHER_URL}/packages`, formData);
 
    check(response, {
       [`package ${packageName} can upload`]: (r) => r.status === 200,
@@ -56,20 +60,21 @@ export const loadPackage = (packageName: SampleName) => {
    return apiPackage;
 };
 
-export const queryPackage = (packageId: string) => {
-   const response = http.get(`${SIDECAR_URL}/packages`);
+export const queryPackage = (packageName: SampleName) => {
+   const response = http.get(
+      `${PUBLISHER_URL}/api/v0/projects/home/packages/${packageName}`,
+   );
 
    check(response, {
       "package query successful": (r) => r.status === 200,
       "package query response time < 500ms": (r) => r.timings.duration < 500,
    });
 
-   const packages = response.json() as Array<ApiPackage>;
-   return packages.find((p) => p.id === packageId) ?? null;
+   return response.json() as ApiPackage;
 };
 
 export const unloadPackage = (packageName: SampleName, packageId: string) => {
-   const response = http.del(`${SIDECAR_URL}/packages/${packageId}`);
+   const response = http.del(`${PUBLISHER_URL}/packages/${packageId}`);
 
    check(response, {
       [`package ${packageName} can unload`]: (r) => r.status === 204,
