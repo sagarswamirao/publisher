@@ -85,4 +85,15 @@ k6 run ./k6-tests/smoke-test.ts --env PUBLISHER_URL=http://::1:4000
 
 The K6 tests can be configured to export metrics to OpenTelemetry collectors using the experimental OpenTelemetry output. This allows you to integrate K6 metrics with your observability stack.
 
+```sh
+# Build the publisher server
+bun run build
+# Replace this with an actual OTLP endpoint that you can use
+MY_OTLP_ENDPOINT=http://monitoring.myserver.com:4318
+# Start an instrumented publisher server
+OTEL_EXPORTER_OTLP_ENDPOINT=${MY_OTLP_ENDPOINT} PACKAGE_ROOT=./malloy-samples bun start:instrumented
+# Start an instrumented k6 smoke test
+K6_OTEL_HTTP_EXPORTER_ENDPOINT=${MY_OTLP_ENDPOINT} K6_OTEL_GRPC_EXPORTER_INSECURE=true K6_OTEL_METRIC_PREFIX=k6_ k6 run ./k6-tests/smoke-test.ts --env PUBLISHER_URL=http://::1:4000
+```
+
 For more information on how to configure OpenTelemetry collectors, please refer to the official documentation: [K6 OpenTelemetry Integration](https://grafana.com/docs/k6/latest/results-output/real-time/opentelemetry/)
