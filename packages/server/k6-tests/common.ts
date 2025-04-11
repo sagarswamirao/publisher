@@ -82,3 +82,62 @@ export const unloadPackage = (packageName: SampleName, packageId: string) => {
          r.timings.duration < 500,
    });
 };
+
+export const getModels = (packageName: SampleName) => {
+   const encodedPackageName = encodeURIComponent(packageName);
+   const response = http.get(
+      `${PUBLISHER_URL}/api/v0/projects/home/packages/${encodedPackageName}/models`,
+   );
+   return response.json() as Array<{
+      path: string;
+      type: string;
+   }>;
+};
+
+type ModelData = {
+   type: "notebook" | "source";
+   sources?: Array<{
+      name: string;
+      views: Array<{
+         name: string;
+      }>;
+   }>;
+};
+
+export const getModelData = (packageName: SampleName, modelPath: string) => {
+   const encodedPackageName = encodeURIComponent(packageName);
+   const encodedModelPath = encodeURIComponent(modelPath);
+   const modelResponse = http.get(
+      `${PUBLISHER_URL}/api/v0/projects/home/packages/${encodedPackageName}/models/${encodedModelPath}`,
+   );
+
+   return modelResponse.json() as ModelData;
+};
+
+export function* getViews(modelData: ModelData) {
+   if (modelData.type === "source" && modelData.sources) {
+      for (const source of modelData.sources) {
+         for (const view of source.views) {
+            yield {
+               sourceName: source.name,
+               viewName: view.name,
+            };
+         }
+      }
+   }
+}
+
+export const queryModelView = (
+   packageName: SampleName,
+   modelPath: string,
+   sourceName: string,
+   queryName: string,
+) => {
+   const encodedPackageName = encodeURIComponent(packageName);
+   const encodedModelPath = encodeURIComponent(modelPath);
+   const encodedSourceName = encodeURIComponent(sourceName);
+   const encodedQueryName = encodeURIComponent(queryName);
+   return http.get(
+      `${PUBLISHER_URL}/api/v0/projects/home/packages/${encodedPackageName}/queryResults/${encodedModelPath}?sourceName=${encodedSourceName}&queryName=${encodedQueryName}`,
+   );
+};

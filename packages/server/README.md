@@ -78,7 +78,6 @@ You can run these presets using the K6 testing tool to ensure your system perfor
 
 For example, this command will run a smoke test against your localhost:
 ```sh
-bun run k6-tests/generatePackages.ts
 k6 run ./k6-tests/smoke-test.ts --env PUBLISHER_URL=http://::1:4000
 ```
 

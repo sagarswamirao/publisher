@@ -1,9 +1,10 @@
 import { check, sleep } from "k6";
 import {
-   loadPackage,
-   queryPackage,
-   sampleNames,
-   unloadPackage,
+   getModelData,
+   getModels,
+   getPackages,
+   getViews,
+   queryModelView,
 } from "./common.ts";
 
 /**
@@ -28,16 +29,26 @@ export const loadTest: TestPreset = {
       },
    },
    run: () => {
-      for (const sampleName of sampleNames) {
-         const loadedPackage = loadPackage(sampleName);
-         check(queryPackage(loadedPackage.id), {
-            [`package ${sampleName} uploaded`]: (p) => p?.status === "serving",
-         });
-         unloadPackage(sampleName, loadedPackage.id);
-         check(queryPackage(loadedPackage.id), {
-            [`package ${sampleName} unloaded`]: (p) => p === null,
-         });
-         sleep(0.1);
+      const packages = getPackages();
+      for (const pkg of packages) {
+         for (const model of getModels(pkg.name)) {
+            const modelData = getModelData(pkg.name, model.path);
+            for (const view of getViews(modelData)) {
+               const queryResponse = queryModelView(
+                  pkg.name,
+                  model.path,
+                  view.sourceName,
+                  view.viewName,
+               );
+
+               check(queryResponse, {
+                  "model view query successful": (r) => r.status === 200,
+                  "model view query response time < 500ms": (r) =>
+                     r.timings.duration < 500,
+               });
+               sleep(0.1);
+            }
+         }
       }
    },
 };
