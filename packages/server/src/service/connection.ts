@@ -1,4 +1,3 @@
-import { DuckDBConnection } from "@malloydata/db-duckdb";
 import { PostgresConnection } from "@malloydata/db-postgres";
 import { BigQueryConnection } from "@malloydata/db-bigquery";
 import { SnowflakeConnection } from "@malloydata/db-snowflake";
@@ -6,24 +5,41 @@ import { TrinoConnection } from "@malloydata/db-trino";
 import { v4 as uuidv4 } from "uuid";
 import {
     Connection,
-    FixedConnectionMap,
 } from "@malloydata/malloy";
 import { components } from "../api";
 import path from "path";
 import fs from "fs/promises";
+import { CONNECTIONS_MANIFEST_NAME } from "../utils";
 
 type ApiConnection = components["schemas"]["Connection"];
 
-export async function createConnections(
-    modelDirectory: string,
-    connectionConfig: ApiConnection[] | undefined,
-): Promise<FixedConnectionMap> {
-    const connectionMap = new Map<string, Connection>();
-    connectionMap.set(
-        "duckdb",
-        new DuckDBConnection("duckdb", ":memory:", modelDirectory),
+async function readConnectionConfig(
+    basePath: string,
+): Promise<ApiConnection[]> {
+    const fullPath = path.join(
+        basePath,
+        CONNECTIONS_MANIFEST_NAME,
     );
 
+    try {
+        await fs.stat(fullPath);
+    } catch {
+        // If there's no connection manifest, it's no problem.  Just return an
+        // empty array.
+        return new Array<ApiConnection>();
+    }
+
+    const connectionFileContents = await fs.readFile(fullPath);
+    // TODO: Validate connection manifest.  Define manifest type in public API.
+    return JSON.parse(connectionFileContents.toString()) as ApiConnection[];
+}
+
+export async function createConnections(basePath: string):
+    Promise<{ connections: Map<string, Connection>, apiConnections: ApiConnection[] }> {
+    const connectionMap = new Map<string, Connection>();
+    const connectionConfig = await readConnectionConfig(basePath);
+
+    // TODO: Populate attributes field.
     if (connectionConfig) {
         connectionConfig.map(async (connection) => {
             // This case shouldn't happen.  The package validation logic should
@@ -173,5 +189,5 @@ export async function createConnections(
         });
     }
 
-    return new FixedConnectionMap(connectionMap, "duckdb");
+    return { connections: connectionMap, apiConnections: connectionConfig };
 }

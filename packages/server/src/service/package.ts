@@ -6,18 +6,15 @@ import { PackageNotFoundError } from "../errors";
 import { Model } from "./model";
 import {
    PACKAGE_MANIFEST_NAME,
-   CONNECTIONS_MANIFEST_NAME,
    MODEL_FILE_SUFFIX,
    NOTEBOOK_FILE_SUFFIX,
    getWorkingDirectory,
 } from "../utils";
 import { Scheduler } from "./scheduler";
-import {
-   FixedConnectionMap,
-} from "@malloydata/malloy";
+import { Connection } from "@malloydata/malloy";
 import { createConnections } from "./connection";
+import { DuckDBConnection } from "@malloydata/db-duckdb";
 
-type ApiConnection = components["schemas"]["Connection"];
 type ApiDatabase = components["schemas"]["Database"];
 type ApiModel = components["schemas"]["Model"];
 export type ApiPackage = components["schemas"]["Package"];
@@ -44,22 +41,28 @@ export class Package {
       this.scheduler = scheduler;
    }
 
-   static async create(packageName: string): Promise<Package> {
+   static async create(packageName: string, projectConnections: Map<string, Connection>): Promise<Package> {
       // If package manifest does not exist, we throw a not found error.  If the package
       // manifest exists, we create a Package object and record errors in the object's fields.
       await Package.validatePackageManifestExistsOrThrowError(packageName);
 
       try {
          const packageConfig = await Package.readPackageConfig(packageName);
-         const connectionConfig =
-            await Package.readConnectionConfig(packageName);
-
-         const packagePath = Package.getPackagePath(packageName);
-         const connections = await createConnections(
-            packagePath,
-            connectionConfig,
-         );
          const databases = await Package.readDatabases(packageName);
+         const connections = new Map<string, Connection>(projectConnections);
+
+         // Package connections override project connections.
+         const { connections: packageConnections } = await createConnections(path.join(getWorkingDirectory(), packageName));
+         packageConnections.forEach((connection) => {
+            connections.set(connection.name, connection);
+         });
+
+         // Add a duckdb connection for the package.
+         connections.set(
+            "duckdb",
+            new DuckDBConnection("duckdb", ":memory:", Package.getPackagePath(packageName)),
+         );
+
          const models = await Package.loadModels(packageName, connections);
          const scheduler = Scheduler.create(models);
          return new Package(
@@ -116,7 +119,7 @@ export class Package {
 
    private static async loadModels(
       packageName: string,
-      connections: FixedConnectionMap,
+      connections: Map<string, Connection>,
    ): Promise<Map<string, Model>> {
       const modelPaths = await Package.getModelPaths(packageName);
       const models = await Promise.all(
@@ -180,27 +183,6 @@ export class Package {
       // TODO: Validate package manifest.  Define manifest type in public API.
       const packageManifest = JSON.parse(packageConfigContents.toString());
       return { name: packageName, description: packageManifest.description };
-   }
-
-   public static async readConnectionConfig(
-      packageName: string,
-   ): Promise<ApiConnection[]> {
-      const fullPath = path.join(
-         Package.getPackagePath(packageName),
-         CONNECTIONS_MANIFEST_NAME,
-      );
-
-      try {
-         await fs.stat(fullPath);
-      } catch {
-         // If there's no connection manifest, it's no problem.  Just return an
-         // empty array.
-         return new Array<ApiConnection>();
-      }
-
-      const connectionFileContents = await fs.readFile(fullPath);
-      // TODO: Validate connection manifest.  Define manifest type in public API.
-      return JSON.parse(connectionFileContents.toString()) as ApiConnection[];
    }
 
    private static async readDatabases(

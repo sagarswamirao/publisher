@@ -1,5 +1,6 @@
 
 import {
+   Connection,
    FixedConnectionMap,
    ModelDef,
    ModelMaterializer,
@@ -90,7 +91,7 @@ export class Model {
    public static async create(
       packageName: string,
       modelPath: string,
-      connections: FixedConnectionMap,
+      connections: Map<string, Connection>,
    ): Promise<Model> {
       // getModelRuntime might throw a ModelNotFoundError. It's the callers responsibility
       // to pass a valid model path or handle the error.
@@ -283,7 +284,7 @@ export class Model {
    static async getModelRuntime(
       packageName: string,
       modelPath: string,
-      connections: FixedConnectionMap,
+      connections: Map<string, Connection>,
    ): Promise<{
       runtime: Runtime;
       modelURL: URL;
@@ -319,7 +320,7 @@ export class Model {
       const modelURL = new URL("file://" + fullModelPath);
       const urlReader = new HackyDataStylesAccumulator(URL_READER);
 
-      const runtime = new Runtime({ urlReader, connections });
+      const runtime = new Runtime({ urlReader, connections: new FixedConnectionMap(connections, "duckdb") });
       const dataStyles = urlReader.getHackyAccumulatedDataStyles();
       return { runtime, modelURL, importBaseURL, dataStyles, modelType };
    }

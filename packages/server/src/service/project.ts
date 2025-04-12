@@ -2,11 +2,38 @@ import { getWorkingDirectory } from "../utils";
 import * as fs from "fs/promises";
 import { components } from "../api";
 import { Package } from "./package";
-
+import { Connection } from "@malloydata/malloy";
+import { ApiConnection } from "./model";
 type ApiPackage = components["schemas"]["Package"];
+import { createConnections } from "./connection";
+import { ConnectionNotFoundError } from "../errors";
 
-export class PackageService {
+export class Project {
    private packages: Map<string, Package> = new Map();
+   private connections: Map<string, Connection>;
+   private apiConnections: ApiConnection[];
+
+   constructor(connections: Map<string, Connection>, apiConnections: ApiConnection[]) {
+      this.connections = connections;
+      this.apiConnections = apiConnections;
+   }
+
+   static async create(): Promise<Project> {
+      const { connections, apiConnections } = await createConnections(getWorkingDirectory());
+      return new Project(connections, apiConnections);
+   }
+
+   public async listConnections(): Promise<ApiConnection[]> {
+      return this.apiConnections;
+   }
+
+   public async getConnection(connectionName: string): Promise<ApiConnection> {
+      const connection = this.apiConnections.find((connection) => connection.name === connectionName);
+      if (!connection) {
+         throw new ConnectionNotFoundError(`Connection ${connectionName} not found`);
+      }
+      return connection;
+   }
 
    public async listPackages(): Promise<ApiPackage[]> {
       const workingDirectory = getWorkingDirectory();
@@ -30,7 +57,7 @@ export class PackageService {
    public async getPackage(packageName: string): Promise<Package> {
       let _package = this.packages.get(packageName);
       if (_package === undefined) {
-         _package = await Package.create(packageName);
+         _package = await Package.create(packageName, this.connections);
          this.packages.set(packageName, _package);
       }
       return _package;
