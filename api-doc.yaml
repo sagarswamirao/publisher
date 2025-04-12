@@ -767,15 +767,14 @@ components:
     ConnectionAttributes:
       type: object
       properties:
+        dialectName:
+          type: string
         isPool:
           type: boolean
         canPersist:
           type: boolean
         canStream:
-          type: boolean
-        supportsNesting:
-          type: boolean
-          
+          type: boolean       
 
     Error:
       type: object

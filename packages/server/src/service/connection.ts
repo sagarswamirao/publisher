@@ -12,6 +12,7 @@ import fs from "fs/promises";
 import { CONNECTIONS_MANIFEST_NAME } from "../utils";
 
 type ApiConnection = components["schemas"]["Connection"];
+type ApiConnectionAttributes = components["schemas"]["ConnectionAttributes"];
 
 async function readConnectionConfig(
     basePath: string,
@@ -39,7 +40,6 @@ export async function createConnections(basePath: string):
     const connectionMap = new Map<string, Connection>();
     const connectionConfig = await readConnectionConfig(basePath);
 
-    // TODO: Populate attributes field.
     if (connectionConfig) {
         connectionConfig.map(async (connection) => {
             // This case shouldn't happen.  The package validation logic should
@@ -71,6 +71,7 @@ export async function createConnections(basePath: string):
                         configReader,
                     );
                     connectionMap.set(connection.name, postgresConnection);
+                    connection.attributes = getConnectionAttributes(postgresConnection);
                     break;
                 }
 
@@ -111,6 +112,7 @@ export async function createConnections(basePath: string):
                         bigqueryConnectionOptions,
                     );
                     connectionMap.set(connection.name, bigqueryConnection);
+                    connection.attributes = getConnectionAttributes(bigqueryConnection);
                     break;
                 }
 
@@ -154,6 +156,7 @@ export async function createConnections(basePath: string):
                         snowflakeConnectionOptions,
                     );
                     connectionMap.set(connection.name, snowflakeConnection);
+                    connection.attributes = getConnectionAttributes(snowflakeConnection);
                     break;
                 }
 
@@ -177,6 +180,7 @@ export async function createConnections(basePath: string):
                         trinoConnectionOptions,
                     );
                     connectionMap.set(connection.name, trinoConnection);
+                    connection.attributes = getConnectionAttributes(trinoConnection);
                     break;
                 }
 
@@ -190,4 +194,13 @@ export async function createConnections(basePath: string):
     }
 
     return { connections: connectionMap, apiConnections: connectionConfig };
+}
+
+function getConnectionAttributes(connection: Connection): ApiConnectionAttributes {
+    return {
+        dialectName: connection.dialectName,
+        isPool: connection.isPool(),
+        canPersist: connection.canPersist(),
+        canStream: connection.canStream(),
+    };
 }
