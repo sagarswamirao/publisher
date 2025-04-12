@@ -697,7 +697,19 @@ components:
           $ref: "#/components/schemas/SnowflakeConnection"
         trinoConnection:
           $ref: "#/components/schemas/TrinoConnection"
-        
+
+    ConnectionAttributes:
+      type: object
+      properties:
+        dialectName:
+          type: string
+        isPool:
+          type: boolean
+        canPersist:
+          type: boolean
+        canStream:
+          type: boolean   
+
     PostgresConnection:
       type: object
       properties:
@@ -762,19 +774,7 @@ components:
         user:
           type: string
         password:
-          type: string
-
-    ConnectionAttributes:
-      type: object
-      properties:
-        dialectName:
-          type: string
-        isPool:
-          type: boolean
-        canPersist:
-          type: boolean
-        canStream:
-          type: boolean       
+          type: string    
 
     Error:
       type: object
