@@ -1,14 +1,14 @@
 import { components } from "../api";
-import { PackageService } from "../service/package.service";
+import { Project } from "../service/project";
 import { ModelNotFoundError } from "../errors";
 
 type ApiQuery = components["schemas"]["Query"];
 
 export class QueryController {
-   private packageService: PackageService;
+   private project: Project;
 
-   constructor(packageService: PackageService) {
-      this.packageService = packageService;
+   constructor(project: Project) {
+      this.project = project;
    }
 
    public async getQuery(
@@ -19,7 +19,7 @@ export class QueryController {
       query?: string,
    ): Promise<ApiQuery> {
       const model = (
-         await this.packageService.getPackage(packageName)
+         await this.project.getPackage(packageName)
       ).getModel(modelPath);
       if (!model) {
          throw new ModelNotFoundError(`${modelPath} does not exist`);

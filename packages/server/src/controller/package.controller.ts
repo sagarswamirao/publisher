@@ -1,21 +1,21 @@
 import { components } from "../api";
-import { PackageService } from "../service/package.service";
+import { Project } from "../service/project";
 
 type ApiPackage = components["schemas"]["Package"];
 
 export class PackageController {
-   private packageService: PackageService;
+   private project: Project;
 
-   constructor(packageService: PackageService) {
-      this.packageService = packageService;
+   constructor(project: Project) {
+      this.project = project;
    }
 
    public async listPackages(): Promise<ApiPackage[]> {
-      return await this.packageService.listPackages();
+      return await this.project.listPackages();
    }
 
    public async getPackage(packageName: string): Promise<ApiPackage> {
-      const p = await this.packageService.getPackage(packageName);
+      const p = await this.project.getPackage(packageName);
       return p.getPackageMetadata();
    }
 }

@@ -5,8 +5,12 @@ export function internalErrorToHttpError(error: Error) {
       return httpError(404, error.message);
    } else if (error instanceof ModelNotFoundError) {
       return httpError(404, error.message);
+   } else if (error instanceof ConnectionNotFoundError) {
+      return httpError(404, error.message);
    } else if (error instanceof ModelCompilationError) {
       return httpError(424, error.message);
+   } else if (error instanceof ConnectionError) {
+      return httpError(502, error.message);
    } else {
       return httpError(500, error.message);
    }
@@ -45,6 +49,18 @@ export class PackageNotFoundError extends Error {
 }
 
 export class ModelNotFoundError extends Error {
+   constructor(message: string) {
+      super(message);
+   }
+}
+
+export class ConnectionNotFoundError extends Error {
+   constructor(message: string) {
+      super(message);
+   }
+}
+
+export class ConnectionError extends Error {
    constructor(message: string) {
       super(message);
    }

@@ -7,6 +7,7 @@ import { Model } from "./model";
 import { PackageNotFoundError } from "../errors";
 import { join } from "path";
 import { getWorkingDirectory } from "../utils";
+import { readConnectionConfig } from "./connection";
 
 describe("service/package", () => {
    const testPackageDirectory = join(getWorkingDirectory(), "testPackage");
@@ -19,8 +20,8 @@ describe("service/package", () => {
          "dummy content",
       );
       const content = JSON.stringify([
-         { id: "conn1", type: "database" },
-         { id: "conn2", type: "api" },
+         { name: "conn1", type: "database" },
+         { name: "conn2", type: "api" },
       ]);
       await fs.writeFile(
          join(testPackageDirectory, "publisher-connections.json"),
@@ -59,7 +60,9 @@ describe("service/package", () => {
             await fs.rm(join(testPackageDirectory, "publisher.json"));
             sinon.stub(fs, "stat").rejects(new Error("File not found"));
 
-            await expect(Package.create("testPackage")).rejects.toThrowError(
+            await expect(
+               Package.create("testPackage", new Map()),
+            ).rejects.toThrowError(
                PackageNotFoundError,
                "Package manifest for testPackage does not exist.",
             );
@@ -80,7 +83,10 @@ describe("service/package", () => {
                list: () => [],
             } as any);
 
-            const packageInstance = await Package.create("testPackage");
+            const packageInstance = await Package.create(
+               "testPackage",
+               new Map(),
+            );
 
             expect(packageInstance).toBeInstanceOf(Package);
             expect(packageInstance.getPackageName()).toBe("testPackage");
@@ -139,18 +145,18 @@ describe("service/package", () => {
 
             sinon.stub(fs, "stat").rejects(new Error("File not found"));
 
-            const config = await Package.readConnectionConfig("testPackage");
+            const config = await readConnectionConfig(testPackageDirectory);
             expect(Array.isArray(config)).toBe(true);
             expect(config).toHaveLength(0);
          });
 
          it("should return the parsed connection config if it exists", async () => {
             sinon.stub(fs, "stat").resolves();
-            const config = await Package.readConnectionConfig("testPackage");
+            const config = await readConnectionConfig(testPackageDirectory);
 
             expect(config).toEqual([
-               { id: "conn1", type: "database" },
-               { id: "conn2", type: "api" },
+               { name: "conn1", type: "database" },
+               { name: "conn2", type: "api" },
             ]);
          });
       });

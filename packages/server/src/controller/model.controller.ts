@@ -1,19 +1,19 @@
 import { components } from "../api";
 import { ModelNotFoundError } from "../errors";
-import { PackageService } from "../service/package.service";
+import { Project } from "../service/project";
 
 type ApiModel = components["schemas"]["Model"];
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 
 export class ModelController {
-   private packageService: PackageService;
+   private project: Project;
 
-   constructor(packageService: PackageService) {
-      this.packageService = packageService;
+   constructor(project: Project) {
+      this.project = project;
    }
 
    public async listModels(packageName: string): Promise<ApiModel[]> {
-      const p = await this.packageService.getPackage(packageName);
+      const p = await this.project.getPackage(packageName);
       return p.listModels();
    }
 
@@ -22,7 +22,7 @@ export class ModelController {
       modelPath: string,
    ): Promise<ApiCompiledModel> {
       const model = (
-         await this.packageService.getPackage(packageName)
+         await this.project.getPackage(packageName)
       ).getModel(modelPath);
       if (!model) {
          throw new ModelNotFoundError(`${modelPath} does not exist`);
