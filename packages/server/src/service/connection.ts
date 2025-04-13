@@ -15,7 +15,7 @@ import { BaseConnection } from "@malloydata/malloy/connection";
 type ApiConnection = components["schemas"]["Connection"];
 type ApiConnectionAttributes = components["schemas"]["ConnectionAttributes"];
 
-async function readConnectionConfig(
+export async function readConnectionConfig(
     basePath: string,
 ): Promise<ApiConnection[]> {
     const fullPath = path.join(
@@ -41,7 +41,7 @@ export async function createConnections(basePath: string):
     const connectionMap = new Map<string, BaseConnection>();
     const connectionConfig = await readConnectionConfig(basePath);
 
-    if (connectionConfig) {
+    if (connectionConfig.length > 0) {
         connectionConfig.map(async (connection) => {
             // This case shouldn't happen.  The package validation logic should
             // catch it.
