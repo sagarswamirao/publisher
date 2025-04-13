@@ -10,6 +10,7 @@ import { components } from "../api";
 import path from "path";
 import fs from "fs/promises";
 import { CONNECTIONS_MANIFEST_NAME } from "../utils";
+import { BaseConnection } from "@malloydata/malloy/connection";
 
 type ApiConnection = components["schemas"]["Connection"];
 type ApiConnectionAttributes = components["schemas"]["ConnectionAttributes"];
@@ -36,8 +37,8 @@ async function readConnectionConfig(
 }
 
 export async function createConnections(basePath: string):
-    Promise<{ connections: Map<string, Connection>, apiConnections: ApiConnection[] }> {
-    const connectionMap = new Map<string, Connection>();
+    Promise<{ malloyConnections: Map<string, BaseConnection>, apiConnections: ApiConnection[] }> {
+    const connectionMap = new Map<string, BaseConnection>();
     const connectionConfig = await readConnectionConfig(basePath);
 
     if (connectionConfig) {
@@ -174,7 +175,7 @@ export async function createConnections(basePath: string):
                         user: connection.trinoConnection.user,
                         password: connection.trinoConnection.password,
                     };
-                    const trinoConnection: Connection = new TrinoConnection(
+                    const trinoConnection = new TrinoConnection(
                         connection.name,
                         {},
                         trinoConnectionOptions,
@@ -193,7 +194,7 @@ export async function createConnections(basePath: string):
         });
     }
 
-    return { connections: connectionMap, apiConnections: connectionConfig };
+    return { malloyConnections: connectionMap, apiConnections: connectionConfig };
 }
 
 function getConnectionAttributes(connection: Connection): ApiConnectionAttributes {

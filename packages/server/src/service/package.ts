@@ -52,7 +52,8 @@ export class Package {
          const connections = new Map<string, Connection>(projectConnections);
 
          // Package connections override project connections.
-         const { connections: packageConnections } = await createConnections(path.join(getWorkingDirectory(), packageName));
+         const { malloyConnections: packageConnections } =
+            await createConnections(path.join(getWorkingDirectory(), packageName));
          packageConnections.forEach((connection) => {
             connections.set(connection.name, connection);
          });

@@ -239,6 +239,95 @@ export interface ConnectionAttributes {
     'canStream'?: boolean;
 }
 /**
+ * 
+ * @export
+ * @interface ConnectionQueryData
+ */
+export interface ConnectionQueryData {
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionQueryData
+     */
+    'result'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionQueryData
+     */
+    'error'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ConnectionSqlSource
+ */
+export interface ConnectionSqlSource {
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionSqlSource
+     */
+    'result'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionSqlSource
+     */
+    'error'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ConnectionTableSource
+ */
+export interface ConnectionTableSource {
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionTableSource
+     */
+    'result'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionTableSource
+     */
+    'error'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ConnectionTemporaryTable
+ */
+export interface ConnectionTemporaryTable {
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionTemporaryTable
+     */
+    'result'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionTemporaryTable
+     */
+    'error'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ConnectionTestResult
+ */
+export interface ConnectionTestResult {
+    /**
+     * 
+     * @type {string}
+     * @memberof ConnectionTestResult
+     */
+    'error'?: string;
+}
+/**
  * An in-memory DuckDB database embedded in the package.
  * @export
  * @interface Database
@@ -693,6 +782,226 @@ export const ConnectionsApiAxiosParamCreator = function (configuration?: Configu
         },
         /**
          * 
+         * @summary Returns a query and its results.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {string} [_options] Options
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getQuerydata: async (projectName: string, connectionName: string, sqlStatement?: string, _options?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getQuerydata', 'projectName', projectName)
+            // verify required parameter 'connectionName' is not null or undefined
+            assertParamExists('getQuerydata', 'connectionName', connectionName)
+            const localVarPath = `/projects/{projectName}/connections/{connectionName}/queryData`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"connectionName"}}`, encodeURIComponent(String(connectionName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (sqlStatement !== undefined) {
+                localVarQueryParameter['sqlStatement'] = sqlStatement;
+            }
+
+            if (_options !== undefined) {
+                localVarQueryParameter['options'] = _options;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Returns a SQL source.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSqlsource: async (projectName: string, connectionName: string, sqlStatement?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getSqlsource', 'projectName', projectName)
+            // verify required parameter 'connectionName' is not null or undefined
+            assertParamExists('getSqlsource', 'connectionName', connectionName)
+            const localVarPath = `/projects/{projectName}/connections/{connectionName}/sqlSource`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"connectionName"}}`, encodeURIComponent(String(connectionName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (sqlStatement !== undefined) {
+                localVarQueryParameter['sqlStatement'] = sqlStatement;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Returns a table source.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [tableKey] Table key
+         * @param {string} [tablePath] Table path
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTablesource: async (projectName: string, connectionName: string, tableKey?: string, tablePath?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getTablesource', 'projectName', projectName)
+            // verify required parameter 'connectionName' is not null or undefined
+            assertParamExists('getTablesource', 'connectionName', connectionName)
+            const localVarPath = `/projects/{projectName}/connections/{connectionName}/tableSource`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"connectionName"}}`, encodeURIComponent(String(connectionName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (tableKey !== undefined) {
+                localVarQueryParameter['tableKey'] = tableKey;
+            }
+
+            if (tablePath !== undefined) {
+                localVarQueryParameter['tablePath'] = tablePath;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Returns a temporary table.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTemporarytable: async (projectName: string, connectionName: string, sqlStatement?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getTemporarytable', 'projectName', projectName)
+            // verify required parameter 'connectionName' is not null or undefined
+            assertParamExists('getTemporarytable', 'connectionName', connectionName)
+            const localVarPath = `/projects/{projectName}/connections/{connectionName}/temporaryTable`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"connectionName"}}`, encodeURIComponent(String(connectionName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (sqlStatement !== undefined) {
+                localVarQueryParameter['sqlStatement'] = sqlStatement;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Returns a test.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTest: async (projectName: string, connectionName: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getTest', 'projectName', projectName)
+            // verify required parameter 'connectionName' is not null or undefined
+            assertParamExists('getTest', 'connectionName', connectionName)
+            const localVarPath = `/projects/{projectName}/connections/{connectionName}/test`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)))
+                .replace(`{${"connectionName"}}`, encodeURIComponent(String(connectionName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Returns a list of the connections in the project.
          * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
@@ -751,6 +1060,82 @@ export const ConnectionsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Returns a query and its results.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {string} [_options] Options
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getQuerydata(projectName: string, connectionName: string, sqlStatement?: string, _options?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConnectionQueryData>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getQuerydata(projectName, connectionName, sqlStatement, _options, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ConnectionsApi.getQuerydata']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Returns a SQL source.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSqlsource(projectName: string, connectionName: string, sqlStatement?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConnectionSqlSource>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSqlsource(projectName, connectionName, sqlStatement, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ConnectionsApi.getSqlsource']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Returns a table source.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [tableKey] Table key
+         * @param {string} [tablePath] Table path
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTablesource(projectName: string, connectionName: string, tableKey?: string, tablePath?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConnectionTableSource>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTablesource(projectName, connectionName, tableKey, tablePath, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ConnectionsApi.getTablesource']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Returns a temporary table.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTemporarytable(projectName: string, connectionName: string, sqlStatement?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConnectionTemporaryTable>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTemporarytable(projectName, connectionName, sqlStatement, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ConnectionsApi.getTemporarytable']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Returns a test.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTest(projectName: string, connectionName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTest(projectName, connectionName, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ConnectionsApi.getTest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Returns a list of the connections in the project.
          * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
@@ -785,6 +1170,67 @@ export const ConnectionsApiFactory = function (configuration?: Configuration, ba
         },
         /**
          * 
+         * @summary Returns a query and its results.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {string} [_options] Options
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getQuerydata(projectName: string, connectionName: string, sqlStatement?: string, _options?: string, options?: RawAxiosRequestConfig): AxiosPromise<ConnectionQueryData> {
+            return localVarFp.getQuerydata(projectName, connectionName, sqlStatement, _options, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Returns a SQL source.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSqlsource(projectName: string, connectionName: string, sqlStatement?: string, options?: RawAxiosRequestConfig): AxiosPromise<ConnectionSqlSource> {
+            return localVarFp.getSqlsource(projectName, connectionName, sqlStatement, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Returns a table source.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [tableKey] Table key
+         * @param {string} [tablePath] Table path
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTablesource(projectName: string, connectionName: string, tableKey?: string, tablePath?: string, options?: RawAxiosRequestConfig): AxiosPromise<ConnectionTableSource> {
+            return localVarFp.getTablesource(projectName, connectionName, tableKey, tablePath, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Returns a temporary table.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {string} [sqlStatement] SQL statement
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTemporarytable(projectName: string, connectionName: string, sqlStatement?: string, options?: RawAxiosRequestConfig): AxiosPromise<ConnectionTemporaryTable> {
+            return localVarFp.getTemporarytable(projectName, connectionName, sqlStatement, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Returns a test.
+         * @param {string} projectName Name of project
+         * @param {string} connectionName Name of connection
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTest(projectName: string, connectionName: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getTest(projectName, connectionName, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Returns a list of the connections in the project.
          * @param {string} projectName Name of project
          * @param {*} [options] Override http request option.
@@ -814,6 +1260,77 @@ export class ConnectionsApi extends BaseAPI {
      */
     public getConnection(projectName: string, connectionName: string, options?: RawAxiosRequestConfig) {
         return ConnectionsApiFp(this.configuration).getConnection(projectName, connectionName, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns a query and its results.
+     * @param {string} projectName Name of project
+     * @param {string} connectionName Name of connection
+     * @param {string} [sqlStatement] SQL statement
+     * @param {string} [_options] Options
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConnectionsApi
+     */
+    public getQuerydata(projectName: string, connectionName: string, sqlStatement?: string, _options?: string, options?: RawAxiosRequestConfig) {
+        return ConnectionsApiFp(this.configuration).getQuerydata(projectName, connectionName, sqlStatement, _options, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns a SQL source.
+     * @param {string} projectName Name of project
+     * @param {string} connectionName Name of connection
+     * @param {string} [sqlStatement] SQL statement
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConnectionsApi
+     */
+    public getSqlsource(projectName: string, connectionName: string, sqlStatement?: string, options?: RawAxiosRequestConfig) {
+        return ConnectionsApiFp(this.configuration).getSqlsource(projectName, connectionName, sqlStatement, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns a table source.
+     * @param {string} projectName Name of project
+     * @param {string} connectionName Name of connection
+     * @param {string} [tableKey] Table key
+     * @param {string} [tablePath] Table path
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConnectionsApi
+     */
+    public getTablesource(projectName: string, connectionName: string, tableKey?: string, tablePath?: string, options?: RawAxiosRequestConfig) {
+        return ConnectionsApiFp(this.configuration).getTablesource(projectName, connectionName, tableKey, tablePath, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns a temporary table.
+     * @param {string} projectName Name of project
+     * @param {string} connectionName Name of connection
+     * @param {string} [sqlStatement] SQL statement
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConnectionsApi
+     */
+    public getTemporarytable(projectName: string, connectionName: string, sqlStatement?: string, options?: RawAxiosRequestConfig) {
+        return ConnectionsApiFp(this.configuration).getTemporarytable(projectName, connectionName, sqlStatement, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns a test.
+     * @param {string} projectName Name of project
+     * @param {string} connectionName Name of connection
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ConnectionsApi
+     */
+    public getTest(projectName: string, connectionName: string, options?: RawAxiosRequestConfig) {
+        return ConnectionsApiFp(this.configuration).getTest(projectName, connectionName, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

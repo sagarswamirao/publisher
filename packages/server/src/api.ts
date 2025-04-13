@@ -21,6 +21,26 @@ export interface paths {
     /** Returns a connection. */
     get: operations["get-connection"];
   };
+  "/projects/{projectName}/connections/{connectionName}/test": {
+    /** Returns a test. */
+    get: operations["get-test"];
+  };
+  "/projects/{projectName}/connections/{connectionName}/sqlSource": {
+    /** Returns a SQL source. */
+    get: operations["get-sqlsource"];
+  };
+  "/projects/{projectName}/connections/{connectionName}/tableSource": {
+    /** Returns a table source. */
+    get: operations["get-tablesource"];
+  };
+  "/projects/{projectName}/connections/{connectionName}/queryData": {
+    /** Returns a query and its results. */
+    get: operations["get-querydata"];
+  };
+  "/projects/{projectName}/connections/{connectionName}/temporaryTable": {
+    /** Returns a temporary table. */
+    get: operations["get-temporarytable"];
+  };
   "/projects/{projectName}/packages": {
     /** Returns a list of the Packages hosted on this server. */
     get: operations["list-packages"];
@@ -182,6 +202,12 @@ export interface components {
       snowflakeConnection?: components["schemas"]["SnowflakeConnection"];
       trinoConnection?: components["schemas"]["TrinoConnection"];
     };
+    ConnectionAttributes: {
+      dialectName?: string;
+      isPool?: boolean;
+      canPersist?: boolean;
+      canStream?: boolean;
+    };
     PostgresConnection: {
       host?: string;
       port?: number;
@@ -215,11 +241,24 @@ export interface components {
       user?: string;
       password?: string;
     };
-    ConnectionAttributes: {
-      dialectName?: string;
-      isPool?: boolean;
-      canPersist?: boolean;
-      canStream?: boolean;
+    ConnectionTestResult: {
+      error?: string;
+    };
+    ConnectionSqlSource: {
+      result?: string;
+      error?: string;
+    };
+    ConnectionTableSource: {
+      result?: string;
+      error?: string;
+    };
+    ConnectionQueryData: {
+      result?: string;
+      error?: string;
+    };
+    ConnectionTemporaryTable: {
+      result?: string;
+      error?: string;
     };
     Error: {
       code?: string;
@@ -336,6 +375,134 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["Connection"];
+        };
+      };
+      401: components["responses"]["UnauthorizedError"];
+      404: components["responses"]["NotFoundError"];
+      500: components["responses"]["InternalServerError"];
+    };
+  };
+  /** Returns a test. */
+  "get-test": {
+    parameters: {
+      path: {
+        /** @description Name of project */
+        projectName: string;
+        /** @description Name of connection */
+        connectionName: string;
+      };
+    };
+    responses: {
+      /** @description Test passed. */
+      200: {
+        content: never;
+      };
+      401: components["responses"]["UnauthorizedError"];
+      404: components["responses"]["NotFoundError"];
+      500: components["responses"]["InternalServerError"];
+    };
+  };
+  /** Returns a SQL source. */
+  "get-sqlsource": {
+    parameters: {
+      query?: {
+        /** @description SQL statement */
+        sqlStatement?: string;
+      };
+      path: {
+        /** @description Name of project */
+        projectName: string;
+        /** @description Name of connection */
+        connectionName: string;
+      };
+    };
+    responses: {
+      /** @description A SQL source. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ConnectionSqlSource"];
+        };
+      };
+      401: components["responses"]["UnauthorizedError"];
+      404: components["responses"]["NotFoundError"];
+      500: components["responses"]["InternalServerError"];
+    };
+  };
+  /** Returns a table source. */
+  "get-tablesource": {
+    parameters: {
+      query?: {
+        /** @description Table key */
+        tableKey?: string;
+        /** @description Table path */
+        tablePath?: string;
+      };
+      path: {
+        /** @description Name of project */
+        projectName: string;
+        /** @description Name of connection */
+        connectionName: string;
+      };
+    };
+    responses: {
+      /** @description A table source. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ConnectionTableSource"];
+        };
+      };
+      401: components["responses"]["UnauthorizedError"];
+      404: components["responses"]["NotFoundError"];
+      500: components["responses"]["InternalServerError"];
+    };
+  };
+  /** Returns a query and its results. */
+  "get-querydata": {
+    parameters: {
+      query?: {
+        /** @description SQL statement */
+        sqlStatement?: string;
+        /** @description Options */
+        options?: string;
+      };
+      path: {
+        /** @description Name of project */
+        projectName: string;
+        /** @description Name of connection */
+        connectionName: string;
+      };
+    };
+    responses: {
+      /** @description A query and its results. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ConnectionQueryData"];
+        };
+      };
+      401: components["responses"]["UnauthorizedError"];
+      404: components["responses"]["NotFoundError"];
+      500: components["responses"]["InternalServerError"];
+    };
+  };
+  /** Returns a temporary table. */
+  "get-temporarytable": {
+    parameters: {
+      query?: {
+        /** @description SQL statement */
+        sqlStatement?: string;
+      };
+      path: {
+        /** @description Name of project */
+        projectName: string;
+        /** @description Name of connection */
+        connectionName: string;
+      };
+    };
+    responses: {
+      /** @description A temporary table. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ConnectionTemporaryTable"];
         };
       };
       401: components["responses"]["UnauthorizedError"];

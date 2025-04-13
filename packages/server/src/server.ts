@@ -15,7 +15,7 @@ import cors from "cors";
 import * as fs from "fs";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { Project } from "./service/project";
-
+import { ConnectionController } from "./controller/connection.controller";
 const app = express();
 app.use(morgan("tiny"));
 
@@ -27,6 +27,7 @@ const PROJECT_NAME = "home";
 
 const project = await Project.create();
 const aboutController = new AboutController();
+const connectionController = new ConnectionController(project);
 const modelController = new ModelController(project);
 const packageController = new PackageController(project);
 const databaseController = new DatabaseController(project);
@@ -94,7 +95,7 @@ app.get(`${API_PREFIX}/projects/:projectName/connections`, async (req, res) => {
    }
 
    try {
-      res.status(200).json(await project.listConnections());
+      res.status(200).json(await connectionController.listConnections());
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -109,7 +110,59 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName`, async
    }
 
    try {
-      res.status(200).json(await project.getConnection(req.params.connectionName));
+      res.status(200).json(await connectionController.getConnection(req.params.connectionName));
+   } catch (error) {
+      console.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/test`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+
+   try {
+      res.status(200).json(await connectionController.testConnection(req.params.connectionName));
+   } catch (error) {
+      console.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/sqlSource`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+
+   try {
+      res.status(200).json(await connectionController.getConnectionSqlSource(
+         req.params.connectionName,
+         req.query.sqlStatement as string,
+      ));
+   } catch (error) {
+      console.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/tableSource`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+
+   try {
+      res.status(200).json(await connectionController.getConnectionTableSource(
+         req.params.connectionName,
+         req.query.tableKey as string,
+         req.query.tablePath as string,
+      ));
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
