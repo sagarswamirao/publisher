@@ -170,6 +170,43 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/tableSo
    }
 });
 
+app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/queryData`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+
+   try {
+      res.status(200).json(await connectionController.getConnectionQueryData(
+         req.params.connectionName,
+         req.query.sqlStatement as string,
+         req.query.options as string,
+      ));
+   } catch (error) {
+      console.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/temporaryTable`, async (req, res) => {
+   if (req.params.projectName !== PROJECT_NAME) {
+      setProjectNameError(res);
+      return;
+   }
+
+   try {
+      res.status(200).json(await connectionController.getConnectionTemporaryTable(
+         req.params.connectionName,
+         req.query.sqlStatement as string,
+      ));
+   } catch (error) {
+      console.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
 app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
    if (req.params.projectName !== PROJECT_NAME) {
       setProjectNameError(res);
