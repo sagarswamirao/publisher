@@ -59,6 +59,278 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
 
+  /projects/{projectName}/connections:
+    get:
+      tags:
+      - connections
+      operationId: list-connections
+      summary:
+        Returns a list of the connections in the project.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A list of the connections in the project.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Connection"
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  
+  /projects/{projectName}/connections/{connectionName}:
+    get:
+      tags:
+      - connections
+      operationId: get-connection
+      summary:
+        Returns a connection.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A connection.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Connection"
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /projects/{projectName}/connections/{connectionName}/test:
+    get:
+      tags:
+      - connections
+      operationId: get-test
+      summary:
+        Returns a test.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            Test passed.
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /projects/{projectName}/connections/{connectionName}/sqlSource:
+    get:
+      tags:
+      - connections
+      operationId: get-sqlsource
+      summary:
+        Returns a SQL source.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+        - name: sqlStatement
+          in: query
+          description: SQL statement
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A SQL source.
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  
+  /projects/{projectName}/connections/{connectionName}/tableSource:
+    get:
+      tags:
+      - connections
+      operationId: get-tablesource
+      summary:
+        Returns a table source.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+        - name: tableKey
+          in: query
+          description: Table key
+          required: false
+          schema:
+            type: string
+        - name: tablePath
+          in: query
+          description: Table path
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A table source.
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /projects/{projectName}/connections/{connectionName}/queryData:
+    get:
+      tags:
+      - connections
+      operationId: get-querydata
+      summary:
+        Returns a query and its results.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+        - name: sqlStatement
+          in: query
+          description: SQL statement
+          required: false
+          schema:
+            type: string
+        - name: options
+          in: query
+          description: Options
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A query and its results.
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /projects/{projectName}/connections/{connectionName}/temporaryTable:
+    get:
+      tags:
+      - connections
+      operationId: get-temporarytable
+      summary:
+        Returns a temporary table.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+        - name: sqlStatement
+          in: query
+          description: SQL statement
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A temporary table.
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+          
+
   /projects/{projectName}/packages:
     get:
       tags:
@@ -132,7 +404,7 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         501:
           $ref: "#/components/responses/NotImplementedError"
-  
+
   /projects/{projectName}/packages/{packageName}/models:
     get:
       tags:
@@ -623,6 +895,8 @@ components:
         type:
           type: string
           enum: [postgres, bigquery, snowflake, trino]
+        attributes:
+          $ref: "#/components/schemas/ConnectionAttributes"
         postgresConnection:
           $ref: "#/components/schemas/PostgresConnection"
         bigqueryConnection:
@@ -631,7 +905,19 @@ components:
           $ref: "#/components/schemas/SnowflakeConnection"
         trinoConnection:
           $ref: "#/components/schemas/TrinoConnection"
-  
+
+    ConnectionAttributes:
+      type: object
+      properties:
+        dialectName:
+          type: string
+        isPool:
+          type: boolean
+        canPersist:
+          type: boolean
+        canStream:
+          type: boolean   
+
     PostgresConnection:
       type: object
       properties:
@@ -696,7 +982,7 @@ components:
         user:
           type: string
         password:
-          type: string
+          type: string    
 
     Error:
       type: object
