@@ -46,9 +46,9 @@ git submodule update
 
 Then build and run the package server:
 ```
-npm install
-npm run build
-npm run start
+bun install
+bun run build
+bun run start
 ```
 
 Running the BigQuery malloy-samples requires GCP application default credentials.

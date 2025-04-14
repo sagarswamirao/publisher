@@ -11,6 +11,7 @@ import {
    getWorkingDirectory,
 } from "../utils";
 import { Scheduler } from "./scheduler";
+import { metrics } from "@opentelemetry/api";
 import { Connection } from "@malloydata/malloy";
 import { createConnections } from "./connection";
 import { DuckDBConnection } from "@malloydata/db-duckdb";
@@ -26,6 +27,14 @@ export class Package {
    private databases: ApiDatabase[];
    private models: Map<string, Model> = new Map();
    private scheduler: Scheduler | undefined;
+   private static meter = metrics.getMeter("publisher");
+   private static packageLoadHistogram = this.meter.createHistogram(
+      "malloy_package_load_duration",
+      {
+         description: "Time taken to load a Malloy package",
+         unit: "ms",
+      },
+   );
 
    constructor(
       packageName: string,
@@ -41,7 +50,11 @@ export class Package {
       this.scheduler = scheduler;
    }
 
-   static async create(packageName: string, projectConnections: Map<string, Connection>): Promise<Package> {
+   static async create(
+      packageName: string,
+      projectConnections: Map<string, Connection>,
+   ): Promise<Package> {
+      const startTime = performance.now();
       // If package manifest does not exist, we throw a not found error.  If the package
       // manifest exists, we create a Package object and record errors in the object's fields.
       await Package.validatePackageManifestExistsOrThrowError(packageName);
@@ -53,7 +66,9 @@ export class Package {
 
          // Package connections override project connections.
          const { malloyConnections: packageConnections } =
-            await createConnections(path.join(getWorkingDirectory(), packageName));
+            await createConnections(
+               path.join(getWorkingDirectory(), packageName),
+            );
          packageConnections.forEach((connection) => {
             connections.set(connection.name, connection);
          });
@@ -61,11 +76,21 @@ export class Package {
          // Add a duckdb connection for the package.
          connections.set(
             "duckdb",
-            new DuckDBConnection("duckdb", ":memory:", Package.getPackagePath(packageName)),
+            new DuckDBConnection(
+               "duckdb",
+               ":memory:",
+               Package.getPackagePath(packageName),
+            ),
          );
 
          const models = await Package.loadModels(packageName, connections);
          const scheduler = Scheduler.create(models);
+         const endTime = performance.now();
+         const executionTime = endTime - startTime;
+         this.packageLoadHistogram.record(executionTime, {
+            malloy_package_name: packageName,
+            status: "success",
+         });
          return new Package(
             packageName,
             packageConfig,
@@ -75,6 +100,12 @@ export class Package {
          );
       } catch (error) {
          console.error(error);
+         const endTime = performance.now();
+         const executionTime = endTime - startTime;
+         this.packageLoadHistogram.record(executionTime, {
+            malloy_package_name: packageName,
+            status: "error",
+         });
          return new Package(
             packageName,
             {
@@ -223,7 +254,10 @@ export class Package {
       packageName: string,
       databasePath: string,
    ): Promise<number> {
-      const fullPath = path.join(Package.getPackagePath(packageName), databasePath);
+      const fullPath = path.join(
+         Package.getPackagePath(packageName),
+         databasePath,
+      );
       return (await fs.stat(fullPath)).size;
    }
 }
