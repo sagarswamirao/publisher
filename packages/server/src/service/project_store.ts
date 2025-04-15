@@ -6,43 +6,40 @@ type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
     private serverRootPath: string;
-    private singleProjectName?: string;
     private projects: Map<string, Project> = new Map();
 
-    constructor(serverRootPath: string, singleProjectName?: string) {
+    constructor(serverRootPath: string) {
         this.serverRootPath = serverRootPath;
-        this.singleProjectName = singleProjectName;
     }
 
     public async listProjects(): Promise<ApiProject[]> {
-        if (this.singleProjectName) {
-            return [{ name: this.singleProjectName }];
-        }
-
-        const files = await fs.readdir(this.serverRootPath, { withFileTypes: true });
-        const packageMetadata = await Promise.all(
-            files
-                .filter((file) => file.isDirectory())
-                .map(async (directory) => {
-                    try {
-                        return await this.getProject(directory.name);
-                    } catch {
-                        return undefined;
-                    }
-                }),
-        );
-        // Get rid of undefined entries (i.e, directories without malloy-package.json files).
-        return packageMetadata.filter((metadata) => metadata) as ApiProject[];
+        const projectManifestJson = await ProjectStore.getProjectManifest(this.serverRootPath);
+        return Object.keys(projectManifestJson.projects).map((projectName) => ({
+            name: projectName,
+        })) as ApiProject[];
     }
 
     public async getProject(projectName: string): Promise<Project> {
         let project = this.projects.get(projectName);
         if (project === undefined) {
+            const projectManifestJson = await ProjectStore.getProjectManifest(this.serverRootPath);
+
+            if (projectManifestJson.projects[projectName] === undefined) {
+                throw new Error(`Project ${projectName} not found in publisher.config.json`);
+            }
+
             project = await Project.create(
-                path.join(this.serverRootPath, projectName),
+                path.join(this.serverRootPath, projectManifestJson.projects[projectName]),
             );
             this.projects.set(projectName, project);
         }
         return project;
+    }
+
+    private static async getProjectManifest(
+        serverRootPath: string,
+    ): Promise<{ projects: { [key: string]: string } }> {
+        const projectManifest = await fs.readFile(path.join(serverRootPath, "publisher.config.json"), "utf8");
+        return JSON.parse(projectManifest);
     }
 }

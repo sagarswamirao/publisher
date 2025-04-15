@@ -9,9 +9,7 @@ import { ModelController } from "./controller/model.controller";
 import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
-import { getWorkingDirectory } from "./utils";
 import cors from "cors";
-import * as fs from "fs";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { ConnectionController } from "./controller/connection.controller";
 import { ProjectStore } from "./service/project_store";
@@ -22,8 +20,12 @@ const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const ROOT = path.join(__dirname, "../../app/dist/");
 const API_PREFIX = "/api/v0";
+const SERVER_ROOT = path.resolve(
+   process.cwd(),
+   process.env.PACKAGE_ROOT || ".",
+);
 
-const projectStore = new ProjectStore(getWorkingDirectory(), "malloy-samples");
+const projectStore = new ProjectStore(SERVER_ROOT);
 const connectionController = new ConnectionController(projectStore);
 const modelController = new ModelController(projectStore);
 const packageController = new PackageController(projectStore);
@@ -36,13 +38,6 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use("/", express.static(path.join(ROOT, "/")));
 app.use("/api-doc.html", express.static(path.join(ROOT, "/api-doc.html")));
-
-// Validate working directory exists or throw an error and fail to startup.
-if (!fs.existsSync(getWorkingDirectory())) {
-   throw Error(
-      "Server working directory does not exist: " + getWorkingDirectory(),
-   );
-}
 
 const setVersionIdError = (res: express.Response) => {
    const { json, status } = internalErrorToHttpError(

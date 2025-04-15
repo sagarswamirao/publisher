@@ -6,11 +6,10 @@ import { Scheduler } from "./scheduler";
 import { Model } from "./model";
 import { PackageNotFoundError } from "../errors";
 import { join } from "path";
-import { getWorkingDirectory } from "../utils";
 import { readConnectionConfig } from "./connection";
 
 describe("service/package", () => {
-   const testPackageDirectory = join(getWorkingDirectory(), "testPackage");
+   const testPackageDirectory = "testPackage";
 
    beforeEach(async () => {
       await fs.mkdir(testPackageDirectory, { recursive: true });
@@ -24,7 +23,7 @@ describe("service/package", () => {
          { name: "conn2", type: "api" },
       ]);
       await fs.writeFile(
-         join(testPackageDirectory, "publisher-connections.json"),
+         join(testPackageDirectory, "publisher.connections.json"),
          content,
       );
       const publisherContent = JSON.stringify({ description: "Test package" });
@@ -141,7 +140,7 @@ describe("service/package", () => {
       describe("readConnectionConfig", () => {
          it("should return an empty array if the connection manifest does not exist", async () => {
             await fs.rm(
-               join(testPackageDirectory, "publisher-connections.json"),
+               join(testPackageDirectory, "publisher.connections.json"),
             );
 
             sinon.stub(fs, "stat").rejects(new Error("File not found"));

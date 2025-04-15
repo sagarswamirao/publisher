@@ -54,6 +54,7 @@ export class Package {
       packagePath: string,
       projectConnections: Map<string, Connection>,
    ): Promise<Package> {
+      const startTime = performance.now();
       // If package manifest does not exist, we throw a not found error.  If the package
       // manifest exists, we create a Package object and record errors in the object's fields.
       await Package.validatePackageManifestExistsOrThrowError(packagePath);
