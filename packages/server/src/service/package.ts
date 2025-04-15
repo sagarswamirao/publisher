@@ -8,7 +8,6 @@ import {
    PACKAGE_MANIFEST_NAME,
    MODEL_FILE_SUFFIX,
    NOTEBOOK_FILE_SUFFIX,
-   getWorkingDirectory,
 } from "../utils";
 import { Scheduler } from "./scheduler";
 import { Connection } from "@malloydata/malloy";
@@ -41,19 +40,23 @@ export class Package {
       this.scheduler = scheduler;
    }
 
-   static async create(packageName: string, projectConnections: Map<string, Connection>): Promise<Package> {
+   static async create(
+      packageName: string,
+      packagePath: string,
+      projectConnections: Map<string, Connection>,
+   ): Promise<Package> {
       // If package manifest does not exist, we throw a not found error.  If the package
       // manifest exists, we create a Package object and record errors in the object's fields.
-      await Package.validatePackageManifestExistsOrThrowError(packageName);
+      await Package.validatePackageManifestExistsOrThrowError(packagePath);
 
       try {
-         const packageConfig = await Package.readPackageConfig(packageName);
-         const databases = await Package.readDatabases(packageName);
+         const packageConfig = await Package.readPackageConfig(packagePath);
+         const databases = await Package.readDatabases(packagePath);
          const connections = new Map<string, Connection>(projectConnections);
 
          // Package connections override project connections.
          const { malloyConnections: packageConnections } =
-            await createConnections(path.join(getWorkingDirectory(), packageName));
+            await createConnections(packagePath);
          packageConnections.forEach((connection) => {
             connections.set(connection.name, connection);
          });
@@ -61,10 +64,10 @@ export class Package {
          // Add a duckdb connection for the package.
          connections.set(
             "duckdb",
-            new DuckDBConnection("duckdb", ":memory:", Package.getPackagePath(packageName)),
+            new DuckDBConnection("duckdb", ":memory:", packagePath),
          );
 
-         const models = await Package.loadModels(packageName, connections);
+         const models = await Package.loadModels(packageName, packagePath, connections);
          const scheduler = Scheduler.create(models);
          return new Package(
             packageName,
@@ -120,30 +123,26 @@ export class Package {
 
    private static async loadModels(
       packageName: string,
+      packagePath: string,
       connections: Map<string, Connection>,
    ): Promise<Map<string, Model>> {
-      const modelPaths = await Package.getModelPaths(packageName);
+      const modelPaths = await Package.getModelPaths(packagePath);
       const models = await Promise.all(
          modelPaths.map((modelPath) =>
-            Model.create(packageName, modelPath, connections),
+            Model.create(packageName, packagePath, modelPath, connections),
          ),
       );
       return new Map(models.map((model) => [model.getPath(), model]));
    }
 
-   private static getPackagePath(packageName: string): string {
-      return path.join(getWorkingDirectory(), packageName);
-   }
-
-   private static async getModelPaths(packageName: string): Promise<string[]> {
-      const packagePath = Package.getPackagePath(packageName);
+   private static async getModelPaths(packagePath: string): Promise<string[]> {
       let files = undefined;
       try {
          files = await recursive(packagePath);
       } catch (error) {
          console.log(error);
          throw new PackageNotFoundError(
-            `Package config for ${packageName} does not exist.`,
+            `Package config for ${packagePath} does not exist.`,
          );
       }
       return files
@@ -158,42 +157,42 @@ export class Package {
    }
 
    private static async validatePackageManifestExistsOrThrowError(
-      packageName: string,
+      packagePath: string,
    ) {
       const packageConfigPath = path.join(
-         Package.getPackagePath(packageName),
+         packagePath,
          PACKAGE_MANIFEST_NAME,
       );
       try {
          await fs.stat(packageConfigPath);
       } catch {
          throw new PackageNotFoundError(
-            `Package manifest for ${packageName} does not exist.`,
+            `Package manifest for ${packagePath} does not exist.`,
          );
       }
    }
 
    private static async readPackageConfig(
-      packageName: string,
+      packagePath: string,
    ): Promise<ApiPackage> {
       const packageConfigPath = path.join(
-         Package.getPackagePath(packageName),
+         packagePath,
          PACKAGE_MANIFEST_NAME,
       );
       const packageConfigContents = await fs.readFile(packageConfigPath);
       // TODO: Validate package manifest.  Define manifest type in public API.
       const packageManifest = JSON.parse(packageConfigContents.toString());
-      return { name: packageName, description: packageManifest.description };
+      return { name: packageManifest.name, description: packageManifest.description };
    }
 
    private static async readDatabases(
-      packageName: string,
+      packagePath: string,
    ): Promise<ApiDatabase[]> {
       return await Promise.all(
-         (await Package.getDatabasePaths(packageName)).map(
+         (await Package.getDatabasePaths(packagePath)).map(
             async (databasePath) => {
                const databaseSize: number = await Package.getDatabaseSize(
-                  packageName,
+                  packagePath,
                   databasePath,
                );
                return {
@@ -207,9 +206,8 @@ export class Package {
    }
 
    private static async getDatabasePaths(
-      packageName: string,
+      packagePath: string,
    ): Promise<string[]> {
-      const packagePath = Package.getPackagePath(packageName);
       let files = undefined;
       files = await recursive(packagePath);
       return files
@@ -220,10 +218,10 @@ export class Package {
    }
 
    private static async getDatabaseSize(
-      packageName: string,
+      packagePath: string,
       databasePath: string,
    ): Promise<number> {
-      const fullPath = path.join(Package.getPackagePath(packageName), databasePath);
+      const fullPath = path.join(packagePath, databasePath);
       return (await fs.stat(fullPath)).size;
    }
 }

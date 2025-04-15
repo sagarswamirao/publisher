@@ -1,4 +1,3 @@
-import { getWorkingDirectory } from "../utils";
 import * as fs from "fs/promises";
 import { components } from "../api";
 import { Package } from "./package";
@@ -7,20 +6,36 @@ type ApiPackage = components["schemas"]["Package"];
 import { createConnections } from "./connection";
 import { ConnectionNotFoundError } from "../errors";
 import { BaseConnection } from "@malloydata/malloy/connection";
+import * as path from "path";
+
+type ApiAbout = components["schemas"]["About"];
 
 export class Project {
    private packages: Map<string, Package> = new Map();
    private malloyConnections: Map<string, BaseConnection>;
    private apiConnections: ApiConnection[];
-
-   constructor(malloyConnections: Map<string, BaseConnection>, apiConnections: ApiConnection[]) {
+   private projectPath: string;
+   constructor(projectPath: string, malloyConnections: Map<string, BaseConnection>, apiConnections: ApiConnection[]) {
+      this.projectPath = projectPath;
       this.malloyConnections = malloyConnections;
       this.apiConnections = apiConnections;
    }
 
-   static async create(): Promise<Project> {
-      const { malloyConnections, apiConnections } = await createConnections(getWorkingDirectory());
-      return new Project(malloyConnections, apiConnections);
+   static async create(projectPath: string): Promise<Project> {
+      const { malloyConnections, apiConnections } = await createConnections(projectPath);
+      return new Project(projectPath, malloyConnections, apiConnections);
+   }
+
+   public async getAbout(): Promise<ApiAbout> {
+      try {
+         const readme = (
+            await fs.readFile(path.join(this.projectPath, "README.md"))
+         ).toString();
+         return { readme: readme };
+      } catch (error) {
+         console.log(error);
+         return { readme: "" };
+      }
    }
 
    public listApiConnections(): ApiConnection[] {
@@ -44,8 +59,7 @@ export class Project {
    }
 
    public async listPackages(): Promise<ApiPackage[]> {
-      const workingDirectory = getWorkingDirectory();
-      const files = await fs.readdir(workingDirectory, { withFileTypes: true });
+      const files = await fs.readdir(this.projectPath, { withFileTypes: true });
       const packageMetadata = await Promise.all(
          files
             .filter((file) => file.isDirectory())
@@ -65,7 +79,11 @@ export class Project {
    public async getPackage(packageName: string): Promise<Package> {
       let _package = this.packages.get(packageName);
       if (_package === undefined) {
-         _package = await Package.create(packageName, this.malloyConnections);
+         _package = await Package.create(
+            packageName,
+            path.join(this.projectPath, packageName),
+            this.malloyConnections,
+         );
          this.packages.set(packageName, _package);
       }
       return _package;

@@ -61,7 +61,7 @@ describe("service/package", () => {
             sinon.stub(fs, "stat").rejects(new Error("File not found"));
 
             await expect(
-               Package.create("testPackage", new Map()),
+               Package.create("testPackage", testPackageDirectory, new Map()),
             ).rejects.toThrowError(
                PackageNotFoundError,
                "Package manifest for testPackage does not exist.",
@@ -85,6 +85,7 @@ describe("service/package", () => {
 
             const packageInstance = await Package.create(
                "testPackage",
+               testPackageDirectory,
                new Map(),
             );
 
@@ -129,7 +130,7 @@ describe("service/package", () => {
             sinon.stub(fs, "stat").resolves({ size: 13 } as any);
 
             const size = await (Package as any).getDatabaseSize(
-               "testPackage",
+               testPackageDirectory,
                "database.parquet",
             );
 

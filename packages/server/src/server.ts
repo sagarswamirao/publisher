@@ -4,7 +4,6 @@ import { AddressInfo } from "net";
 import * as path from "path";
 import morgan from "morgan";
 import * as bodyParser from "body-parser";
-import { AboutController } from "./controller/about.controller";
 import { DatabaseController } from "./controller/database.controller";
 import { ModelController } from "./controller/model.controller";
 import { PackageController } from "./controller/package.controller";
@@ -25,8 +24,9 @@ const ROOT = path.join(__dirname, "../../app/dist/");
 const API_PREFIX = "/api/v0";
 const PROJECT_NAME = "home";
 
-const project = await Project.create();
-const aboutController = new AboutController();
+const project = await Project.create(getWorkingDirectory());
+// const projects = new Map<string, Project>();
+
 const connectionController = new ConnectionController(project);
 const modelController = new ModelController(project);
 const packageController = new PackageController(project);
@@ -80,7 +80,7 @@ app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
    }
 
    try {
-      res.status(200).json(await aboutController.getAbout());
+      res.status(200).json(await project.getAbout());
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);

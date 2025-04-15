@@ -50,6 +50,12 @@ export class ConnectionController {
     public async getConnectionQueryData(connectionName: string, sqlStatement: string, options: string): Promise<string> {
         const connection = this.project.getMalloyConnection(connectionName);
         const runSQLOptions = JSON.parse(options) as RunSQLOptions;
+        if (runSQLOptions.abortSignal) {
+            // Add support for abortSignal in the future
+            console.log("Clearing unsupported abortSignal");
+            runSQLOptions.abortSignal = undefined;
+        }
+
         try {
             return JSON.stringify(await connection.runSQL(sqlStatement, runSQLOptions));
         } catch (error) {
