@@ -1,17 +1,18 @@
 import { components } from "../api";
-import { Project } from "../service/project";
+import { ProjectStore } from "../service/project_store";
 
 type ApiSchedule = components["schemas"]["Schedule"];
 
 export class ScheduleController {
-   private project: Project;
+   private projectStore: ProjectStore;
 
-   constructor(project: Project) {
-      this.project = project;
+   constructor(projectStore: ProjectStore) {
+      this.projectStore = projectStore;
    }
 
-   public async listSchedules(packageName: string): Promise<ApiSchedule[]> {
-      const p = await this.project.getPackage(packageName);
+   public async listSchedules(projectName: string, packageName: string): Promise<ApiSchedule[]> {
+      const project = await this.projectStore.getProject(projectName);
+      const p = await project.getPackage(packageName);
       return p.listSchedules();
    }
 }

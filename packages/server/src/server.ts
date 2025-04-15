@@ -13,8 +13,8 @@ import { getWorkingDirectory } from "./utils";
 import cors from "cors";
 import * as fs from "fs";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
-import { Project } from "./service/project";
 import { ConnectionController } from "./controller/connection.controller";
+import { ProjectStore } from "./service/project_store";
 const app = express();
 app.use(morgan("tiny"));
 
@@ -22,17 +22,14 @@ const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const ROOT = path.join(__dirname, "../../app/dist/");
 const API_PREFIX = "/api/v0";
-const PROJECT_NAME = "home";
 
-const project = await Project.create(getWorkingDirectory());
-// const projects = new Map<string, Project>();
-
-const connectionController = new ConnectionController(project);
-const modelController = new ModelController(project);
-const packageController = new PackageController(project);
-const databaseController = new DatabaseController(project);
-const queryController = new QueryController(project);
-const scheduleController = new ScheduleController(project);
+const projectStore = new ProjectStore(getWorkingDirectory(), "malloy-samples");
+const connectionController = new ConnectionController(projectStore);
+const modelController = new ModelController(projectStore);
+const packageController = new PackageController(projectStore);
+const databaseController = new DatabaseController(projectStore);
+const queryController = new QueryController(projectStore);
+const scheduleController = new ScheduleController(projectStore);
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -54,18 +51,9 @@ const setVersionIdError = (res: express.Response) => {
    res.status(status).json(json);
 };
 
-const setProjectNameError = (res: express.Response) => {
-   const { json, status } = internalErrorToHttpError(
-      new NotImplementedError(
-         "Project names other than 'home' not implemented.",
-      ),
-   );
-   res.status(status).json(json);
-};
-
 app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    try {
-      res.status(200).json([{ name: PROJECT_NAME }]);
+      res.status(200).json(await projectStore.listProjects());
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -74,12 +62,8 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
+      const project = await projectStore.getProject(req.params.projectName);
       res.status(200).json(await project.getAbout());
    } catch (error) {
       console.error(error);
@@ -89,13 +73,8 @@ app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/connections`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
-      res.status(200).json(await connectionController.listConnections());
+      res.status(200).json(await connectionController.listConnections(req.params.projectName));
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -104,13 +83,11 @@ app.get(`${API_PREFIX}/projects/:projectName/connections`, async (req, res) => {
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
-      res.status(200).json(await connectionController.getConnection(req.params.connectionName));
+      res.status(200).json(await connectionController.getConnection(
+         req.params.projectName,
+         req.params.connectionName,
+      ));
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -119,13 +96,11 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName`, async
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/test`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
-      res.status(200).json(await connectionController.testConnection(req.params.connectionName));
+      res.status(200).json(await connectionController.testConnection(
+         req.params.projectName,
+         req.params.connectionName,
+      ));
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -134,13 +109,9 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/test`, 
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/sqlSource`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
       res.status(200).json(await connectionController.getConnectionSqlSource(
+         req.params.projectName,
          req.params.connectionName,
          req.query.sqlStatement as string,
       ));
@@ -152,13 +123,9 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/sqlSour
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/tableSource`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
       res.status(200).json(await connectionController.getConnectionTableSource(
+         req.params.projectName,
          req.params.connectionName,
          req.query.tableKey as string,
          req.query.tablePath as string,
@@ -171,13 +138,9 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/tableSo
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/queryData`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
       res.status(200).json(await connectionController.getConnectionQueryData(
+         req.params.projectName,
          req.params.connectionName,
          req.query.sqlStatement as string,
          req.query.options as string,
@@ -190,13 +153,9 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/queryDa
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/temporaryTable`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
-
    try {
       res.status(200).json(await connectionController.getConnectionTemporaryTable(
+         req.params.projectName,
          req.params.connectionName,
          req.query.sqlStatement as string,
       ));
@@ -208,17 +167,13 @@ app.get(`${API_PREFIX}/projects/:projectName/connections/:connectionName/tempora
 });
 
 app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
-   if (req.params.projectName !== PROJECT_NAME) {
-      setProjectNameError(res);
-      return;
-   }
    if (req.query.versionId) {
       setVersionIdError(res);
       return;
    }
 
    try {
-      res.status(200).json(await packageController.listPackages());
+      res.status(200).json(await packageController.listPackages(req.params.projectName));
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -229,10 +184,6 @@ app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName`,
    async (req, res) => {
-      if (req.params.projectName !== PROJECT_NAME) {
-         setProjectNameError(res);
-         return;
-      }
       if (req.query.versionId) {
          setVersionIdError(res);
          return;
@@ -240,7 +191,10 @@ app.get(
 
       try {
          res.status(200).json(
-            await packageController.getPackage(req.params.packageName),
+            await packageController.getPackage(
+               req.params.projectName,
+               req.params.packageName,
+            ),
          );
       } catch (error) {
          console.error(error);
@@ -253,10 +207,6 @@ app.get(
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName/models`,
    async (req, res) => {
-      if (req.params.projectName !== PROJECT_NAME) {
-         setProjectNameError(res);
-         return;
-      }
       if (req.query.versionId) {
          setVersionIdError(res);
          return;
@@ -264,7 +214,10 @@ app.get(
 
       try {
          res.status(200).json(
-            await modelController.listModels(req.params.packageName),
+            await modelController.listModels(
+               req.params.projectName,
+               req.params.packageName,
+            ),
          );
       } catch (error) {
          console.error(error);
@@ -277,10 +230,6 @@ app.get(
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName/models/*?`,
    async (req, res) => {
-      if (req.params.projectName !== PROJECT_NAME) {
-         setProjectNameError(res);
-         return;
-      }
       if (req.query.versionId) {
          setVersionIdError(res);
          return;
@@ -291,6 +240,7 @@ app.get(
          const zero = 0 as unknown;
          res.status(200).json(
             await modelController.getModel(
+               req.params.projectName,
                req.params.packageName,
                req.params[zero as keyof typeof req.params],
             ),
@@ -306,10 +256,6 @@ app.get(
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName/queryResults/*?`,
    async (req, res) => {
-      if (req.params.projectName !== PROJECT_NAME) {
-         setProjectNameError(res);
-         return;
-      }
       if (req.query.versionId) {
          setVersionIdError(res);
          return;
@@ -320,6 +266,7 @@ app.get(
          const zero = 0 as unknown;
          res.status(200).json(
             await queryController.getQuery(
+               req.params.projectName,
                req.params.packageName,
                req.params[zero as keyof typeof req.params],
                req.query.sourceName as string,
@@ -338,10 +285,6 @@ app.get(
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName/schedules`,
    async (req, res) => {
-      if (req.params.projectName !== PROJECT_NAME) {
-         setProjectNameError(res);
-         return;
-      }
       if (req.query.versionId) {
          setVersionIdError(res);
          return;
@@ -349,7 +292,10 @@ app.get(
 
       try {
          res.status(200).json(
-            await scheduleController.listSchedules(req.params.packageName),
+            await scheduleController.listSchedules(
+               req.params.projectName,
+               req.params.packageName,
+            ),
          );
       } catch (error) {
          console.error(error);
@@ -362,10 +308,6 @@ app.get(
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName/databases`,
    async (req, res) => {
-      if (req.params.projectName !== PROJECT_NAME) {
-         setProjectNameError(res);
-         return;
-      }
       if (req.query.versionId) {
          setVersionIdError(res);
          return;
@@ -373,7 +315,10 @@ app.get(
 
       try {
          res.status(200).json(
-            await databaseController.listDatabases(req.params.packageName),
+            await databaseController.listDatabases(
+               req.params.projectName,
+               req.params.packageName,
+            ),
          );
       } catch (error) {
          console.error(error);

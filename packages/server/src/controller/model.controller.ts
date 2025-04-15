@@ -1,29 +1,31 @@
 import { components } from "../api";
 import { ModelNotFoundError } from "../errors";
-import { Project } from "../service/project";
+import { ProjectStore } from "../service/project_store";
 
 type ApiModel = components["schemas"]["Model"];
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 
 export class ModelController {
-   private project: Project;
+   private projectStore: ProjectStore;
 
-   constructor(project: Project) {
-      this.project = project;
+   constructor(projectStore: ProjectStore) {
+      this.projectStore = projectStore;
    }
 
-   public async listModels(packageName: string): Promise<ApiModel[]> {
-      const p = await this.project.getPackage(packageName);
+   public async listModels(projectName: string, packageName: string): Promise<ApiModel[]> {
+      const project = await this.projectStore.getProject(projectName);
+      const p = await project.getPackage(packageName);
       return p.listModels();
    }
 
    public async getModel(
+      projectName: string,
       packageName: string,
       modelPath: string,
    ): Promise<ApiCompiledModel> {
-      const model = (
-         await this.project.getPackage(packageName)
-      ).getModel(modelPath);
+      const project = await this.projectStore.getProject(projectName);
+      const p = await project.getPackage(packageName);
+      const model = p.getModel(modelPath);
       if (!model) {
          throw new ModelNotFoundError(`${modelPath} does not exist`);
       }

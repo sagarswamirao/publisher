@@ -11,7 +11,7 @@ export const NOTEBOOK_FILE_SUFFIX = ".malloynb";
 export function getWorkingDirectory(): string {
    return path.resolve(
       process.cwd(),
-      process.env.PACKAGE_ROOT || "./malloy-samples",
+      process.env.PACKAGE_ROOT || ".",
    );
 }
 

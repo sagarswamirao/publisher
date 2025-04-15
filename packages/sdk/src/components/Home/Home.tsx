@@ -54,6 +54,6 @@ export default function Home({ server, navigate }: HomeProps) {
          );
       }
    } else {
-      return <Typography variant="h1">Loading projects...</Typography>;
+      return <Typography variant="h6">Loading projects...</Typography>;
    }
 }

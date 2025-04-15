@@ -15,7 +15,11 @@ export class Project {
    private malloyConnections: Map<string, BaseConnection>;
    private apiConnections: ApiConnection[];
    private projectPath: string;
-   constructor(projectPath: string, malloyConnections: Map<string, BaseConnection>, apiConnections: ApiConnection[]) {
+   constructor(
+      projectPath: string,
+      malloyConnections: Map<string, BaseConnection>,
+      apiConnections: ApiConnection[],
+   ) {
       this.projectPath = projectPath;
       this.malloyConnections = malloyConnections;
       this.apiConnections = apiConnections;

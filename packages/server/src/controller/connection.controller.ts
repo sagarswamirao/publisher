@@ -1,27 +1,30 @@
 import { components } from "../api";
-import { Project } from "../service/project";
 import { RunSQLOptions, TestableConnection } from '@malloydata/malloy';
 import { Connection, PersistSQLResults } from "@malloydata/malloy/connection";
 type ApiConnection = components["schemas"]["Connection"];
 import { ConnectionError } from "../errors";
+import { ProjectStore } from "../service/project_store";
 
 export class ConnectionController {
-    private project: Project;
+    private projectStore: ProjectStore;
 
-    constructor(project: Project) {
-        this.project = project;
+    constructor(projectStore: ProjectStore) {
+        this.projectStore = projectStore;
     }
 
-    public async getConnection(connectionName: string): Promise<ApiConnection> {
-        return this.project.getApiConnection(connectionName);
+    public async getConnection(projectName: string, connectionName: string): Promise<ApiConnection> {
+        const project = await this.projectStore.getProject(projectName);
+        return project.getApiConnection(connectionName);
     }
 
-    public async listConnections(): Promise<ApiConnection[]> {
-        return this.project.listApiConnections();
+    public async listConnections(projectName: string): Promise<ApiConnection[]> {
+        const project = await this.projectStore.getProject(projectName);
+        return project.listApiConnections();
     }
 
-    public async testConnection(connectionName: string) {
-        const connection = this.project.getMalloyConnection(connectionName) as Connection;
+    public async testConnection(projectName: string, connectionName: string) {
+        const project = await this.projectStore.getProject(projectName);
+        const connection = project.getMalloyConnection(connectionName) as Connection;
         try {
             await (connection as TestableConnection).test();
         } catch (error) {
@@ -29,8 +32,9 @@ export class ConnectionController {
         }
     }
 
-    public async getConnectionSqlSource(connectionName: string, sqlStatement: string): Promise<string> {
-        const connection = this.project.getMalloyConnection(connectionName);
+    public async getConnectionSqlSource(projectName: string, connectionName: string, sqlStatement: string): Promise<string> {
+        const project = await this.projectStore.getProject(projectName);
+        const connection = project.getMalloyConnection(connectionName);
         try {
             return JSON.stringify(await connection.fetchSelectSchema({ connection: connectionName, selectStr: sqlStatement }));
         } catch (error) {
@@ -38,8 +42,9 @@ export class ConnectionController {
         }
     }
 
-    public async getConnectionTableSource(connectionName: string, tableKey: string, tablePath: string): Promise<string> {
-        const connection = this.project.getMalloyConnection(connectionName);
+    public async getConnectionTableSource(projectName: string, connectionName: string, tableKey: string, tablePath: string): Promise<string> {
+        const project = await this.projectStore.getProject(projectName);
+        const connection = project.getMalloyConnection(connectionName);
         try {
             return JSON.stringify(await connection.fetchTableSchema(tableKey, tablePath));
         } catch (error) {
@@ -47,8 +52,9 @@ export class ConnectionController {
         }
     }
 
-    public async getConnectionQueryData(connectionName: string, sqlStatement: string, options: string): Promise<string> {
-        const connection = this.project.getMalloyConnection(connectionName);
+    public async getConnectionQueryData(projectName: string, connectionName: string, sqlStatement: string, options: string): Promise<string> {
+        const project = await this.projectStore.getProject(projectName);
+        const connection = project.getMalloyConnection(connectionName);
         const runSQLOptions = JSON.parse(options) as RunSQLOptions;
         if (runSQLOptions.abortSignal) {
             // Add support for abortSignal in the future
@@ -63,8 +69,9 @@ export class ConnectionController {
         }
     }
 
-    public async getConnectionTemporaryTable(connectionName: string, sqlStatement: string): Promise<string> {
-        const connection = this.project.getMalloyConnection(connectionName) as Connection;
+    public async getConnectionTemporaryTable(projectName: string, connectionName: string, sqlStatement: string): Promise<string> {
+        const project = await this.projectStore.getProject(projectName);
+        const connection = project.getMalloyConnection(connectionName) as Connection;
 
         try {
             return await (connection as PersistSQLResults).manifestTemporaryTable(sqlStatement);
