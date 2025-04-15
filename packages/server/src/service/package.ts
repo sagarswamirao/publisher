@@ -10,6 +10,7 @@ import {
    NOTEBOOK_FILE_SUFFIX,
 } from "../utils";
 import { Scheduler } from "./scheduler";
+import { metrics } from "@opentelemetry/api";
 import { Connection } from "@malloydata/malloy";
 import { createConnections } from "./connection";
 import { DuckDBConnection } from "@malloydata/db-duckdb";
@@ -25,6 +26,14 @@ export class Package {
    private databases: ApiDatabase[];
    private models: Map<string, Model> = new Map();
    private scheduler: Scheduler | undefined;
+   private static meter = metrics.getMeter("publisher");
+   private static packageLoadHistogram = this.meter.createHistogram(
+      "malloy_package_load_duration",
+      {
+         description: "Time taken to load a Malloy package",
+         unit: "ms",
+      },
+   );
 
    constructor(
       packageName: string,
@@ -69,6 +78,12 @@ export class Package {
 
          const models = await Package.loadModels(packageName, packagePath, connections);
          const scheduler = Scheduler.create(models);
+         const endTime = performance.now();
+         const executionTime = endTime - startTime;
+         this.packageLoadHistogram.record(executionTime, {
+            malloy_package_name: packageName,
+            status: "success",
+         });
          return new Package(
             packageName,
             packageConfig,
@@ -78,6 +93,12 @@ export class Package {
          );
       } catch (error) {
          console.error(error);
+         const endTime = performance.now();
+         const executionTime = endTime - startTime;
+         this.packageLoadHistogram.record(executionTime, {
+            malloy_package_name: packageName,
+            status: "error",
+         });
          return new Package(
             packageName,
             {
