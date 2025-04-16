@@ -14,7 +14,7 @@
       "name": "@malloy-publisher/app",
       "version": "0.0.1",
       "dependencies": {
-        "@malloy-publisher/sdk": "^0.0.7",
+        "@malloy-publisher/sdk": "^0.0.6",
         "@mui/icons-material": "^7.0.2",
         "@mui/material": "^7.0.2",
         "@types/react-dom": "^18.3.0",
