@@ -1,4 +1,4 @@
-import { Box, Divider, Grid2, Typography } from "@mui/material";
+import { Box, Divider, Grid, Typography } from "@mui/material";
 import { Configuration, PackagesApi } from "../../client";
 import axios from "axios";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
@@ -58,7 +58,7 @@ export default function Project({
                   <Divider />
                </StyledCardContent>
                <StyledCardMedia>
-                  <Grid2
+                  <Grid
                      container
                      spacing={2}
                      columns={12}
@@ -69,7 +69,7 @@ export default function Project({
                            return a.name.localeCompare(b.name);
                         })
                         .map((p) => (
-                           <Grid2
+                           <Grid
                               size={{ xs: 12, sm: 12, md: 12, lg: 4 }}
                               key={p.name}
                            >
@@ -99,9 +99,9 @@ export default function Project({
                                     </Box>
                                  </StyledCardContent>
                               </StyledCard>
-                           </Grid2>
+                           </Grid>
                         ))}
-                  </Grid2>
+                  </Grid>
                </StyledCardMedia>
             </StyledCard>
          )}

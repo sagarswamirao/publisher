@@ -12,9 +12,9 @@
     "generate-api-types": ""
   },
   "dependencies": {
-    "@malloy-publisher/sdk": "^0.0.4",
-    "@mui/icons-material": "^6.1.1",
-    "@mui/material": "^6.1.1",
+    "@malloy-publisher/sdk": "^0.0.6",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "react": "^18.3.1",

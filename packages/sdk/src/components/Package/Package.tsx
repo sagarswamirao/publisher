@@ -1,4 +1,4 @@
-import { Grid2 } from "@mui/material";
+import { Grid } from "@mui/material";
 import { Notebook } from "../Notebook";
 import Config from "./Config";
 import Models from "./Models";
@@ -31,13 +31,13 @@ export default function Package({
    }
 
    return (
-      <Grid2
+      <Grid
          container
          spacing={2}
          columns={12}
          sx={{ mb: (theme) => theme.spacing(2) }}
       >
-         <Grid2 size={{ xs: 12, md: 12, lg: 4 }}>
+         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
             <Config
                server={server}
                projectName={projectName}
@@ -45,8 +45,8 @@ export default function Package({
                versionId={versionId}
                accessToken={accessToken}
             />
-         </Grid2>
-         <Grid2 size={{ xs: 12, md: 12, lg: 4 }}>
+         </Grid>
+         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
             <Models
                server={server}
                projectName={projectName}
@@ -55,8 +55,8 @@ export default function Package({
                navigate={navigate}
                accessToken={accessToken}
             />
-         </Grid2>
-         <Grid2 size={{ xs: 12, md: 12, lg: 4 }}>
+         </Grid>
+         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
             <Databases
                server={server}
                projectName={projectName}
@@ -64,8 +64,8 @@ export default function Package({
                versionId={versionId}
                accessToken={accessToken}
             />
-         </Grid2>
-         <Grid2 size={{ xs: 12, md: 12 }}>
+         </Grid>
+         <Grid size={{ xs: 12, md: 12 }}>
             <Schedules
                server={server}
                projectName={projectName}
@@ -73,8 +73,8 @@ export default function Package({
                versionId={versionId}
                accessToken={accessToken}
             />
-         </Grid2>
-         <Grid2 size={{ xs: 12, md: 12 }}>
+         </Grid>
+         <Grid size={{ xs: 12, md: 12 }}>
             <Notebook
                server={server}
                projectName={projectName}
@@ -84,7 +84,7 @@ export default function Package({
                expandCodeCells={true}
                accessToken={accessToken}
             />
-         </Grid2>
-      </Grid2>
+         </Grid>
+      </Grid>
    );
 }

@@ -1,4 +1,4 @@
-import { Grid2 } from "@mui/material";
+import { Grid } from "@mui/material";
 import About from "./About";
 import Packages from "./Packages";
 
@@ -16,27 +16,27 @@ export default function Project({
    accessToken,
 }: ProjectProps) {
    return (
-      <Grid2
+      <Grid
          container
          spacing={2}
          columns={12}
          sx={{ mb: (theme) => theme.spacing(2) }}
       >
-         <Grid2 size={{ xs: 12, md: 12 }}>
+         <Grid size={{ xs: 12, md: 12 }}>
             <Packages
                server={server}
                projectName={projectName}
                navigate={navigate}
                accessToken={accessToken}
             />
-         </Grid2>
-         <Grid2 size={{ xs: 12, md: 12 }}>
+         </Grid>
+         <Grid size={{ xs: 12, md: 12 }}>
             <About
                server={server}
                projectName={projectName}
                accessToken={accessToken}
             />
-         </Grid2>
-      </Grid2>
+         </Grid>
+      </Grid>
    );
 }
