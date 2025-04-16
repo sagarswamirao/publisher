@@ -7,7 +7,7 @@ import { createConnections } from "./connection";
 import { ConnectionNotFoundError } from "../errors";
 import { BaseConnection } from "@malloydata/malloy/connection";
 import * as path from "path";
-
+import { ProjectNotFoundError } from "../errors";
 type ApiAbout = components["schemas"]["About"];
 
 export class Project {
@@ -26,6 +26,9 @@ export class Project {
    }
 
    static async create(projectPath: string): Promise<Project> {
+      if (!(await fs.stat(projectPath)).isDirectory()) {
+         throw new ProjectNotFoundError(`Project path ${projectPath} not found`);
+      }
       const { malloyConnections, apiConnections } = await createConnections(projectPath);
       return new Project(projectPath, malloyConnections, apiConnections);
    }

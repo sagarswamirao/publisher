@@ -42,6 +42,12 @@ export class BadRequestError extends Error {
    }
 }
 
+export class ProjectNotFoundError extends Error {
+   constructor(message: string) {
+      super(message);
+   }
+}
+
 export class PackageNotFoundError extends Error {
    constructor(message: string) {
       super(message);

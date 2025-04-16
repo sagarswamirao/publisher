@@ -22,7 +22,7 @@ const ROOT = path.join(__dirname, "../../app/dist/");
 const API_PREFIX = "/api/v0";
 const SERVER_ROOT = path.resolve(
    process.cwd(),
-   process.env.PACKAGE_ROOT || ".",
+   process.env.SERVER_ROOT || ".",
 );
 
 const projectStore = new ProjectStore(SERVER_ROOT);
