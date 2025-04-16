@@ -863,7 +863,11 @@ components:
         size:
           type: integer
           description: Size of the embedded database in bytes.
-    
+        type:
+          type: string
+          enum: ["embedded", "materialized"]
+          description: Type of database.
+
     Schedule:
       type: object
       description: A scheduled task.
