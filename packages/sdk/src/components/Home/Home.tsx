@@ -1,4 +1,4 @@
-import { Grid2, Typography } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ProjectsApi, Configuration } from "../../client";
 import axios from "axios";
@@ -34,23 +34,23 @@ export default function Home({ server, navigate }: HomeProps) {
          return <></>;
       } else {
          return (
-            <Grid2
+            <Grid
                container
                spacing={2}
                columns={12}
                sx={{ mb: (theme) => theme.spacing(2) }}
             >
                {data.data.map((project) => (
-                  <Grid2 key={project.name}>
+                  <Grid key={project.name}>
                      <Typography
                         variant="h1"
                         onClick={() => navigate(`/${project.name}/`)}
                      >
                         {project.name}
                      </Typography>
-                  </Grid2>
+                  </Grid>
                ))}
-            </Grid2>
+            </Grid>
          );
       }
    } else {
