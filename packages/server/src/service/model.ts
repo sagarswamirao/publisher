@@ -1,4 +1,3 @@
-
 import {
    Connection,
    FixedConnectionMap,
@@ -32,7 +31,6 @@ import {
    URL_READER,
    MODEL_FILE_SUFFIX,
    NOTEBOOK_FILE_SUFFIX,
-   getWorkingDirectory,
 } from "../utils";
 import { metrics } from "@opentelemetry/api";
 
@@ -99,13 +97,14 @@ export class Model {
 
    public static async create(
       packageName: string,
+      packagePath: string,
       modelPath: string,
       connections: Map<string, Connection>,
    ): Promise<Model> {
       // getModelRuntime might throw a ModelNotFoundError. It's the callers responsibility
       // to pass a valid model path or handle the error.
       const { runtime, modelURL, importBaseURL, dataStyles, modelType } =
-         await Model.getModelRuntime(packageName, modelPath, connections);
+         await Model.getModelRuntime(packagePath, modelPath, connections);
 
       try {
          const { modelMaterializer, runnableNotebookCells } =
@@ -314,7 +313,7 @@ export class Model {
    }
 
    static async getModelRuntime(
-      packageName: string,
+      packagePath: string,
       modelPath: string,
       connections: Map<string, Connection>,
    ): Promise<{
@@ -324,8 +323,6 @@ export class Model {
       dataStyles: DataStyles;
       modelType: ModelType;
    }> {
-      const workingDirectory = getWorkingDirectory();
-      const packagePath = path.join(workingDirectory, packageName);
       const fullModelPath = path.join(packagePath, modelPath);
       try {
          if (!(await fs.stat(fullModelPath)).isFile()) {

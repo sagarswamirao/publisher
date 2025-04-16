@@ -1,17 +1,18 @@
 import { components } from "../api";
-import { Project } from "../service/project";
+import { ProjectStore } from "../service/project_store";
 
 type ApiDatabase = components["schemas"]["Database"];
 
 export class DatabaseController {
-   private project: Project;
+   private projectStore: ProjectStore;
 
-   constructor(project: Project) {
-      this.project = project;
+   constructor(projectStore: ProjectStore) {
+      this.projectStore = projectStore;
    }
 
-   public async listDatabases(packageName: string): Promise<ApiDatabase[]> {
-      const p = await this.project.getPackage(packageName);
+   public async listDatabases(projectName: string, packageName: string): Promise<ApiDatabase[]> {
+      const project = await this.projectStore.getProject(projectName);
+      const p = await project.getPackage(packageName);
       return p.listDatabases();
    }
 }

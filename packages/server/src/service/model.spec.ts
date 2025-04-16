@@ -13,6 +13,7 @@ import {
 describe("service/model", () => {
    const packageName = "test-package";
    const mockPackageName = "mockPackage";
+   const mockPackagePath = "mockPackagePath";
    const mockModelPath = "mockModel.malloy";
 
    it("should create a Model instance", async () => {
@@ -29,7 +30,7 @@ describe("service/model", () => {
          runnableNotebookCells: undefined,
       });
 
-      const model = await Model.create(mockPackageName, mockModelPath, []);
+      const model = await Model.create(mockPackageName, mockPackagePath, mockModelPath, new Map());
       expect(model).toBeInstanceOf(Model);
       expect(model.getPath()).toBe(mockModelPath);
 
@@ -38,7 +39,7 @@ describe("service/model", () => {
 
    it("should handle ModelNotFoundError correctly", async () => {
       await expect(async () => {
-         await Model.create(mockPackageName, mockModelPath, []);
+         await Model.create(mockPackageName, mockPackagePath, mockModelPath, new Map());
       }).toThrowError(`${mockModelPath} does not exist.`);
 
       sinon.restore();
@@ -183,7 +184,7 @@ describe("service/model", () => {
             sinon.stub(fs, "stat").rejects(new Error("File not found"));
 
             await expect(async () => {
-               await Model.getModelRuntime(packageName, mockModelPath, []);
+               await Model.getModelRuntime(packageName, mockModelPath, new Map());
             }).toThrowError(ModelNotFoundError);
 
             sinon.restore();
