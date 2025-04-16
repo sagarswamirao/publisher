@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import { Project } from "./project";
 import { components } from "../api";
 import * as path from "path";
+import { ProjectNotFoundError } from "../errors";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
@@ -14,7 +15,7 @@ export class ProjectStore {
 
     public async listProjects(): Promise<ApiProject[]> {
         const projectManifest = await ProjectStore.getProjectManifest(this.serverRootPath);
-        if (projectManifest.projects === undefined) {
+        if (!projectManifest.projects) {
             return [];
         } else {
             return Object.keys(projectManifest.projects).map((projectName) => ({
@@ -27,8 +28,8 @@ export class ProjectStore {
         let project = this.projects.get(projectName);
         if (project === undefined) {
             const projectManifest = await ProjectStore.getProjectManifest(this.serverRootPath);
-            if (projectManifest.projects[projectName] === undefined) {
-                throw new Error(`Project ${projectName} not found in publisher.config.json`);
+            if (!projectManifest.projects || !projectManifest.projects[projectName]) {
+                throw new ProjectNotFoundError(`Project ${projectName} not found in publisher.config.json`);
             }
             project = await Project.create(
                 path.join(this.serverRootPath, projectManifest.projects[projectName]),
