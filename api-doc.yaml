@@ -703,13 +703,22 @@ components:
     Project:
       type: object
       properties:
+        resource:
+          type: string
+          description: Resource path to the project.
         name:
           type: string
           description: Project name.
+        readme:
+          type: string
+          description: Project readme.
     
     Package:
       type: object
       properties:
+        resource:
+          type: string
+          description: Resource path to the package.
         name:
           type: string
           description: Package name.
@@ -721,6 +730,9 @@ components:
       type: object
       description: Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent.
       properties:
+        resource:
+          type: string
+          description: Resource path to the model.
         packageName:
           type: string
           description: Model's package Name
@@ -736,6 +748,9 @@ components:
       type: object
       description: Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent.
       properties:
+        resource:
+          type: string
+          description: Resource path to the model.
         packageName:
           type: string
           description: Model's package Name
@@ -857,6 +872,9 @@ components:
       type: object
       description: An in-memory DuckDB database embedded in the package.
       properties:
+        resource:
+          type: string
+          description: Resource path to the database.
         path:
           type: string
           description: Database's relative path in its package directory.
@@ -894,6 +912,9 @@ components:
     Connection:
       type: object
       properties:
+        resource:
+          type: string
+          description: Resource path to the connection.
         name:
           type: string
         type:
@@ -991,6 +1012,9 @@ components:
     SqlSource:
       type: object
       properties:
+        resource:
+          type: string
+          description: Resource path to the sql source.
         # Pass source as an opaque JSON string that is malloyVersion depdendent.
         source:
           type: string
@@ -998,6 +1022,9 @@ components:
     TableSource:
       type: object
       properties:
+        resource:
+          type: string
+          description: Resource path to the table source.
         # Pass source as an opaque JSON string that is malloyVersion depdendent.
         source:
           type: string
@@ -1005,6 +1032,9 @@ components:
     TemporaryTable:
       type: object
       properties:
+        resource:
+          type: string
+          description: Resource path to the temporary table.
         # Pass table as an opaque JSON string that is malloyVersion depdendent.
         table:
           type: string
@@ -1012,6 +1042,9 @@ components:
     QueryData:
       type: object
       properties:
+        resource:
+          type: string
+          description: Resource path to the query data.
         # Pass result as an opaque JSON string that is malloyVersion depdendent.
         data:
           type: string

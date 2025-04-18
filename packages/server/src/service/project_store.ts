@@ -32,6 +32,7 @@ export class ProjectStore {
                 throw new ProjectNotFoundError(`Project ${projectName} not found in publisher.config.json`);
             }
             project = await Project.create(
+                projectName,
                 path.join(this.serverRootPath, projectManifest.projects[projectName]),
             );
             this.projects.set(projectName, project);

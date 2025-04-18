@@ -14,6 +14,7 @@ import { metrics } from "@opentelemetry/api";
 import { Connection } from "@malloydata/malloy";
 import { createConnections } from "./connection";
 import { DuckDBConnection } from "@malloydata/db-duckdb";
+import { API_PREFIX } from "../constants";
 
 type ApiDatabase = components["schemas"]["Database"];
 type ApiModel = components["schemas"]["Model"];
@@ -50,6 +51,7 @@ export class Package {
    }
 
    static async create(
+      projectName: string,
       packageName: string,
       packagePath: string,
       projectConnections: Map<string, Connection>,
@@ -61,6 +63,8 @@ export class Package {
 
       try {
          const packageConfig = await Package.readPackageConfig(packagePath);
+         packageConfig.resource = `${API_PREFIX}/projects/${projectName}/packages/${packageName}`;
+
          const databases = await Package.readDatabases(packagePath);
          const connections = new Map<string, Connection>(projectConnections);
 

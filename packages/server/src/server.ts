@@ -13,13 +13,14 @@ import cors from "cors";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { ConnectionController } from "./controller/connection.controller";
 import { ProjectStore } from "./service/project_store";
+import { API_PREFIX } from "./constants";
+
 const app = express();
 app.use(morgan("tiny"));
 
 const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const ROOT = path.join(__dirname, "../../app/dist/");
-const API_PREFIX = "/api/v0";
 const SERVER_ROOT = path.resolve(
    process.cwd(),
    process.env.SERVER_ROOT || ".",
@@ -60,6 +61,17 @@ app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
    try {
       const project = await projectStore.getProject(req.params.projectName);
       res.status(200).json(await project.getAbout());
+   } catch (error) {
+      console.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
+   try {
+      const project = await projectStore.getProject(req.params.projectName);
+      res.status(200).json(await project.getProjectMetadata());
    } catch (error) {
       console.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
