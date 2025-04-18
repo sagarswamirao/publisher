@@ -187,7 +187,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/SqlSource"
         401:
           $ref: "#/components/responses/UnauthorizedError"
         404:
@@ -234,7 +234,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/TableSource"
         401:
           $ref: "#/components/responses/UnauthorizedError"
         404:
@@ -281,7 +281,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/QueryData"
         401:
           $ref: "#/components/responses/UnauthorizedError"
         404:
@@ -322,7 +322,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/TemporaryTable"
         401:
           $ref: "#/components/responses/UnauthorizedError"
         404:
@@ -986,7 +986,35 @@ components:
         user:
           type: string
         password:
-          type: string    
+          type: string
+
+    SqlSource:
+      type: object
+      properties:
+        # Pass source as an opaque JSON string that is malloyVersion depdendent.
+        source:
+          type: string
+    
+    TableSource:
+      type: object
+      properties:
+        # Pass source as an opaque JSON string that is malloyVersion depdendent.
+        source:
+          type: string
+
+    TemporaryTable:
+      type: object
+      properties:
+        # Pass table as an opaque JSON string that is malloyVersion depdendent.
+        table:
+          type: string
+
+    QueryData:
+      type: object
+      properties:
+        # Pass result as an opaque JSON string that is malloyVersion depdendent.
+        data:
+          type: string
 
     Error:
       type: object
