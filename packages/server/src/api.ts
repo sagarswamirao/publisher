@@ -176,6 +176,11 @@ export interface components {
       path?: string;
       /** @description Size of the embedded database in bytes. */
       size?: number;
+      /**
+       * @description Type of database.
+       * @enum {string}
+       */
+      type?: "embedded" | "materialized";
     };
     /** @description A scheduled task. */
     Schedule: {
@@ -241,24 +246,17 @@ export interface components {
       user?: string;
       password?: string;
     };
-    ConnectionTestResult: {
-      error?: string;
+    SqlSource: {
+      source?: string;
     };
-    ConnectionSqlSource: {
-      result?: string;
-      error?: string;
+    TableSource: {
+      source?: string;
     };
-    ConnectionTableSource: {
-      result?: string;
-      error?: string;
+    TemporaryTable: {
+      table?: string;
     };
-    ConnectionQueryData: {
-      result?: string;
-      error?: string;
-    };
-    ConnectionTemporaryTable: {
-      result?: string;
-      error?: string;
+    QueryData: {
+      data?: string;
     };
     Error: {
       code?: string;
@@ -420,7 +418,7 @@ export interface operations {
       /** @description A SQL source. */
       200: {
         content: {
-          "application/json": components["schemas"]["ConnectionSqlSource"];
+          "application/json": components["schemas"]["SqlSource"];
         };
       };
       401: components["responses"]["UnauthorizedError"];
@@ -448,7 +446,7 @@ export interface operations {
       /** @description A table source. */
       200: {
         content: {
-          "application/json": components["schemas"]["ConnectionTableSource"];
+          "application/json": components["schemas"]["TableSource"];
         };
       };
       401: components["responses"]["UnauthorizedError"];
@@ -476,7 +474,7 @@ export interface operations {
       /** @description A query and its results. */
       200: {
         content: {
-          "application/json": components["schemas"]["ConnectionQueryData"];
+          "application/json": components["schemas"]["QueryData"];
         };
       };
       401: components["responses"]["UnauthorizedError"];
@@ -502,7 +500,7 @@ export interface operations {
       /** @description A temporary table. */
       200: {
         content: {
-          "application/json": components["schemas"]["ConnectionTemporaryTable"];
+          "application/json": components["schemas"]["TemporaryTable"];
         };
       };
       401: components["responses"]["UnauthorizedError"];
