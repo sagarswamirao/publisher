@@ -80,10 +80,16 @@ export interface components {
       readme?: string;
     };
     Project: {
+      /** @description Resource path to the project. */
+      resource?: string;
       /** @description Project name. */
       name?: string;
+      /** @description Project readme. */
+      readme?: string;
     };
     Package: {
+      /** @description Resource path to the package. */
+      resource?: string;
       /** @description Package name. */
       name?: string;
       /** @description Package description. */
@@ -91,6 +97,8 @@ export interface components {
     };
     /** @description Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent. */
     Model: {
+      /** @description Resource path to the model. */
+      resource?: string;
       /** @description Model's package Name */
       packageName?: string;
       /** @description Model's relative path in its package directory. */
@@ -103,6 +111,8 @@ export interface components {
     };
     /** @description Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent. */
     CompiledModel: {
+      /** @description Resource path to the model. */
+      resource?: string;
       /** @description Model's package Name */
       packageName?: string;
       /** @description Model's relative path in its package directory. */
@@ -172,6 +182,8 @@ export interface components {
     };
     /** @description An in-memory DuckDB database embedded in the package. */
     Database: {
+      /** @description Resource path to the database. */
+      resource?: string;
       /** @description Database's relative path in its package directory. */
       path?: string;
       /** @description Size of the embedded database in bytes. */
@@ -198,6 +210,8 @@ export interface components {
       lastRunStatus?: string;
     };
     Connection: {
+      /** @description Resource path to the connection. */
+      resource?: string;
       name?: string;
       /** @enum {string} */
       type?: "postgres" | "bigquery" | "snowflake" | "trino";
@@ -247,15 +261,23 @@ export interface components {
       password?: string;
     };
     SqlSource: {
+      /** @description Resource path to the sql source. */
+      resource?: string;
       source?: string;
     };
     TableSource: {
+      /** @description Resource path to the table source. */
+      resource?: string;
       source?: string;
     };
     TemporaryTable: {
+      /** @description Resource path to the temporary table. */
+      resource?: string;
       table?: string;
     };
     QueryData: {
+      /** @description Resource path to the query data. */
+      resource?: string;
       data?: string;
     };
     Error: {

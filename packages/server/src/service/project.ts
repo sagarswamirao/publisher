@@ -8,29 +8,35 @@ import { ConnectionNotFoundError } from "../errors";
 import { BaseConnection } from "@malloydata/malloy/connection";
 import * as path from "path";
 import { ProjectNotFoundError } from "../errors";
+import { API_PREFIX } from "../constants";
 type ApiAbout = components["schemas"]["About"];
+type ApiProject = components["schemas"]["Project"];
 
 export class Project {
    private packages: Map<string, Package> = new Map();
    private malloyConnections: Map<string, BaseConnection>;
    private apiConnections: ApiConnection[];
    private projectPath: string;
+   private projectName: string;
+
    constructor(
+      projectName: string,
       projectPath: string,
       malloyConnections: Map<string, BaseConnection>,
       apiConnections: ApiConnection[],
    ) {
+      this.projectName = projectName;
       this.projectPath = projectPath;
       this.malloyConnections = malloyConnections;
       this.apiConnections = apiConnections;
    }
 
-   static async create(projectPath: string): Promise<Project> {
+   static async create(projectName: string, projectPath: string): Promise<Project> {
       if (!(await fs.stat(projectPath)).isDirectory()) {
          throw new ProjectNotFoundError(`Project path ${projectPath} not found`);
       }
       const { malloyConnections, apiConnections } = await createConnections(projectPath);
-      return new Project(projectPath, malloyConnections, apiConnections);
+      return new Project(projectName, projectPath, malloyConnections, apiConnections);
    }
 
    public async getAbout(): Promise<ApiAbout> {
@@ -43,6 +49,17 @@ export class Project {
          console.log(error);
          return { readme: "" };
       }
+   }
+
+   public async getProjectMetadata(): Promise<ApiProject> {
+      const readme = (
+         await fs.readFile(path.join(this.projectPath, "README.md"))
+      ).toString();
+      return {
+         resource: `${API_PREFIX}/projects/${this.projectName}`,
+         name: this.projectName,
+         readme: readme,
+      };
    }
 
    public listApiConnections(): ApiConnection[] {
@@ -87,6 +104,7 @@ export class Project {
       let _package = this.packages.get(packageName);
       if (_package === undefined) {
          _package = await Package.create(
+            this.projectName,
             packageName,
             path.join(this.projectPath, packageName),
             this.malloyConnections,

@@ -86,6 +86,12 @@ export interface BigqueryConnection {
  */
 export interface CompiledModel {
     /**
+     * Resource path to the model.
+     * @type {string}
+     * @memberof CompiledModel
+     */
+    'resource'?: string;
+    /**
      * Model\'s package Name
      * @type {string}
      * @memberof CompiledModel
@@ -154,6 +160,12 @@ export type CompiledModelTypeEnum = typeof CompiledModelTypeEnum[keyof typeof Co
  * @interface Connection
  */
 export interface Connection {
+    /**
+     * Resource path to the connection.
+     * @type {string}
+     * @memberof Connection
+     */
+    'resource'?: string;
     /**
      * 
      * @type {string}
@@ -245,6 +257,12 @@ export interface ConnectionAttributes {
  */
 export interface Database {
     /**
+     * Resource path to the database.
+     * @type {string}
+     * @memberof Database
+     */
+    'resource'?: string;
+    /**
      * Database\'s relative path in its package directory.
      * @type {string}
      * @memberof Database
@@ -277,6 +295,12 @@ export type DatabaseTypeEnum = typeof DatabaseTypeEnum[keyof typeof DatabaseType
  * @interface Model
  */
 export interface Model {
+    /**
+     * Resource path to the model.
+     * @type {string}
+     * @memberof Model
+     */
+    'resource'?: string;
     /**
      * Model\'s package Name
      * @type {string}
@@ -369,6 +393,12 @@ export type NotebookCellTypeEnum = typeof NotebookCellTypeEnum[keyof typeof Note
  */
 export interface Package {
     /**
+     * Resource path to the package.
+     * @type {string}
+     * @memberof Package
+     */
+    'resource'?: string;
+    /**
      * Package name.
      * @type {string}
      * @memberof Package
@@ -431,11 +461,23 @@ export interface PostgresConnection {
  */
 export interface Project {
     /**
+     * Resource path to the project.
+     * @type {string}
+     * @memberof Project
+     */
+    'resource'?: string;
+    /**
      * Project name.
      * @type {string}
      * @memberof Project
      */
     'name'?: string;
+    /**
+     * Project readme.
+     * @type {string}
+     * @memberof Project
+     */
+    'readme'?: string;
 }
 /**
  * Named model query.
@@ -462,6 +504,12 @@ export interface Query {
  * @interface QueryData
  */
 export interface QueryData {
+    /**
+     * Resource path to the query data.
+     * @type {string}
+     * @memberof QueryData
+     */
+    'resource'?: string;
     /**
      * 
      * @type {string}
@@ -618,6 +666,12 @@ export interface Source {
  */
 export interface SqlSource {
     /**
+     * Resource path to the sql source.
+     * @type {string}
+     * @memberof SqlSource
+     */
+    'resource'?: string;
+    /**
      * 
      * @type {string}
      * @memberof SqlSource
@@ -631,6 +685,12 @@ export interface SqlSource {
  */
 export interface TableSource {
     /**
+     * Resource path to the table source.
+     * @type {string}
+     * @memberof TableSource
+     */
+    'resource'?: string;
+    /**
      * 
      * @type {string}
      * @memberof TableSource
@@ -643,6 +703,12 @@ export interface TableSource {
  * @interface TemporaryTable
  */
 export interface TemporaryTable {
+    /**
+     * Resource path to the temporary table.
+     * @type {string}
+     * @memberof TemporaryTable
+     */
+    'resource'?: string;
     /**
      * 
      * @type {string}
