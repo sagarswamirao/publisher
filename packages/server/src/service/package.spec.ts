@@ -60,7 +60,7 @@ describe("service/package", () => {
             sinon.stub(fs, "stat").rejects(new Error("File not found"));
 
             await expect(
-               Package.create("testPackage", testPackageDirectory, new Map()),
+               Package.create("testProject", "testPackage", testPackageDirectory, new Map()),
             ).rejects.toThrowError(
                PackageNotFoundError,
                "Package manifest for testPackage does not exist.",
@@ -83,6 +83,7 @@ describe("service/package", () => {
             } as any);
 
             const packageInstance = await Package.create(
+               "testProject",
                "testPackage",
                testPackageDirectory,
                new Map(),
