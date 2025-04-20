@@ -3,6 +3,7 @@ import { Project } from "./project";
 import { components } from "../api";
 import * as path from "path";
 import { ProjectNotFoundError } from "../errors";
+import { API_PREFIX } from "../constants";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
@@ -20,6 +21,7 @@ export class ProjectStore {
         } else {
             return Object.keys(projectManifest.projects).map((projectName) => ({
                 name: projectName,
+                resource: `${API_PREFIX}/projects/${projectName}`,
             })) as ApiProject[];
         }
     }
