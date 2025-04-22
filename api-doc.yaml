@@ -58,6 +58,41 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         500:
           $ref: "#/components/responses/InternalServerError"
+  
+  /projects/{projectName}:
+    get:
+      tags:
+      - projects
+      operationId: get-project
+      summary:
+        Returns metadata about the project.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: reload
+          in: query
+          description: Load / reload the project before returning result
+          required: false
+          schema:
+            type: boolean
+      responses:
+        200:
+          description:
+            Metadata about the project.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
 
   /projects/{projectName}/connections:
     get:
@@ -388,6 +423,12 @@ paths:
           required: false
           schema:
             type: string
+        - name: reload
+          in: query
+          description: Load / reload the package before returning result
+          required: false
+          schema:
+            type: boolean
       responses:
         200:
           description:

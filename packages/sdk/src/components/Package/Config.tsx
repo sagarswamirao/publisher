@@ -35,7 +35,7 @@ export default function Package({
       {
          queryKey: ["package", server, projectName, packageName, versionId],
          queryFn: () =>
-            packagesApi.getPackage(projectName, packageName, versionId, {
+            packagesApi.getPackage(projectName, packageName, versionId, false, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
@@ -79,20 +79,20 @@ export default function Package({
                            />
                         </ListItem>
                      )) || (
-                        <ListItem
-                           disablePadding={true}
-                           dense={true}
-                           sx={{ mt: "20px" }}
-                        >
-                           <ErrorIcon
-                              sx={{
-                                 color: "grey.600",
-                                 mr: "10px",
-                              }}
-                           />
-                           <ListItemText primary={"No package manifest"} />
-                        </ListItem>
-                     ))}
+                           <ListItem
+                              disablePadding={true}
+                              dense={true}
+                              sx={{ mt: "20px" }}
+                           >
+                              <ErrorIcon
+                                 sx={{
+                                    color: "grey.600",
+                                    mr: "10px",
+                                 }}
+                              />
+                              <ListItemText primary={"No package manifest"} />
+                           </ListItem>
+                        ))}
                   {isError && (
                      <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
                         {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}

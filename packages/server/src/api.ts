@@ -13,6 +13,10 @@ export interface paths {
     /** Returns metadata about the publisher service. */
     get: operations["about"];
   };
+  "/projects/{projectName}": {
+    /** Returns metadata about the project. */
+    get: operations["get-project"];
+  };
   "/projects/{projectName}/connections": {
     /** Returns a list of the connections in the project. */
     get: operations["list-connections"];
@@ -361,6 +365,30 @@ export interface operations {
       500: components["responses"]["InternalServerError"];
     };
   };
+  /** Returns metadata about the project. */
+  "get-project": {
+    parameters: {
+      query?: {
+        /** @description Load / reload the project before returning result */
+        reload?: boolean;
+      };
+      path: {
+        /** @description Name of project */
+        projectName: string;
+      };
+    };
+    responses: {
+      /** @description Metadata about the project. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Project"];
+        };
+      };
+      401: components["responses"]["UnauthorizedError"];
+      404: components["responses"]["NotFoundError"];
+      500: components["responses"]["InternalServerError"];
+    };
+  };
   /** Returns a list of the connections in the project. */
   "list-connections": {
     parameters: {
@@ -556,6 +584,8 @@ export interface operations {
       query?: {
         /** @description Version ID */
         versionId?: string;
+        /** @description Load / reload the package before returning result */
+        reload?: boolean;
       };
       path: {
         /** @description Name of project */
