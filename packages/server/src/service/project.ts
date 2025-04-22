@@ -40,21 +40,27 @@ export class Project {
    }
 
    public async getAbout(): Promise<ApiAbout> {
+      let readme = "";
       try {
-         const readme = (
+         readme = (
             await fs.readFile(path.join(this.projectPath, "README.md"))
          ).toString();
          return { readme: readme };
       } catch (error) {
-         console.log(error);
-         return { readme: "" };
+         console.error(error);
       }
+      return { readme: readme };
    }
 
    public async getProjectMetadata(): Promise<ApiProject> {
-      const readme = (
-         await fs.readFile(path.join(this.projectPath, "README.md"))
-      ).toString();
+      let readme = "";
+      try {
+         readme = (
+            await fs.readFile(path.join(this.projectPath, "README.md"))
+         ).toString();
+      } catch (error) {
+         console.error(error);
+      }
       return {
          resource: `${API_PREFIX}/projects/${this.projectName}`,
          name: this.projectName,
@@ -89,7 +95,7 @@ export class Project {
             .filter((file) => file.isDirectory())
             .map(async (directory) => {
                try {
-                  const _package = await this.getPackage(directory.name);
+                  const _package = await this.getPackage(directory.name, false);
                   return _package.getPackageMetadata();
                } catch {
                   return undefined;
@@ -100,9 +106,9 @@ export class Project {
       return packageMetadata.filter((metadata) => metadata) as ApiPackage[];
    }
 
-   public async getPackage(packageName: string): Promise<Package> {
+   public async getPackage(packageName: string, reload: boolean): Promise<Package> {
       let _package = this.packages.get(packageName);
-      if (_package === undefined) {
+      if (_package === undefined || reload) {
          _package = await Package.create(
             this.projectName,
             packageName,

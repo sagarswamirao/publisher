@@ -59,7 +59,7 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
 
 app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
    try {
-      const project = await projectStore.getProject(req.params.projectName);
+      const project = await projectStore.getProject(req.params.projectName, false);
       res.status(200).json(await project.getAbout());
    } catch (error) {
       console.error(error);
@@ -70,7 +70,7 @@ app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
 
 app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
-      const project = await projectStore.getProject(req.params.projectName);
+      const project = await projectStore.getProject(req.params.projectName, !!req.query.reload);
       res.status(200).json(await project.getProjectMetadata());
    } catch (error) {
       console.error(error);
@@ -201,6 +201,7 @@ app.get(
             await packageController.getPackage(
                req.params.projectName,
                req.params.packageName,
+               !!req.query.reload,
             ),
          );
       } catch (error) {

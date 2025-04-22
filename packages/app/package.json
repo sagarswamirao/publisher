@@ -15,14 +15,14 @@
     "@malloy-publisher/sdk": "^0.0.6",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
-    "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.9",
+    "@types/react-dom": "^18.3.1", 
+    "@types/react": "^18.3.1",
     "vite": "^6.0.1"
   }
 }

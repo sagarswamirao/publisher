@@ -1554,6 +1554,45 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @summary Returns metadata about the project.
+         * @param {string} projectName Name of project
+         * @param {boolean} [reload] Load / reload the project before returning result
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getProject: async (projectName: string, reload?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getProject', 'projectName', projectName)
+            const localVarPath = `/projects/{projectName}`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (reload !== undefined) {
+                localVarQueryParameter['reload'] = reload;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -1577,6 +1616,20 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.about']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 
+         * @summary Returns metadata about the project.
+         * @param {string} projectName Name of project
+         * @param {boolean} [reload] Load / reload the project before returning result
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Project>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getProject(projectName, reload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getProject']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -1596,6 +1649,17 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         about(projectName: string, options?: RawAxiosRequestConfig): AxiosPromise<About> {
             return localVarFp.about(projectName, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Returns metadata about the project.
+         * @param {string} projectName Name of project
+         * @param {boolean} [reload] Load / reload the project before returning result
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Project> {
+            return localVarFp.getProject(projectName, reload, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1617,6 +1681,19 @@ export class DefaultApi extends BaseAPI {
      */
     public about(projectName: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).about(projectName, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns metadata about the project.
+     * @param {string} projectName Name of project
+     * @param {boolean} [reload] Load / reload the project before returning result
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getProject(projectName, reload, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1848,10 +1925,11 @@ export const PackagesApiAxiosParamCreator = function (configuration?: Configurat
          * @param {string} projectName Name of project
          * @param {string} packageName Package name
          * @param {string} [versionId] Version ID
+         * @param {boolean} [reload] Load / reload the package before returning result
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPackage: async (projectName: string, packageName: string, versionId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPackage: async (projectName: string, packageName: string, versionId?: string, reload?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectName' is not null or undefined
             assertParamExists('getPackage', 'projectName', projectName)
             // verify required parameter 'packageName' is not null or undefined
@@ -1872,6 +1950,10 @@ export const PackagesApiAxiosParamCreator = function (configuration?: Configurat
 
             if (versionId !== undefined) {
                 localVarQueryParameter['versionId'] = versionId;
+            }
+
+            if (reload !== undefined) {
+                localVarQueryParameter['reload'] = reload;
             }
 
 
@@ -1935,11 +2017,12 @@ export const PackagesApiFp = function(configuration?: Configuration) {
          * @param {string} projectName Name of project
          * @param {string} packageName Package name
          * @param {string} [versionId] Version ID
+         * @param {boolean} [reload] Load / reload the package before returning result
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPackage(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Package>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPackage(projectName, packageName, versionId, options);
+        async getPackage(projectName: string, packageName: string, versionId?: string, reload?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Package>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPackage(projectName, packageName, versionId, reload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['PackagesApi.getPackage']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1973,11 +2056,12 @@ export const PackagesApiFactory = function (configuration?: Configuration, baseP
          * @param {string} projectName Name of project
          * @param {string} packageName Package name
          * @param {string} [versionId] Version ID
+         * @param {boolean} [reload] Load / reload the package before returning result
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPackage(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig): AxiosPromise<Package> {
-            return localVarFp.getPackage(projectName, packageName, versionId, options).then((request) => request(axios, basePath));
+        getPackage(projectName: string, packageName: string, versionId?: string, reload?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Package> {
+            return localVarFp.getPackage(projectName, packageName, versionId, reload, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2005,12 +2089,13 @@ export class PackagesApi extends BaseAPI {
      * @param {string} projectName Name of project
      * @param {string} packageName Package name
      * @param {string} [versionId] Version ID
+     * @param {boolean} [reload] Load / reload the package before returning result
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PackagesApi
      */
-    public getPackage(projectName: string, packageName: string, versionId?: string, options?: RawAxiosRequestConfig) {
-        return PackagesApiFp(this.configuration).getPackage(projectName, packageName, versionId, options).then((request) => request(this.axios, this.basePath));
+    public getPackage(projectName: string, packageName: string, versionId?: string, reload?: boolean, options?: RawAxiosRequestConfig) {
+        return PackagesApiFp(this.configuration).getPackage(projectName, packageName, versionId, reload, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -26,9 +26,9 @@ export class ProjectStore {
         }
     }
 
-    public async getProject(projectName: string): Promise<Project> {
+    public async getProject(projectName: string, reload: boolean): Promise<Project> {
         let project = this.projects.get(projectName);
-        if (project === undefined) {
+        if (project === undefined || reload) {
             const projectManifest = await ProjectStore.getProjectManifest(this.serverRootPath);
             if (!projectManifest.projects || !projectManifest.projects[projectName]) {
                 throw new ProjectNotFoundError(`Project ${projectName} not found in publisher.config.json`);
