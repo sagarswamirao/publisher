@@ -9,7 +9,6 @@ import { BaseConnection } from "@malloydata/malloy/connection";
 import * as path from "path";
 import { ProjectNotFoundError } from "../errors";
 import { API_PREFIX } from "../constants";
-type ApiAbout = components["schemas"]["About"];
 type ApiProject = components["schemas"]["Project"];
 
 export class Project {
