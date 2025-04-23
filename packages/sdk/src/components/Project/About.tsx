@@ -1,12 +1,12 @@
 import { Divider, Typography } from "@mui/material";
-import { Configuration, DefaultApi } from "../../client";
+import { Configuration, ProjectsApi } from "../../client";
 import axios from "axios";
 import Markdown from "markdown-to-jsx";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 
 axios.defaults.baseURL = "http://localhost:4000";
-const aboutApi = new DefaultApi(new Configuration());
+const projectsApi = new ProjectsApi(new Configuration());
 const queryClient = new QueryClient();
 
 interface AboutProps {
@@ -24,7 +24,7 @@ export default function About({
       {
          queryKey: ["about", server, projectName],
          queryFn: () =>
-            aboutApi.about(projectName, {
+            projectsApi.getProject(projectName, false, {
                baseURL: server,
                withCredentials: true,
                headers: {

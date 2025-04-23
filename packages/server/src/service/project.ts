@@ -39,19 +39,6 @@ export class Project {
       return new Project(projectName, projectPath, malloyConnections, apiConnections);
    }
 
-   public async getAbout(): Promise<ApiAbout> {
-      let readme = "";
-      try {
-         readme = (
-            await fs.readFile(path.join(this.projectPath, "README.md"))
-         ).toString();
-         return { readme: readme };
-      } catch (error) {
-         console.error(error);
-      }
-      return { readme: readme };
-   }
-
    public async getProjectMetadata(): Promise<ApiProject> {
       let readme = "";
       try {
