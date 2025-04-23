@@ -9,7 +9,6 @@ import { BaseConnection } from "@malloydata/malloy/connection";
 import * as path from "path";
 import { ProjectNotFoundError } from "../errors";
 import { API_PREFIX } from "../constants";
-type ApiAbout = components["schemas"]["About"];
 type ApiProject = components["schemas"]["Project"];
 
 export class Project {
@@ -37,19 +36,6 @@ export class Project {
       }
       const { malloyConnections, apiConnections } = await createConnections(projectPath);
       return new Project(projectName, projectPath, malloyConnections, apiConnections);
-   }
-
-   public async getAbout(): Promise<ApiAbout> {
-      let readme = "";
-      try {
-         readme = (
-            await fs.readFile(path.join(this.projectPath, "README.md"))
-         ).toString();
-         return { readme: readme };
-      } catch (error) {
-         console.error(error);
-      }
-      return { readme: readme };
    }
 
    public async getProjectMetadata(): Promise<ApiProject> {

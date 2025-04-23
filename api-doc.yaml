@@ -31,33 +31,6 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         500:
           $ref: "#/components/responses/InternalServerError"
-
-  /projects/{projectName}/about:
-    get:
-      tags:
-      - about:
-      operationId: about
-      summary:
-        Returns metadata about the publisher service.
-      parameters:
-        - name: projectName
-          in: path
-          description: Name of project
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description:
-            Metadata about the publisher service.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/About"
-        401:
-          $ref: "#/components/responses/UnauthorizedError"
-        500:
-          $ref: "#/components/responses/InternalServerError"
   
   /projects/{projectName}:
     get:

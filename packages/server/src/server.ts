@@ -57,17 +57,6 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    }
 });
 
-app.get(`${API_PREFIX}/projects/:projectName/about`, async (req, res) => {
-   try {
-      const project = await projectStore.getProject(req.params.projectName, false);
-      res.status(200).json(await project.getAbout());
-   } catch (error) {
-      console.error(error);
-      const { json, status } = internalErrorToHttpError(error as Error);
-      res.status(status).json(json);
-   }
-});
-
 app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
       const project = await projectStore.getProject(req.params.projectName, !!req.query.reload);

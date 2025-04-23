@@ -9,10 +9,6 @@ export interface paths {
     /** Returns a list of the Projects hosted on this server. */
     get: operations["list-projects"];
   };
-  "/projects/{projectName}/about": {
-    /** Returns metadata about the publisher service. */
-    get: operations["about"];
-  };
   "/projects/{projectName}": {
     /** Returns metadata about the project. */
     get: operations["get-project"];
@@ -340,25 +336,6 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["Project"][];
-        };
-      };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns metadata about the publisher service. */
-  about: {
-    parameters: {
-      path: {
-        /** @description Name of project */
-        projectName: string;
-      };
-    };
-    responses: {
-      /** @description Metadata about the publisher service. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["About"];
         };
       };
       401: components["responses"]["UnauthorizedError"];

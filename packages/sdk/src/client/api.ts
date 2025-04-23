@@ -1515,191 +1515,6 @@ export class DatabasesApi extends BaseAPI {
 
 
 /**
- * DefaultApi - axios parameter creator
- * @export
- */
-export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @summary Returns metadata about the publisher service.
-         * @param {string} projectName Name of project
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        about: async (projectName: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'projectName' is not null or undefined
-            assertParamExists('about', 'projectName', projectName)
-            const localVarPath = `/projects/{projectName}/about`
-                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Returns metadata about the project.
-         * @param {string} projectName Name of project
-         * @param {boolean} [reload] Load / reload the project before returning result
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getProject: async (projectName: string, reload?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'projectName' is not null or undefined
-            assertParamExists('getProject', 'projectName', projectName)
-            const localVarPath = `/projects/{projectName}`
-                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (reload !== undefined) {
-                localVarQueryParameter['reload'] = reload;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * DefaultApi - functional programming interface
- * @export
- */
-export const DefaultApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = DefaultApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @summary Returns metadata about the publisher service.
-         * @param {string} projectName Name of project
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async about(projectName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<About>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.about(projectName, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.about']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary Returns metadata about the project.
-         * @param {string} projectName Name of project
-         * @param {boolean} [reload] Load / reload the project before returning result
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Project>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getProject(projectName, reload, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getProject']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * DefaultApi - factory interface
- * @export
- */
-export const DefaultApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = DefaultApiFp(configuration)
-    return {
-        /**
-         * 
-         * @summary Returns metadata about the publisher service.
-         * @param {string} projectName Name of project
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        about(projectName: string, options?: RawAxiosRequestConfig): AxiosPromise<About> {
-            return localVarFp.about(projectName, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Returns metadata about the project.
-         * @param {string} projectName Name of project
-         * @param {boolean} [reload] Load / reload the project before returning result
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Project> {
-            return localVarFp.getProject(projectName, reload, options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * DefaultApi - object-oriented interface
- * @export
- * @class DefaultApi
- * @extends {BaseAPI}
- */
-export class DefaultApi extends BaseAPI {
-    /**
-     * 
-     * @summary Returns metadata about the publisher service.
-     * @param {string} projectName Name of project
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public about(projectName: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).about(projectName, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Returns metadata about the project.
-     * @param {string} projectName Name of project
-     * @param {boolean} [reload] Load / reload the project before returning result
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getProject(projectName, reload, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-
-
-/**
  * ModelsApi - axios parameter creator
  * @export
  */
@@ -2121,6 +1936,45 @@ export const ProjectsApiAxiosParamCreator = function (configuration?: Configurat
     return {
         /**
          * 
+         * @summary Returns metadata about the project.
+         * @param {string} projectName Name of project
+         * @param {boolean} [reload] Load / reload the project before returning result
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getProject: async (projectName: string, reload?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectName' is not null or undefined
+            assertParamExists('getProject', 'projectName', projectName)
+            const localVarPath = `/projects/{projectName}`
+                .replace(`{${"projectName"}}`, encodeURIComponent(String(projectName)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (reload !== undefined) {
+                localVarQueryParameter['reload'] = reload;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Returns a list of the Projects hosted on this server.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2161,6 +2015,20 @@ export const ProjectsApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @summary Returns metadata about the project.
+         * @param {string} projectName Name of project
+         * @param {boolean} [reload] Load / reload the project before returning result
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Project>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getProject(projectName, reload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProjectsApi.getProject']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Returns a list of the Projects hosted on this server.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2183,6 +2051,17 @@ export const ProjectsApiFactory = function (configuration?: Configuration, baseP
     return {
         /**
          * 
+         * @summary Returns metadata about the project.
+         * @param {string} projectName Name of project
+         * @param {boolean} [reload] Load / reload the project before returning result
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Project> {
+            return localVarFp.getProject(projectName, reload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Returns a list of the Projects hosted on this server.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2200,6 +2079,19 @@ export const ProjectsApiFactory = function (configuration?: Configuration, baseP
  * @extends {BaseAPI}
  */
 export class ProjectsApi extends BaseAPI {
+    /**
+     * 
+     * @summary Returns metadata about the project.
+     * @param {string} projectName Name of project
+     * @param {boolean} [reload] Load / reload the project before returning result
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProjectsApi
+     */
+    public getProject(projectName: string, reload?: boolean, options?: RawAxiosRequestConfig) {
+        return ProjectsApiFp(this.configuration).getProject(projectName, reload, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @summary Returns a list of the Projects hosted on this server.
