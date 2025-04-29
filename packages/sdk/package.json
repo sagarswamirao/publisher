@@ -21,7 +21,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@malloydata/render": "^0.0.240",
+    "@malloydata/render": "^0.0.270",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@mui/system": "^7.0.2",
