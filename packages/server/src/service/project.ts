@@ -8,7 +8,7 @@ import { ConnectionNotFoundError } from "../errors";
 import { BaseConnection } from "@malloydata/malloy/connection";
 import * as path from "path";
 import { ProjectNotFoundError } from "../errors";
-import { API_PREFIX } from "../constants";
+import { API_PREFIX, README_NAME } from "../constants";
 type ApiProject = components["schemas"]["Project"];
 
 export class Project {
@@ -42,10 +42,10 @@ export class Project {
       let readme = "";
       try {
          readme = (
-            await fs.readFile(path.join(this.projectPath, "README.md"))
+            await fs.readFile(path.join(this.projectPath, README_NAME))
          ).toString();
       } catch (error) {
-         console.error(error);
+         console.error("Error reading readme: " + error);
       }
       return {
          resource: `${API_PREFIX}/projects/${this.projectName}`,
@@ -75,21 +75,26 @@ export class Project {
    }
 
    public async listPackages(): Promise<ApiPackage[]> {
-      const files = await fs.readdir(this.projectPath, { withFileTypes: true });
-      const packageMetadata = await Promise.all(
-         files
-            .filter((file) => file.isDirectory())
-            .map(async (directory) => {
-               try {
-                  const _package = await this.getPackage(directory.name, false);
-                  return _package.getPackageMetadata();
-               } catch {
-                  return undefined;
-               }
-            }),
-      );
-      // Get rid of undefined entries (i.e, directories without malloy-package.json files).
-      return packageMetadata.filter((metadata) => metadata) as ApiPackage[];
+      try {
+         const files = await fs.readdir(this.projectPath, { withFileTypes: true });
+         const packageMetadata = await Promise.all(
+            files
+               .filter((file) => file.isDirectory())
+               .map(async (directory) => {
+                  try {
+                     const _package = await this.getPackage(directory.name, false);
+                     return _package.getPackageMetadata();
+                  } catch {
+                     return undefined;
+                  }
+               }),
+         );
+         // Get rid of undefined entries (i.e, directories without malloy-package.json files).
+         return packageMetadata.filter((metadata) => metadata) as ApiPackage[];
+      } catch (error) {
+         console.error("Error listing packages: " + error);
+         throw new Error("Error listing packages: " + error);
+      }
    }
 
    public async getPackage(packageName: string, reload: boolean): Promise<Package> {
