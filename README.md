@@ -57,6 +57,12 @@ gcloud auth login --update-adc
 gcloud config set project {my_project_id} --installation
 ```
 
+### Upgrading Malloy dependencies
+To update to a new NPM release of `@malloydata/*`:
+```
+bun run upgrade-malloy 0.0.XXX #XXX is the new version number
+bun install # This updates node_modules
+```
 
 > **_NOTE:_**  Note that the Publisher repository currently points to a [fork](https://github.com/pathwaysdata/malloy-samples) of the [malloy-samples](https://github.com/malloydata/malloy-samples) repo.  The fork contains minor changes to turn each Malloy sample directory into a package.  Once the package format solidifies, we intend to merge the changes into the main malloy-samples repo.
 
