@@ -8,6 +8,9 @@ import { PackageNotFoundError } from "../errors";
 import { join } from "path";
 import { readConnectionConfig } from "./connection";
 
+// Minimal partial types for mocking
+type PartialScheduler = Pick<Scheduler, "list">;
+
 describe("service/package", () => {
    const testPackageDirectory = "testPackage";
 
@@ -39,6 +42,7 @@ describe("service/package", () => {
    });
 
    it("should create a package instance", async () => {
+      // Using 'as any' for simplified mock Map value in test
       const pkg = new Package(
          "testPackage",
          { name: "testPackage", description: "Test package" },
@@ -60,7 +64,12 @@ describe("service/package", () => {
             sinon.stub(fs, "stat").rejects(new Error("File not found"));
 
             await expect(
-               Package.create("testProject", "testPackage", testPackageDirectory, new Map()),
+               Package.create(
+                  "testProject",
+                  "testPackage",
+                  testPackageDirectory,
+                  new Map(),
+               ),
             ).rejects.toThrowError(
                PackageNotFoundError,
                "Package manifest for testPackage does not exist.",
@@ -74,13 +83,15 @@ describe("service/package", () => {
                   Buffer.from(JSON.stringify({ description: "Test package" })),
                );
 
+            // Still use Partial<Model> for the stub resolution type
+            type PartialModel = Pick<Model, "getPath">;
             sinon
                .stub(Model, "create")
-               .resolves({ getPath: () => "model1.model" } as any);
+               .resolves({ getPath: () => "model1.model" } as PartialModel);
 
             sinon.stub(Scheduler, "create").returns({
                list: () => [],
-            } as any);
+            } as PartialScheduler);
 
             const packageInstance = await Package.create(
                "testProject",
@@ -94,14 +105,15 @@ describe("service/package", () => {
             expect(packageInstance.getPackageMetadata().description).toBe(
                "Test package",
             );
-            expect(packageInstance.listDatabases()).toBe.empty;
-            expect(packageInstance.listModels()).toBe.empty;
-            expect(packageInstance.listSchedules()).toBe.empty;
+            expect(packageInstance.listDatabases()).toBeEmpty();
+            expect(packageInstance.listModels()).toBeEmpty();
+            expect(packageInstance.listSchedules()).toBeEmpty();
          });
       });
 
       describe("listModels", () => {
          it("should return a list of models with their paths and types", () => {
+            // Using 'as any' for simplified mock Map value in test
             const packageInstance = new Package(
                "testPackage",
                { name: "testPackage", description: "Test package" },
@@ -127,9 +139,10 @@ describe("service/package", () => {
 
       describe("getDatabaseSize", () => {
          it("should return the size of the database file", async () => {
-            sinon.stub(fs, "stat").resolves({ size: 13 } as any);
+            sinon.stub(fs, "stat").resolves({ size: 13 } as { size: number });
 
-            const size = await (Package as any).getDatabaseSize(
+            // @ts-expect-error Accessing private static method for testing
+            const size = await Package.getDatabaseSize(
                testPackageDirectory,
                "database.parquet",
             );

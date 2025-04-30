@@ -15,7 +15,11 @@ export class PackageController {
       return project.listPackages();
    }
 
-   public async getPackage(projectName: string, packageName: string, reload: boolean): Promise<ApiPackage> {
+   public async getPackage(
+      projectName: string,
+      packageName: string,
+      reload: boolean,
+   ): Promise<ApiPackage> {
       const project = await this.projectStore.getProject(projectName, false);
       const p = await project.getPackage(packageName, reload);
       return p.getPackageMetadata();

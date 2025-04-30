@@ -10,7 +10,10 @@ export class DatabaseController {
       this.projectStore = projectStore;
    }
 
-   public async listDatabases(projectName: string, packageName: string): Promise<ApiDatabase[]> {
+   public async listDatabases(
+      projectName: string,
+      packageName: string,
+   ): Promise<ApiDatabase[]> {
       const project = await this.projectStore.getProject(projectName);
       const p = await project.getPackage(packageName);
       return p.listDatabases();
