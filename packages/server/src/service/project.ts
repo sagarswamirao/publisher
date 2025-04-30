@@ -30,12 +30,23 @@ export class Project {
       this.apiConnections = apiConnections;
    }
 
-   static async create(projectName: string, projectPath: string): Promise<Project> {
+   static async create(
+      projectName: string,
+      projectPath: string,
+   ): Promise<Project> {
       if (!(await fs.stat(projectPath)).isDirectory()) {
-         throw new ProjectNotFoundError(`Project path ${projectPath} not found`);
+         throw new ProjectNotFoundError(
+            `Project path ${projectPath} not found`,
+         );
       }
-      const { malloyConnections, apiConnections } = await createConnections(projectPath);
-      return new Project(projectName, projectPath, malloyConnections, apiConnections);
+      const { malloyConnections, apiConnections } =
+         await createConnections(projectPath);
+      return new Project(
+         projectName,
+         projectPath,
+         malloyConnections,
+         apiConnections,
+      );
    }
 
    public async getProjectMetadata(): Promise<ApiProject> {
@@ -59,9 +70,13 @@ export class Project {
    }
 
    public getApiConnection(connectionName: string): ApiConnection {
-      const connection = this.apiConnections.find((connection) => connection.name === connectionName);
+      const connection = this.apiConnections.find(
+         (connection) => connection.name === connectionName,
+      );
       if (!connection) {
-         throw new ConnectionNotFoundError(`Connection ${connectionName} not found`);
+         throw new ConnectionNotFoundError(
+            `Connection ${connectionName} not found`,
+         );
       }
       return connection;
    }
@@ -69,35 +84,61 @@ export class Project {
    public getMalloyConnection(connectionName: string): BaseConnection {
       const connection = this.malloyConnections.get(connectionName);
       if (!connection) {
-         throw new ConnectionNotFoundError(`Connection ${connectionName} not found`);
+         throw new ConnectionNotFoundError(
+            `Connection ${connectionName} not found`,
+         );
       }
       return connection;
    }
 
    public async listPackages(): Promise<ApiPackage[]> {
-      try {
-         const files = await fs.readdir(this.projectPath, { withFileTypes: true });
-         const packageMetadata = await Promise.all(
-            files
-               .filter((file) => file.isDirectory())
-               .map(async (directory) => {
-                  try {
-                     const _package = await this.getPackage(directory.name, false);
-                     return _package.getPackageMetadata();
-                  } catch {
-                     return undefined;
-                  }
-               }),
-         );
-         // Get rid of undefined entries (i.e, directories without malloy-package.json files).
-         return packageMetadata.filter((metadata) => metadata) as ApiPackage[];
-      } catch (error) {
-         console.error("Error listing packages: " + error);
-         throw new Error("Error listing packages: " + error);
-      }
+      const files = await fs.readdir(this.projectPath, { withFileTypes: true });
+      const packageMetadata = await Promise.all(
+         files
+            .filter((file) => file.isDirectory())
+            .map(async (directory) => {
+               console.log(
+                  `[Project LOG] listPackages: Mapping directory: ${directory.name}`,
+               );
+               try {
+                  const _package = await this.getPackage(directory.name, false);
+                  console.log(
+                     `[Project LOG] listPackages: getPackage succeeded for ${directory.name}`,
+                  );
+                  const metadata = _package.getPackageMetadata();
+                  console.log(
+                     `[Project LOG] listPackages: Got metadata for ${directory.name}:`,
+                     metadata ? JSON.stringify(metadata) : "undefined",
+                  );
+                  return metadata;
+               } catch (err) {
+                  console.log(
+                     `[Project LOG] listPackages: getPackage failed for ${directory.name}:`,
+                     err,
+                  );
+                  return undefined;
+               }
+            }),
+      );
+      console.log(
+         "[Project LOG] listPackages: Metadata before filter:",
+         JSON.stringify(packageMetadata),
+      );
+      // Get rid of undefined entries (i.e, directories without malloy-package.json files).
+      const filteredMetadata = packageMetadata.filter(
+         (metadata) => metadata,
+      ) as ApiPackage[];
+      console.log(
+         `[Project LOG] listPackages: Metadata after filter (length ${filteredMetadata.length}):`,
+         JSON.stringify(filteredMetadata),
+      );
+      return filteredMetadata;
    }
 
-   public async getPackage(packageName: string, reload: boolean): Promise<Package> {
+   public async getPackage(
+      packageName: string,
+      reload: boolean,
+   ): Promise<Package> {
       let _package = this.packages.get(packageName);
       if (_package === undefined || reload) {
          _package = await Package.create(
