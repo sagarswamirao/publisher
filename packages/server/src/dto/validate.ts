@@ -10,7 +10,7 @@ import { validate } from "class-validator";
  *    res.status(201).json({ message: 'User created', data: req.body });
  * });
  */
-export function validateSchema<T extends Object>(
+export function validateSchema<T extends object>(
    dtoClass: ClassConstructor<T>,
 ) {
    return async (req: Request, res: Response, next: NextFunction) => {

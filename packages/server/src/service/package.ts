@@ -81,7 +81,11 @@ export class Package {
             new DuckDBConnection("duckdb", ":memory:", packagePath),
          );
 
-         const models = await Package.loadModels(packageName, packagePath, connections);
+         const models = await Package.loadModels(
+            packageName,
+            packagePath,
+            connections,
+         );
          const scheduler = Scheduler.create(models);
          const endTime = performance.now();
          const executionTime = endTime - startTime;
@@ -143,7 +147,7 @@ export class Package {
          return {
             path: modelPath,
             type: modelPath.endsWith(MODEL_FILE_SUFFIX) ? "source" : "notebook",
-         } as ApiModel;
+         };
       });
    }
 
@@ -185,13 +189,14 @@ export class Package {
    private static async validatePackageManifestExistsOrThrowError(
       packagePath: string,
    ) {
-      const packageConfigPath = path.join(
-         packagePath,
-         PACKAGE_MANIFEST_NAME,
-      );
+      const packageConfigPath = path.join(packagePath, PACKAGE_MANIFEST_NAME);
       try {
          await fs.stat(packageConfigPath);
-      } catch {
+      } catch (error) {
+         console.error(
+            `Package manifest check failed for ${packageConfigPath}:`,
+            error,
+         );
          throw new PackageNotFoundError(
             `Package manifest for ${packagePath} does not exist.`,
          );
@@ -201,14 +206,14 @@ export class Package {
    private static async readPackageConfig(
       packagePath: string,
    ): Promise<ApiPackage> {
-      const packageConfigPath = path.join(
-         packagePath,
-         PACKAGE_MANIFEST_NAME,
-      );
+      const packageConfigPath = path.join(packagePath, PACKAGE_MANIFEST_NAME);
       const packageConfigContents = await fs.readFile(packageConfigPath);
       // TODO: Validate package manifest.  Define manifest type in public API.
       const packageManifest = JSON.parse(packageConfigContents.toString());
-      return { name: packageManifest.name, description: packageManifest.description };
+      return {
+         name: packageManifest.name,
+         description: packageManifest.description,
+      };
    }
 
    private static async readDatabases(
@@ -225,7 +230,7 @@ export class Package {
                   path: databasePath,
                   size: databaseSize,
                   type: "embedded",
-               } as ApiDatabase;
+               };
             },
          ),
       );

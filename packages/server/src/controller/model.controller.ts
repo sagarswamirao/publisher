@@ -12,7 +12,10 @@ export class ModelController {
       this.projectStore = projectStore;
    }
 
-   public async listModels(projectName: string, packageName: string): Promise<ApiModel[]> {
+   public async listModels(
+      projectName: string,
+      packageName: string,
+   ): Promise<ApiModel[]> {
       const project = await this.projectStore.getProject(projectName);
       const p = await project.getPackage(packageName);
       return p.listModels();

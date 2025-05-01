@@ -10,7 +10,10 @@ export class ScheduleController {
       this.projectStore = projectStore;
    }
 
-   public async listSchedules(projectName: string, packageName: string): Promise<ApiSchedule[]> {
+   public async listSchedules(
+      projectName: string,
+      packageName: string,
+   ): Promise<ApiSchedule[]> {
       const project = await this.projectStore.getProject(projectName);
       const p = await project.getPackage(packageName);
       return p.listSchedules();

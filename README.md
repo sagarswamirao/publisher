@@ -13,11 +13,32 @@ The diagram below illustrates the Publisher's basic components: Publisher App, P
 
 The [Publisher app](packages/app/) allows you to browse packages, their contents, and generate code snippets that can be embedded into a data application. See the screenshots below.
 
-The Publisher app is composed of a set React components. The React components form an [SDK](packages/sdk) that can be embedded in other data applications.  The SDK's React components call the Publisher server's [APIs](api-doc.yaml) to fetch package metadata and query results.
+The Publisher app is composed of a set React components. The React components form an [SDK](packages/sdk) that can be embedded in other data applications.  The SDK's React components call the Publisher server's [APIs](#api-endpoints) to fetch package metadata and query results.
 
-The [Publisher server](packages/sdk) is a simple semantic layer.  While its primary purpose currently is to facilitate local data app development, it can easily be bundled with a set of Malloy packages in a docker image in order to serve Malloy models and packages (coming soon).  We also imagine running the Publisher in-browser in the future to enable folks to easily share and analyze Malloy packages just about anywhere.
+The [Publisher server](packages/server) is a simple semantic layer.  While its primary purpose currently is to facilitate local data app development, it can easily be bundled with a set of Malloy packages in a docker image in order to serve Malloy models and packages (coming soon).  We also imagine running the Publisher in-browser in the future to enable folks to easily share and analyze Malloy packages just about anywhere.
 
 Currently, a Malloy package consists of a set of files in a directory with a publisher.json file.  The publisher.json only supports two fields at the moment (name & description).  We intend to add more fields as we build out Publisher functionality.
+
+## API Endpoints
+
+The Publisher server exposes two primary API interfaces:
+
+1.  **REST API:**
+    *   **Endpoint:** `/api/v0` (running on port defined by `PUBLISHER_PORT`, default 4000)
+    *   **Host:** Defined by `PUBLISHER_HOST` (default `localhost`)
+    *   **Purpose:** Used by the web frontend (Publisher App/SDK) for browsing packages, models, and executing queries.
+    *   **Specification:** Defined in [`api-doc.yaml`](api-doc.yaml).
+    *   **Authentication:** None.
+
+2.  **Model Context Protocol (MCP) API:**
+    *   **Endpoint:** `/mcp` (running on port defined by `MCP_PORT`, default 4001)
+    *   **Host:** Defined by `PUBLISHER_HOST` (default `localhost`)
+    *   **Purpose:** Allows AI agents and other MCP clients (like the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) or compatible applications) to interact with Malloy resources (projects, packages, models, sources, views, notebooks) and execute queries programmatically.
+    *   **Specification:** Adheres to the [MCP `2025-03-26` specification revision](https://modelcontextprotocol.io/specification/2025-03-26/). This includes providing resource metadata and detailed error messages with suggestions.
+    *   **Transport:** Uses the `StreamableHttpServerTransport` defined in the specification, requiring compatible MCP clients.
+    *   **Authentication:** None.
+    *   **Compatibility:** This implementation uses the modern `StreamableHttpServerTransport` and is **not** backward compatible with older clients expecting the deprecated SSE transport ([Source: MCP SSE Transport Deprecation](https://mcp-framework.com/docs/Transports/sse/)).
+    *   **Usage:** To connect an MCP client, point it to `http://<PUBLISHER_HOST>:<MCP_PORT>/mcp`. See the [MCP Documentation](https://modelcontextprotocol.io/) for client examples.
 
 ## Screenshots
 

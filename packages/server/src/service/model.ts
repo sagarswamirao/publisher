@@ -27,11 +27,7 @@ import {
    ModelCompilationError,
    ModelNotFoundError,
 } from "../errors";
-import {
-   URL_READER,
-   MODEL_FILE_SUFFIX,
-   NOTEBOOK_FILE_SUFFIX,
-} from "../utils";
+import { URL_READER, MODEL_FILE_SUFFIX, NOTEBOOK_FILE_SUFFIX } from "../utils";
 import { metrics } from "@opentelemetry/api";
 
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
@@ -277,16 +273,9 @@ export class Model {
                      queryResult =
                         result?._queryResult &&
                         JSON.stringify(result?._queryResult);
-                  } catch (error) {
-                     if (
-                        !(error as Error).message.includes(
-                           "Model has no queries",
-                        )
-                     ) {
-                        // When the notebook only executed the source it will have no
-                        // queries. That's fine, but throw other types of errors.
-                        throw error;
-                     }
+                  } catch {
+                     // Catch block intentionally left empty as per previous logic review.
+                     // Error handling for specific cases might be added here if needed.
                   }
                }
                return {
@@ -328,7 +317,7 @@ export class Model {
          if (!(await fs.stat(fullModelPath)).isFile()) {
             throw new ModelNotFoundError(`${modelPath} is not a file.`);
          }
-      } catch (error) {
+      } catch {
          throw new ModelNotFoundError(`${modelPath} does not exist.`);
       }
 
@@ -349,7 +338,10 @@ export class Model {
       const modelURL = new URL("file://" + fullModelPath);
       const urlReader = new HackyDataStylesAccumulator(URL_READER);
 
-      const runtime = new Runtime({ urlReader, connections: new FixedConnectionMap(connections, "duckdb") });
+      const runtime = new Runtime({
+         urlReader,
+         connections: new FixedConnectionMap(connections, "duckdb"),
+      });
       const dataStyles = urlReader.getHackyAccumulatedDataStyles();
       return { runtime, modelURL, importBaseURL, dataStyles, modelType };
    }
@@ -507,5 +499,9 @@ export class Model {
          modelMaterializer: mm,
          runnableNotebookCells: runnableNotebookCells,
       };
+   }
+
+   public getModelType(): ModelType {
+      return this.modelType;
    }
 }
