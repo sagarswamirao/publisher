@@ -46,7 +46,7 @@ export async function setupE2ETestEnvironment(): Promise<McpE2ETestEnvironment> 
    let serverUrl: string;
 
    // Define an explicit port for the test server to avoid conflicts
-   const TEST_MCP_PORT = Number(process.env.MCP_PORT || 4001) + 2; // e.g., 4003
+   const TEST_MCP_PORT = Number(process.env.MCP_PORT || 4040) + 2; // e.g., 4042
 
    await new Promise<void>((resolve, reject) => {
       const server = http

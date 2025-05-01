@@ -15,7 +15,7 @@
     "start": "cd packages/server && bun run start",
     "start:dev": "cd packages/server && bun run start:dev",
     "start:dev:react": "cd packages/app && bun run dev",
-    "test:server": "cd packages/server && bun test",
+    "test:server": "cd packages/server && bun run test",
     "test": "bun run test:server",
     "generate-api-types:sdk": "cd packages/sdk && bun run generate-api-types",
     "generate-api-types:server": "cd packages/server && bun run generate-api-types",
