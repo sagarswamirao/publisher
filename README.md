@@ -87,20 +87,6 @@ The Publisher Server, with its MCP interface exposing Malloy semantic models, en
 
 TODO(kjnesbit): Replace with a demo video.
 
-<center>
-    <figcaption>Browse loaded packages</figcaption>
-    <img src="project-screenshot.png" width=800>
-</center>
-<br>
-<center>
-    <figcaption>Explore a package's contents</figcaption>
-    <img src="package-screenshot.png" width=800>
-</center>
-<br>
-<center>
-    <figcaption>Explore Malloy models and notebooks</figcaption>
-    <img src="notebook-screenshot.png" width=800>
-</center>
 
 ## Publisher MCP Demo
 
