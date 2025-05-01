@@ -105,7 +105,9 @@ describe("service/package", () => {
             expect(packageInstance.getPackageMetadata().description).toBe(
                "Test package",
             );
-            expect(packageInstance.listDatabases()).toBeEmpty();
+            expect(packageInstance.listDatabases()).toEqual([
+               { path: "database.parquet", size: 13, type: "embedded" },
+            ]);
             expect(packageInstance.listModels()).toBeEmpty();
             expect(packageInstance.listSchedules()).toBeEmpty();
          });
