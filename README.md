@@ -36,14 +36,14 @@ The diagram below illustrates how these components interact:
 **1. Publisher Server (`packages/server/`)**
 
 * **Core Backend:** This is the heart of Publisher. It's a server application responsible for loading and managing Malloy Packages, which encapsulate your semantic models.
-* **Malloy Integration:** It utilizes the Malloy runtime to parse `.malloy` files, understand the rich semantic models defined within them (including relationships, calculations, and business context), and compile Malloy queries into SQL for execution against target databases (BigQuery, Postgres, DuckDB).
+* **Malloy Integration:** It utilizes the Malloy runtime to parse `.malloy` files, understand the rich semantic models defined within them (including relationships, calculations, and business context), and compile Malloy queries into SQL for execution against target databases (BigQuery, Snowflake, Trino, DuckDB, Postgres, MySQL).
 * **Malloy Package Format:** The Publisher Server loads semantic models, notebooks, and transformations based on the Malloy Package format. This format is designed to integrate seamlessly with standard developer practices.
     * **Goal: Scalability and Governance through Standard Practices:** Enable engineers to manage, version, test, and distribute their data transformations and semantic models using familiar workflows (local development, CI/CD) and distribution mechanisms (e.g., packages, container images, registries). This aims to scale data development far beyond the limitations of current ad-hoc approaches. Crucially, leveraging these standard software engineering practices provides a natural form of **governance**. When a versioned package is pushed by a trusted source to a central repository or registry, that specific version effectively becomes the blessed or "governed" definition for consumption. This contrasts sharply with the complex, often bespoke processes required by traditional data catalogs or BI tools to achieve similar levels of trust and governance for data assets.
     * **Structure:** A Malloy package is currently defined as a directory containing:
         * One or more `.malloy` files defining data models, queries, and transformations.
         * Optionally, one or more `.malloynb` files (Malloy Notebooks) for ad hoc analysis, exploration, and dashboard-like presentation.
         * A `publisher.json` manifest file.
-    * **Manifest (`publisher.json`):** Contains metadata about the package. Currently, it supports `name` and `description` fields. This schema will be expanded significantly as Publisher evolves to better support dependency management, versioning, and integration with package/container registries, further strengthening the governance model.
+    * **Manifest (`publisher.json`):** Contains metadata about the package. Currently, it supports `name`, `version`, and `description` fields. This schema will be expanded significantly as Publisher evolves to better support dependency management, versioning, and integration with package/container registries, further strengthening the governance model.
 * **API Layers:** The Publisher server exposes two primary API interfaces:
     * **REST API:**
         * **Endpoint:** `/api/v0` (running on port defined by `PUBLISHER_PORT`, default `4000`)
@@ -87,20 +87,6 @@ The Publisher Server, with its MCP interface exposing Malloy semantic models, en
 
 TODO(kjnesbit): Replace with a demo video.
 
-<center>
-    <figcaption>Browse loaded packages</figcaption>
-    <img src="project-screenshot.png" width=800>
-</center>
-<br>
-<center>
-    <figcaption>Explore a package's contents</figcaption>
-    <img src="package-screenshot.png" width=800>
-</center>
-<br>
-<center>
-    <figcaption>Explore Malloy models and notebooks</figcaption>
-    <img src="notebook-screenshot.png" width=800>
-</center>
 
 ## Publisher MCP Demo
 
