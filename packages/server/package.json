@@ -7,7 +7,7 @@
     "publisher": "dist/server.js"
   },
   "scripts": {
-    "test": "bun test",
+    "test": "bun test ./src/service/model.spec.ts ./src/service/package.spec.ts ./src/__tests__/setup.spec.ts ./src/__tests__/mcp_execute_query_tool.integration.spec.ts ./src/__tests__/mcp_resource.integration.spec.ts ./src/__tests__/mcp_transport.integration.spec.ts",
     "build": "bun build src/server.ts src/instrumentation.ts --outdir dist --target bun",
     "start": "bun run ./dist/server.js",
     "start:instrumented": "bun run --preload ./dist/instrumentation.js ./dist/server.js",
