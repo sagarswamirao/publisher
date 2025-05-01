@@ -5,6 +5,7 @@
 Welcome to Publisher, the open-source semantic model server for the [Malloy](link-to-malloy-project) data language.
 
 **What is Malloy?**
+
 [Malloy](link-to-malloy-project) is an innovative open-source language specifically created for describing data structures, relationships, and transformations. Crucially, Malloy allows you to build rich **semantic models** – defining the *meaning*, *relationships*, and *context* behind your data directly within the language.
 
 Malloy provides a robust framework to encode the business context alongside your data structures and running queries against your databases. The accompanying [VS Code extension](link-to-vscode-extension) provides a rich environment for developing these crucial Malloy models, exploring data, and building simple dashboards.
@@ -12,9 +13,11 @@ Malloy provides a robust framework to encode the business context alongside your
 This explicit definition of meaning is becoming essential as AI agents become primary consumers of enterprise data. AI lacks human contextual understanding. Without a clear semantic layer defining concepts consistently (e.g., is 'revenue' GAAP revenue, bookings, or contracted ARR?), AI can easily misinterpret data pulled from various sources, leading to inaccurate or nonsensical results.
 
 **What is Publisher?**
+
 Publisher takes the semantic models defined in Malloy – models rich with business context and meaning – and exposes them through a server interface. This allows applications, **AI agents**, tools, and users to query your data consistently and reliably, leveraging the shared, unambiguous understanding defined in the Malloy model.
 
 **The Goal:**
+
 Publisher is a critical piece of the larger vision to enable the next generation of data and AI applications. The semantic layer is rapidly becoming the most strategic part of the modern data stack – it's the keystone that unlocks the true potential of data warehouses and AI models by ensuring accuracy, consistency, and preventing costly misinterpretations.
 
 Malloy and Publisher aim to provide an open-source, developer-centric, and powerful platform for building, managing, and *serving* semantic models. Our goal is to create a trustworthy foundation for both human analysis and reliable AI-driven insights, offering a compelling, open alternative to proprietary systems like Looker.
@@ -25,7 +28,9 @@ Publisher provides a way to serve, explore, and interact with Malloy semantic mo
 
 The diagram below illustrates how these components interact, including the pathway for AI agents via MCP:
 
-TODO(knesbit): diagram
+<img src="publisher.png" width=400>
+
+TODO(knesbit): Add MCP to the diagram.
 
 **1. Publisher Server (`packages/server/`)**
 
@@ -67,7 +72,7 @@ TODO(knesbit): diagram
 * **Functionality:** Allows users to connect to a running Publisher Server instance (via the REST API), browse the available Malloy packages and their contents, and generate embeddable code snippets.
 * **Purpose:** Serves as a practical example of how to use the SDK and provides a useful tool for local development and exploration by human analysts.
 
-**4. Potential MCP-Powered Applications**
+**4. MCP-Powered Applications**
 
 The Publisher Server, with its MCP interface exposing Malloy semantic models, enables a new class of data-driven applications, particularly those leveraging AI:
 
@@ -77,7 +82,7 @@ The Publisher Server, with its MCP interface exposing Malloy semantic models, en
 * **Data Quality Validation:** Tools that use the semantic model definitions accessed via MCP to automatically validate data in the underlying warehouse against the expected business rules and definitions.
 * **Enhanced BI Tools:** Future BI tools could potentially use MCP as a standard way to connect to semantic layers like Publisher, offering users a more reliable and consistent view of data across different platforms.
 
-## Publisher App Screenshots
+## Publisher App Demo
 
 TODO(kjnesbit): Replace with a demo video.
 
@@ -96,30 +101,117 @@ TODO(kjnesbit): Replace with a demo video.
     <img src="notebook-screenshot.png" width=800>
 </center>
 
+## Publisher MCP Demo
+
+TODO(nick): Add an MCP Demo.
+
 ## Build and Run Instructions
 
-To build and run the package server, first load the malloy-samples.
-```
+Follow these steps to build the Publisher components and run the server locally. This project uses [`bun`](https://bun.sh/) as the JavaScript runtime and package manager.
+
+**1. Initialize and Update Git Submodules:**
+
+The Publisher repository uses Git submodules to include sample Malloy models (currently a fork of `malloy-samples`). These samples are used for testing and demonstrating Publisher's capabilities.
+
+First, initialize the registered submodules:
+```bash
 git submodule init
+```
+
+Then, update the submodules to fetch their content:
+
+```bash
 git submodule update
 ```
 
-Then build and run the package server:
-```
+**2. Install Dependencies:**
+
+Install all necessary project dependencies (including those for the server, SDK, and app) using bun:
+
+```bash
 bun install
+```
+
+**3. Build the Project:**
+
+Compile the TypeScript code for all packages (server, SDK, app) into JavaScript:
+
+```bash
 bun run build
+```
+
+**4. Start the Publisher Server:**
+
+Run the compiled server code. By default, this will start the REST API server on port 4000 and the MCP server on port 4040. The server will load the Malloy packages found in the submodules.
+
+```bash
 bun run start
 ```
 
-Running the BigQuery malloy-samples requires GCP application default credentials.
-```
+Once started, you can typically access the Publisher App (if running) at http://localhost:4000 and the MCP endpoint at http://localhost:4040/mcp.
+
+**5. (Optional) Configure GCP Credentials for BigQuery Samples:**
+
+Some of the included malloy-samples run queries against Google BigQuery public datasets. To run these specific samples, you need to authenticate with Google Cloud:
+
+Update your Application Default Credentials (ADC) by logging in with gcloud:
+
+```bash
 gcloud auth login --update-adc
+```
+
+Set your default GCP project (replace {my_project_id} with your actual project ID, though for public datasets, any valid project should generally work):
+
+```bash
 gcloud config set project {my_project_id} --installation
 ```
 
+The Publisher server (specifically the Malloy runtime) will automatically use these credentials when connecting to BigQuery.
+
 ## Server Configuration
 
-TODO(kjnesbit): Add sever configuration information.
+Publisher uses configuration files on the local filesystem to manage server settings and project-specific details like database connections.
+
+* **Server Configuration (`publisher.config.json`):**
+    * **Location:** Stored at the `SERVER_ROOT` directory (the directory from which the `publisher-server` command is run or where the server package is located).
+    * **Purpose:** Defines the overall server environment, primarily by listing the available "projects" and their relative paths. A project represents a distinct environment or collection of packages.
+    * **Example:** See [`packages/server/publisher.config.json`](packages/server/publisher.config.json) for the basic structure.
+
+* **Project Configuration (`publisher.connections.json`):**
+    * **Location:** Stored at the root of each individual project directory defined in the server configuration.
+    * **Purpose:** Contains project-specific settings, most importantly the database connection configurations (credentials, database names, types like BigQuery/Postgres/DuckDB, etc.) required by the Malloy models within that project's packages.
+    * **Example:** See [`malloy-samples/publisher.connections.json`](malloy-samples/publisher.connections.json) for an example.
+
+* **Environment Management:**
+    * This two-tiered configuration structure (server-level listing projects, project-level defining connections) allows for standard environment separation (e.g., `dev`, `staging`, `prod`), a common practice in cloud development.
+    * You can create separate project directories for each environment. Each project directory would contain its own `publisher.connections.json` with the appropriate credentials for that environment.
+    * Crucially, these environment-specific project directories can reference the *same* underlying Malloy packages (containing the models and notebooks) using symbolic links.
+
+    * **Example File Structure:**
+        ```
+        SERVER_ROOT/
+        ├── publisher.config.json       # Lists 'staging' and 'prod' projects
+        │
+        ├── packages/                   # Contains the actual Malloy packages
+        │   ├── package1/
+        │   │   └── model.malloy
+        │   ├── package2/
+        │   └── ...
+        │
+        ├── staging/                    # Staging environment project
+        │   ├── publisher.connections.json # Staging DB credentials
+        │   ├── package1 -> ../packages/package1  # Symbolic link
+        │   └── package2 -> ../packages/package2  # Symbolic link
+        │
+        └── prod/                       # Production environment project
+            ├── publisher.connections.json  # Production DB credentials
+            ├── package1 -> ../packages/package1   # Symbolic link
+            └── package2 -> ../packages/package2   # Symbolic link
+        ```
+    * **Benefit:** This allows you to build a single Docker image containing the Publisher server and all Malloy packages. You can then deploy this *same image* to different environments (staging, production). By configuring your staging and productio jobs to point to the appropriate project (`staging` or `prod`), you ensure the correct connection credentials are used for each environment without rebuilding the image or modifying the core package code.
+
+> ***NOTE:*** Note that the Publisher repository currently points to a [fork](https://github.com/pathwaysdata/malloy-samples) of the [malloy-samples](https://github.com/malloydata/malloy-samples) repo.  The fork contains minor changes to turn each Malloy sample directory into a package.  Once the package format solidifies, we intend to merge the changes into the main malloy-samples repo.
+
 
 ### Upgrading Malloy dependencies
 To update to a new NPM release of `@malloydata/*`:
@@ -132,12 +224,14 @@ bun install # This updates node_modules
 
 ## Coming Soon
 
-* Developer mode that automatically recompiles models and refreshes the publisher app as you make changes
-* Embed Composer's [Explore UI](https://github.com/malloydata/malloy-composer) to enable ad hoc anslysis of packages via a UI
-* Scheduled transform pipelines
-* Dockerfile and images 
-* DBT integration
-* Ariflow integration
+We are actively developing Publisher and plan to introduce several exciting features:
+
+* **Enhanced Developer Mode:** A streamlined local development experience where changes to your `.malloy` or `.malloynb` files automatically trigger recompilation of models and hot-reloading of the Publisher App/SDK, enabling faster iteration and testing.
+* **Integrated Ad Hoc Analysis UI:** Embed the powerful [Explore UI from Malloy Composer](https://github.com/malloydata/malloy-composer) directly within the Publisher App. This will provide a rich, graphical interface for interactively querying and visualizing data from published Malloy models without needing to write code.
+* **Scheduled Transform Pipelines:** Extend Publisher to orchestrate the execution of Malloy transformations on a schedule. Define pipelines within your Malloy packages to update materialized views, create summary tables, or perform other routine data preparation tasks directly managed by Publisher.
+* **Containerization Support (Dockerfile & Images):** Provide official Dockerfiles and pre-built container images to easily package the Publisher server along with specific Malloy packages. This simplifies deployment, promotes consistency across environments, and aligns with standard DevOps practices.
+* **DBT Integration:** Bridge the gap with the popular dbt ecosystem. Potential integration points include referencing Malloy models within dbt and triggering Malloy transformations as part of dbt workflows.
+* **Airflow Integration:** Enable seamless integration with Apache Airflow. This could involve custom Airflow operators to trigger Publisher actions like model refreshes or scheduled pipeline runs, allowing Malloy/Publisher tasks to be incorporated into larger, complex data orchestration DAGs.
 
 ## Join the Malloy Community
 
