@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "bunx vite build --mode development",
-    "dev": "bunx vite",
+    "dev": "bunx vite --host",
     "preview": "bunx vite preview",
     "lint": "bunx eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
     "format": "bunx prettier --write --parser typescript '**/*.{ts,tsx}'",

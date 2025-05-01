@@ -65,9 +65,26 @@ git submodule init
 git submodule update
 ```
 
-Then build and run the package server:
+Then install the NPM deps:
 ```
 bun install
+```
+
+In development, there are 2 servers- the Node.JS API server and the React Dev server.
+In production, there's just 1 server- the Node server, and it serves the UI statically.
+The development server will hot-load changes. Changes to the Node.JS will cause the server to restart, changes to the React UI should be hot-loaded. Though note that BOTH systems sometimes fail to detect/implement changes, so don't be shy about restarting them.
+
+To run in development, you'll want 2 terms (you can obv run them in the BG, but in dev mode they
+can get gorked and you'll want to be able to kill/restart them):
+```
+bun run start:dev 
+```
+```
+bun run start:dev:react
+```
+
+To run the production server, build, then start the server:
+```
 bun run build
 bun run start
 ```
