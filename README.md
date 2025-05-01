@@ -31,7 +31,7 @@ The Publisher server exposes two primary API interfaces:
     *   **Authentication:** None.
 
 2.  **Model Context Protocol (MCP) API:**
-    *   **Endpoint:** `/mcp` (running on port defined by `MCP_PORT`, default 4001)
+    *   **Endpoint:** `/mcp` (running on port defined by `MCP_PORT`, default 4040)
     *   **Host:** Defined by `PUBLISHER_HOST` (default `localhost`)
     *   **Purpose:** Allows AI agents and other MCP clients (like the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) or compatible applications) to interact with Malloy resources (projects, packages, models, sources, views, notebooks) and execute queries programmatically.
     *   **Specification:** Adheres to the [MCP `2025-03-26` specification revision](https://modelcontextprotocol.io/specification/2025-03-26/). This includes providing resource metadata and detailed error messages with suggestions.
