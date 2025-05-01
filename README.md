@@ -26,7 +26,7 @@ Malloy and Publisher aim to provide an open-source, developer-centric, and power
 
 Publisher provides a way to serve, explore, and interact with Malloy semantic models, making them readily available for both human analysis and AI consumption. It consists of three main components: the Publisher Server (backend, now including MCP support), the Publisher SDK (UI components), and the Publisher App (a reference implementation).
 
-The diagram below illustrates how these components interact:
+The image below illustrates the composition of these different components.
 <center>
 <img src="publisher.png" width=400>
 </center>
