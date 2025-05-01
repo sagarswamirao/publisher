@@ -37,10 +37,6 @@ const databaseController = new DatabaseController(projectStore);
 const queryController = new QueryController(projectStore);
 const scheduleController = new ScheduleController(projectStore);
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.json());
-
 const mcpApp = express();
 
 mcpApp.use(MCP_ENDPOINT, express.json());
