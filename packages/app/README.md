@@ -1,39 +1,32 @@
-# Material UI - Vite.js in TypeScript example
+# Publisher Server Development
 
-## How to use
+In development, there are 2 servers- the Node.JS API server and the React Dev server.
+In production, there's just 1 server- the Node server, and it serves the UI statically.
+The development server will hot-load changes. Changes to the Node.JS will cause the server to restart, changes to the React UI should be hot-loaded. Though note that BOTH systems sometimes fail to detect/implement changes, so don't be shy about restarting them.
 
-Download the example [or clone the repo](https://github.com/mui/material-ui):
-
-<!-- #default-branch-switch -->
-
-```bash
-curl https://codeload.github.com/mui/material-ui/tar.gz/master | tar -xz --strip=2 material-ui-master/examples/material-ui-vite-ts
-cd material-ui-vite-ts
+To run in development, you'll want 2 terms (you can obv run them in the BG, but in dev mode they
+can get gorked and you'll want to be able to kill/restart them):
+```
+bun run start:dev 
+```
+```
+bun run start:dev:react
 ```
 
-Install it and run:
+### Linking Renderer code
+The SDK depends on `@malloydata-render`. Often changes involve edits to both the Malloy render code and the app/SDK. It's useful to have the server run and depend on a local copy of the `render` code rather than the NPM package. TO set this up:
+```
+[clone the @malloydata/malloy repo]
+cd MALLOY_ROOT/packages/malloy-render
+bun link
 
-```bash
-npm install
-npm run dev
+cd PUBLISHER_ROOT/packages/sdk
+bun link @malloydata/render
 ```
 
-or:
-
-<!-- #default-branch-switch -->
-
-[![Edit on StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/mui/material-ui/tree/master/examples/material-ui-vite-ts)
-
-[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/github/mui/material-ui/tree/master/examples/material-ui-vite-ts)
-
-## The idea behind the example
-
-This example uses [Vite.js](https://github.com/vitejs/vite).
-It includes `@mui/material` and its peer dependencies, including [Emotion](https://emotion.sh/docs/introduction), the default style engine in Material UI v6.
-
-## What's next?
-
-<!-- #default-branch-switch -->
-
-You now have a working example project.
-You can head back to the documentation and continue by browsing the [templates](https://mui.com/material-ui/getting-started/templates/) section.
+The publisher react server will now depend on your local copy of Malloy render. However, to push the changes, you must **build** the Malloy renderer:
+```
+cd MALLOY_ROOT/packages/malloy-render
+npm run build
+``` 
+[Note: you'll need to build from the `malloy` root once to create all the deps the renderer needs]

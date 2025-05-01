@@ -150,6 +150,8 @@ bun run start
 
 Once started, you can typically access the Publisher App (if running) at http://localhost:4000 and the MCP endpoint at http://localhost:4040/mcp.
 
+See [packages/app/README.md](packages/app/README.md) for information on how to do development on the server.
+
 **5. (Optional) Configure GCP Credentials for BigQuery Samples:**
 
 Some of the included malloy-samples run queries against Google BigQuery public datasets. To run these specific samples, you need to authenticate with Google Cloud:
