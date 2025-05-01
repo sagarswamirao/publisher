@@ -13,7 +13,7 @@
     "build:server": "cd packages/server && bun run build",
     "build": "bun run build:sdk && bun run build:app && bun run build:server",
     "start": "cd packages/server && bun run start",
-    "test:server": "cd packages/server && bun test",
+    "test:server": "cd packages/server && bun run test",
     "test": "bun run test:server",
     "generate-api-types:sdk": "cd packages/sdk && bun run generate-api-types",
     "generate-api-types:server": "cd packages/server && bun run generate-api-types",
