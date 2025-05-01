@@ -210,9 +210,6 @@ Publisher uses configuration files on the local filesystem to manage server sett
         ```
     * **Benefit:** This allows you to build a single Docker image containing the Publisher server and all Malloy packages. You can then deploy this *same image* to different environments (staging, production). By configuring your staging and productio jobs to point to the appropriate project (`staging` or `prod`), you ensure the correct connection credentials are used for each environment without rebuilding the image or modifying the core package code.
 
-> ***NOTE:*** Note that the Publisher repository currently points to a [fork](https://github.com/pathwaysdata/malloy-samples) of the [malloy-samples](https://github.com/malloydata/malloy-samples) repo.  The fork contains minor changes to turn each Malloy sample directory into a package.  Once the package format solidifies, we intend to merge the changes into the main malloy-samples repo.
-
-
 ### Upgrading Malloy dependencies
 To update to a new NPM release of `@malloydata/*`:
 ```
