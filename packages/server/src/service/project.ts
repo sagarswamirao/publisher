@@ -92,47 +92,52 @@ export class Project {
    }
 
    public async listPackages(): Promise<ApiPackage[]> {
-      const files = await fs.readdir(this.projectPath, { withFileTypes: true });
-      const packageMetadata = await Promise.all(
-         files
-            .filter((file) => file.isDirectory())
-            .map(async (directory) => {
-               console.log(
-                  `[Project LOG] listPackages: Mapping directory: ${directory.name}`,
-               );
-               try {
-                  const _package = await this.getPackage(directory.name, false);
+      try {
+         const files = await fs.readdir(this.projectPath, { withFileTypes: true });
+         const packageMetadata = await Promise.all(
+            files
+               .filter((file) => file.isDirectory())
+               .map(async (directory) => {
                   console.log(
-                     `[Project LOG] listPackages: getPackage succeeded for ${directory.name}`,
+                     `[Project LOG] listPackages: Mapping directory: ${directory.name}`,
                   );
-                  const metadata = _package.getPackageMetadata();
-                  console.log(
-                     `[Project LOG] listPackages: Got metadata for ${directory.name}:`,
-                     metadata ? JSON.stringify(metadata) : "undefined",
-                  );
-                  return metadata;
-               } catch (err) {
-                  console.log(
-                     `[Project LOG] listPackages: getPackage failed for ${directory.name}:`,
-                     err,
-                  );
-                  return undefined;
-               }
-            }),
-      );
-      console.log(
-         "[Project LOG] listPackages: Metadata before filter:",
-         JSON.stringify(packageMetadata),
-      );
-      // Get rid of undefined entries (i.e, directories without malloy-package.json files).
-      const filteredMetadata = packageMetadata.filter(
-         (metadata) => metadata,
-      ) as ApiPackage[];
-      console.log(
-         `[Project LOG] listPackages: Metadata after filter (length ${filteredMetadata.length}):`,
-         JSON.stringify(filteredMetadata),
-      );
-      return filteredMetadata;
+                  try {
+                     const _package = await this.getPackage(directory.name, false);
+                     console.log(
+                        `[Project LOG] listPackages: getPackage succeeded for ${directory.name}`,
+                     );
+                     const metadata = _package.getPackageMetadata();
+                     console.log(
+                        `[Project LOG] listPackages: Got metadata for ${directory.name}:`,
+                        metadata ? JSON.stringify(metadata) : "undefined",
+                     );
+                     return metadata;
+                  } catch (err) {
+                     console.log(
+                        `[Project LOG] listPackages: getPackage failed for ${directory.name}:`,
+                        err,
+                     );
+                     return undefined;
+                  }
+               }),
+         );
+         console.log(
+            "[Project LOG] listPackages: Metadata before filter:",
+            JSON.stringify(packageMetadata),
+         );
+         // Get rid of undefined entries (i.e, directories without malloy-package.json files).
+         const filteredMetadata = packageMetadata.filter(
+            (metadata) => metadata,
+         ) as ApiPackage[];
+         console.log(
+            `[Project LOG] listPackages: Metadata after filter (length ${filteredMetadata.length}):`,
+            JSON.stringify(filteredMetadata),
+         );
+         return filteredMetadata;
+      } catch (error) {
+         console.error("Error listing packages: " + error);
+         throw new Error("Error listing packages: " + error);
+      }
    }
 
    public async getPackage(
