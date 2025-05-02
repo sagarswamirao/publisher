@@ -79,7 +79,6 @@ export default function QueryResult({
             <Suspense fallback="Loading malloy...">
                <RenderedResult
                   result={data.data.result}
-                  modelInfo={data.data.modelInfo}
                />
             </Suspense>
          )}

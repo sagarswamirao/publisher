@@ -33,7 +33,6 @@ interface NotebookCellProps {
 
 export function NotebookCell({
    cell,
-   modelInfo,
    queryResultCodeSnippet,
    expandCodeCell,
    hideCodeCellIcon,
@@ -177,7 +176,6 @@ export function NotebookCell({
                      <Suspense fallback="Loading malloy...">
                         <RenderedResult
                            result={cell.result}
-                           modelInfo={modelInfo}
                         />
                      </Suspense>
                   </CardContent>

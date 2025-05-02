@@ -19,18 +19,16 @@ declare global {
 
 interface RenderedResultProps {
    result: string;
-   modelInfo: string;
 }
 
 export default function RenderedResult({
    result,
-   modelInfo,
 }: RenderedResultProps) {
    const ref = useRef<MalloyRenderElement>(null);
    useEffect(() => {
       if (ref.current) {
          ref.current.malloyResult = JSON.parse(result);
       }
-   }, [result, modelInfo]);
+   }, [result]);
    return <malloy-render ref={ref}/>;
 }
