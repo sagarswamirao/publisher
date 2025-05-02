@@ -30,8 +30,7 @@ The image below illustrates the composition of these different components.
 <center>
 <img src="publisher.png" width=400>
 </center>
-<br><br>
-
+<br>
 
 **1. Publisher Server (`packages/server/`)**
 
@@ -60,6 +59,8 @@ The image below illustrates the composition of these different components.
         * **Authentication:** None.
         * **Compatibility:** This implementation uses the modern `StreamableHttpServerTransport` and is **not** backward compatible with older clients expecting the deprecated SSE transport ([Source: MCP SSE Transport Deprecation](https://mcp-framework.com/docs/Transports/sse/)).
         * **Usage:** To connect an MCP client, point it to `http://<PUBLISHER_HOST>:<MCP_PORT>/mcp`. See the [MCP Documentation](https://modelcontextprotocol.io/) for client examples.
+    * **SQL API (coming soon):**
+        * **Purpose:** Connect to you existing tools.
 
 **2. Publisher SDK (`packages/sdk/`)**
 
