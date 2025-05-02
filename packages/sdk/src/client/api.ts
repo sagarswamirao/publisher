@@ -116,18 +116,6 @@ export interface CompiledModel {
      */
     'malloyVersion'?: string;
     /**
-     * Data style for rendering query results.
-     * @type {string}
-     * @memberof CompiledModel
-     */
-    'dataStyles'?: string;
-    /**
-     * Malloy model def.
-     * @type {string}
-     * @memberof CompiledModel
-     */
-    'modelDef'?: string;
-    /**
      * JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
      * @type {string}
      * @memberof CompiledModel
@@ -529,18 +517,6 @@ export interface QueryData {
  * @interface QueryResult
  */
 export interface QueryResult {
-    /**
-     * Data style for rendering query results.
-     * @type {string}
-     * @memberof QueryResult
-     */
-    'dataStyles'?: string;
-    /**
-     * Malloy model def.
-     * @type {string}
-     * @memberof QueryResult
-     */
-    'modelDef'?: string;
     /**
      * JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
      * @type {string}

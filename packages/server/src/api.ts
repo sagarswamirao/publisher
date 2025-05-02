@@ -124,10 +124,6 @@ export interface components {
       type?: "source" | "notebook";
       /** @description Version of the Malloy compiler that generated the model def and results fields. */
       malloyVersion?: string;
-      /** @description Data style for rendering query results. */
-      dataStyles?: string;
-      /** @description Malloy model def. */
-      modelDef?: string;
       /** @description JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts */
       modelInfo?: string;
       /** @description Array of model sources. */
@@ -175,10 +171,6 @@ export interface components {
     };
     /** @description A Malloy query's results, its model def, and its data styles. */
     QueryResult: {
-      /** @description Data style for rendering query results. */
-      dataStyles?: string;
-      /** @description Malloy model def. */
-      modelDef?: string;
       /** @description JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts */
       modelInfo?: string;
       /** @description JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts */

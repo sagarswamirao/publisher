@@ -1,9 +1,8 @@
-import { modelDefToModelInfo, queryResultToMalloyResult } from "@malloydata/malloy";
 import { components } from "../api";
 import { ModelNotFoundError } from "../errors";
 import { ProjectStore } from "../service/project_store";
 
-type ApiQuery = components["schemas"]["Query"];
+type ApiQuery = components["schemas"]["QueryResult"];
 
 export class QueryController {
    private projectStore: ProjectStore;
@@ -27,17 +26,13 @@ export class QueryController {
       if (!model) {
          throw new ModelNotFoundError(`${modelPath} does not exist`);
       } else {
-         const { result, modelInfo, dataStyles } =
-            await model.getQueryResults(sourceName, queryName, query);
-         // const result = queryResultToMalloyResult(
-         //    modelInfo,
-         //    queryResults?._queryResult,
-         // );
+         const { result, modelInfo } = await model.getQueryResults(
+            sourceName,
+            queryName,
+            query,
+         );
          return {
-            dataStyles: JSON.stringify(dataStyles),
-            // modelDef: JSON.stringify(modelDef),
             modelInfo: JSON.stringify(modelInfo),
-            // queryResult: JSON.stringify(queryResults?._queryResult),
             result: JSON.stringify(result),
          } as ApiQuery;
       }

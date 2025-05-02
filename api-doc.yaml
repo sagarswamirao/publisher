@@ -778,14 +778,6 @@ components:
         malloyVersion:
           type: string
           description: Version of the Malloy compiler that generated the model def and results fields.
-        # Pass data styles as an opaque JSON string that is malloyVersion depdendent.
-        dataStyles:
-          type: string
-          description: Data style for rendering query results.
-        # Pass model def as an opaque JSON string that is malloyVersion depdendent.
-        modelDef:
-          type: string
-          description: Malloy model def.
         modelInfo:
           type: string
           description: JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
@@ -871,14 +863,6 @@ components:
       type: object
       description: A Malloy query's results, its model def, and its data styles.
       properties:
-        # Pass data styles as an opaque JSON string that is malloyVersion depdendent.
-        dataStyles:
-          type: string
-          description: Data style for rendering query results.
-        # Pass model def as an opaque JSON string that is malloyVersion depdendent.
-        modelDef:
-          type: string
-          description: Malloy model def.
         modelInfo:
           type: string
           description: JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
