@@ -311,8 +311,6 @@ export class Model {
          packageName: this.packageName,
          modelPath: this.modelPath,
          malloyVersion: MALLOY_VERSION,
-         dataStyles: JSON.stringify(this.dataStyles),
-         // modelDef: JSON.stringify(this.modelDef),
          modelInfo: JSON.stringify(
             this.modelDef ? modelDefToModelInfo(this.modelDef) : {},
          ),
