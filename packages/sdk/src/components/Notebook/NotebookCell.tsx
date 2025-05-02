@@ -135,8 +135,7 @@ export function NotebookCell({
                      dangerouslySetInnerHTML={{
                         __html: highlightedEmbedCode,
                      }}
-                  >
-                  </Typography>
+                  />
                   <Tooltip title="Copy Embeddable Code">
                      <IconButton
                         sx={{ width: "24px", height: "24px" }}
