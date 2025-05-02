@@ -30,7 +30,6 @@ export default function RenderedResult({
    useEffect(() => {
       if (ref.current) {
          ref.current.malloyResult = JSON.parse(result);
-         ref.current.modelInfo = JSON.parse(modelInfo);
       }
    }, [result, modelInfo]);
    return <malloy-render ref={ref}/>;
