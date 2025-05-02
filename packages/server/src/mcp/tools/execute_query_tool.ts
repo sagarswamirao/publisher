@@ -146,7 +146,7 @@ export function registerExecuteQueryTool(
                );
             }
 
-            const { result, modelInfo, dataStyles } =
+            const { result, modelInfo } =
                await model.getQueryResults(sourceName, undefined, queryString);
 
             // --- Format Success Response ---
@@ -157,19 +157,10 @@ export function registerExecuteQueryTool(
                resourceType: "models" as const,
                resourceName: modelPath,
             };
-            const queryResultUri = buildMalloyUri(
-               baseUriComponents,
-               "queryResult",
-            );
-            const modelDefUri = buildMalloyUri(baseUriComponents, "modelDef");
-            const dataStylesUri = buildMalloyUri(
-               baseUriComponents,
-               "dataStyles",
-            );
-
+            const queryResultUri = buildMalloyUri(baseUriComponents, "result");
+            const modelInfoUri = buildMalloyUri(baseUriComponents, "modelInfo");
             const queryResultString = JSON.stringify(result, null, 2);
             const modelInfoString = JSON.stringify(modelInfo, null, 2);
-            const dataStylesString = JSON.stringify(dataStyles, null, 2);
 
             return {
                isError: false,
@@ -186,16 +177,8 @@ export function registerExecuteQueryTool(
                      type: "resource",
                      resource: {
                         type: "application/json",
-                        uri: modelDefUri,
+                        uri: modelInfoUri,
                         text: modelInfoString,
-                     },
-                  },
-                  {
-                     type: "resource",
-                     resource: {
-                        type: "application/json",
-                        uri: dataStylesUri,
-                        text: dataStylesString,
                      },
                   },
                ],

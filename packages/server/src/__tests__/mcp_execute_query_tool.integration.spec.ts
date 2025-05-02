@@ -62,8 +62,8 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
             [key: string]: any;
          }>;
          expect(Array.isArray(content)).toBe(true);
-         // Expect 3 content blocks (queryResult, modelDef, dataStyles)
-         expect(content.length).toBe(3);
+         // Expect 2 content blocks (result, modelInfo)
+         expect(content.length).toBe(2);
 
          // Check structure of each block
          for (const block of content) {
@@ -74,15 +74,15 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
             expect(typeof block.resource.text).toBe("string");
          }
 
-         // Basic check on the first block (queryResult)
+         // Basic check on the first block (result)
          // eslint-disable-next-line @typescript-eslint/no-explicit-any
          const queryResultBlock = content[0].resource;
-         expect(queryResultBlock.uri).toContain("#queryResult");
+         expect(queryResultBlock.uri).toContain("#result");
          const queryResultData = JSON.parse(queryResultBlock.text);
          expect(queryResultData).toBeDefined();
          // Check properties directly on the parsed Result object
-         expect(queryResultData.result).toBeDefined();
-         expect(Array.isArray(queryResultData.result)).toBe(true);
+         expect(queryResultData.data).toBeDefined();
+         expect(Array.isArray(queryResultData.data.array_value)).toBe(true);
          // Could add more specific checks on data if needed
       });
 
