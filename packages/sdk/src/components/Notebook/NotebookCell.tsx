@@ -24,6 +24,7 @@ const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 interface NotebookCellProps {
    cell: ClientNotebookCell;
    modelDef: string;
+   modelInfo: string;
    dataStyles: string;
    queryResultCodeSnippet: string;
    expandCodeCell?: boolean;
@@ -34,8 +35,7 @@ interface NotebookCellProps {
 
 export function NotebookCell({
    cell,
-   modelDef,
-   dataStyles,
+   modelInfo,
    queryResultCodeSnippet,
    expandCodeCell,
    hideCodeCellIcon,
@@ -74,7 +74,7 @@ export function NotebookCell({
       (cell.type === "code" && (
          <StyledCard variant="outlined">
             {(!hideCodeCellIcon ||
-               (!hideEmbeddingIcon && cell.queryResult)) && (
+               (!hideEmbeddingIcon && cell.result)) && (
                <Stack sx={{ flexDirection: "row", justifyContent: "right" }}>
                   <CardActions
                      sx={{
@@ -97,7 +97,7 @@ export function NotebookCell({
                            </IconButton>
                         </Tooltip>
                      )}
-                     {!hideEmbeddingIcon && cell.queryResult && (
+                     {!hideEmbeddingIcon && cell.result && (
                         <Tooltip
                            title={
                               embeddingExpanded
@@ -129,16 +129,15 @@ export function NotebookCell({
                   }}
                >
                   <Typography
+                     component="div"
                      sx={{
                         fontSize: "12px",
                         "& .line": { textWrap: "wrap" },
                      }}
+                     dangerouslySetInnerHTML={{
+                        __html: highlightedEmbedCode,
+                     }}
                   >
-                     <div
-                        dangerouslySetInnerHTML={{
-                           __html: highlightedEmbedCode,
-                        }}
-                     />
                   </Typography>
                   <Tooltip title="Copy Embeddable Code">
                      <IconButton
@@ -165,26 +164,23 @@ export function NotebookCell({
                   }}
                >
                   <Typography
+                     component="div"
+                     className="content"
                      sx={{ fontSize: "12px", "& .line": { textWrap: "wrap" } }}
-                  >
-                     <div
-                        className="content"
-                        dangerouslySetInnerHTML={{
-                           __html: highlightedMalloyCode,
-                        }}
-                     />
-                  </Typography>
+                     dangerouslySetInnerHTML={{
+                        __html: highlightedMalloyCode,
+                     }}
+                  />
                </Stack>
             </Collapse>
-            {cell.queryResult && (
+            {cell.result && (
                <>
                   <Divider sx={{ mb: "10px" }} />
                   <CardContent>
                      <Suspense fallback="Loading malloy...">
                         <RenderedResult
-                           modelDef={modelDef}
-                           queryResult={cell.queryResult}
-                           dataStyles={dataStyles}
+                           result={cell.result}
+                           modelInfo={modelInfo}
                         />
                      </Suspense>
                   </CardContent>

@@ -146,7 +146,7 @@ export function registerExecuteQueryTool(
                );
             }
 
-            const { queryResults, modelDef, dataStyles } =
+            const { result, modelInfo, dataStyles } =
                await model.getQueryResults(sourceName, undefined, queryString);
 
             // --- Format Success Response ---
@@ -167,12 +167,8 @@ export function registerExecuteQueryTool(
                "dataStyles",
             );
 
-            const queryResultString = JSON.stringify(
-               queryResults?._queryResult,
-               null,
-               2,
-            );
-            const modelDefString = JSON.stringify(modelDef, null, 2);
+            const queryResultString = JSON.stringify(result, null, 2);
+            const modelInfoString = JSON.stringify(modelInfo, null, 2);
             const dataStylesString = JSON.stringify(dataStyles, null, 2);
 
             return {
@@ -191,7 +187,7 @@ export function registerExecuteQueryTool(
                      resource: {
                         type: "application/json",
                         uri: modelDefUri,
-                        text: modelDefString,
+                        text: modelInfoString,
                      },
                   },
                   {

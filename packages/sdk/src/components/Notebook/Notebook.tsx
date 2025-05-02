@@ -181,6 +181,7 @@ export default function Notebook({
                      <NotebookCell
                         cell={cell}
                         modelDef={notebook.data.modelDef}
+                        modelInfo={notebook.data.modelInfo}
                         dataStyles={notebook.data.dataStyles}
                         queryResultCodeSnippet={getQueryResultCodeSnippet(
                            server,

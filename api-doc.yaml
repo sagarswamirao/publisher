@@ -786,6 +786,9 @@ components:
         modelDef:
           type: string
           description: Malloy model def.
+        modelInfo:
+          type: string
+          description: JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
         sources:
           type: array
           description: Array of model sources.
@@ -860,10 +863,9 @@ components:
         queryName:
           type: string
           description: Name of query, if this is a named query.  Otherwise, empty.
-        # Pass data styles as an opaque JSON string that is malloyVersion depdendent.
-        queryResult:
+        result: 
           type: string
-          description: Malloy query results. Populated only if a code cell.
+          description: JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
   
     QueryResult:
       type: object
@@ -877,10 +879,12 @@ components:
         modelDef:
           type: string
           description: Malloy model def.
-        # Pass data styles as an opaque JSON string that is malloyVersion depdendent.
-        queryResult:
+        modelInfo:
           type: string
-          description: Malloy query results. Populated only if a code cell.
+          description: JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
+        result: 
+          type: string
+          description: JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
 
     Database:
       type: object

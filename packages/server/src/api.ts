@@ -128,6 +128,8 @@ export interface components {
       dataStyles?: string;
       /** @description Malloy model def. */
       modelDef?: string;
+      /** @description JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts */
+      modelInfo?: string;
       /** @description Array of model sources. */
       sources?: components["schemas"]["Source"][];
       queries?: components["schemas"]["Query"][];
@@ -168,8 +170,8 @@ export interface components {
       text?: string;
       /** @description Name of query, if this is a named query.  Otherwise, empty. */
       queryName?: string;
-      /** @description Malloy query results. Populated only if a code cell. */
-      queryResult?: string;
+      /** @description JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts */
+      result?: string;
     };
     /** @description A Malloy query's results, its model def, and its data styles. */
     QueryResult: {
@@ -177,8 +179,10 @@ export interface components {
       dataStyles?: string;
       /** @description Malloy model def. */
       modelDef?: string;
-      /** @description Malloy query results. Populated only if a code cell. */
-      queryResult?: string;
+      /** @description JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts */
+      modelInfo?: string;
+      /** @description JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts */
+      result?: string;
     };
     /** @description An in-memory DuckDB database embedded in the package. */
     Database: {
