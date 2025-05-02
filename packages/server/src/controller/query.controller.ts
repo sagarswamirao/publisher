@@ -26,13 +26,12 @@ export class QueryController {
       if (!model) {
          throw new ModelNotFoundError(`${modelPath} does not exist`);
       } else {
-         const { result, modelInfo } = await model.getQueryResults(
+         const { result } = await model.getQueryResults(
             sourceName,
             queryName,
             query,
          );
          return {
-            modelInfo: JSON.stringify(modelInfo),
             result: JSON.stringify(result),
          } as ApiQuery;
       }

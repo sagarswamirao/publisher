@@ -146,7 +146,7 @@ export function registerExecuteQueryTool(
                );
             }
 
-            const { result, modelInfo } =
+            const { result } =
                await model.getQueryResults(sourceName, undefined, queryString);
 
             // --- Format Success Response ---
@@ -158,9 +158,7 @@ export function registerExecuteQueryTool(
                resourceName: modelPath,
             };
             const queryResultUri = buildMalloyUri(baseUriComponents, "result");
-            const modelInfoUri = buildMalloyUri(baseUriComponents, "modelInfo");
             const queryResultString = JSON.stringify(result, null, 2);
-            const modelInfoString = JSON.stringify(modelInfo, null, 2);
 
             return {
                isError: false,
@@ -171,14 +169,6 @@ export function registerExecuteQueryTool(
                         type: "application/json",
                         uri: queryResultUri,
                         text: queryResultString,
-                     },
-                  },
-                  {
-                     type: "resource",
-                     resource: {
-                        type: "application/json",
-                        uri: modelInfoUri,
-                        text: modelInfoString,
                      },
                   },
                ],

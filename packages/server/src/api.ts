@@ -169,10 +169,8 @@ export interface components {
       /** @description JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts */
       result?: string;
     };
-    /** @description A Malloy query's results, its model def, and its data styles. */
+    /** @description A Malloy query's results. */
     QueryResult: {
-      /** @description JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts */
-      modelInfo?: string;
       /** @description JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts */
       result?: string;
     };

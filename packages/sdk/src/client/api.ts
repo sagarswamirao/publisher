@@ -512,17 +512,11 @@ export interface QueryData {
     'data'?: string;
 }
 /**
- * A Malloy query\'s results, its model def, and its data styles.
+ * A Malloy query\'s results.
  * @export
  * @interface QueryResult
  */
 export interface QueryResult {
-    /**
-     * JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
-     * @type {string}
-     * @memberof QueryResult
-     */
-    'modelInfo'?: string;
     /**
      * JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
      * @type {string}

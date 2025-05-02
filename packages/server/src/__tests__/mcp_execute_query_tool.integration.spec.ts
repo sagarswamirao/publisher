@@ -62,8 +62,8 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
             [key: string]: any;
          }>;
          expect(Array.isArray(content)).toBe(true);
-         // Expect 2 content blocks (result, modelInfo)
-         expect(content.length).toBe(2);
+         // Expect 1 content block (result)
+         expect(content.length).toBe(1);
 
          // Check structure of each block
          for (const block of content) {
