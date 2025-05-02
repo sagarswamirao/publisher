@@ -57,12 +57,11 @@ export default function BreadcrumbNav() {
             <Tooltip title="View Code">
                <IconButton
                   sx={{ width: "24px", height: "24px", mt: "auto", mb: "auto" }}
+                  onClick={() => {
+                     navigator.clipboard.writeText(window.location.href);
+                  }}
                >
-                  <LinkIcon
-                     onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                     }}
-                  />
+                  <LinkIcon />
                </IconButton>
             </Tooltip>
          )}
