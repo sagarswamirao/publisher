@@ -2,7 +2,7 @@
 
 [![build](https://github.com/malloydata/publisher/actions/workflows/build.yml/badge.svg)](https://github.com/malloydata/publisher/actions/workflows/build.yml)
 
-Welcome to Publisher, the open-source semantic model server for the [Malloy](link-to-malloy-project) data language.
+Welcome to Publisher, the open-source semantic model server for the [Malloy](https://github.com/malloydata/malloy) data language.
 
 **What is Malloy?**
 
@@ -18,7 +18,7 @@ Publisher takes the semantic models defined in Malloy – models rich with busin
 
 **The Goal:**
 
-Publisher is a critical piece of the larger vision to enable the next generation of data and AI applications. The semantic layer is rapidly becoming the most strategic part of the modern data stack – it's the keystone that unlocks the true potential of data warehouses and AI models by ensuring accuracy, consistency, and preventing costly misinterpretations.
+Publisher is a piece of the larger vision to enable the next generation of data and AI applications. The semantic layer is rapidly becoming the most strategic part of the modern data stack – it's the keystone that unlocks the true potential of data warehouses and AI models by ensuring accuracy, consistency, and preventing costly misinterpretations.
 
 Malloy and Publisher aim to provide an open-source, developer-centric, and powerful platform for building, managing, and *serving* semantic models. Our goal is to create a trustworthy foundation for both human analysis and reliable AI-driven insights, offering a compelling, open alternative to proprietary systems like Looker.
 
@@ -168,7 +168,7 @@ Publisher uses configuration files on the local filesystem to manage server sett
 * **Project Configuration (`publisher.connections.json`):**
     * **Location:** Stored at the root of each individual project directory defined in the server configuration.
     * **Purpose:** Contains project-specific settings, most importantly the database connection configurations (credentials, database names, types like BigQuery/Postgres/DuckDB, etc.) required by the Malloy models within that project's packages.
-    * **Example:** See [`malloy-samples/publisher.connections.json`](malloy-samples/publisher.connections.json) for an example.
+    * **Example:** See [`malloy-samples/publisher.connections.json`](packages/server/malloy-samples/publisher.connections.json) for an example.
 
 * **Environment Management:**
     * This two-tiered configuration structure (server-level listing projects, project-level defining connections) allows for standard environment separation (e.g., `dev`, `staging`, `prod`), a common practice in cloud development.
