@@ -6,11 +6,11 @@ Welcome to Publisher, the open-source semantic model server for the [Malloy](lin
 
 **What is Malloy?**
 
-[Malloy](link-to-malloy-project) is an innovative open-source language specifically created for describing data structures, relationships, and transformations. Crucially, Malloy allows you to build rich **semantic models** – defining the *meaning*, *relationships*, and *context* behind your data directly within the language.
+[Malloy](https://github.com/malloydata/malloy) is a open-source language for modeling data. Malloy allows you to build rich **semantic data models** – defining the *meaning*, *relationships*, and *context* behind your datas.
 
-Malloy provides a robust framework to encode the business context alongside your data structures and running queries against your databases. The accompanying [VS Code extension](link-to-vscode-extension) provides a rich environment for developing these crucial Malloy models, exploring data, and building simple dashboards.
+Malloy provides a robust framework to encode the business context of your data and running queries against your databases. The accompanying [VS Code extension](https://github.com/malloydata/malloy-vscode-extension) provides an environment for developing Malloy models, exploring data, and building simple dashboards.
 
-This explicit definition of meaning is becoming essential as AI agents become primary consumers of enterprise data. AI lacks human contextual understanding. Without a clear semantic layer defining concepts consistently (e.g., is 'revenue' GAAP revenue, bookings, or contracted ARR?), AI can easily misinterpret data pulled from various sources, leading to inaccurate or nonsensical results.
+This explicit definition of data meaning is becoming essential as AI agents become primary consumers of enterprise data. AI lacks human contextual understanding. Without a clear semantic layer defining concepts consistently (e.g., is 'revenue' GAAP revenue, bookings, or contracted ARR?), AI can easily misinterpret data pulled from various sources, leading to inaccurate or nonsensical results.
 
 **What is Publisher?**
 
@@ -24,9 +24,9 @@ Malloy and Publisher aim to provide an open-source, developer-centric, and power
 
 ## Architecture Overview
 
-Publisher provides a way to serve, explore, and interact with Malloy semantic models, making them readily available for both human analysis and AI consumption. It consists of three main components: the Publisher Server (backend, now including MCP support), the Publisher SDK (UI components), and the Publisher App (a reference implementation).
+Publisher provides a way to serve, explore, and interact with Malloy semantic models, making them readily available for both human analysis and AI consumption. It consists of three main components: the Publisher Server (APIs & backend, now including MCP support), the Publisher SDK (UI components), and the Publisher App (a reference data app implementation).
 
-The image below illustrates the composition of these different components.
+The image below illustrates the composition of the Publisher's components and the tools & applications it can support.
 <center>
 <img src="publisher.png" width=400>
 </center>
@@ -36,13 +36,6 @@ The image below illustrates the composition of these different components.
 
 * **Core Backend:** This is the heart of Publisher. It's a server application responsible for loading and managing Malloy Packages, which encapsulate your semantic models.
 * **Malloy Integration:** It utilizes the Malloy runtime to parse `.malloy` files, understand the rich semantic models defined within them (including relationships, calculations, and business context), and compile Malloy queries into SQL for execution against target databases (BigQuery, Snowflake, Trino, DuckDB, Postgres, MySQL).
-* **Malloy Package Format:** The Publisher Server loads semantic models, notebooks, and transformations based on the Malloy Package format. This format is designed to integrate seamlessly with standard developer practices.
-    * **Goal: Scalability and Governance through Standard Practices:** Enable engineers to manage, version, test, and distribute their data transformations and semantic models using familiar workflows (local development, CI/CD) and distribution mechanisms (e.g., packages, container images, registries). This aims to scale data development far beyond the limitations of current ad-hoc approaches. Crucially, leveraging these standard software engineering practices provides a natural form of **governance**. When a versioned package is pushed by a trusted source to a central repository or registry, that specific version effectively becomes the blessed or "governed" definition for consumption. This contrasts sharply with the complex, often bespoke processes required by traditional data catalogs or BI tools to achieve similar levels of trust and governance for data assets.
-    * **Structure:** A Malloy package is currently defined as a directory containing:
-        * One or more `.malloy` files defining data models, queries, and transformations.
-        * Optionally, one or more `.malloynb` files (Malloy Notebooks) for ad hoc analysis, exploration, and dashboard-like presentation.
-        * A `publisher.json` manifest file.
-    * **Manifest (`publisher.json`):** Contains metadata about the package. Currently, it supports `name`, `version`, and `description` fields. This schema will be expanded significantly as Publisher evolves to better support dependency management, versioning, and integration with package/container registries, further strengthening the governance model.
 * **API Layers:** The Publisher server exposes two primary API interfaces:
     * **REST API:**
         * **Endpoint:** `/api/v0` (running on port defined by `PUBLISHER_PORT`, default `4000`)
@@ -61,6 +54,13 @@ The image below illustrates the composition of these different components.
         * **Usage:** To connect an MCP client, point it to `http://<PUBLISHER_HOST>:<MCP_PORT>/mcp`. See the [MCP Documentation](https://modelcontextprotocol.io/) for client examples.
     * **SQL API (coming soon):**
         * **Purpose:** Connect to you existing tools.
+    * **Malloy Package Format:** The Publisher Server loads semantic models, notebooks, and transformations based on the Malloy Package format. This format is designed to integrate seamlessly with standard developer practices.
+    * **Goal: Scalability and Governance through Standard Practices:** Enable engineers to manage, version, test, and distribute their data transformations and semantic models using familiar workflows (local development, CI/CD) and distribution mechanisms (e.g., packages, container images, registries). This aims to scale data development far beyond the limitations of current ad-hoc approaches. Crucially, leveraging these standard software engineering practices provides a natural form of **governance**. When a versioned package is pushed by a trusted source to a central repository or registry, that specific version effectively becomes the blessed or "governed" definition for consumption. This contrasts sharply with the complex, often bespoke processes required by traditional data catalogs or BI tools to achieve similar levels of trust and governance for data assets.
+    * **Structure:** A Malloy package is currently defined as a directory containing:
+        * One or more `.malloy` files defining data models, queries, and transformations.
+        * Optionally, one or more `.malloynb` files (Malloy Notebooks) for ad hoc analysis, exploration, and dashboard-like presentation.
+        * A `publisher.json` manifest file.
+    * **Manifest (`publisher.json`):** Contains metadata about the package. Currently, it supports `name`, `version`, and `description` fields. This schema will be expanded significantly as Publisher evolves to better support dependency management, versioning, and integration with package/container registries, further strengthening the governance model.
 
 **2. Publisher SDK (`packages/sdk/`)**
 
@@ -76,7 +76,7 @@ The image below illustrates the composition of these different components.
 
 **4. MCP-Powered Applications**
 
-The Publisher Server, with its MCP interface exposing Malloy semantic models, enables a new class of data-driven applications, particularly those leveraging AI:
+The Publisher Server, with its MCP interface exposing Malloy semantic models, enables a new class of data-driven applications, particularly those leveraging AI. For example:
 
 * **AI Data Analysts:** Autonomous agents that can connect to the MCP server, understand the available business metrics and dimensions defined in Malloy, ask complex analytical questions (e.g., "What were the main drivers of customer churn last quarter by region?"), and generate reports or insights based on the semantically consistent data retrieved.
 * **Context-Aware Chatbots:** Customer service or internal support chatbots that can query the semantic layer via MCP to answer specific data-related questions accurately (e.g., "What's the current inventory level for product SKU 12345?" or "What is the ARR for customer X?").
