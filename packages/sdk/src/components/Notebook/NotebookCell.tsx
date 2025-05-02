@@ -23,9 +23,7 @@ const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
-   modelDef: string;
    modelInfo: string;
-   dataStyles: string;
    queryResultCodeSnippet: string;
    expandCodeCell?: boolean;
    hideCodeCellIcon?: boolean;
