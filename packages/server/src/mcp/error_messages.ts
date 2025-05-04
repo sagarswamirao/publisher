@@ -103,6 +103,9 @@ export function getMalloyErrorDetails(
       const fieldNotFoundMatch = error.message.match(
          /Field '([^']+)' not found in (source|query|view) '([^']+)'/i,
       );
+      const invalidRequestMatch = error.message.match(
+         /Invalid query request\\. Query OR queryName must be defined/i,
+      );
 
       if (viewNotFoundMatch) {
          refined = true;
@@ -150,6 +153,12 @@ export function getMalloyErrorDetails(
          );
          suggestions.push(
             "Ensure the database server is running and accessible from the publisher server.",
+         );
+      } else if (invalidRequestMatch) {
+         refined = true;
+         suggestions.unshift(
+            "Suggestion: This error can occur when specifying a view using 'sourceName' and 'queryName'. Try providing the full query string directly in the 'query' parameter instead (e.g., 'query': 'run: your_source_name->your_view_name').",
+            "Suggestion: Also verify you are providing either the 'query' parameter OR the correct combination of 'queryName' (and optionally 'sourceName' for views).",
          );
       }
 
