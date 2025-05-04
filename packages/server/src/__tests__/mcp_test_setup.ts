@@ -32,7 +32,7 @@ export async function setupE2ETestEnvironment(): Promise<McpE2ETestEnvironment> 
    // The ProjectStore relies on SERVER_ROOT to find publisher.config.json.
    originalServerRoot = process.env.SERVER_ROOT; // Store original value
    // Resolve the path to 'packages/server' based on the location of this file (__dirname)
-   const serverPackageDir = path.resolve(__dirname, '../../'); // Go up two levels from .../packages/server/src/__tests__
+   const serverPackageDir = path.resolve(__dirname, "../../"); // Go up two levels from .../packages/server/src/__tests__
    process.env.SERVER_ROOT = serverPackageDir;
    console.log(
       `[E2E Test Setup] Temporarily set SERVER_ROOT=${process.env.SERVER_ROOT}`,
