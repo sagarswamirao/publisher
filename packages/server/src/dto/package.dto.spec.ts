@@ -14,7 +14,7 @@ describe("dto/package", () => {
          }),
       );
 
-      expect(errors).toBe.empty;
+      expect(errors).toHaveLength(0);
    });
 
    it("should throw when no name is specified", async () => {

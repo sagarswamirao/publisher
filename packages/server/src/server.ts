@@ -4,7 +4,7 @@ import { AddressInfo } from "net";
 import * as path from "path";
 import morgan from "morgan";
 import * as bodyParser from "body-parser";
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware } from "http-proxy-middleware";
 import cors from "cors";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { ProjectStore } from "./service/project_store";
@@ -24,7 +24,7 @@ const MCP_ENDPOINT = "/mcp";
 const ROOT = path.join(__dirname, "../../app/dist/");
 const SERVER_ROOT = path.resolve(process.cwd(), process.env.SERVER_ROOT || ".");
 const API_PREFIX = "/api/v0";
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === "development";
 
 const app = express();
 app.use(morgan("tiny"));
@@ -114,8 +114,8 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
             error: { code: -32603, message: "Internal server error" },
             id:
                typeof req.body === "object" &&
-                  req.body !== null &&
-                  "id" in req.body
+               req.body !== null &&
+               "id" in req.body
                   ? req.body.id
                   : null,
          });
@@ -128,26 +128,24 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
 if (!isDevelopment) {
    app.use("/", express.static(path.join(ROOT, "/")));
    app.use("/api-doc.html", express.static(path.join(ROOT, "/api-doc.html")));
- } else {
+} else {
    // In development mode, proxy requests to React dev server
    // Handle API routes first
    app.use(`${API_PREFIX}`, (req, res, next) => {
-     console.log(`[Express] Handling API request: ${req.method} ${req.url}`);
-     next();
+      console.log(`[Express] Handling API request: ${req.method} ${req.url}`);
+      next();
    });
- 
+
    // Proxy everything else to Vite
    app.use(
-     createProxyMiddleware({
-       target: 'http://localhost:5173',
-       changeOrigin: true,
-       ws: true,
-       pathFilter: (path) => !path.startsWith('/api'),
-       
-     })
+      createProxyMiddleware({
+         target: "http://localhost:5173",
+         changeOrigin: true,
+         ws: true,
+         pathFilter: (path) => !path.startsWith("/api"),
+      }),
    );
- }
- 
+}
 
 const setVersionIdError = (res: express.Response) => {
    const { json, status } = internalErrorToHttpError(
@@ -474,7 +472,7 @@ app.get(
 
 // Modify the catch-all route to only serve index.html in production
 if (!isDevelopment) {
-  app.get("*", (_req, res) => res.sendFile(path.resolve(ROOT, "index.html")));
+   app.get("*", (_req, res) => res.sendFile(path.resolve(ROOT, "index.html")));
 }
 
 app.use((err: Error, _req: express.Request, res: express.Response) => {
@@ -490,7 +488,9 @@ mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
       `Publisher server listening at http://${address.address}:${address.port}`,
    );
    if (isDevelopment) {
-     console.log('Running in development mode - proxying to React dev server at http://localhost:5173');
+      console.log(
+         "Running in development mode - proxying to React dev server at http://localhost:5173",
+      );
    }
 });
 

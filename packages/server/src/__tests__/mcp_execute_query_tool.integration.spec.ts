@@ -23,7 +23,7 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
    let env: McpE2ETestEnvironment | null = null;
    let mcpClient: Client;
 
-   const PROJECT_NAME = "malloy-samples"; // Changed from "home"
+   const PROJECT_NAME = "home";
    const PACKAGE_NAME = "faa";
 
    beforeAll(async () => {
@@ -40,7 +40,7 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
    describe("malloy/executeQuery Tool", () => {
       // Constants for test parameters
 
-      it.only("should execute a valid ad-hoc query successfully", async () => {
+      it("should execute a valid ad-hoc query successfully", async () => {
          if (!env) throw new Error("Test environment not initialized");
          const result = await mcpClient.callTool({
             name: "malloy/executeQuery",
@@ -86,16 +86,17 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
          // Could add more specific checks on data if needed
       });
 
-      it("should return application error for named query", async () => {
+      it("should successfully execute a nested view using sourceName and queryName", async () => {
          if (!env) throw new Error("Test environment not initialized");
          const params = {
             projectName: PROJECT_NAME,
             packageName: PACKAGE_NAME,
             modelPath: "flights.malloy",
-            queryName: "top_carriers", // Query exists, but seems to cause error
+            sourceName: "flights", // Added sourceName
+            queryName: "top_carriers",
          };
 
-         // Expect RESOLUTION with error
+         // Expect RESOLUTION with success
          // eslint-disable-next-line @typescript-eslint/no-explicit-any
          const result: any = await mcpClient.callTool({
             name: "malloy/executeQuery",
@@ -103,23 +104,25 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
          });
 
          expect(result).toBeDefined();
-         expect(result.isError).toBe(true); // Expecting error
+         expect(result.isError).toBe(false); // Expecting success
          expect(result.content).toBeDefined();
          expect(Array.isArray(result.content)).toBe(true);
+         // Expect multiple content blocks (queryResult, modelDef, dataStyles)
          expect(result.content.length).toBeGreaterThan(0);
-         // Check the new structure: resource -> application/json
-         const errorBlock = result.content![0];
-         expect(errorBlock.type).toBe("resource");
-         expect(errorBlock.resource).toBeDefined();
-         expect(errorBlock.resource.type).toBe("application/json");
 
-         // Check for Malloy compilation error message from getMalloyErrorDetails
-         const errorJsonText = errorBlock.resource.text as string;
-         const errorPayload = JSON.parse(errorJsonText);
-         expect(errorPayload.error).toMatch(
-            /Resource not found: model .* in package .* for project .*/i,
-         );
-         expect(Array.isArray(errorPayload.suggestions)).toBe(true);
+         // Check the structure of the first content block (queryResult)
+         const queryResultBlock = result.content![0];
+         expect(queryResultBlock.type).toBe("resource");
+         expect(queryResultBlock.resource).toBeDefined();
+         expect(queryResultBlock.resource.type).toBe("application/json");
+         expect(queryResultBlock.resource.uri).toMatch(/queryResult/); // Check URI contains queryResult
+         expect(queryResultBlock.resource.text).toBeDefined();
+
+         // Optionally, parse and check the actual data
+         const queryResultPayload = JSON.parse(queryResultBlock.resource.text);
+         expect(queryResultPayload).toBeDefined();
+         // Add more specific data checks if needed, e.g., check for specific columns or row count > 0
+         // Example: expect(queryResultPayload._queryResult.data.rows.length).toBeGreaterThan(0);
       });
 
       it("should return application error for invalid Malloy query syntax", async () => {
@@ -150,7 +153,7 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
          const errorJsonTextSyntax = errorBlockSyntax.resource.text as string;
          const errorPayloadSyntax = JSON.parse(errorJsonTextSyntax);
          expect(errorPayloadSyntax.error).toMatch(
-            /Resource not found: model .* in package .* for project .*/i,
+            /syntax error|no viable alternative/i,
          );
          expect(Array.isArray(errorPayloadSyntax.suggestions)).toBe(true);
       });
@@ -319,7 +322,6 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
          // Check the specific error message within the parsed object
          const expectedErrorMessageModel = `Resource not found: model '${params.modelPath}' in package '${params.packageName}' for project '${params.projectName}'`;
          expect(errorPayloadModel.error).toEqual(expectedErrorMessageModel);
-         expect(errorPayloadModel.error).toMatch(/project 'malloy-samples'/);
 
          // Check for the specific model name and context in the message
          expect(errorPayloadModel.error).toMatch(/Resource not found/i);
@@ -373,6 +375,45 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
             // Ensure the temporary client is closed even if the test failed unexpectedly
             await cancelClient.close().catch(() => {}); // Ignore errors on final cleanup
          }
+      });
+
+      // Test invalid usage - nested view called without sourceName
+      it("should return application error for nested view without sourceName", async () => {
+         if (!env) throw new Error("Test environment not initialized");
+         const params = {
+            projectName: PROJECT_NAME,
+            packageName: PACKAGE_NAME,
+            modelPath: "flights.malloy",
+            queryName: "top_carriers", // Nested view, but sourceName is missing
+         };
+
+         // Expect RESOLUTION with error because it's invalid usage processed by the handler
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         const result: any = await mcpClient.callTool({
+            name: "malloy/executeQuery",
+            arguments: params,
+         });
+
+         expect(result).toBeDefined();
+         expect(result.isError).toBe(true); // Expecting error
+         expect(result.content).toBeDefined();
+         expect(Array.isArray(result.content)).toBe(true);
+         expect(result.content.length).toBeGreaterThan(0);
+
+         // Check the error structure: resource -> application/json
+         const errorBlock = result.content![0];
+         expect(errorBlock.type).toBe("resource");
+         expect(errorBlock.resource).toBeDefined();
+         expect(errorBlock.resource.type).toBe("application/json");
+
+         // Check for Malloy error indicating the query/view wasn't found at the top level
+         const errorJsonText = errorBlock.resource.text as string;
+         const errorPayload = JSON.parse(errorJsonText);
+         // Expect error about the query/view itself not found
+         expect(errorPayload.error).toMatch(
+            /Query 'top_carriers' not found|Reference to undefined object 'top_carriers'/i,
+         );
+         expect(Array.isArray(errorPayload.suggestions)).toBe(true);
       });
    });
 });

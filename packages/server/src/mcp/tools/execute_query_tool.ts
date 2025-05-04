@@ -132,78 +132,98 @@ export function registerExecuteQueryTool(
             `[MCP Tool executeQuery] Model found. Proceeding to execute query.`,
          ); // Log before getQueryResults
          try {
-            // Construct the query string for named queries/views
-            const queryString =
-               query ?? // Use ad-hoc query if provided
-               (queryName // Otherwise, construct from named query/view
-                  ? `run: ${sourceName ? sourceName + "->" : ""}${queryName}`
-                  : undefined); // Should not happen due to checks above
+            // If ad-hoc query is provided, use it directly in the 3rd arg
+            if (query) {
+               const { queryResults, modelDef, dataStyles } =
+                  await model.getQueryResults(undefined, undefined, query);
 
-            if (!queryString) {
-               // This should theoretically not be reached due to prior checks
-               throw new Error(
-                  "Internal Error: Query string could not be determined.",
-               );
+               // --- Format Success Response (Duplicated for now, could refactor) ---
+               const baseUriComponents = { project: projectName, package: packageName, resourceType: "models" as const, resourceName: modelPath };
+               const queryResultUri = buildMalloyUri(baseUriComponents, "queryResult");
+               const modelDefUri = buildMalloyUri(baseUriComponents, "modelDef");
+               const dataStylesUri = buildMalloyUri(baseUriComponents, "dataStyles");
+               const queryResultString = JSON.stringify(queryResults?._queryResult, null, 2);
+               const modelDefString = JSON.stringify(modelDef, null, 2);
+               const dataStylesString = JSON.stringify(dataStyles, null, 2);
+               return { 
+                  isError: false, 
+                  content: [
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: queryResultUri,
+                           text: queryResultString,
+                        },
+                     },
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: modelDefUri,
+                           text: modelDefString,
+                        },
+                     },
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: dataStylesUri,
+                           text: dataStylesString,
+                        },
+                     },
+                  ]
+               };
+            
+            } else if (queryName) { // Otherwise, use sourceName/queryName in 1st/2nd args
+               const { queryResults, modelDef, dataStyles } =
+                  await model.getQueryResults(sourceName, queryName, undefined);
+
+               // --- Format Success Response (Duplicated for now, could refactor) ---
+               const baseUriComponents = { project: projectName, package: packageName, resourceType: "models" as const, resourceName: modelPath };
+               const queryResultUri = buildMalloyUri(baseUriComponents, "queryResult");
+               const modelDefUri = buildMalloyUri(baseUriComponents, "modelDef");
+               const dataStylesUri = buildMalloyUri(baseUriComponents, "dataStyles");
+               const queryResultString = JSON.stringify(queryResults?._queryResult, null, 2);
+               const modelDefString = JSON.stringify(modelDef, null, 2);
+               const dataStylesString = JSON.stringify(dataStyles, null, 2);
+
+               // NOTE: Copy-pasted the success response structure for brevity.
+               // A refactor could extract this formatting logic.
+               return {
+                  isError: false,
+                  content: [
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: queryResultUri,
+                           text: queryResultString,
+                        },
+                     },
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: modelDefUri,
+                           text: modelDefString,
+                        },
+                     },
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: dataStylesUri,
+                           text: dataStylesString,
+                        },
+                     },
+                  ],
+               };
+
+            } else {
+               // This case should not be reachable due to earlier checks
+               throw new Error("Internal Error: No query or queryName provided.");
             }
-
-            const { queryResults, modelDef, dataStyles } =
-               await model.getQueryResults(sourceName, undefined, queryString);
-
-            // --- Format Success Response ---
-            // Use the helper function to build valid URIs
-            const baseUriComponents = {
-               project: projectName,
-               package: packageName,
-               resourceType: "models" as const,
-               resourceName: modelPath,
-            };
-            const queryResultUri = buildMalloyUri(
-               baseUriComponents,
-               "queryResult",
-            );
-            const modelDefUri = buildMalloyUri(baseUriComponents, "modelDef");
-            const dataStylesUri = buildMalloyUri(
-               baseUriComponents,
-               "dataStyles",
-            );
-
-            const queryResultString = JSON.stringify(
-               queryResults?._queryResult,
-               null,
-               2,
-            );
-            const modelDefString = JSON.stringify(modelDef, null, 2);
-            const dataStylesString = JSON.stringify(dataStyles, null, 2);
-
-            return {
-               isError: false,
-               content: [
-                  {
-                     type: "resource",
-                     resource: {
-                        type: "application/json",
-                        uri: queryResultUri,
-                        text: queryResultString,
-                     },
-                  },
-                  {
-                     type: "resource",
-                     resource: {
-                        type: "application/json",
-                        uri: modelDefUri,
-                        text: modelDefString,
-                     },
-                  },
-                  {
-                     type: "resource",
-                     resource: {
-                        type: "application/json",
-                        uri: dataStylesUri,
-                        text: dataStylesString,
-                     },
-                  },
-               ],
-            };
          } catch (queryError) {
             // Handle query execution errors (syntax errors, invalid queries, etc.)
             console.error(
