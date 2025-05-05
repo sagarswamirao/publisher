@@ -1,4 +1,5 @@
 import {
+   API,
    Connection,
    FixedConnectionMap,
    ModelDef,
@@ -11,7 +12,6 @@ import {
    TurtleDef,
    isSourceDef,
    modelDefToModelInfo,
-   queryResultToMalloyResult,
 } from "@malloydata/malloy";
 import {
    MalloySQLParser,
@@ -286,7 +286,7 @@ export class Model {
                         result?._queryResult &&
                         this.modelInfo &&
                         JSON.stringify(
-                           queryResultToMalloyResult(
+                           API.util.wrapResult(
                               this.modelInfo,
                               result?._queryResult,
                            ),
