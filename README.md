@@ -10,8 +10,6 @@ Welcome to Publisher, the open-source semantic model server for the [Malloy](htt
 
 Malloy provides a robust framework to encode the business context of your data and running queries against your databases. The accompanying [VS Code extension](https://github.com/malloydata/malloy-vscode-extension) provides an environment for developing Malloy models, exploring data, and building simple dashboards.
 
-This explicit definition of data meaning is becoming essential as AI agents become primary consumers of enterprise data. AI lacks human contextual understanding. Without a clear semantic layer defining concepts consistently (e.g., is 'revenue' GAAP revenue, bookings, or contracted ARR?), AI can easily misinterpret data pulled from various sources, leading to inaccurate or nonsensical results.
-
 **What is Publisher?**
 
 Publisher takes the semantic models defined in Malloy – models rich with business context and meaning – and exposes them through a server interface. This allows applications, **AI agents**, tools, and users to query your data consistently and reliably, leveraging the shared, unambiguous understanding defined in the Malloy model.
@@ -22,11 +20,10 @@ Publisher solves a growing problem in modern data and AI systems: You can’t tr
 
 Whether it’s a dashboard, a data app, or an AI-agent, every application that interacts with your data needs to understand what terms like "revenue", "active user", or "churn" actually mean in your business. Without that shared understanding, answers are inconsistent at best — and dangerously wrong at worst.
 
-Publisher serves semantic models — defined in Malloy — via APIs.
-This means:
-* You query data in terms of your business logic, not raw SQL.
+Publisher serves semantic models — defined in Malloy — via APIs. This means:
+* You query data in terms of your business, not raw SQL.
 * Tools and agents make API calls using Malloy queries, and Publisher compiles them to SQL behind the scenes.
-* You get trusted answers from your agent, dashboard, or embedded app — without redefining metrics in every tool.
+* You get trusted answers from your agent, dashboard, or embedded app — without redefining you data's meaning in every tool.
 
 We believe the semantic layer is the missing keystone of the modern data stack. Publisher and Malloy provide an open-source, developer-first way to define, manage, and serve that layer — enabling consistent, interpretable, and AI-ready data access across all your tools.
 
@@ -34,7 +31,7 @@ Instead of locking your definitions into proprietary BI platforms, you can now s
 
 ## Architecture Overview
 
-Publisher provides a way to serve, explore, and interact with Malloy semantic models, making them readily available for both human analysis and AI consumption. It consists of three main components: the Publisher Server (APIs & backend, now including MCP support), the Publisher SDK (UI components), and the Publisher App (a reference data app implementation).
+Publisher consists of three main components: the Publisher Server (APIs & backend, now including MCP support), the Publisher SDK (UI components), and the Publisher App (a reference data app implementation).
 
 The image below illustrates the composition of the Publisher's components and the tools & applications it can support.
 <center>
@@ -96,12 +93,7 @@ The Publisher Server, with its MCP interface exposing Malloy semantic models, en
 
 ## Publisher App Demo
 
-TODO(kjnesbit): Replace with a demo video.
-
-
-## Publisher MCP Demo
-
-TODO(nick): Add an MCP Demo.
+TODO(kjnesbit)
 
 ## Build and Run Instructions
 
