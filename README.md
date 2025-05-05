@@ -18,9 +18,19 @@ Publisher takes the semantic models defined in Malloy – models rich with busin
 
 **The Goal:**
 
-Publisher is a piece of the larger vision to enable the next generation of data and AI applications. The semantic layer is rapidly becoming the most strategic part of the modern data stack – it's the keystone that unlocks the true potential of data warehouses and AI models by ensuring accuracy, consistency, and preventing costly misinterpretations.
+Publisher solves a growing problem in modern data and AI systems: You can’t trust answers if the meaning behind the data isn’t clear.
 
-Malloy and Publisher aim to provide an open-source, developer-centric, and powerful platform for building, managing, and *serving* semantic models. Our goal is to create a trustworthy foundation for both human analysis and reliable AI-driven insights, offering a compelling, open alternative to proprietary systems like Looker.
+Whether it’s a dashboard, a data app, or an AI-agent, every application that interacts with your data needs to understand what terms like "revenue", "active user", or "churn" actually mean in your business. Without that shared understanding, answers are inconsistent at best — and dangerously wrong at worst.
+
+Publisher serves semantic models — defined in Malloy — via APIs.
+This means:
+* You query data in terms of your business logic, not raw SQL.
+* Tools and agents make API calls using Malloy queries, and Publisher compiles them to SQL behind the scenes.
+* You get trusted answers from your agent, dashboard, or embedded app — without redefining metrics in every tool.
+
+We believe the semantic layer is the missing keystone of the modern data stack. Publisher and Malloy provide an open-source, developer-first way to define, manage, and serve that layer — enabling consistent, interpretable, and AI-ready data access across all your tools.
+
+Instead of locking your definitions into proprietary BI platforms, you can now ship them like code: versioned, tested, and served through clean interfaces.
 
 ## Architecture Overview
 
