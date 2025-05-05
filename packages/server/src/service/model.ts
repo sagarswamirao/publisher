@@ -241,10 +241,7 @@ export class Model {
          "malloy.model.query.status": "success",
       });
       return {
-         result: queryResultToMalloyResult(
-            this.modelInfo,
-            queryResults._queryResult,
-         ),
+         result: API.util.wrapResult(queryResults),
          modelInfo: this.modelInfo,
          dataStyles: this.dataStyles,
       };
@@ -285,12 +282,7 @@ export class Model {
                      queryResult =
                         result?._queryResult &&
                         this.modelInfo &&
-                        JSON.stringify(
-                           API.util.wrapResult(
-                              this.modelInfo,
-                              result?._queryResult,
-                           ),
-                        );
+                        JSON.stringify(API.util.wrapResult(result));
                   } catch {
                      // Catch block intentionally left empty as per previous logic review.
                      // Error handling for specific cases might be added here if needed.
