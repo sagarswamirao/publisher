@@ -1,4 +1,5 @@
 import {
+   API,
    Connection,
    FixedConnectionMap,
    ModelDef,
@@ -6,11 +7,11 @@ import {
    NamedModelObject,
    NamedQuery,
    QueryMaterializer,
-   Result,
    Runtime,
    StructDef,
    TurtleDef,
    isSourceDef,
+   modelDefToModelInfo,
 } from "@malloydata/malloy";
 import {
    MalloySQLParser,
@@ -29,6 +30,7 @@ import {
 } from "../errors";
 import { URL_READER, MODEL_FILE_SUFFIX, NOTEBOOK_FILE_SUFFIX } from "../utils";
 import { metrics } from "@opentelemetry/api";
+import * as Malloy from "@malloydata/malloy-interfaces";
 
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 type ApiNotebookCell = components["schemas"]["NotebookCell"];
@@ -54,6 +56,7 @@ export class Model {
    private modelType: ModelType;
    private modelMaterializer: ModelMaterializer | undefined;
    private modelDef: ModelDef | undefined;
+   private modelInfo: Malloy.ModelInfo | undefined;
    private sources: ApiSource[] | undefined;
    private queries: ApiQuery[] | undefined;
    private runnableNotebookCells: RunnableNotebookCell[] | undefined;
@@ -89,6 +92,9 @@ export class Model {
       this.queries = queries;
       this.runnableNotebookCells = runnableNotebookCells;
       this.compilationError = compilationError;
+      this.modelInfo = this.modelDef
+         ? modelDefToModelInfo(this.modelDef)
+         : undefined;
    }
 
    public static async create(
@@ -185,8 +191,8 @@ export class Model {
       queryName?: string,
       query?: string,
    ): Promise<{
-      queryResults: Result;
-      modelDef: ModelDef;
+      result: Malloy.Result;
+      modelInfo: Malloy.ModelInfo;
       dataStyles: DataStyles;
    }> {
       const startTime = performance.now();
@@ -195,7 +201,7 @@ export class Model {
       }
 
       let runnable: QueryMaterializer;
-      if (!this.modelMaterializer || !this.modelDef)
+      if (!this.modelMaterializer || !this.modelDef || !this.modelInfo)
          throw new BadRequestError("Model has no queryable entities.");
       if (!sourceName && !queryName && query) {
          runnable = this.modelMaterializer.loadQuery("\n" + query);
@@ -235,8 +241,8 @@ export class Model {
          "malloy.model.query.status": "success",
       });
       return {
-         queryResults: queryResults,
-         modelDef: this.modelDef,
+         result: API.util.wrapResult(queryResults),
+         modelInfo: this.modelInfo,
          dataStyles: this.dataStyles,
       };
    }
@@ -249,6 +255,9 @@ export class Model {
          malloyVersion: MALLOY_VERSION,
          dataStyles: JSON.stringify(this.dataStyles),
          modelDef: JSON.stringify(this.modelDef),
+         modelInfo: JSON.stringify(
+            this.modelDef ? modelDefToModelInfo(this.modelDef) : {},
+         ),
          sources: this.sources,
          queries: this.queries,
       } as ApiCompiledModel;
@@ -272,7 +281,8 @@ export class Model {
                      queryName = (query as NamedQuery).as || query.name;
                      queryResult =
                         result?._queryResult &&
-                        JSON.stringify(result?._queryResult);
+                        this.modelInfo &&
+                        JSON.stringify(API.util.wrapResult(result));
                   } catch {
                      // Catch block intentionally left empty as per previous logic review.
                      // Error handling for specific cases might be added here if needed.
@@ -282,7 +292,7 @@ export class Model {
                   type: cell.type,
                   text: cell.text,
                   queryName: queryName,
-                  queryResult: queryResult,
+                  result: queryResult,
                } as ApiNotebookCell;
             },
          ),
@@ -293,8 +303,9 @@ export class Model {
          packageName: this.packageName,
          modelPath: this.modelPath,
          malloyVersion: MALLOY_VERSION,
-         dataStyles: JSON.stringify(this.dataStyles),
-         modelDef: JSON.stringify(this.modelDef),
+         modelInfo: JSON.stringify(
+            this.modelDef ? modelDefToModelInfo(this.modelDef) : {},
+         ),
          sources: this.modelDef && this.sources,
          queries: this.modelDef && this.queries,
          notebookCells,

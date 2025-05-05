@@ -55,15 +55,15 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
          expect(result).toBeDefined();
          expect(result.isError).not.toBe(true); // Should be success
          expect(result.content).toBeDefined();
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
          const content = result.content as Array<{
             type: string;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             [key: string]: any;
          }>;
          expect(Array.isArray(content)).toBe(true);
-         // Expect 3 content blocks (queryResult, modelDef, dataStyles)
-         expect(content.length).toBe(3);
+         // Expect 1 content block (result)
+         expect(content.length).toBe(1);
 
          // Check structure of each block
          for (const block of content) {
@@ -74,15 +74,15 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
             expect(typeof block.resource.text).toBe("string");
          }
 
-         // Basic check on the first block (queryResult)
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         // Basic check on the first block (result)
+
          const queryResultBlock = content[0].resource;
-         expect(queryResultBlock.uri).toContain("#queryResult");
+         expect(queryResultBlock.uri).toContain("#result");
          const queryResultData = JSON.parse(queryResultBlock.text);
          expect(queryResultData).toBeDefined();
          // Check properties directly on the parsed Result object
-         expect(queryResultData.result).toBeDefined();
-         expect(Array.isArray(queryResultData.result)).toBe(true);
+         expect(queryResultData.data).toBeDefined();
+         expect(Array.isArray(queryResultData.data.array_value)).toBe(true);
          // Could add more specific checks on data if needed
       });
 
@@ -107,15 +107,15 @@ describe("MCP Tool Handlers (E2E Integration)", () => {
          expect(result.isError).toBe(false); // Expecting success
          expect(result.content).toBeDefined();
          expect(Array.isArray(result.content)).toBe(true);
-         // Expect multiple content blocks (queryResult, modelDef, dataStyles)
+         // Expect 1 content block (result)
          expect(result.content.length).toBeGreaterThan(0);
 
-         // Check the structure of the first content block (queryResult)
+         // Check the structure of the first content block (result)
          const queryResultBlock = result.content![0];
          expect(queryResultBlock.type).toBe("resource");
          expect(queryResultBlock.resource).toBeDefined();
          expect(queryResultBlock.resource.type).toBe("application/json");
-         expect(queryResultBlock.resource.uri).toMatch(/queryResult/); // Check URI contains queryResult
+         expect(queryResultBlock.resource.uri).toMatch(/result/); // Check URI contains queryResult
          expect(queryResultBlock.resource.text).toBeDefined();
 
          // Optionally, parse and check the actual data

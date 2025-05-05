@@ -78,9 +78,7 @@ export default function QueryResult({
          {isSuccess && (
             <Suspense fallback="Loading malloy...">
                <RenderedResult
-                  queryResult={data.data.queryResult}
-                  modelDef={data.data.modelDef}
-                  dataStyles={data.data.dataStyles}
+                  result={data.data.result}
                />
             </Suspense>
          )}

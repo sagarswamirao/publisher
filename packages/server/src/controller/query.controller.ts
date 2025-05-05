@@ -2,7 +2,7 @@ import { components } from "../api";
 import { ModelNotFoundError } from "../errors";
 import { ProjectStore } from "../service/project_store";
 
-type ApiQuery = components["schemas"]["Query"];
+type ApiQuery = components["schemas"]["QueryResult"];
 
 export class QueryController {
    private projectStore: ProjectStore;
@@ -26,14 +26,13 @@ export class QueryController {
       if (!model) {
          throw new ModelNotFoundError(`${modelPath} does not exist`);
       } else {
-         const { queryResults, modelDef, dataStyles } =
-            await model.getQueryResults(sourceName, queryName, query);
-
-         // TODO: Remove this stringification once the frontend can handle it
+         const { result } = await model.getQueryResults(
+            sourceName,
+            queryName,
+            query,
+         );
          return {
-            dataStyles: JSON.stringify(dataStyles),
-            modelDef: JSON.stringify(modelDef),
-            queryResult: JSON.stringify(queryResults?._queryResult),
+            result: JSON.stringify(result),
          } as ApiQuery;
       }
    }

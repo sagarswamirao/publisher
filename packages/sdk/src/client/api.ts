@@ -116,17 +116,11 @@ export interface CompiledModel {
      */
     'malloyVersion'?: string;
     /**
-     * Data style for rendering query results.
+     * JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
      * @type {string}
      * @memberof CompiledModel
      */
-    'dataStyles'?: string;
-    /**
-     * Malloy model def.
-     * @type {string}
-     * @memberof CompiledModel
-     */
-    'modelDef'?: string;
+    'modelInfo'?: string;
     /**
      * Array of model sources.
      * @type {Array<Source>}
@@ -372,11 +366,11 @@ export interface NotebookCell {
      */
     'queryName'?: string;
     /**
-     * Malloy query results. Populated only if a code cell.
+     * JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
      * @type {string}
      * @memberof NotebookCell
      */
-    'queryResult'?: string;
+    'result'?: string;
 }
 
 export const NotebookCellTypeEnum = {
@@ -518,29 +512,17 @@ export interface QueryData {
     'data'?: string;
 }
 /**
- * A Malloy query\'s results, its model def, and its data styles.
+ * A Malloy query\'s results.
  * @export
  * @interface QueryResult
  */
 export interface QueryResult {
     /**
-     * Data style for rendering query results.
+     * JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
      * @type {string}
      * @memberof QueryResult
      */
-    'dataStyles'?: string;
-    /**
-     * Malloy model def.
-     * @type {string}
-     * @memberof QueryResult
-     */
-    'modelDef'?: string;
-    /**
-     * Malloy query results. Populated only if a code cell.
-     * @type {string}
-     * @memberof QueryResult
-     */
-    'queryResult'?: string;
+    'result'?: string;
 }
 /**
  * A scheduled task.

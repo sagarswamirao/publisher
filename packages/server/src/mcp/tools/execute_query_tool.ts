@@ -94,10 +94,10 @@ export function registerExecuteQueryTool(
             modelPath,
          );
 
-         console.log(
-            "[MCP Tool executeQuery] Result from getModelForQuery:",
-            modelResult,
-         ); // Log result
+         // console.log(
+         //    "[MCP Tool executeQuery] Result from getModelForQuery:",
+         //    modelResult,
+         // ); // Log result
 
          // Handle errors during package/model access (e.g., not found, initial compilation)
          if ("error" in modelResult) {
@@ -134,62 +134,21 @@ export function registerExecuteQueryTool(
          try {
             // If ad-hoc query is provided, use it directly in the 3rd arg
             if (query) {
-               const { queryResults, modelDef, dataStyles } =
-                  await model.getQueryResults(undefined, undefined, query);
+               const { result } = await model.getQueryResults(
+                  undefined,
+                  undefined,
+                  query,
+               );
 
                // --- Format Success Response (Duplicated for now, could refactor) ---
-               const baseUriComponents = { project: projectName, package: packageName, resourceType: "models" as const, resourceName: modelPath };
-               const queryResultUri = buildMalloyUri(baseUriComponents, "queryResult");
-               const modelDefUri = buildMalloyUri(baseUriComponents, "modelDef");
-               const dataStylesUri = buildMalloyUri(baseUriComponents, "dataStyles");
-               const queryResultString = JSON.stringify(queryResults?._queryResult, null, 2);
-               const modelDefString = JSON.stringify(modelDef, null, 2);
-               const dataStylesString = JSON.stringify(dataStyles, null, 2);
-               return { 
-                  isError: false, 
-                  content: [
-                     {
-                        type: "resource",
-                        resource: {
-                           type: "application/json",
-                           uri: queryResultUri,
-                           text: queryResultString,
-                        },
-                     },
-                     {
-                        type: "resource",
-                        resource: {
-                           type: "application/json",
-                           uri: modelDefUri,
-                           text: modelDefString,
-                        },
-                     },
-                     {
-                        type: "resource",
-                        resource: {
-                           type: "application/json",
-                           uri: dataStylesUri,
-                           text: dataStylesString,
-                        },
-                     },
-                  ]
+               const baseUriComponents = {
+                  project: projectName,
+                  package: packageName,
+                  resourceType: "models" as const,
+                  resourceName: modelPath,
                };
-            
-            } else if (queryName) { // Otherwise, use sourceName/queryName in 1st/2nd args
-               const { queryResults, modelDef, dataStyles } =
-                  await model.getQueryResults(sourceName, queryName, undefined);
-
-               // --- Format Success Response (Duplicated for now, could refactor) ---
-               const baseUriComponents = { project: projectName, package: packageName, resourceType: "models" as const, resourceName: modelPath };
-               const queryResultUri = buildMalloyUri(baseUriComponents, "queryResult");
-               const modelDefUri = buildMalloyUri(baseUriComponents, "modelDef");
-               const dataStylesUri = buildMalloyUri(baseUriComponents, "dataStyles");
-               const queryResultString = JSON.stringify(queryResults?._queryResult, null, 2);
-               const modelDefString = JSON.stringify(modelDef, null, 2);
-               const dataStylesString = JSON.stringify(dataStyles, null, 2);
-
-               // NOTE: Copy-pasted the success response structure for brevity.
-               // A refactor could extract this formatting logic.
+               const resultUri = buildMalloyUri(baseUriComponents, "result");
+               const resultString = JSON.stringify(result, null, 2);
                return {
                   isError: false,
                   content: [
@@ -197,32 +156,45 @@ export function registerExecuteQueryTool(
                         type: "resource",
                         resource: {
                            type: "application/json",
-                           uri: queryResultUri,
-                           text: queryResultString,
-                        },
-                     },
-                     {
-                        type: "resource",
-                        resource: {
-                           type: "application/json",
-                           uri: modelDefUri,
-                           text: modelDefString,
-                        },
-                     },
-                     {
-                        type: "resource",
-                        resource: {
-                           type: "application/json",
-                           uri: dataStylesUri,
-                           text: dataStylesString,
+                           uri: resultUri,
+                           text: resultString,
                         },
                      },
                   ],
                };
+            } else if (queryName) {
+               // Otherwise, use sourceName/queryName in 1st/2nd args
+               const { result } = await model.getQueryResults(
+                  sourceName,
+                  queryName,
+                  undefined,
+               );
 
-            } else {
-               // This case should not be reachable due to earlier checks
-               throw new Error("Internal Error: No query or queryName provided.");
+               // --- Format Success Response ---
+               // Use the helper function to build valid URIs
+               const baseUriComponents = {
+                  project: projectName,
+                  package: packageName,
+                  resourceType: "models" as const,
+                  resourceName: modelPath,
+               };
+               const resultUri = buildMalloyUri(baseUriComponents, "result");
+
+               const resultString = JSON.stringify(result, null, 2);
+
+               return {
+                  isError: false,
+                  content: [
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: resultUri,
+                           text: resultString,
+                        },
+                     },
+                  ],
+               };
             }
          } catch (queryError) {
             // Handle query execution errors (syntax errors, invalid queries, etc.)

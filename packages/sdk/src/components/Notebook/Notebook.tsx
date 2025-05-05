@@ -180,8 +180,7 @@ export default function Notebook({
                   notebook.data.notebookCells?.map((cell, index) => (
                      <NotebookCell
                         cell={cell}
-                        modelDef={notebook.data.modelDef}
-                        dataStyles={notebook.data.dataStyles}
+                        modelInfo={notebook.data.modelInfo}
                         queryResultCodeSnippet={getQueryResultCodeSnippet(
                            server,
                            projectName,
