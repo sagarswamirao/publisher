@@ -94,10 +94,10 @@ export function registerExecuteQueryTool(
             modelPath,
          );
 
-         console.log(
-            "[MCP Tool executeQuery] Result from getModelForQuery:",
-            modelResult,
-         ); // Log result
+         // console.log(
+         //    "[MCP Tool executeQuery] Result from getModelForQuery:",
+         //    modelResult,
+         // ); // Log result
 
          // Handle errors during package/model access (e.g., not found, initial compilation)
          if ("error" in modelResult) {
@@ -132,47 +132,70 @@ export function registerExecuteQueryTool(
             `[MCP Tool executeQuery] Model found. Proceeding to execute query.`,
          ); // Log before getQueryResults
          try {
-            // Construct the query string for named queries/views
-            const queryString =
-               query ?? // Use ad-hoc query if provided
-               (queryName // Otherwise, construct from named query/view
-                  ? `run: ${sourceName ? sourceName + "->" : ""}${queryName}`
-                  : undefined); // Should not happen due to checks above
-
-            if (!queryString) {
-               // This should theoretically not be reached due to prior checks
-               throw new Error(
-                  "Internal Error: Query string could not be determined.",
+            // If ad-hoc query is provided, use it directly in the 3rd arg
+            if (query) {
+               const { result } = await model.getQueryResults(
+                  undefined,
+                  undefined,
+                  query,
                );
-            }
 
-            const { result } =
-               await model.getQueryResults(sourceName, undefined, queryString);
-
-            // --- Format Success Response ---
-            // Use the helper function to build valid URIs
-            const baseUriComponents = {
-               project: projectName,
-               package: packageName,
-               resourceType: "models" as const,
-               resourceName: modelPath,
-            };
-            const queryResultUri = buildMalloyUri(baseUriComponents, "result");
-            const queryResultString = JSON.stringify(result, null, 2);
-
-            return {
-               isError: false,
-               content: [
-                  {
-                     type: "resource",
-                     resource: {
-                        type: "application/json",
-                        uri: queryResultUri,
-                        text: queryResultString,
+               // --- Format Success Response (Duplicated for now, could refactor) ---
+               const baseUriComponents = {
+                  project: projectName,
+                  package: packageName,
+                  resourceType: "models" as const,
+                  resourceName: modelPath,
+               };
+               const resultUri = buildMalloyUri(baseUriComponents, "result");
+               const resultString = JSON.stringify(result, null, 2);
+               return {
+                  isError: false,
+                  content: [
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: resultUri,
+                           text: resultString,
+                        },
                      },
-                  },
-               ],
-            };
+                  ],
+               };
+            } else if (queryName) {
+               // Otherwise, use sourceName/queryName in 1st/2nd args
+               const { result } = await model.getQueryResults(
+                  sourceName,
+                  queryName,
+                  undefined,
+               );
+
+               // --- Format Success Response ---
+               // Use the helper function to build valid URIs
+               const baseUriComponents = {
+                  project: projectName,
+                  package: packageName,
+                  resourceType: "models" as const,
+                  resourceName: modelPath,
+               };
+               const resultUri = buildMalloyUri(baseUriComponents, "result");
+
+               const resultString = JSON.stringify(result, null, 2);
+
+               return {
+                  isError: false,
+                  content: [
+                     {
+                        type: "resource",
+                        resource: {
+                           type: "application/json",
+                           uri: resultUri,
+                           text: resultString,
+                        },
+                     },
+                  ],
+               };
+            }
          } catch (queryError) {
             // Handle query execution errors (syntax errors, invalid queries, etc.)
             console.error(

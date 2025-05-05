@@ -26,7 +26,7 @@ describe("dto/connection", () => {
          );
 
          const errors = await validate(postgresConnection);
-         expect(errors).toBe.empty;
+         expect(errors).toHaveLength(0);
       });
 
       it("should return errors for invalid PostgresConnection object", async () => {

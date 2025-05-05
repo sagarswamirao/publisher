@@ -3,318 +3,323 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
-  "/projects": {
-    /** Returns a list of the Projects hosted on this server. */
-    get: operations["list-projects"];
-  };
-  "/projects/{projectName}": {
-    /** Returns metadata about the project. */
-    get: operations["get-project"];
-  };
-  "/projects/{projectName}/connections": {
-    /** Returns a list of the connections in the project. */
-    get: operations["list-connections"];
-  };
-  "/projects/{projectName}/connections/{connectionName}": {
-    /** Returns a connection. */
-    get: operations["get-connection"];
-  };
-  "/projects/{projectName}/connections/{connectionName}/test": {
-    /** Returns a test. */
-    get: operations["get-test"];
-  };
-  "/projects/{projectName}/connections/{connectionName}/sqlSource": {
-    /** Returns a SQL source. */
-    get: operations["get-sqlsource"];
-  };
-  "/projects/{projectName}/connections/{connectionName}/tableSource": {
-    /** Returns a table source. */
-    get: operations["get-tablesource"];
-  };
-  "/projects/{projectName}/connections/{connectionName}/queryData": {
-    /** Returns a query and its results. */
-    get: operations["get-querydata"];
-  };
-  "/projects/{projectName}/connections/{connectionName}/temporaryTable": {
-    /** Returns a temporary table. */
-    get: operations["get-temporarytable"];
-  };
-  "/projects/{projectName}/packages": {
-    /** Returns a list of the Packages hosted on this server. */
-    get: operations["list-packages"];
-  };
-  "/projects/{projectName}/packages/{packageName}": {
-    /** Returns the package metadata. */
-    get: operations["get-package"];
-  };
-  "/projects/{projectName}/packages/{packageName}/models": {
-    /** Returns a list of relative paths to the models in the package. */
-    get: operations["list-models"];
-  };
-  "/projects/{projectName}/packages/{packageName}/models/{path}": {
-    /** Returns a Malloy model. */
-    get: operations["get-model"];
-  };
-  "/projects/{projectName}/packages/{packageName}/queryResults/{path}": {
-    /** Returns a query and its results. */
-    get: operations["execute-query"];
-  };
-  "/projects/{projectName}/packages/{packageName}/databases": {
-    /** Returns a list of relative paths to the databases embedded in the package. */
-    get: operations["list-databases"];
-  };
-  "/projects/{projectName}/packages/{packageName}/schedules": {
-    /** Returns a list of running schedules. */
-    get: operations["list-schedules"];
-  };
+   "/projects": {
+      /** Returns a list of the Projects hosted on this server. */
+      get: operations["list-projects"];
+   };
+   "/projects/{projectName}": {
+      /** Returns metadata about the project. */
+      get: operations["get-project"];
+   };
+   "/projects/{projectName}/connections": {
+      /** Returns a list of the connections in the project. */
+      get: operations["list-connections"];
+   };
+   "/projects/{projectName}/connections/{connectionName}": {
+      /** Returns a connection. */
+      get: operations["get-connection"];
+   };
+   "/projects/{projectName}/connections/{connectionName}/test": {
+      /** Returns a test. */
+      get: operations["get-test"];
+   };
+   "/projects/{projectName}/connections/{connectionName}/sqlSource": {
+      /** Returns a SQL source. */
+      get: operations["get-sqlsource"];
+   };
+   "/projects/{projectName}/connections/{connectionName}/tableSource": {
+      /** Returns a table source. */
+      get: operations["get-tablesource"];
+   };
+   "/projects/{projectName}/connections/{connectionName}/queryData": {
+      /** Returns a query and its results. */
+      get: operations["get-querydata"];
+   };
+   "/projects/{projectName}/connections/{connectionName}/temporaryTable": {
+      /** Returns a temporary table. */
+      get: operations["get-temporarytable"];
+   };
+   "/projects/{projectName}/packages": {
+      /** Returns a list of the Packages hosted on this server. */
+      get: operations["list-packages"];
+   };
+   "/projects/{projectName}/packages/{packageName}": {
+      /** Returns the package metadata. */
+      get: operations["get-package"];
+   };
+   "/projects/{projectName}/packages/{packageName}/models": {
+      /** Returns a list of relative paths to the models in the package. */
+      get: operations["list-models"];
+   };
+   "/projects/{projectName}/packages/{packageName}/models/{path}": {
+      /** Returns a Malloy model. */
+      get: operations["get-model"];
+   };
+   "/projects/{projectName}/packages/{packageName}/queryResults/{path}": {
+      /** Returns a query and its results. */
+      get: operations["execute-query"];
+   };
+   "/projects/{projectName}/packages/{packageName}/databases": {
+      /** Returns a list of relative paths to the databases embedded in the package. */
+      get: operations["list-databases"];
+   };
+   "/projects/{projectName}/packages/{packageName}/schedules": {
+      /** Returns a list of running schedules. */
+      get: operations["list-schedules"];
+   };
 }
 
 export type webhooks = Record<string, never>;
 
 export interface components {
-  schemas: {
-    About: {
-      /** @description Readme markdown. */
-      readme?: string;
-    };
-    Project: {
-      /** @description Resource path to the project. */
-      resource?: string;
-      /** @description Project name. */
-      name?: string;
-      /** @description Project readme. */
-      readme?: string;
-    };
-    Package: {
-      /** @description Resource path to the package. */
-      resource?: string;
-      /** @description Package name. */
-      name?: string;
-      /** @description Package description. */
-      description?: string;
-    };
-    /** @description Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent. */
-    Model: {
-      /** @description Resource path to the model. */
-      resource?: string;
-      /** @description Model's package Name */
-      packageName?: string;
-      /** @description Model's relative path in its package directory. */
-      path?: string;
-      /**
-       * @description Type of malloy model file -- source file or notebook file.
-       * @enum {string}
-       */
-      type?: "source" | "notebook";
-    };
-    /** @description Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent. */
-    CompiledModel: {
-      /** @description Resource path to the model. */
-      resource?: string;
-      /** @description Model's package Name */
-      packageName?: string;
-      /** @description Model's relative path in its package directory. */
-      path?: string;
-      /**
-       * @description Type of malloy model file -- source file or notebook file.
-       * @enum {string}
-       */
-      type?: "source" | "notebook";
-      /** @description Version of the Malloy compiler that generated the model def and results fields. */
-      malloyVersion?: string;
-      /** @description JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts */
-      modelInfo?: string;
-      /** @description Array of model sources. */
-      sources?: components["schemas"]["Source"][];
-      queries?: components["schemas"]["Query"][];
-      /** @description Array of notebook cells. */
-      notebookCells?: components["schemas"]["NotebookCell"][];
-    };
-    /** @description Model source. */
-    Source: {
-      /** @description Source's name. */
-      name?: string;
-      /** @description Annotations attached to source. */
-      annotations?: string[];
-      /** @description List of views in the source.\ */
-      views?: components["schemas"]["View"][];
-    };
-    /** @description Named model view. */
-    View: {
-      /** @description View's name. */
-      name?: string;
-      /** @description Annotations attached to view. */
-      annotations?: string[];
-    };
-    /** @description Named model query. */
-    Query: {
-      /** @description Query's name. */
-      name?: string;
-      /** @description Annotations attached to query. */
-      annotations?: string[];
-    };
-    /** @description Notebook cell. */
-    NotebookCell: {
-      /**
-       * @description Type of notebook cell.
-       * @enum {string}
-       */
-      type?: "markdown" | "code";
-      /** @description Text contents of the notebook cell. */
-      text?: string;
-      /** @description Name of query, if this is a named query.  Otherwise, empty. */
-      queryName?: string;
-      /** @description JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts */
-      result?: string;
-    };
-    /** @description A Malloy query's results. */
-    QueryResult: {
-      /** @description JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts */
-      result?: string;
-    };
-    /** @description An in-memory DuckDB database embedded in the package. */
-    Database: {
-      /** @description Resource path to the database. */
-      resource?: string;
-      /** @description Database's relative path in its package directory. */
-      path?: string;
-      /** @description Size of the embedded database in bytes. */
-      size?: number;
-      /**
-       * @description Type of database.
-       * @enum {string}
-       */
-      type?: "embedded" | "materialized";
-    };
-    /** @description A scheduled task. */
-    Schedule: {
-      /** @description Resource in the package that the schedule is attached to. */
-      resource?: string;
-      /** @description Schedule (cron format) for executing task. */
-      schedule?: string;
-      /** @description Action to execute. */
-      action?: string;
-      /** @description Connection to perform action on. */
-      connection?: string;
-      /** @description Timestamp in milliseconds of the last run. */
-      lastRunTime?: number;
-      /** @description Status of the last run. */
-      lastRunStatus?: string;
-    };
-    Connection: {
-      /** @description Resource path to the connection. */
-      resource?: string;
-      name?: string;
-      /** @enum {string} */
-      type?: "postgres" | "bigquery" | "snowflake" | "trino";
-      attributes?: components["schemas"]["ConnectionAttributes"];
-      postgresConnection?: components["schemas"]["PostgresConnection"];
-      bigqueryConnection?: components["schemas"]["BigqueryConnection"];
-      snowflakeConnection?: components["schemas"]["SnowflakeConnection"];
-      trinoConnection?: components["schemas"]["TrinoConnection"];
-    };
-    ConnectionAttributes: {
-      dialectName?: string;
-      isPool?: boolean;
-      canPersist?: boolean;
-      canStream?: boolean;
-    };
-    PostgresConnection: {
-      host?: string;
-      port?: number;
-      databaseName?: string;
-      userName?: string;
-      password?: string;
-      connectionString?: string;
-    };
-    BigqueryConnection: {
-      defaultProjectId?: string;
-      billingProjectId?: string;
-      location?: string;
-      serviceAccountKeyJson?: string;
-      maximumBytesBilled?: string;
-      queryTimeoutMilliseconds?: string;
-    };
-    SnowflakeConnection: {
-      account?: string;
-      username?: string;
-      password?: string;
-      warehouse?: string;
-      database?: string;
-      schema?: string;
-      responseTimeoutMilliseconds?: number;
-    };
-    TrinoConnection: {
-      server?: string;
-      port?: number;
-      catalog?: string;
-      schema?: string;
-      user?: string;
-      password?: string;
-    };
-    SqlSource: {
-      /** @description Resource path to the sql source. */
-      resource?: string;
-      source?: string;
-    };
-    TableSource: {
-      /** @description Resource path to the table source. */
-      resource?: string;
-      source?: string;
-    };
-    TemporaryTable: {
-      /** @description Resource path to the temporary table. */
-      resource?: string;
-      table?: string;
-    };
-    QueryData: {
-      /** @description Resource path to the query data. */
-      resource?: string;
-      data?: string;
-    };
-    Error: {
-      code?: string;
-      message?: string;
-    };
-  };
-  responses: {
-    /** @description The server encountered an internal error */
-    InternalServerError: {
-      content: {
-        "application/json": components["schemas"]["Error"];
+   schemas: {
+      About: {
+         /** @description Readme markdown. */
+         readme?: string;
       };
-    };
-    /** @description The specified resource was not found */
-    NotFoundError: {
-      content: {
-        "application/json": components["schemas"]["Error"];
+      Project: {
+         /** @description Resource path to the project. */
+         resource?: string;
+         /** @description Project name. */
+         name?: string;
+         /** @description Project readme. */
+         readme?: string;
       };
-    };
-    /** @description Not implemented */
-    NotImplementedError: {
-      content: {
-        "application/json": components["schemas"]["Error"];
+      Package: {
+         /** @description Resource path to the package. */
+         resource?: string;
+         /** @description Package name. */
+         name?: string;
+         /** @description Package description. */
+         description?: string;
       };
-    };
-    /** @description Unauthorized */
-    UnauthorizedError: {
-      content: {
-        "application/json": components["schemas"]["Error"];
+      /** @description Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent. */
+      Model: {
+         /** @description Resource path to the model. */
+         resource?: string;
+         /** @description Model's package Name */
+         packageName?: string;
+         /** @description Model's relative path in its package directory. */
+         path?: string;
+         /**
+          * @description Type of malloy model file -- source file or notebook file.
+          * @enum {string}
+          */
+         type?: "source" | "notebook";
       };
-    };
-    /** @description Bad request */
-    BadRequestError: {
-      content: {
-        "application/json": components["schemas"]["Error"];
+      /** @description Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent. */
+      CompiledModel: {
+         /** @description Resource path to the model. */
+         resource?: string;
+         /** @description Model's package Name */
+         packageName?: string;
+         /** @description Model's relative path in its package directory. */
+         path?: string;
+         /**
+          * @description Type of malloy model file -- source file or notebook file.
+          * @enum {string}
+          */
+         type?: "source" | "notebook";
+         /** @description Version of the Malloy compiler that generated the model def and results fields. */
+         malloyVersion?: string;
+         /** @description Data style for rendering query results. */
+         dataStyles?: string;
+         /** @description Malloy model def. */
+         modelDef?: string;
+         /** @description Array of model sources. */
+         sources?: components["schemas"]["Source"][];
+         queries?: components["schemas"]["Query"][];
+         /** @description Array of notebook cells. */
+         notebookCells?: components["schemas"]["NotebookCell"][];
       };
-    };
-  };
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+      /** @description Model source. */
+      Source: {
+         /** @description Source's name. */
+         name?: string;
+         /** @description Annotations attached to source. */
+         annotations?: string[];
+         /** @description List of views in the source.\ */
+         views?: components["schemas"]["View"][];
+      };
+      /** @description Named model view. */
+      View: {
+         /** @description View's name. */
+         name?: string;
+         /** @description Annotations attached to view. */
+         annotations?: string[];
+      };
+      /** @description Named model query. */
+      Query: {
+         /** @description Query's name. */
+         name?: string;
+         /** @description Annotations attached to query. */
+         annotations?: string[];
+      };
+      /** @description Notebook cell. */
+      NotebookCell: {
+         /**
+          * @description Type of notebook cell.
+          * @enum {string}
+          */
+         type?: "markdown" | "code";
+         /** @description Text contents of the notebook cell. */
+         text?: string;
+         /** @description Name of query, if this is a named query.  Otherwise, empty. */
+         queryName?: string;
+         /** @description Malloy query results. Populated only if a code cell. */
+         queryResult?: string;
+      };
+      /** @description A Malloy query's results, its model def, and its data styles. */
+      QueryResult: {
+         /** @description Data style for rendering query results. */
+         dataStyles?: string;
+         /** @description Malloy model def. */
+         modelDef?: string;
+         /** @description Malloy query results. Populated only if a code cell. */
+         queryResult?: string;
+      };
+      /** @description An in-memory DuckDB database embedded in the package. */
+      Database: {
+         /** @description Resource path to the database. */
+         resource?: string;
+         /** @description Database's relative path in its package directory. */
+         path?: string;
+         /** @description Size of the embedded database in bytes. */
+         size?: number;
+         /**
+          * @description Type of database.
+          * @enum {string}
+          */
+         type?: "embedded" | "materialized";
+      };
+      /** @description A scheduled task. */
+      Schedule: {
+         /** @description Resource in the package that the schedule is attached to. */
+         resource?: string;
+         /** @description Schedule (cron format) for executing task. */
+         schedule?: string;
+         /** @description Action to execute. */
+         action?: string;
+         /** @description Connection to perform action on. */
+         connection?: string;
+         /** @description Timestamp in milliseconds of the last run. */
+         lastRunTime?: number;
+         /** @description Status of the last run. */
+         lastRunStatus?: string;
+      };
+      Connection: {
+         /** @description Resource path to the connection. */
+         resource?: string;
+         name?: string;
+         /** @enum {string} */
+         type?: "postgres" | "bigquery" | "snowflake" | "trino";
+         attributes?: components["schemas"]["ConnectionAttributes"];
+         postgresConnection?: components["schemas"]["PostgresConnection"];
+         bigqueryConnection?: components["schemas"]["BigqueryConnection"];
+         snowflakeConnection?: components["schemas"]["SnowflakeConnection"];
+         trinoConnection?: components["schemas"]["TrinoConnection"];
+      };
+      ConnectionAttributes: {
+         dialectName?: string;
+         isPool?: boolean;
+         canPersist?: boolean;
+         canStream?: boolean;
+      };
+      PostgresConnection: {
+         host?: string;
+         port?: number;
+         databaseName?: string;
+         userName?: string;
+         password?: string;
+         connectionString?: string;
+      };
+      BigqueryConnection: {
+         defaultProjectId?: string;
+         billingProjectId?: string;
+         location?: string;
+         serviceAccountKeyJson?: string;
+         maximumBytesBilled?: string;
+         queryTimeoutMilliseconds?: string;
+      };
+      SnowflakeConnection: {
+         account?: string;
+         username?: string;
+         password?: string;
+         warehouse?: string;
+         database?: string;
+         schema?: string;
+         responseTimeoutMilliseconds?: number;
+      };
+      TrinoConnection: {
+         server?: string;
+         port?: number;
+         catalog?: string;
+         schema?: string;
+         user?: string;
+         password?: string;
+      };
+      SqlSource: {
+         /** @description Resource path to the sql source. */
+         resource?: string;
+         source?: string;
+      };
+      TableSource: {
+         /** @description Resource path to the table source. */
+         resource?: string;
+         source?: string;
+      };
+      TemporaryTable: {
+         /** @description Resource path to the temporary table. */
+         resource?: string;
+         table?: string;
+      };
+      QueryData: {
+         /** @description Resource path to the query data. */
+         resource?: string;
+         data?: string;
+      };
+      Error: {
+         code?: string;
+         message?: string;
+      };
+   };
+   responses: {
+      /** @description The server encountered an internal error */
+      InternalServerError: {
+         content: {
+            "application/json": components["schemas"]["Error"];
+         };
+      };
+      /** @description The specified resource was not found */
+      NotFoundError: {
+         content: {
+            "application/json": components["schemas"]["Error"];
+         };
+      };
+      /** @description Not implemented */
+      NotImplementedError: {
+         content: {
+            "application/json": components["schemas"]["Error"];
+         };
+      };
+      /** @description Unauthorized */
+      UnauthorizedError: {
+         content: {
+            "application/json": components["schemas"]["Error"];
+         };
+      };
+      /** @description Bad request */
+      BadRequestError: {
+         content: {
+            "application/json": components["schemas"]["Error"];
+         };
+      };
+   };
+   parameters: never;
+   requestBodies: never;
+   headers: never;
+   pathItems: never;
 }
 
 export type $defs = Record<string, never>;
@@ -322,406 +327,405 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
-
-  /** Returns a list of the Projects hosted on this server. */
-  "list-projects": {
-    responses: {
-      /** @description A list of the Projects names. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Project"][];
-        };
+   /** Returns a list of the Projects hosted on this server. */
+   "list-projects": {
+      responses: {
+         /** @description A list of the Projects names. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Project"][];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         500: components["responses"]["InternalServerError"];
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns metadata about the project. */
-  "get-project": {
-    parameters: {
-      query?: {
-        /** @description Load / reload the project before returning result */
-        reload?: boolean;
+   };
+   /** Returns metadata about the project. */
+   "get-project": {
+      parameters: {
+         query?: {
+            /** @description Load / reload the project before returning result */
+            reload?: boolean;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+         };
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
+      responses: {
+         /** @description Metadata about the project. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Project"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
       };
-    };
-    responses: {
-      /** @description Metadata about the project. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Project"];
-        };
+   };
+   /** Returns a list of the connections in the project. */
+   "list-connections": {
+      parameters: {
+         path: {
+            /** @description Name of project */
+            projectName: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a list of the connections in the project. */
-  "list-connections": {
-    parameters: {
-      path: {
-        /** @description Name of project */
-        projectName: string;
+      responses: {
+         /** @description A list of the connections in the project. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Connection"][];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         500: components["responses"]["InternalServerError"];
       };
-    };
-    responses: {
-      /** @description A list of the connections in the project. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Connection"][];
-        };
+   };
+   /** Returns a connection. */
+   "get-connection": {
+      parameters: {
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of connection */
+            connectionName: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a connection. */
-  "get-connection": {
-    parameters: {
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of connection */
-        connectionName: string;
+      responses: {
+         /** @description A connection. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Connection"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
       };
-    };
-    responses: {
-      /** @description A connection. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Connection"];
-        };
+   };
+   /** Returns a test. */
+   "get-test": {
+      parameters: {
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of connection */
+            connectionName: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a test. */
-  "get-test": {
-    parameters: {
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of connection */
-        connectionName: string;
+      responses: {
+         /** @description Test passed. */
+         200: {
+            content: never;
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
       };
-    };
-    responses: {
-      /** @description Test passed. */
-      200: {
-        content: never;
+   };
+   /** Returns a SQL source. */
+   "get-sqlsource": {
+      parameters: {
+         query?: {
+            /** @description SQL statement */
+            sqlStatement?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of connection */
+            connectionName: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a SQL source. */
-  "get-sqlsource": {
-    parameters: {
-      query?: {
-        /** @description SQL statement */
-        sqlStatement?: string;
+      responses: {
+         /** @description A SQL source. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["SqlSource"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of connection */
-        connectionName: string;
+   };
+   /** Returns a table source. */
+   "get-tablesource": {
+      parameters: {
+         query?: {
+            /** @description Table key */
+            tableKey?: string;
+            /** @description Table path */
+            tablePath?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of connection */
+            connectionName: string;
+         };
       };
-    };
-    responses: {
-      /** @description A SQL source. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["SqlSource"];
-        };
+      responses: {
+         /** @description A table source. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["TableSource"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a table source. */
-  "get-tablesource": {
-    parameters: {
-      query?: {
-        /** @description Table key */
-        tableKey?: string;
-        /** @description Table path */
-        tablePath?: string;
+   };
+   /** Returns a query and its results. */
+   "get-querydata": {
+      parameters: {
+         query?: {
+            /** @description SQL statement */
+            sqlStatement?: string;
+            /** @description Options */
+            options?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of connection */
+            connectionName: string;
+         };
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of connection */
-        connectionName: string;
+      responses: {
+         /** @description A query and its results. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["QueryData"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
       };
-    };
-    responses: {
-      /** @description A table source. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["TableSource"];
-        };
+   };
+   /** Returns a temporary table. */
+   "get-temporarytable": {
+      parameters: {
+         query?: {
+            /** @description SQL statement */
+            sqlStatement?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of connection */
+            connectionName: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a query and its results. */
-  "get-querydata": {
-    parameters: {
-      query?: {
-        /** @description SQL statement */
-        sqlStatement?: string;
-        /** @description Options */
-        options?: string;
+      responses: {
+         /** @description A temporary table. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["TemporaryTable"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of connection */
-        connectionName: string;
+   };
+   /** Returns a list of the Packages hosted on this server. */
+   "list-packages": {
+      parameters: {
+         path: {
+            /** @description Name of project */
+            projectName: string;
+         };
       };
-    };
-    responses: {
-      /** @description A query and its results. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["QueryData"];
-        };
+      responses: {
+         /** @description A list of the Packages names. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Package"][];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         500: components["responses"]["InternalServerError"];
+         501: components["responses"]["NotImplementedError"];
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a temporary table. */
-  "get-temporarytable": {
-    parameters: {
-      query?: {
-        /** @description SQL statement */
-        sqlStatement?: string;
+   };
+   /** Returns the package metadata. */
+   "get-package": {
+      parameters: {
+         query?: {
+            /** @description Version ID */
+            versionId?: string;
+            /** @description Load / reload the package before returning result */
+            reload?: boolean;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Package name */
+            packageName: string;
+         };
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of connection */
-        connectionName: string;
+      responses: {
+         /** @description Package metadata. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Package"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
+         501: components["responses"]["NotImplementedError"];
       };
-    };
-    responses: {
-      /** @description A temporary table. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["TemporaryTable"];
-        };
+   };
+   /** Returns a list of relative paths to the models in the package. */
+   "list-models": {
+      parameters: {
+         query?: {
+            /** @description Version ID */
+            versionId?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of package */
+            packageName: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-    };
-  };
-  /** Returns a list of the Packages hosted on this server. */
-  "list-packages": {
-    parameters: {
-      path: {
-        /** @description Name of project */
-        projectName: string;
+      responses: {
+         /** @description A list of relative paths to the models in the package. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Model"][];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
+         501: components["responses"]["NotImplementedError"];
       };
-    };
-    responses: {
-      /** @description A list of the Packages names. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Package"][];
-        };
+   };
+   /** Returns a Malloy model. */
+   "get-model": {
+      parameters: {
+         query?: {
+            /** @description Version ID */
+            versionId?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of package. */
+            packageName: string;
+            /** @description Path to model wihin the package. */
+            path: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
-      501: components["responses"]["NotImplementedError"];
-    };
-  };
-  /** Returns the package metadata. */
-  "get-package": {
-    parameters: {
-      query?: {
-        /** @description Version ID */
-        versionId?: string;
-        /** @description Load / reload the package before returning result */
-        reload?: boolean;
+      responses: {
+         /** @description A Malloy model. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["CompiledModel"];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
+         501: components["responses"]["NotImplementedError"];
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Package name */
-        packageName: string;
+   };
+   /** Returns a query and its results. */
+   "execute-query": {
+      parameters: {
+         query?: {
+            /** @description Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty. */
+            query?: string;
+            /** @description Name of the source in the model to use for queryName, search, and topValue requests. */
+            sourceName?: string;
+            /** @description Name of a query to execute on a source in the model.  Requires the sourceName parameter is set.  If the queryName is paramter is set, the query parameter must be empty. */
+            queryName?: string;
+            /** @description Version ID */
+            versionId?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of package */
+            packageName: string;
+            /** @description Path to model within the package. */
+            path: string;
+         };
       };
-    };
-    responses: {
-      /** @description Package metadata. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Package"];
-        };
+      responses: {
+         /** @description A query and its results. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["QueryResult"];
+            };
+         };
+         400: components["responses"]["BadRequestError"];
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
+         501: components["responses"]["NotImplementedError"];
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-      501: components["responses"]["NotImplementedError"];
-    };
-  };
-  /** Returns a list of relative paths to the models in the package. */
-  "list-models": {
-    parameters: {
-      query?: {
-        /** @description Version ID */
-        versionId?: string;
+   };
+   /** Returns a list of relative paths to the databases embedded in the package. */
+   "list-databases": {
+      parameters: {
+         query?: {
+            /** @description Version ID */
+            versionId?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of package */
+            packageName: string;
+         };
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of package */
-        packageName: string;
+      responses: {
+         /** @description A list of relative paths to the databases embedded in the package. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Database"][];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
+         501: components["responses"]["NotImplementedError"];
       };
-    };
-    responses: {
-      /** @description A list of relative paths to the models in the package. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Model"][];
-        };
+   };
+   /** Returns a list of running schedules. */
+   "list-schedules": {
+      parameters: {
+         query?: {
+            /** @description Version ID */
+            versionId?: string;
+         };
+         path: {
+            /** @description Name of project */
+            projectName: string;
+            /** @description Name of package */
+            packageName: string;
+         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-      501: components["responses"]["NotImplementedError"];
-    };
-  };
-  /** Returns a Malloy model. */
-  "get-model": {
-    parameters: {
-      query?: {
-        /** @description Version ID */
-        versionId?: string;
+      responses: {
+         /** @description A list of running schedules. */
+         200: {
+            content: {
+               "application/json": components["schemas"]["Schedule"][];
+            };
+         };
+         401: components["responses"]["UnauthorizedError"];
+         404: components["responses"]["NotFoundError"];
+         500: components["responses"]["InternalServerError"];
+         501: components["responses"]["NotImplementedError"];
       };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of package. */
-        packageName: string;
-        /** @description Path to model wihin the package. */
-        path: string;
-      };
-    };
-    responses: {
-      /** @description A Malloy model. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["CompiledModel"];
-        };
-      };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-      501: components["responses"]["NotImplementedError"];
-    };
-  };
-  /** Returns a query and its results. */
-  "execute-query": {
-    parameters: {
-      query?: {
-        /** @description Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty. */
-        query?: string;
-        /** @description Name of the source in the model to use for queryName, search, and topValue requests. */
-        sourceName?: string;
-        /** @description Name of a query to execute on a source in the model.  Requires the sourceName parameter is set.  If the queryName is paramter is set, the query parameter must be empty. */
-        queryName?: string;
-        /** @description Version ID */
-        versionId?: string;
-      };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of package */
-        packageName: string;
-        /** @description Path to model within the package. */
-        path: string;
-      };
-    };
-    responses: {
-      /** @description A query and its results. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["QueryResult"];
-        };
-      };
-      400: components["responses"]["BadRequestError"];
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-      501: components["responses"]["NotImplementedError"];
-    };
-  };
-  /** Returns a list of relative paths to the databases embedded in the package. */
-  "list-databases": {
-    parameters: {
-      query?: {
-        /** @description Version ID */
-        versionId?: string;
-      };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of package */
-        packageName: string;
-      };
-    };
-    responses: {
-      /** @description A list of relative paths to the databases embedded in the package. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Database"][];
-        };
-      };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-      501: components["responses"]["NotImplementedError"];
-    };
-  };
-  /** Returns a list of running schedules. */
-  "list-schedules": {
-    parameters: {
-      query?: {
-        /** @description Version ID */
-        versionId?: string;
-      };
-      path: {
-        /** @description Name of project */
-        projectName: string;
-        /** @description Name of package */
-        packageName: string;
-      };
-    };
-    responses: {
-      /** @description A list of running schedules. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Schedule"][];
-        };
-      };
-      401: components["responses"]["UnauthorizedError"];
-      404: components["responses"]["NotFoundError"];
-      500: components["responses"]["InternalServerError"];
-      501: components["responses"]["NotImplementedError"];
-    };
-  };
+   };
 }

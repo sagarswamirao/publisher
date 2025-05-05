@@ -93,7 +93,9 @@ export class Project {
 
    public async listPackages(): Promise<ApiPackage[]> {
       try {
-         const files = await fs.readdir(this.projectPath, { withFileTypes: true });
+         const files = await fs.readdir(this.projectPath, {
+            withFileTypes: true,
+         });
          const packageMetadata = await Promise.all(
             files
                .filter((file) => file.isDirectory())
@@ -102,7 +104,10 @@ export class Project {
                      `[Project LOG] listPackages: Mapping directory: ${directory.name}`,
                   );
                   try {
-                     const _package = await this.getPackage(directory.name, false);
+                     const _package = await this.getPackage(
+                        directory.name,
+                        false,
+                     );
                      console.log(
                         `[Project LOG] listPackages: getPackage succeeded for ${directory.name}`,
                      );
