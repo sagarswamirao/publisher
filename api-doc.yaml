@@ -861,11 +861,8 @@ components:
   
     QueryResult:
       type: object
-      description: A Malloy query's results, its model def, and its data styles.
+      description: A Malloy query's results.
       properties:
-        modelInfo:
-          type: string
-          description: JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
         result: 
           type: string
           description: JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts

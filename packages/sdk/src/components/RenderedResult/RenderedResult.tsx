@@ -21,14 +21,12 @@ interface RenderedResultProps {
    result: string;
 }
 
-export default function RenderedResult({
-   result,
-}: RenderedResultProps) {
+export default function RenderedResult({ result }: RenderedResultProps) {
    const ref = useRef<MalloyRenderElement>(null);
    useEffect(() => {
       if (ref.current) {
          ref.current.malloyResult = JSON.parse(result);
       }
    }, [result]);
-   return <malloy-render ref={ref}/>;
+   return <malloy-render ref={ref} />;
 }
