@@ -139,7 +139,7 @@ bun run build
 Run the compiled server code. By default, this will start the REST API server on port 4000 and the MCP server on port 4040. The server will load the Malloy packages found in the submodules.
 
 ```bash
-NODE_ENV=production bun run start
+bun run start
 ```
 
 Once started, you can typically access the Publisher App (if running) at http://localhost:4000 and the MCP endpoint at http://localhost:4040/mcp.
