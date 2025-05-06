@@ -11,7 +11,7 @@
     "build:sdk": "cd packages/sdk && bun run build",
     "build:app": "cd packages/app && bun run build ",
     "build:server": "cd packages/server && bun run build",
-    "build": "bun run build:sdk && bun run build:app && bun run build:server",
+    "build": "NODE_ENV=production && bun run build:sdk && bun run build:app && bun run build:server",
     "start": "cd packages/server && bun run start",
     "start:dev": "cd packages/server && bun run start:dev",
     "start:dev:react": "cd packages/app && bun run dev",
