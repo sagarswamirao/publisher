@@ -3,6 +3,7 @@ import { Notebook } from "../Notebook";
 import Config from "./Config";
 import Models from "./Models";
 import Databases from "./Databases";
+import Connections from "./Connections";
 import Schedules from "./Schedules";
 
 const README_NOTEBOOK = "README.malloynb";
@@ -62,6 +63,13 @@ export default function Package({
                projectName={projectName}
                packageName={packageName}
                versionId={versionId}
+               accessToken={accessToken}
+            />
+         </Grid>
+         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
+            <Connections
+               server={server}
+               projectName={projectName}
                accessToken={accessToken}
             />
          </Grid>

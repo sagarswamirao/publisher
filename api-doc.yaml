@@ -921,14 +921,6 @@ components:
           enum: [postgres, bigquery, snowflake, trino]
         attributes:
           $ref: "#/components/schemas/ConnectionAttributes"
-        postgresConnection:
-          $ref: "#/components/schemas/PostgresConnection"
-        bigqueryConnection:
-          $ref: "#/components/schemas/BigqueryConnection"
-        snowflakeConnection:
-          $ref: "#/components/schemas/SnowflakeConnection"
-        trinoConnection:
-          $ref: "#/components/schemas/TrinoConnection"
 
     ConnectionAttributes:
       type: object
