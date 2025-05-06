@@ -94,7 +94,7 @@ The Publisher Server, with its MCP interface exposing Malloy semantic models, en
 ## Publisher App Demo
 
 <center>
-    <a href="https://www.loom.com/embed/4c1b3313f3624b41be9e16044bebfc38?sid=ede82e37-d2d5-4b6e-a083-314767ab53bd">
+    <a href="https://www.loom.com/embed/4c1b3313f3624b41be9e16044bebfc38?sid=6dd7879e-19e5-4ee5-8bf1-960cbc46b5eb">
         <img src="malloy-publisher-demo.png" width=600>
     </a>
 </center>
