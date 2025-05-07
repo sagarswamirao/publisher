@@ -262,6 +262,9 @@ export class Package {
    ): Promise<ApiTableDescription> {
       const fullPath = path.join(packagePath, databasePath);
 
+      // Create a DuckDB source then:
+      // 1. Load the model and get the table schema from model
+      // 2. Run a query to get the row count from the table
       const runtime = new ConnectionRuntime({
          urlReader: new EmptyURLReader(),
          connections: [new DuckDBConnection("duckdb")],
@@ -274,13 +277,10 @@ export class Package {
       const schema = fields.map((field): ApiColumn => {
          return { type: field.type, name: field.name };
       });
-      console.log("schema", schema);
-
       const runner = model.loadQuery(
          "run: temp->{aggregate: row_count is count()}",
       );
       const result = await runner.run();
-      console.log("results", result.data.value);
       const rowCount = result.data.value[0].row_count?.valueOf() as number;
       return { name: databasePath, rowCount, columns: schema };
    }
