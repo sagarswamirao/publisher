@@ -91,7 +91,7 @@ export default function DatabaseView({
                         <TableHead>
                            <TableRow>
                               <TableCell>Database Name</TableCell>
-                              <TableCell align="right">rows</TableCell>
+                              <TableCell align="right">Table Rows</TableCell>
                            </TableRow>
                         </TableHead>
                         <TableBody>
