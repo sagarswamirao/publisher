@@ -177,7 +177,7 @@ export class Package {
       }
       return files
          .map((fullPath: string) => {
-            return fullPath.replace(packagePath + "/", "");
+            return path.relative(packagePath, fullPath).replace(/\\/g, "/");
          })
          .filter(
             (modelPath: string) =>
@@ -243,7 +243,7 @@ export class Package {
       files = await recursive(packagePath);
       return files
          .map((fullPath: string) => {
-            return fullPath.replace(packagePath + "/", "");
+            return path.relative(packagePath, fullPath).replace(/\\/g, "/");
          })
          .filter((modelPath: string) => modelPath.endsWith(".parquet"));
    }

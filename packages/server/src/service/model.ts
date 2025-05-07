@@ -273,7 +273,7 @@ export class Model {
                   try {
                      const rowLimit = cell.runnable
                         ? (await cell.runnable.getPreparedResult())
-                             .resultExplore.limit
+                           .resultExplore.limit
                         : undefined;
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
