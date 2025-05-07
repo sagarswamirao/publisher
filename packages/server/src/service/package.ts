@@ -253,7 +253,10 @@ export class Package {
          .map((fullPath: string) => {
             return path.relative(packagePath, fullPath).replace(/\\/g, "/");
          })
-         .filter((modelPath: string) => modelPath.endsWith(".parquet"));
+         .filter(
+            (modelPath: string) =>
+               modelPath.endsWith(".parquet") || modelPath.endsWith(".csv"),
+         );
    }
 
    private static async getDatabaseInfo(
