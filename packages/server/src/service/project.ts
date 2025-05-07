@@ -118,10 +118,7 @@ export class Project {
                      );
                      return metadata;
                   } catch (err) {
-                     console.log(
-                        `[Project LOG] listPackages: getPackage failed for ${directory.name}:`,
-                        err,
-                     );
+                     // Directory did not contain a valid package.json file -- therefore, it's not a package.
                      return undefined;
                   }
                }),
@@ -130,7 +127,7 @@ export class Project {
             "[Project LOG] listPackages: Metadata before filter:",
             JSON.stringify(packageMetadata),
          );
-         // Get rid of undefined entries (i.e, directories without malloy-package.json files).
+         // Get rid of undefined entries (i.e, directories without publisher.json files).
          const filteredMetadata = packageMetadata.filter(
             (metadata) => metadata,
          ) as ApiPackage[];

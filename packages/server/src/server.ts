@@ -114,8 +114,8 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
             error: { code: -32603, message: "Internal server error" },
             id:
                typeof req.body === "object" &&
-               req.body !== null &&
-               "id" in req.body
+                  req.body !== null &&
+                  "id" in req.body
                   ? req.body.id
                   : null,
          });
@@ -126,8 +126,8 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
 // Only serve static files in production mode
 // Otherwise we proxy to the React dev server
 if (!isDevelopment) {
-   app.use("/", express.static(path.join(ROOT, "/")));
-   app.use("/api-doc.html", express.static(path.join(ROOT, "/api-doc.html")));
+   app.use("/", express.static(ROOT));
+   app.use("/api-doc.html", express.static(path.join(ROOT, "api-doc.html")));
 } else {
    // In development mode, proxy requests to React dev server
    // Handle API routes first
