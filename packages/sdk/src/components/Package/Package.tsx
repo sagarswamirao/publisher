@@ -35,7 +35,7 @@ export default function Package({
       <Grid
          container
          spacing={2}
-         columns={12}
+         columns={10}
          sx={{ mb: (theme) => theme.spacing(2) }}
       >
          <Grid size={{ xs: 12, md: 12, lg: 4 }}>

@@ -180,8 +180,7 @@ export interface components {
       resource?: string;
       /** @description Database's relative path in its package directory. */
       path?: string;
-      /** @description Size of the embedded database in bytes. */
-      size?: number;
+      info?: components["schemas"]["TableDescription"];
       /**
        * @description Type of database.
        * @enum {string}
@@ -273,6 +272,15 @@ export interface components {
     Error: {
       code?: string;
       message?: string;
+    };
+    Column: {
+      name?: string;
+      type?: string;
+    };
+    TableDescription: {
+      name?: string;
+      rowCount?: number;
+      columns?: components["schemas"]["Column"][];
     };
   };
   responses: {

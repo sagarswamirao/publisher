@@ -17,9 +17,12 @@ describe("service/package", () => {
    beforeEach(async () => {
       await fs.mkdir(testPackageDirectory, { recursive: true });
       await fs.writeFile(join(testPackageDirectory, "model1.model"), "");
+      // Create a simple parquet file with schema "name: string, value: int"
+      const parquetBuffer = Buffer.from("Name,Value\nJohn,10\nJane,20\nJim,30");
+
       await fs.writeFile(
-         join(testPackageDirectory, "database.parquet"),
-         "dummy content",
+         join(testPackageDirectory, "database.csv"),
+         parquetBuffer,
       );
       const content = JSON.stringify([
          { name: "conn1", type: "database" },
@@ -106,7 +109,18 @@ describe("service/package", () => {
                "Test package",
             );
             expect(packageInstance.listDatabases()).toEqual([
-               { path: "database.parquet", size: 13, type: "embedded" },
+               {
+                  path: "database.csv",
+                  type: "embedded",
+                  info: {
+                     name: "database.csv",
+                     columns: [
+                        { name: "Name", type: "string" },
+                        { name: "Value", type: "number" },
+                     ],
+                     rowCount: 3,
+                  },
+               },
             ]);
             expect(packageInstance.listModels()).toBeEmpty();
             expect(packageInstance.listSchedules()).toBeEmpty();
@@ -139,17 +153,24 @@ describe("service/package", () => {
          });
       });
 
-      describe("getDatabaseSize", () => {
+      describe("getDatabaseInfo", () => {
          it("should return the size of the database file", async () => {
             sinon.stub(fs, "stat").resolves({ size: 13 } as { size: number });
 
             // @ts-expect-error Accessing private static method for testing
-            const size = await Package.getDatabaseSize(
+            const info = await Package.getDatabaseInfo(
                testPackageDirectory,
-               "database.parquet",
+               "database.csv",
             );
 
-            expect(size).toBe(13);
+            expect(info).toEqual({
+               name: "database.csv",
+               columns: [
+                  { name: "Name", type: "string" },
+                  { name: "Value", type: "number" },
+               ],
+               rowCount: 3,
+            });
          });
       });
 

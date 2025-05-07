@@ -1,5 +1,6 @@
 import * as fs from "fs/promises";
 import * as path from "path";
+
 import { components } from "../api";
 import recursive from "recursive-readdir";
 import { PackageNotFoundError } from "../errors";
@@ -11,15 +12,21 @@ import {
 } from "../utils";
 import { Scheduler } from "./scheduler";
 import { metrics } from "@opentelemetry/api";
-import { Connection } from "@malloydata/malloy";
+import {
+   Connection,
+   ConnectionRuntime,
+   EmptyURLReader,
+   SourceDef,
+} from "@malloydata/malloy";
 import { createConnections } from "./connection";
 import { DuckDBConnection } from "@malloydata/db-duckdb";
 import { API_PREFIX } from "../constants";
-
 type ApiDatabase = components["schemas"]["Database"];
 type ApiModel = components["schemas"]["Model"];
 export type ApiPackage = components["schemas"]["Package"];
 type ApiSchedule = components["schemas"]["Schedule"];
+type ApiColumn = components["schemas"]["Column"];
+type ApiTableDescription = components["schemas"]["TableDescription"];
 
 export class Package {
    private packageName: string;
@@ -222,13 +229,14 @@ export class Package {
       return await Promise.all(
          (await Package.getDatabasePaths(packagePath)).map(
             async (databasePath) => {
-               const databaseSize: number = await Package.getDatabaseSize(
+               const databaseInfo = await Package.getDatabaseInfo(
                   packagePath,
                   databasePath,
                );
+
                return {
                   path: databasePath,
-                  size: databaseSize,
+                  info: databaseInfo,
                   type: "embedded",
                };
             },
@@ -245,14 +253,38 @@ export class Package {
          .map((fullPath: string) => {
             return path.relative(packagePath, fullPath).replace(/\\/g, "/");
          })
-         .filter((modelPath: string) => modelPath.endsWith(".parquet"));
+         .filter(
+            (modelPath: string) =>
+               modelPath.endsWith(".parquet") || modelPath.endsWith(".csv"),
+         );
    }
 
-   private static async getDatabaseSize(
+   private static async getDatabaseInfo(
       packagePath: string,
       databasePath: string,
-   ): Promise<number> {
+   ): Promise<ApiTableDescription> {
       const fullPath = path.join(packagePath, databasePath);
-      return (await fs.stat(fullPath)).size;
+
+      // Create a DuckDB source then:
+      // 1. Load the model and get the table schema from model
+      // 2. Run a query to get the row count from the table
+      const runtime = new ConnectionRuntime({
+         urlReader: new EmptyURLReader(),
+         connections: [new DuckDBConnection("duckdb")],
+      });
+      const model = runtime.loadModel(
+         `source: temp is duckdb.table('${fullPath}')`,
+      );
+      const modelDef = await model.getModel();
+      const fields = (modelDef._modelDef.contents["temp"] as SourceDef).fields;
+      const schema = fields.map((field): ApiColumn => {
+         return { type: field.type, name: field.name };
+      });
+      const runner = model.loadQuery(
+         "run: temp->{aggregate: row_count is count()}",
+      );
+      const result = await runner.run();
+      const rowCount = result.data.value[0].row_count?.valueOf() as number;
+      return { name: databasePath, rowCount, columns: schema };
    }
 }

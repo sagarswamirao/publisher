@@ -80,6 +80,25 @@ export interface BigqueryConnection {
     'queryTimeoutMilliseconds'?: string;
 }
 /**
+ * 
+ * @export
+ * @interface Column
+ */
+export interface Column {
+    /**
+     * 
+     * @type {string}
+     * @memberof Column
+     */
+    'name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Column
+     */
+    'type'?: string;
+}
+/**
  * Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent.
  * @export
  * @interface CompiledModel
@@ -239,11 +258,11 @@ export interface Database {
      */
     'path'?: string;
     /**
-     * Size of the embedded database in bytes.
-     * @type {number}
+     * 
+     * @type {TableDescription}
      * @memberof Database
      */
-    'size'?: number;
+    'info'?: TableDescription;
     /**
      * Type of database.
      * @type {string}
@@ -635,6 +654,31 @@ export interface SqlSource {
      * @memberof SqlSource
      */
     'source'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface TableDescription
+ */
+export interface TableDescription {
+    /**
+     * 
+     * @type {string}
+     * @memberof TableDescription
+     */
+    'name'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof TableDescription
+     */
+    'rowCount'?: number;
+    /**
+     * 
+     * @type {Array<Column>}
+     * @memberof TableDescription
+     */
+    'columns'?: Array<Column>;
 }
 /**
  * 
