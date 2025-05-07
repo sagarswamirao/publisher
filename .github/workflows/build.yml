@@ -15,6 +15,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: 'true' # Fetch submodules
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
       - name: Spin-up services
         run: docker compose --profile ci up -d
       - name: Install dependencies
