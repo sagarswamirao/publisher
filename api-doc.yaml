@@ -877,9 +877,8 @@ components:
         path:
           type: string
           description: Database's relative path in its package directory.
-        size:
-          type: integer
-          description: Size of the embedded database in bytes.
+        info:
+          $ref: "#/components/schemas/TableDescription"
         type:
           type: string
           enum: ["embedded", "materialized"]
@@ -1047,4 +1046,24 @@ components:
           type: string
         message:
           type: string
+    
+    Column:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+
+    TableDescription:
+      type: object
+      properties:
+        name:
+          type: string
+        rowCount:
+          type: integer
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/Column"
       
