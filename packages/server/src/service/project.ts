@@ -3,7 +3,7 @@ import { components } from "../api";
 import { Package } from "./package";
 import { ApiConnection } from "./model";
 type ApiPackage = components["schemas"]["Package"];
-import { createConnections } from "./connection";
+import { createConnections, InternalConnection } from "./connection";
 import { ConnectionNotFoundError } from "../errors";
 import { BaseConnection } from "@malloydata/malloy/connection";
 import * as path from "path";
@@ -22,7 +22,7 @@ export class Project {
       projectName: string,
       projectPath: string,
       malloyConnections: Map<string, BaseConnection>,
-      apiConnections: ApiConnection[],
+      apiConnections: InternalConnection[],
    ) {
       this.projectName = projectName;
       this.projectPath = projectPath;
@@ -45,7 +45,17 @@ export class Project {
          projectName,
          projectPath,
          malloyConnections,
-         apiConnections,
+         apiConnections.map((internalConnection) => {
+            // Create a new ApiConnection object from each InternalConnection
+            // by excluding the internal connection details
+            // We don't want to send passwords and connection strings to the client
+            return {
+               name: internalConnection.name,
+               type: internalConnection.type,
+               attributes: internalConnection.attributes,
+               resource: internalConnection.resource,
+            };
+         }),
       );
    }
 

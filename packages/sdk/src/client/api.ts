@@ -178,30 +178,6 @@ export interface Connection {
      * @memberof Connection
      */
     'attributes'?: ConnectionAttributes;
-    /**
-     * 
-     * @type {PostgresConnection}
-     * @memberof Connection
-     */
-    'postgresConnection'?: PostgresConnection;
-    /**
-     * 
-     * @type {BigqueryConnection}
-     * @memberof Connection
-     */
-    'bigqueryConnection'?: BigqueryConnection;
-    /**
-     * 
-     * @type {SnowflakeConnection}
-     * @memberof Connection
-     */
-    'snowflakeConnection'?: SnowflakeConnection;
-    /**
-     * 
-     * @type {TrinoConnection}
-     * @memberof Connection
-     */
-    'trinoConnection'?: TrinoConnection;
 }
 
 export const ConnectionTypeEnum = {

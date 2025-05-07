@@ -210,10 +210,6 @@ export interface components {
       /** @enum {string} */
       type?: "postgres" | "bigquery" | "snowflake" | "trino";
       attributes?: components["schemas"]["ConnectionAttributes"];
-      postgresConnection?: components["schemas"]["PostgresConnection"];
-      bigqueryConnection?: components["schemas"]["BigqueryConnection"];
-      snowflakeConnection?: components["schemas"]["SnowflakeConnection"];
-      trinoConnection?: components["schemas"]["TrinoConnection"];
     };
     ConnectionAttributes: {
       dialectName?: string;

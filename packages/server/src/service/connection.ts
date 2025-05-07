@@ -13,9 +13,18 @@ import { BaseConnection } from "@malloydata/malloy/connection";
 type ApiConnection = components["schemas"]["Connection"];
 type ApiConnectionAttributes = components["schemas"]["ConnectionAttributes"];
 
+// Extends the public API connection with the internal connection objects
+// which contains passwords and connection strings.
+export type InternalConnection = ApiConnection & {
+   postgresConnection?: components["schemas"]["PostgresConnection"];
+   bigqueryConnection?: components["schemas"]["BigqueryConnection"];
+   snowflakeConnection?: components["schemas"]["SnowflakeConnection"];
+   trinoConnection?: components["schemas"]["TrinoConnection"];
+};
+
 export async function readConnectionConfig(
    basePath: string,
-): Promise<ApiConnection[]> {
+): Promise<InternalConnection[]> {
    const fullPath = path.join(basePath, CONNECTIONS_MANIFEST_NAME);
 
    try {
@@ -23,7 +32,7 @@ export async function readConnectionConfig(
    } catch {
       // If there's no connection manifest, it's no problem.  Just return an
       // empty array.
-      return new Array<ApiConnection>();
+      return new Array<InternalConnection>();
    }
 
    const connectionFileContents = await fs.readFile(fullPath);
@@ -33,7 +42,7 @@ export async function readConnectionConfig(
 
 export async function createConnections(basePath: string): Promise<{
    malloyConnections: Map<string, BaseConnection>;
-   apiConnections: ApiConnection[];
+   apiConnections: InternalConnection[];
 }> {
    const connectionMap = new Map<string, BaseConnection>();
    const connectionConfig = await readConnectionConfig(basePath);
