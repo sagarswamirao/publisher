@@ -43,7 +43,7 @@ The image below illustrates the composition of the Publisher's components and th
 
 * **Core Backend:** This is the heart of Publisher. It's a server application responsible for loading and managing Malloy Packages, which encapsulate your semantic models.
 * **Malloy Integration:** It utilizes the Malloy runtime to parse `.malloy` files, understand the rich semantic models defined within them (including relationships, calculations, and business context), and compile Malloy queries into SQL for execution against target databases (BigQuery, Snowflake, Trino, DuckDB, Postgres, MySQL).
-* **API Layers:** The Publisher server exposes two primary API interfaces:
+* **API Layers:** The Publisher server exposes two primary API interfaces (with one more coming soon:
     * **REST API:**
         * **Endpoint:** `/api/v0` (running on port defined by `PUBLISHER_PORT`, default `4000`)
         * **Host:** Defined by `PUBLISHER_HOST` (default `localhost`)
@@ -61,13 +61,13 @@ The image below illustrates the composition of the Publisher's components and th
         * **Usage:** To connect an MCP client, point it to `http://<PUBLISHER_HOST>:<MCP_PORT>/mcp`. See the [MCP Documentation](https://modelcontextprotocol.io/) for client examples.
     * **SQL API (coming soon):**
         * **Purpose:** Connect to you existing tools.
-    * **Malloy Package Format:** The Publisher Server loads semantic models, notebooks, and transformations based on the Malloy Package format. This format is designed to integrate seamlessly with standard developer practices.
-       * **Goal: Scalability and Governance through Standard Practices:** Enable engineers to manage, version, test, and distribute their data transformations and semantic models using familiar workflows (local development, CI/CD) and distribution mechanisms (e.g., packages, container images, registries). This aims to scale data development far beyond the limitations of current ad-hoc approaches. Crucially, leveraging these standard software engineering practices provides a natural form of **governance**. When a versioned package is pushed by a trusted source to a central repository or registry, that specific version effectively becomes the blessed or "governed" definition for consumption. This contrasts sharply with the complex, often bespoke processes required by traditional data catalogs or BI tools to achieve similar levels of trust and governance for data assets.
-       * **Structure:** A Malloy package is currently defined as a directory containing:
-           * One or more `.malloy` files defining data models, queries, and transformations.
-           * Optionally, one or more `.malloynb` files (Malloy Notebooks) for ad hoc analysis, exploration, and dashboard-like presentation.
-           * A `publisher.json` manifest file.
-       * **Manifest (`publisher.json`):** Contains metadata about the package. Currently, it supports `name`, `version`, and `description` fields. This schema will be expanded significantly as Publisher evolves to better support dependency management, versioning, and integration with package/container registries, further strengthening the governance model.
+* **Malloy Package Format:** The Publisher Server loads semantic models, notebooks, and transformations based on the Malloy Package format. This format is designed to integrate seamlessly with standard developer practices.
+    * **Goal: Scalability and Governance through Standard Practices:** Enable engineers to manage, version, test, and distribute their data transformations and semantic models using familiar workflows (local development, CI/CD) and distribution mechanisms (e.g., packages, container images, registries). This aims to scale data development far beyond the limitations of current ad-hoc approaches. Crucially, leveraging these standard software engineering practices provides a natural form of **governance**. When a versioned package is pushed by a trusted source to a central repository or registry, that specific version effectively becomes the blessed or "governed" definition for consumption. This contrasts sharply with the complex, often bespoke processes required by traditional data catalogs or BI tools to achieve similar levels of trust and governance for data assets.
+    * **Structure:** A Malloy package is currently defined as a directory containing:
+        * One or more `.malloy` files defining data models, queries, and transformations.
+        * Optionally, one or more `.malloynb` files (Malloy Notebooks) for ad hoc analysis, exploration, and dashboard-like presentation.
+        * A `publisher.json` manifest file.
+    * **Manifest (`publisher.json`):** Contains metadata about the package. Currently, it supports `name`, `version`, and `description` fields. This schema will be expanded significantly as Publisher evolves to better support dependency management, versioning, and integration with package/container registries, further strengthening the governance model.
 
 **2. Publisher SDK (`packages/sdk/`)**
 
