@@ -1,26 +1,26 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 
-import { components } from "../api";
-import recursive from "recursive-readdir";
-import { PackageNotFoundError } from "../errors";
-import { Model } from "./model";
-import {
-   PACKAGE_MANIFEST_NAME,
-   MODEL_FILE_SUFFIX,
-   NOTEBOOK_FILE_SUFFIX,
-} from "../utils";
-import { Scheduler } from "./scheduler";
-import { metrics } from "@opentelemetry/api";
+import { DuckDBConnection } from "@malloydata/db-duckdb";
 import {
    Connection,
    ConnectionRuntime,
    EmptyURLReader,
    SourceDef,
 } from "@malloydata/malloy";
-import { createConnections } from "./connection";
-import { DuckDBConnection } from "@malloydata/db-duckdb";
+import { metrics } from "@opentelemetry/api";
+import recursive from "recursive-readdir";
+import { components } from "../api";
 import { API_PREFIX } from "../constants";
+import { PackageNotFoundError } from "../errors";
+import {
+   MODEL_FILE_SUFFIX,
+   NOTEBOOK_FILE_SUFFIX,
+   PACKAGE_MANIFEST_NAME,
+} from "../utils";
+import { createConnections } from "./connection";
+import { Model } from "./model";
+import { Scheduler } from "./scheduler";
 type ApiDatabase = components["schemas"]["Database"];
 type ApiModel = components["schemas"]["Model"];
 export type ApiPackage = components["schemas"]["Package"];
@@ -62,10 +62,8 @@ export class Package {
       packageName: string,
       packagePath: string,
       projectConnections: Map<string, Connection>,
-   ): Promise<Package> {
+   ): Promise<Package | undefined> {
       const startTime = performance.now();
-      // If package manifest does not exist, we throw a not found error.  If the package
-      // manifest exists, we create a Package object and record errors in the object's fields.
       await Package.validatePackageManifestExistsOrThrowError(packagePath);
 
       try {
@@ -115,17 +113,7 @@ export class Package {
             malloy_package_name: packageName,
             status: "error",
          });
-         return new Package(
-            packageName,
-            {
-               name: packageName,
-               description:
-                  "Unable to load package: " + (error as Error).message,
-            },
-            new Array<ApiDatabase>(),
-            new Map<string, Model>(),
-            undefined,
-         );
+         throw new Error("Error loading package: " + error);
       }
    }
 

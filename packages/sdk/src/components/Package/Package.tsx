@@ -1,9 +1,9 @@
 import { Grid } from "@mui/material";
 import { Notebook } from "../Notebook";
 import Config from "./Config";
-import Models from "./Models";
-import Databases from "./Databases";
 import Connections from "./Connections";
+import Databases from "./Databases";
+import Models from "./Models";
 import Schedules from "./Schedules";
 
 const README_NOTEBOOK = "README.malloynb";
@@ -35,10 +35,10 @@ export default function Package({
       <Grid
          container
          spacing={2}
-         columns={10}
+         columns={12}
          sx={{ mb: (theme) => theme.spacing(2) }}
       >
-         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
+         <Grid size={{ xs: 12, md: 6 }}>
             <Config
                server={server}
                projectName={projectName}
@@ -47,7 +47,7 @@ export default function Package({
                accessToken={accessToken}
             />
          </Grid>
-         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
+         <Grid size={{ xs: 12, md: 6 }}>
             <Models
                server={server}
                projectName={projectName}
@@ -57,7 +57,7 @@ export default function Package({
                accessToken={accessToken}
             />
          </Grid>
-         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
+         <Grid size={{ xs: 12, md: 6 }}>
             <Databases
                server={server}
                projectName={projectName}
@@ -66,7 +66,7 @@ export default function Package({
                accessToken={accessToken}
             />
          </Grid>
-         <Grid size={{ xs: 12, md: 12, lg: 4 }}>
+         <Grid size={{ xs: 12, md: 6 }}>
             <Connections
                server={server}
                projectName={projectName}
