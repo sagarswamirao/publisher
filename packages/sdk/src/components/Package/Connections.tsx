@@ -78,11 +78,15 @@ export default function Connections({
                         {data.data.map((conn) => (
                            <TableRow key={conn.name}>
                               <TableCell>
-                                 <Typography fontWeight="bold">
+                                 <Typography variant="body2">
                                     {conn.name}
                                  </Typography>
                               </TableCell>
-                              <TableCell>{conn.type}</TableCell>
+                              <TableCell>
+                                 <Typography variant="body2">
+                                    {conn.type}
+                                 </Typography>
+                              </TableCell>
                            </TableRow>
                         ))}
                      </TableBody>
