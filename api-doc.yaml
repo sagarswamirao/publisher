@@ -781,6 +781,11 @@ components:
         modelInfo:
           type: string
           description: JSON string of ModelInfo. See malloy/packages/malloy-interfaces/src/types.ts
+        sourceInfos:
+          type: array
+          description: Array of JSON string of SourceInfo. See malloy/packages/malloy-interfaces/src/types.ts
+          items:
+            type: string
         sources:
           type: array
           description: Array of model sources.

@@ -8,18 +8,26 @@ import {
    IconButton,
    Collapse,
    Divider,
+   Tabs,
+   Tab,
 } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import axios from "axios";
-import { Configuration, ModelsApi } from "../../client";
+import { Configuration, ModelsApi, QueryresultsApi } from "../../client";
 import { ModelCell } from "./ModelCell";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import { StyledCard, StyledCardContent, StyledCardMedia, StyledExplorerContent, StyledExplorerPage, StyledExplorerPanel } from "../styles";
 import { highlight } from "../highlighter";
+import { MalloyExplorerProvider, SourcePanel, QueryPanel, ResultPanel } from "@malloydata/malloy-explorer";
+import * as Malloy from '@malloydata/malloy-interfaces';
+import * as QueryBuilder from '@malloydata/malloy-query-builder';
 
+import "@malloydata/malloy-explorer/styles.css";
 axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
+const queryResultsApi = new QueryresultsApi(new Configuration());
+
 const queryClient = new QueryClient();
 
 interface ModelProps {
@@ -51,9 +59,10 @@ export default function Model({
       React.useState<boolean>(false);
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
+   const [selectedTab, setSelectedTab] = React.useState(0);
 
    const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
-
+   
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
          setHighlightedEmbedCode(code);
@@ -97,7 +106,6 @@ export default function Model({
          </Typography>
       );
    }
-
    return (
       <StyledCard variant="outlined">
          <StyledCardContent>
@@ -107,9 +115,27 @@ export default function Model({
                   justifyContent: "space-between",
                }}
             >
-               <Typography variant="overline" fontWeight="bold">
-                  Model
-               </Typography>
+            {Array.isArray(data.data.sourceInfos) && data.data.sourceInfos.length > 0 && (
+              <Tabs
+                value={selectedTab}
+                onChange={(_, newValue) => setSelectedTab(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 36 }}
+              >
+                {data.data.sourceInfos.map((source, idx) => {
+                  let sourceInfo;
+                  try { sourceInfo = JSON.parse(source); } catch { sourceInfo = { name: String(idx) }; }
+                  return (
+                    <Tab
+                      key={sourceInfo.name || idx}
+                      label={sourceInfo.name || `Source ${idx+1}`}
+                      sx={{ minHeight: 36 }}
+                    />
+                  );
+                })}
+              </Tabs>
+            )}
                <CardActions
                   sx={{
                      padding: "0px 10px 0px 10px",
@@ -171,42 +197,18 @@ export default function Model({
          </StyledCardContent>
          <StyledCardMedia>
             <Stack spacing={2} component="section">
-               {data.data.sources?.map((source) => (
-                  <StyledCard
-                     key={source.name}
-                     variant="outlined"
-                     sx={{ padding: "0px 10px 0px 10px" }}
-                  >
-                     <StyledCardContent sx={{ p: "10px" }}>
-                        <Typography variant="subtitle1">
-                           {"Source > " + source.name}
-                        </Typography>
-                     </StyledCardContent>
-                     <Stack spacing={1} component="section">
-                        {source.views &&
-                           source.views.length > 0 &&
-                           source.views.map((view) => (
-                              <ModelCell
-                                 key={`${source.name}-${view.name}`}
-                                 server={server}
-                                 projectName={projectName}
-                                 packageName={packageName}
-                                 modelPath={modelPath}
-                                 versionId={versionId}
-                                 sourceName={source.name}
-                                 queryName={view.name}
-                                 expandResult={expandResults}
-                                 hideResultIcon={hideResultIcons}
-                                 expandEmbedding={expandEmbeddings}
-                                 hideEmbeddingIcon={hideEmbeddingIcons}
-                                 accessToken={accessToken}
-                                 annotations={view.annotations}
-                              />
-                           ))}
-                     </Stack>
-                     <Box height="10px" />
-                  </StyledCard>
-               ))}
+               {/* Only render the selected sourceInfo */}
+               {Array.isArray(data.data.sourceInfos) && data.data.sourceInfos.length > 0 && (                  
+                  <SourceExplorerComponent 
+                    server={server}
+                    versionId={versionId}
+                    accessToken={accessToken}
+                    modelPath={modelPath}
+                    projectName={projectName}
+                    packageName={packageName}
+                    source={data.data.sourceInfos[selectedTab]} 
+                  />
+               )}
                {data.data.queries?.length > 0 && (
                   <StyledCard
                      variant="outlined"
@@ -259,3 +261,109 @@ function getModelCodeSnippet(
    accessToken={accessToken}
 />`;
 }
+
+function SourceExplorerComponent({
+   server,
+   versionId,
+   accessToken,
+   modelPath,
+   projectName,
+   packageName,
+   source,
+ }) {
+   const [query, setQuery] = React.useState<Malloy.Query | undefined>(undefined);
+   const [result, setResult] = React.useState<Malloy.Result | undefined>(undefined);
+
+   if (!source) return null;
+   let sourceInfo;
+   try { sourceInfo = JSON.parse(source); } catch { return null; }
+
+   const mutation = useMutation(
+      {        
+         mutationFn: () =>
+            queryResultsApi.executeQuery(
+               projectName,
+               packageName,
+               modelPath,
+               new QueryBuilder.ASTQuery({source: sourceInfo, query}).toMalloy(),
+               undefined,
+               // sourceInfo.name,
+               undefined,
+               versionId,
+               {
+                  baseURL: server,
+                  withCredentials: !accessToken,
+                  headers: {
+                     Authorization: accessToken && `Bearer ${accessToken}`,
+                  },
+               },
+            ),
+            onSuccess: (data) => {
+               if (data) {
+                  const parsedResult = JSON.parse(data.data.result);
+                  setResult(parsedResult as Malloy.Result);
+               }
+            },
+      },
+      queryClient,
+   );
+
+   const [oldSourceInfo, setOldSourceInfo] = React.useState(sourceInfo.name);
+
+   console.log("oldSourceInfo", oldSourceInfo, sourceInfo.name);
+
+   // This hack is needed since sourceInfo is updated before
+   // query is reset, which results in the query not being found
+   // because it does not exist on the new source.
+   React.useEffect(() => {
+      if (oldSourceInfo !== sourceInfo.name) {
+         setOldSourceInfo(sourceInfo.name);
+         setQuery(undefined);
+         setResult(undefined);
+      }
+   }, [source, sourceInfo]);
+
+   if (oldSourceInfo !== sourceInfo.name) {
+      return <div>Loading...</div>
+   }
+
+   return (
+     <StyledExplorerPage key={sourceInfo.name}>
+       <StyledExplorerContent>
+         <MalloyExplorerProvider
+           source={sourceInfo}
+           query={query}
+           setQuery={setQuery}
+         >
+           <SourcePanel/>
+           <QueryPanel
+             runQuery={() => {
+               mutation.mutate();
+             }}
+           />
+           <ResultPanel
+              source={sourceInfo}
+              draftQuery={query}
+              setDraftQuery={setQuery}
+              submittedQuery={
+                query
+                  ? {
+                      executionState: mutation.isPending ? 'running' : 'finished',
+                      response: {
+                        result: result
+                     },
+                      query,
+                      queryResolutionStartMillis: Date.now(),
+                      onCancel: mutation.reset,
+                    }
+                  : undefined
+              }
+              options={{showRawQuery: true}}
+            />
+         </MalloyExplorerProvider>
+       </StyledExplorerContent>
+     </StyledExplorerPage>
+   );
+}
+
+
