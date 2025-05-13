@@ -786,11 +786,6 @@ components:
           description: Array of JSON string of SourceInfo. See malloy/packages/malloy-interfaces/src/types.ts
           items:
             type: string
-        sources:
-          type: array
-          description: Array of model sources.
-          items:
-            $ref: "#/components/schemas/Source"
         queries:
           type: array
           descript: Array of named queries.
@@ -802,24 +797,6 @@ components:
           items:
             $ref: "#/components/schemas/NotebookCell"
   
-    Source:
-      type: object
-      description: Model source.
-      properties:
-        name:
-          type: string
-          description: Source's name.
-        annotations:
-          type: array
-          description: Annotations attached to source.
-          items:
-            type: string
-        views:
-          type: array
-          description: List of views in the source.\
-          items:
-            $ref: "#/components/schemas/View"
-
     View:
       type: object
       description: Named model view.
