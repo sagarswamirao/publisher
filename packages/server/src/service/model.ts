@@ -166,6 +166,14 @@ export class Model {
       return this.sources;
    }
 
+   public getSourceInfos(): Malloy.SourceInfo[] | undefined {
+      return this.modelDef
+         ? modelDefToModelInfo(this.modelDef).entries.filter((entry) => {
+              return entry.kind === "source";
+           })
+         : undefined;
+   }
+
    public getQueries(): ApiQuery[] | undefined {
       return this.sources;
    }
@@ -199,7 +207,7 @@ export class Model {
       if (this.compilationError) {
          throw new ModelCompilationError(this.compilationError);
       }
-
+      console.log("queryName", queryName, "query", query);
       let runnable: QueryMaterializer;
       if (!this.modelMaterializer || !this.modelDef || !this.modelInfo)
          throw new BadRequestError("Model has no queryable entities.");
@@ -220,7 +228,7 @@ export class Model {
             "malloy.model.query.status": "error",
          });
          throw new BadRequestError(
-            "Invalid query request. Query OR queryName must be defined.",
+            "Invalid query request. (Query AND !sourceName) OR (queryName AND sourceName) must be defined.",
          );
       }
       const rowLimit =
@@ -258,6 +266,9 @@ export class Model {
          modelInfo: JSON.stringify(
             this.modelDef ? modelDefToModelInfo(this.modelDef) : {},
          ),
+         sourceInfos: this.getSourceInfos()?.map((sourceInfo) =>
+            JSON.stringify(sourceInfo),
+         ),
          sources: this.sources,
          queries: this.queries,
       } as ApiCompiledModel;
@@ -273,7 +284,7 @@ export class Model {
                   try {
                      const rowLimit = cell.runnable
                         ? (await cell.runnable.getPreparedResult())
-                           .resultExplore.limit
+                             .resultExplore.limit
                         : undefined;
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
