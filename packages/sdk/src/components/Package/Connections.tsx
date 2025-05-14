@@ -10,6 +10,7 @@ import {
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, ConnectionsApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
+import { Connection as ApiConnection } from "../../client/api";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -18,13 +19,42 @@ interface ConnectionsProps {
    server?: string;
    projectName: string;
    accessToken: string;
+   navigate: (to: string) => void;
 }
 
-export default function Connections({
-   server,
-   projectName,
-   accessToken,
-}: ConnectionsProps) {
+// TODO(jjs) - Move this UI to the ConnectionExplorer component
+function Connection({
+   connectionProps,
+   connection,
+}: {
+   connectionProps: ConnectionsProps;
+   connection: ApiConnection;
+}) {
+   const { projectName } = connectionProps;
+   return (
+      <TableRow key={connection.name}>
+         <TableCell>
+            <Typography
+               variant="body2"
+               sx={{ cursor: "pointer", color: "primary.main" }}
+               onClick={() =>
+                  connectionProps.navigate(
+                     `/${projectName}/connections/${connection.name}/`,
+                  )
+               }
+            >
+               {connection.name}
+            </Typography>
+         </TableCell>
+         <TableCell>
+            <Typography variant="body2">{connection.type}</Typography>
+         </TableCell>
+      </TableRow>
+   );
+}
+
+export default function Connections(connectionProps: ConnectionsProps) {
+   const { server, projectName, accessToken } = connectionProps;
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["connections", server, projectName],
@@ -76,18 +106,11 @@ export default function Connections({
                            </TableCell>
                         </TableRow>
                         {data.data.map((conn) => (
-                           <TableRow key={conn.name}>
-                              <TableCell>
-                                 <Typography variant="body2">
-                                    {conn.name}
-                                 </Typography>
-                              </TableCell>
-                              <TableCell>
-                                 <Typography variant="body2">
-                                    {conn.type}
-                                 </Typography>
-                              </TableCell>
-                           </TableRow>
+                           <Connection
+                              key={conn.name}
+                              connectionProps={connectionProps}
+                              connection={conn}
+                           />
                         ))}
                      </TableBody>
                   </Table>

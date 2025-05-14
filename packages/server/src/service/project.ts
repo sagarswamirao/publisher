@@ -15,6 +15,7 @@ export class Project {
    private packages: Map<string, Package> = new Map();
    private malloyConnections: Map<string, BaseConnection>;
    private apiConnections: ApiConnection[];
+   private internalConnections: InternalConnection[];
    private projectPath: string;
    private projectName: string;
 
@@ -22,11 +23,14 @@ export class Project {
       projectName: string,
       projectPath: string,
       malloyConnections: Map<string, BaseConnection>,
+      internalConnections: InternalConnection[],
       apiConnections: InternalConnection[],
    ) {
       this.projectName = projectName;
       this.projectPath = projectPath;
       this.malloyConnections = malloyConnections;
+      // InternalConnections have full connection details for doing schema inspection
+      this.internalConnections = internalConnections;
       this.apiConnections = apiConnections;
    }
 
@@ -45,6 +49,7 @@ export class Project {
          projectName,
          projectPath,
          malloyConnections,
+         apiConnections,
          apiConnections.map((internalConnection) => {
             // Create a new ApiConnection object from each InternalConnection
             // by excluding the internal connection details
@@ -81,6 +86,20 @@ export class Project {
 
    public getApiConnection(connectionName: string): ApiConnection {
       const connection = this.apiConnections.find(
+         (connection) => connection.name === connectionName,
+      );
+      if (!connection) {
+         throw new ConnectionNotFoundError(
+            `Connection ${connectionName} not found`,
+         );
+      }
+      return connection;
+   }
+
+   // Returns a connection with full connection details for doing schema inspection
+   // Don't send this to the client as it contains sensitive information
+   public getInternalConnection(connectionName: string): InternalConnection {
+      const connection = this.internalConnections.find(
          (connection) => connection.name === connectionName,
       );
       if (!connection) {

@@ -68,6 +68,7 @@ export default function Package({
          </Grid>
          <Grid size={{ xs: 12, md: 6 }}>
             <Connections
+               navigate={navigate}
                server={server}
                projectName={projectName}
                accessToken={accessToken}

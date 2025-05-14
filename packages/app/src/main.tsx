@@ -9,6 +9,7 @@ import { RouteError } from "./components/RouteError";
 import { PackagePage } from "./components/PackagePage";
 import { ProjectPage } from "./components/ProjectPage";
 import { ModelPage } from "./components/ModelPage";
+import { ConnectionsPage } from "./components/ConnectionsPage";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const server = `${window.location.protocol}//${window.location.host}/api/v0`;
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
          {
             path: ":projectName/:packageName/*",
             element: <ModelPage server={server} />,
+         },
+         {
+            path: ":projectName/connections/:connectionName",
+            element: <ConnectionsPage server={server} />,
          },
       ],
    },

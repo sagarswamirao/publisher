@@ -203,7 +203,7 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
   
-  /projects/{projectName}/connections/{connectionName}/tableSource:
+  /projects/{projectName}/connections/{connectionName}/{tablePath}/tableSource:
     get:
       tags:
       - connections
@@ -223,16 +223,10 @@ paths:
           required: true
           schema:
             type: string
-        - name: tableKey
-          in: query
-          description: Table key
-          required: false
-          schema:
-            type: string
         - name: tablePath
-          in: query
-          description: Table path
-          required: false
+          in: path
+          description: Table path, in the form of schemaName.tableName
+          required: true
           schema:
             type: string
       responses:
@@ -243,6 +237,86 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TableSource"
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /projects/{projectName}/connections/{connectionName}/{schemaName}/tables:
+    get:
+      tags:
+      - connections
+      operationId: list-tables
+      summary:
+        Returns a list of tables available in the specified schema.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+        - name: schemaName
+          in: path
+          description: Name of schema
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A list of table names available in the specified schema.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        401:
+          $ref: "#/components/responses/UnauthorizedError"
+        404:
+          $ref: "#/components/responses/NotFoundError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /projects/{projectName}/connections/{connectionName}/schemas:
+    get:
+      tags:
+      - connections
+      operationId: list-schemas
+      summary:
+        Returns a list of schemas available in the connection.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description:
+            A list of schemas available in the connection with metadata.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SchemaName"
         401:
           $ref: "#/components/responses/UnauthorizedError"
         404:
@@ -889,6 +963,20 @@ components:
           type: string
           description: Status of the last run.
 
+    SchemaName:
+      description: A schema name in a Connection.
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the schema
+        isDefault:
+          type: boolean
+          description: Whether this schema is the default schema
+        isHidden:
+          type: boolean
+          description: Whether this schema is hidden
+
     Connection:
       type: object
       properties:
@@ -1005,9 +1093,12 @@ components:
         resource:
           type: string
           description: Resource path to the table source.
-        # Pass source as an opaque JSON string that is malloyVersion depdendent.
-        source:
-          type: string
+        columns:
+          description: Table fields
+          type: array
+          items:
+            $ref: "#/components/schemas/Column"
+          
 
     TemporaryTable:
       type: object
