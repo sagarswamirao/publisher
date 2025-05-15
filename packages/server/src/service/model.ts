@@ -38,6 +38,9 @@ type ApiSource = components["schemas"]["Source"];
 type ApiView = components["schemas"]["View"];
 type ApiQuery = components["schemas"]["Query"];
 export type ApiConnection = components["schemas"]["Connection"];
+export type SnowflakeConnection = components["schemas"]["SnowflakeConnection"];
+export type PostgresConnection = components["schemas"]["PostgresConnection"];
+export type BigqueryConnection = components["schemas"]["BigqueryConnection"];
 
 const MALLOY_VERSION = malloyPackage.version;
 
@@ -77,6 +80,7 @@ export class Model {
       modelType: ModelType,
       modelMaterializer: ModelMaterializer | undefined,
       modelDef: ModelDef | undefined,
+      // TODO(jjs) - remove these
       sources: ApiSource[] | undefined,
       queries: ApiQuery[] | undefined,
       runnableNotebookCells: RunnableNotebookCell[] | undefined,
