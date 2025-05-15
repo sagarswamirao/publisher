@@ -203,7 +203,7 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
   
-  /projects/{projectName}/connections/{connectionName}/tables/{tablePath}:
+  /projects/{projectName}/connections/{connectionName}/tableSource:
     get:
       tags:
       - connections
@@ -223,10 +223,16 @@ paths:
           required: true
           schema:
             type: string
+        - name: tableKey
+          in: query
+          description: Table key
+          required: false
+          schema:
+            type: string
         - name: tablePath
-          in: path
-          description: Table path, in the form of schemaName.tableName
-          required: true
+          in: query
+          description: Table path
+          required: false
           schema:
             type: string
       responses:
@@ -1093,6 +1099,10 @@ components:
         resource:
           type: string
           description: Resource path to the table source.
+        # Pass source as an opaque JSON string that is malloyVersion depdendent.
+        # TODO: Remove this once we update the Malloy Publisher connection.
+        source:
+          type: string
         columns:
           description: Table fields
           type: array

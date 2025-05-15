@@ -114,8 +114,8 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
             error: { code: -32603, message: "Internal server error" },
             id:
                typeof req.body === "object" &&
-               req.body !== null &&
-               "id" in req.body
+                  req.body !== null &&
+                  "id" in req.body
                   ? req.body.id
                   : null,
          });
@@ -287,14 +287,14 @@ app.get(
 );
 
 app.get(
-   `${API_PREFIX}/projects/:projectName/connections/:connectionName/tables/:tablePath`,
+   `${API_PREFIX}/projects/:projectName/connections/:connectionName/tableSource`,
    async (req, res) => {
       try {
          res.status(200).json(
             await connectionController.getConnectionTableSource(
                req.params.projectName,
                req.params.connectionName,
-               req.params.tablePath,
+               req.query.tablePath as string
             ),
          );
       } catch (error) {

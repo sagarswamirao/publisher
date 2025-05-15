@@ -164,6 +164,7 @@ function TableViewer({
                projectName,
                connectionName,
                `${schemaName}.${tableName}`,
+               undefined,
                {
                   baseURL: server,
                   withCredentials: !accessToken,
