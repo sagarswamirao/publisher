@@ -203,7 +203,7 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
   
-  /projects/{projectName}/connections/{connectionName}/{tablePath}/tableSource:
+  /projects/{projectName}/connections/{connectionName}/tables/{tablePath}:
     get:
       tags:
       - connections
@@ -244,7 +244,7 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
 
-  /projects/{projectName}/connections/{connectionName}/{schemaName}/tables:
+  /projects/{projectName}/connections/{connectionName}/schemas/{schemaName}/tables:
     get:
       tags:
       - connections

@@ -248,7 +248,7 @@ app.get(
 );
 
 app.get(
-   `${API_PREFIX}/projects/:projectName/connections/:connectionName/:schemaName/tables`,
+   `${API_PREFIX}/projects/:projectName/connections/:connectionName/schemas/:schemaName/tables`,
    async (req, res) => {
       console.log("req.params", req.params);
       try {
@@ -287,7 +287,7 @@ app.get(
 );
 
 app.get(
-   `${API_PREFIX}/projects/:projectName/connections/:connectionName/:tablePath/tableSource`,
+   `${API_PREFIX}/projects/:projectName/connections/:connectionName/tables/:tablePath`,
    async (req, res) => {
       try {
          res.status(200).json(
