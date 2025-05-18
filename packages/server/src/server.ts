@@ -1,21 +1,21 @@
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import * as bodyParser from "body-parser";
+import cors from "cors";
 import express from "express";
 import * as http from "http";
+import { createProxyMiddleware } from "http-proxy-middleware";
+import morgan from "morgan";
 import { AddressInfo } from "net";
 import * as path from "path";
-import morgan from "morgan";
-import * as bodyParser from "body-parser";
-import { createProxyMiddleware } from "http-proxy-middleware";
-import cors from "cors";
-import { internalErrorToHttpError, NotImplementedError } from "./errors";
-import { ProjectStore } from "./service/project_store";
-import { initializeMcpServer } from "./mcp/server";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { ConnectionController } from "./controller/connection.controller";
 import { DatabaseController } from "./controller/database.controller";
 import { ModelController } from "./controller/model.controller";
 import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
-import { ConnectionController } from "./controller/connection.controller";
+import { internalErrorToHttpError, NotImplementedError } from "./errors";
+import { initializeMcpServer } from "./mcp/server";
+import { ProjectStore } from "./service/project_store";
 
 const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
@@ -171,7 +171,7 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
       const project = await projectStore.getProject(
          req.params.projectName,
-         !!req.query.reload,
+         req.query.reload === "true",
       );
       res.status(200).json(await project.getProjectMetadata());
    } catch (error) {
@@ -294,6 +294,7 @@ app.get(
             await connectionController.getConnectionTableSource(
                req.params.projectName,
                req.params.connectionName,
+               req.query.tableKey as string,
                req.query.tablePath as string
             ),
          );
@@ -374,7 +375,7 @@ app.get(
             await packageController.getPackage(
                req.params.projectName,
                req.params.packageName,
-               !!req.query.reload,
+               req.query.reload === "true",
             ),
          );
       } catch (error) {
@@ -535,4 +536,5 @@ const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
    console.log(`MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`);
 });
 
-export { mainServer as httpServer, mcpHttpServer, app, mcpApp };
+export { app, mainServer as httpServer, mcpApp, mcpHttpServer };
+
