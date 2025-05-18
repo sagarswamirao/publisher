@@ -1,13 +1,13 @@
-import { components } from "../api";
 import { RunSQLOptions, TestableConnection } from "@malloydata/malloy";
 import { Connection, PersistSQLResults } from "@malloydata/malloy/connection";
+import { TableSourceDef } from "../../../../../malloy/packages/malloy/dist";
+import { components } from "../api";
 import { ConnectionError } from "../errors";
-import { ProjectStore } from "../service/project_store";
 import {
    getSchemasForConnection,
    getTablesForSchema,
 } from "../service/db_utils";
-import { TableSourceDef } from "../../../../../malloy/packages/malloy/dist";
+import { ProjectStore } from "../service/project_store";
 
 type ApiConnection = components["schemas"]["Connection"];
 type ApiSqlSource = components["schemas"]["SqlSource"];
@@ -26,12 +26,12 @@ export class ConnectionController {
       projectName: string,
       connectionName: string,
    ): Promise<ApiConnection> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       return project.getApiConnection(connectionName);
    }
 
    public async listConnections(projectName: string): Promise<ApiConnection[]> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       return project.listApiConnections();
    }
 
@@ -40,7 +40,7 @@ export class ConnectionController {
       projectName: string,
       connectionName: string,
    ): Promise<ApiSchemaName[]> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getInternalConnection(connectionName);
       return getSchemasForConnection(connection);
    }
@@ -51,13 +51,13 @@ export class ConnectionController {
       connectionName: string,
       schemaName: string,
    ): Promise<string[]> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getInternalConnection(connectionName);
       return getTablesForSchema(connection, schemaName);
    }
 
    public async testConnection(projectName: string, connectionName: string) {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getMalloyConnection(
          connectionName,
       ) as Connection;
@@ -73,7 +73,7 @@ export class ConnectionController {
       connectionName: string,
       sqlStatement: string,
    ): Promise<ApiSqlSource> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getMalloyConnection(connectionName);
       try {
          return {
@@ -92,13 +92,11 @@ export class ConnectionController {
    public async getConnectionTableSource(
       projectName: string,
       connectionName: string,
+      tableKey: string,
       tablePath: string,
    ): Promise<ApiTableSource> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getMalloyConnection(connectionName);
-      // Use the last part of the table path as the table key. Since we only use this
-      // to get the schema for tables, there is no real malloy "name"
-      const tableKey = tablePath.split(".")[-1];
       try {
          const source = await connection.fetchTableSchema(tableKey, tablePath);
          if (source === undefined) {
@@ -111,7 +109,7 @@ export class ConnectionController {
                type: field.type,
             };
          });
-         return { resource: tablePath, columns: fields };
+         return { source: JSON.stringify(source), resource: tablePath, columns: fields };
       } catch (error) {
          console.log("error", error);
          throw new ConnectionError((error as Error).message);
@@ -124,7 +122,7 @@ export class ConnectionController {
       sqlStatement: string,
       options: string,
    ): Promise<ApiQueryData> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getMalloyConnection(connectionName);
       let runSQLOptions: RunSQLOptions = {};
       if (options) {
@@ -152,7 +150,7 @@ export class ConnectionController {
       connectionName: string,
       sqlStatement: string,
    ): Promise<ApiTemporaryTable> {
-      const project = await this.projectStore.getProject(projectName);
+      const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getMalloyConnection(
          connectionName,
       ) as Connection;
