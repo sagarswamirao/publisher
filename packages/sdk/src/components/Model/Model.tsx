@@ -17,11 +17,22 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import axios from "axios";
 import { Configuration, ModelsApi, QueryresultsApi } from "../../client";
 import { ModelCell } from "./ModelCell";
-import { StyledCard, StyledCardContent, StyledCardMedia, StyledExplorerContent, StyledExplorerPage, StyledExplorerPanel } from "../styles";
+import {
+   StyledCard,
+   StyledCardContent,
+   StyledCardMedia,
+   StyledExplorerContent,
+   StyledExplorerPage,
+} from "../styles";
 import { highlight } from "../highlighter";
-import { MalloyExplorerProvider, SourcePanel, QueryPanel, ResultPanel } from "@malloydata/malloy-explorer";
-import * as Malloy from '@malloydata/malloy-interfaces';
-import * as QueryBuilder from '@malloydata/malloy-query-builder';
+import {
+   MalloyExplorerProvider,
+   SourcePanel,
+   QueryPanel,
+   ResultPanel,
+} from "@malloydata/malloy-explorer";
+import * as Malloy from "@malloydata/malloy-interfaces";
+import * as QueryBuilder from "@malloydata/malloy-query-builder";
 
 import "@malloydata/malloy-explorer/styles.css";
 axios.defaults.baseURL = "http://localhost:4000";
@@ -62,7 +73,7 @@ export default function Model({
    const [selectedTab, setSelectedTab] = React.useState(0);
 
    const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
-   
+
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
          setHighlightedEmbedCode(code);
@@ -115,27 +126,36 @@ export default function Model({
                   justifyContent: "space-between",
                }}
             >
-            {Array.isArray(data.data.sourceInfos) && data.data.sourceInfos.length > 0 && (
-              <Tabs
-                value={selectedTab}
-                onChange={(_, newValue) => setSelectedTab(newValue)}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 36 }}
-              >
-                {data.data.sourceInfos.map((source, idx) => {
-                  let sourceInfo;
-                  try { sourceInfo = JSON.parse(source); } catch { sourceInfo = { name: String(idx) }; }
-                  return (
-                    <Tab
-                      key={sourceInfo.name || idx}
-                      label={sourceInfo.name || `Source ${idx+1}`}
-                      sx={{ minHeight: 36 }}
-                    />
-                  );
-                })}
-              </Tabs>
-            )}
+               {Array.isArray(data.data.sourceInfos) &&
+                  data.data.sourceInfos.length > 0 && (
+                     <Tabs
+                        value={selectedTab}
+                        onChange={(_, newValue) => setSelectedTab(newValue)}
+                        variant="scrollable"
+                        scrollButtons="auto"
+                        sx={{
+                           borderBottom: 1,
+                           borderColor: "divider",
+                           minHeight: 36,
+                        }}
+                     >
+                        {data.data.sourceInfos.map((source, idx) => {
+                           let sourceInfo;
+                           try {
+                              sourceInfo = JSON.parse(source);
+                           } catch {
+                              sourceInfo = { name: String(idx) };
+                           }
+                           return (
+                              <Tab
+                                 key={sourceInfo.name || idx}
+                                 label={sourceInfo.name || `Source ${idx + 1}`}
+                                 sx={{ minHeight: 36 }}
+                              />
+                           );
+                        })}
+                     </Tabs>
+                  )}
                <CardActions
                   sx={{
                      padding: "0px 10px 0px 10px",
@@ -198,17 +218,18 @@ export default function Model({
          <StyledCardMedia>
             <Stack spacing={2} component="section">
                {/* Only render the selected sourceInfo */}
-               {Array.isArray(data.data.sourceInfos) && data.data.sourceInfos.length > 0 && (                  
-                  <SourceExplorerComponent 
-                    server={server}
-                    versionId={versionId}
-                    accessToken={accessToken}
-                    modelPath={modelPath}
-                    projectName={projectName}
-                    packageName={packageName}
-                    source={data.data.sourceInfos[selectedTab]} 
-                  />
-               )}
+               {Array.isArray(data.data.sourceInfos) &&
+                  data.data.sourceInfos.length > 0 && (
+                     <SourceExplorerComponent
+                        server={server}
+                        versionId={versionId}
+                        accessToken={accessToken}
+                        modelPath={modelPath}
+                        projectName={projectName}
+                        packageName={packageName}
+                        source={data.data.sourceInfos[selectedTab]}
+                     />
+                  )}
                {data.data.queries?.length > 0 && (
                   <StyledCard
                      variant="outlined"
@@ -270,22 +291,33 @@ function SourceExplorerComponent({
    projectName,
    packageName,
    source,
- }) {
-   const [query, setQuery] = React.useState<Malloy.Query | undefined>(undefined);
-   const [result, setResult] = React.useState<Malloy.Result | undefined>(undefined);
+}) {
+   const [query, setQuery] = React.useState<Malloy.Query | undefined>(
+      undefined,
+   );
+   const [result, setResult] = React.useState<Malloy.Result | undefined>(
+      undefined,
+   );
 
    if (!source) return null;
    let sourceInfo;
-   try { sourceInfo = JSON.parse(source); } catch { return null; }
+   try {
+      sourceInfo = JSON.parse(source);
+   } catch {
+      return null;
+   }
 
    const mutation = useMutation(
-      {        
+      {
          mutationFn: () =>
             queryResultsApi.executeQuery(
                projectName,
                packageName,
                modelPath,
-               new QueryBuilder.ASTQuery({source: sourceInfo, query}).toMalloy(),
+               new QueryBuilder.ASTQuery({
+                  source: sourceInfo,
+                  query,
+               }).toMalloy(),
                undefined,
                // sourceInfo.name,
                undefined,
@@ -298,19 +330,17 @@ function SourceExplorerComponent({
                   },
                },
             ),
-            onSuccess: (data) => {
-               if (data) {
-                  const parsedResult = JSON.parse(data.data.result);
-                  setResult(parsedResult as Malloy.Result);
-               }
-            },
+         onSuccess: (data) => {
+            if (data) {
+               const parsedResult = JSON.parse(data.data.result);
+               setResult(parsedResult as Malloy.Result);
+            }
+         },
       },
       queryClient,
    );
 
    const [oldSourceInfo, setOldSourceInfo] = React.useState(sourceInfo.name);
-
-   console.log("oldSourceInfo", oldSourceInfo, sourceInfo.name);
 
    // This hack is needed since sourceInfo is updated before
    // query is reset, which results in the query not being found
@@ -324,46 +354,57 @@ function SourceExplorerComponent({
    }, [source, sourceInfo]);
 
    if (oldSourceInfo !== sourceInfo.name) {
-      return <div>Loading...</div>
+      return <div>Loading...</div>;
    }
 
    return (
-     <StyledExplorerPage key={sourceInfo.name}>
-       <StyledExplorerContent>
-         <MalloyExplorerProvider
-           source={sourceInfo}
-           query={query}
-           setQuery={setQuery}
-         >
-           <SourcePanel/>
-           <QueryPanel
-             runQuery={() => {
-               mutation.mutate();
-             }}
-           />
-           <ResultPanel
-              source={sourceInfo}
-              draftQuery={query}
-              setDraftQuery={setQuery}
-              submittedQuery={
-                query
-                  ? {
-                      executionState: mutation.isPending ? 'running' : 'finished',
-                      response: {
-                        result: result
-                     },
-                      query,
-                      queryResolutionStartMillis: Date.now(),
-                      onCancel: mutation.reset,
-                    }
-                  : undefined
-              }
-              options={{showRawQuery: true}}
-            />
-         </MalloyExplorerProvider>
-       </StyledExplorerContent>
-     </StyledExplorerPage>
+      <StyledExplorerPage key={sourceInfo.name}>
+         <StyledExplorerContent>
+            <MalloyExplorerProvider
+               source={sourceInfo}
+               query={query}
+               setQuery={setQuery}
+            >
+               <div style={{ height: "100%", width: "20%" }}>
+                  <SourcePanel
+                     onRefresh={() => {
+                        setQuery(undefined);
+                        setResult(undefined);
+                     }}
+                  />
+               </div>
+               <div style={{ height: "100%", width: "30%" }}>
+                  <QueryPanel
+                     runQuery={() => {
+                        mutation.mutate();
+                     }}
+                  />
+               </div>
+               <div style={{ height: "100%", width: "50%" }}>
+                  <ResultPanel
+                     source={sourceInfo}
+                     draftQuery={query}
+                     setDraftQuery={setQuery}
+                     submittedQuery={
+                        query
+                           ? {
+                                executionState: mutation.isPending
+                                   ? "running"
+                                   : "finished",
+                                response: {
+                                   result: result,
+                                },
+                                query,
+                                queryResolutionStartMillis: Date.now(),
+                                onCancel: mutation.reset,
+                             }
+                           : undefined
+                     }
+                     options={{ showRawQuery: true }}
+                  />
+               </div>
+            </MalloyExplorerProvider>
+         </StyledExplorerContent>
+      </StyledExplorerPage>
    );
 }
-
-
