@@ -61,10 +61,13 @@ export async function getSchemasForConnection(
    connection: ApiConnection,
 ): Promise<ApiSchemaName[]> {
    if (connection.type === "bigquery") {
+      if (!connection.bigqueryConnection) {
+         throw new Error("BigQuery connection is required");
+      }
       const bigquery = getBigqueryConnection(connection);
-      // Set the projectId if it's provided in the bigqueryConnextion
+      // Set the projectId if it's provided in the bigqueryConnection
       const [datasets] = await bigquery.getDatasets({
-         ...(connection.bigqueryConnection?.defaultProjectId
+         ...(connection.bigqueryConnection.defaultProjectId
             ? { projectId: connection.bigqueryConnection.defaultProjectId }
             : {}),
       });
@@ -77,9 +80,31 @@ export async function getSchemasForConnection(
                isDefault: false,
             };
          });
+   } else if (connection.type === "postgres") {
+      if (!connection.postgresConnection) {
+         throw new Error("Postgres connection is required");
+      }
+      const pool = await getPostgresConnection(connection.postgresConnection);
+      const res = await pool.query(
+         "SELECT schema_name FROM information_schema.schemata",
+      );
+      return res.rows.map((row) => {
+         return {
+            name: row.schema_name,
+            isHidden: ["information_schema", "pg_catalog"].includes(
+               row.schema_name,
+            ),
+            isDefault: row.schema_name === "public",
+         };
+      });
    } else {
-      //TODO(jjs) - implement
-      return [];
+      return [
+         {
+            name: `${connection.type} connections not supported`,
+            isHidden: false,
+            isDefault: false,
+         },
+      ];
    }
 }
 
@@ -112,6 +137,16 @@ export async function getTablesForSchema(
             cause: error,
          });
       }
+   } else if (connection.type === "postgres") {
+      if (!connection.postgresConnection) {
+         throw new Error("Postgres connection is required");
+      }
+      const pool = await getPostgresConnection(connection.postgresConnection);
+      const res = await pool.query(
+         "SELECT table_name FROM information_schema.tables WHERE table_schema = $1",
+         [schemaName],
+      );
+      return res.rows.map((row) => row.table_name);
    } else {
       // TODO(jjs) - implement
       return [];
