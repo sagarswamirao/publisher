@@ -42,21 +42,31 @@ function getBigqueryConnection(apiConnection: ApiConnection): BigQuery {
       return new BigQuery({ keyFilename: tmpKeyPath });
    }
 }
+
 async function getSnowflakeConnection(
    apiSnowflakeConnection: SnowflakeConnection,
 ): Promise<snowflake.Connection> {
    if (!apiSnowflakeConnection.account) {
       throw new Error("Snowflake account is required");
    }
-   return snowflake.createConnection({
-      account: apiSnowflakeConnection.account,
-      username: apiSnowflakeConnection.username,
-      password: apiSnowflakeConnection.password,
-      database: apiSnowflakeConnection.database,
-      warehouse: apiSnowflakeConnection.warehouse || undefined,
+   return new Promise((resolve, reject) => {
+      const connection = snowflake.createConnection({
+         account: apiSnowflakeConnection.account,
+         username: apiSnowflakeConnection.username,
+         password: apiSnowflakeConnection.password,
+         database: apiSnowflakeConnection.database,
+         warehouse: apiSnowflakeConnection.warehouse || undefined,
+      });
+      connection.connect((err, conn) => {
+         if (err) {
+            reject(err);
+         } else {
+            resolve(conn);
+         }
+      });
    });
 }
-// TODO(jjs) - only supports bigquery for now
+
 export async function getSchemasForConnection(
    connection: ApiConnection,
 ): Promise<ApiSchemaName[]> {
@@ -97,18 +107,27 @@ export async function getSchemasForConnection(
             isDefault: row.schema_name === "public",
          };
       });
+   } else if (connection.type === "snowflake") {
+      if (!connection.snowflakeConnection) {
+         throw new Error("Snowflake connection is required");
+      }
+      const snowflakeConn = await getSnowflakeConnection(
+         connection.snowflakeConnection,
+      );
+      try {
+         return await getSnowflakeSchemas(snowflakeConn);
+      } finally {
+         snowflakeConn.destroy((error) => {
+            if (error) {
+               console.error(`Error closing SnowflakeConnection: ${error}`);
+            }
+         });
+      }
    } else {
-      return [
-         {
-            name: `${connection.type} connections not supported`,
-            isHidden: false,
-            isDefault: false,
-         },
-      ];
+      throw new Error(`Unsupported connection type: ${connection.type}`);
    }
 }
 
-// TODO(jjs) - only supports bigquery for now
 export async function getTablesForSchema(
    connection: ApiConnection,
    schemaName: string,
@@ -147,175 +166,29 @@ export async function getTablesForSchema(
          [schemaName],
       );
       return res.rows.map((row) => row.table_name);
-   } else {
-      // TODO(jjs) - implement
-      return [];
-   }
-}
-
-export async function getConnectionTables(
-   connection: ApiConnection,
-): Promise<string[]> {
-   let tables: string[] = [];
-   if (connection.type === "postgres") {
-      const apiPostgresConnection = connection.postgresConnection;
-      if (!apiPostgresConnection) {
-         throw new Error("Postgres connection is required");
-      }
-      const pool = new Pool({
-         user: apiPostgresConnection.userName,
-         host: apiPostgresConnection.host,
-         database: apiPostgresConnection.databaseName,
-         password: apiPostgresConnection.password,
-         port: apiPostgresConnection.port,
-         max: 10,
-         idleTimeoutMillis: 30000,
-      });
-      try {
-         tables = await getTablesPGWithClient(pool, apiPostgresConnection);
-      } catch (error) {
-         console.error("Error connecting to Postgres", error);
-         throw new Error("Error connecting to Postgres", {
-            cause: error,
-         });
-      } finally {
-         await pool.end();
-      }
-   } else if (connection.type === "bigquery") {
-      if (!connection.bigqueryConnection) {
-         throw new Error("BigQuery connection is required");
-      }
-      tables = await getTablesBQ(connection);
-      // TODO: remove this hack once this is fully running on the server
-      // Filter out some datasets for now to speed up local indexing
-      // for the quick start guide (remove when indexing on server)
-      tables = tables.filter((table) => {
-         return (
-            !table.startsWith("new_york_subway") &&
-            !table.startsWith("google_political_ads")
-         );
-      });
    } else if (connection.type === "snowflake") {
-      const apiSnowflakeConnection = connection.snowflakeConnection;
-      if (!apiSnowflakeConnection) {
+      if (!connection.snowflakeConnection) {
          throw new Error("Snowflake connection is required");
       }
-      if (!apiSnowflakeConnection.account) {
-         throw new Error("Snowflake account is required");
-      }
-      const snowflakeConn = snowflake.createConnection({
-         account: apiSnowflakeConnection.account,
-         username: apiSnowflakeConnection.username,
-         password: apiSnowflakeConnection.password,
-         database: apiSnowflakeConnection.database,
-         warehouse: apiSnowflakeConnection.warehouse || undefined,
-      });
+      const snowflakeConn = await getSnowflakeConnection(
+         connection.snowflakeConnection,
+      );
       try {
-         await new Promise((resolve, reject) => {
-            snowflakeConn.connect((err) => (err ? reject(err) : resolve(true)));
-         });
-         tables = await getTablesSnowflakeWithConnection(
+         return await getSnowflakeTables(
             snowflakeConn,
-            apiSnowflakeConnection,
+            connection.snowflakeConnection,
+            schemaName,
          );
-      } catch (error) {
-         throw new Error("Error connecting to Snowflake", {
-            cause: error,
-         });
       } finally {
-         snowflakeConn.destroy(function (err) {
-            if (err) {
-               console.error("Snowflake unable to disconnect: " + err.message);
+         snowflakeConn.destroy((error) => {
+            if (error) {
+               console.error(`Error closing SnowflakeConnection: ${error}`);
             }
          });
       }
    } else {
-      console.error(
-         `Unsupported indexing backend for ${connection.name}: ${connection.type}`,
-      );
-   }
-   console.log(`Found ${tables.length} tables for ${connection.name}`);
-   return tables;
-}
-
-async function getTablesPGWithClient(
-   pool: Pool,
-   connInfo: PostgresConnection,
-): Promise<string[]> {
-   let client;
-   try {
-      client = await pool.connect();
-      const tablesResult = await client.query(`
-      SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
-    `);
-      return tablesResult.rows.map((row) => row.table_name);
-   } catch (error) {
-      console.error(
-         `Error connecting to PostgreSQL (${connInfo.databaseName}):`,
-         error,
-      );
+      // TODO(jjs) - implement
       return [];
-   } finally {
-      if (client) {
-         client.release();
-      }
-   }
-}
-
-async function getTablesBQ(connection: ApiConnection): Promise<string[]> {
-   const tmpKeyPath = getTempServiceKeyPath(connection);
-   if (!tmpKeyPath) {
-      throw new Error(
-         `Failed to create temporary service key file for connection: ${connection.name}`,
-      );
-   }
-   try {
-      const bigquery = new BigQuery({
-         keyFilename: tmpKeyPath,
-      });
-
-      // NOTE: we currently just pull data from the default project
-      // associated with the service account. If we want to find
-      // datasets in other projects, we need to use the
-      // ProjectsClient to list projects and then pass each below
-      // like: getDatasets({projectId: 'bigquery-public-data'})
-
-      // Fetch all datasets in the project
-      const [datasets] = await bigquery.getDatasets();
-
-      console.log(
-         `Found ${datasets.length} datasets in bigquery connection: ${connection.name}`,
-      );
-      if (!datasets.length) {
-         console.log(`No datasets found in connection: ${connection.name}`);
-         return [];
-      }
-
-      let tableNames: string[] = [];
-
-      for (const dataset of datasets) {
-         const [tables] = await dataset.getTables();
-
-         // Append dataset name to each table to avoid duplicate table names
-         const datasetTableNames = tables
-            .map((table) =>
-               table.id ? `${dataset.id}.${table.id}` : undefined,
-            )
-            .filter((id): id is string => !!id); // Ensure only valid strings are included
-
-         tableNames = [...tableNames, ...datasetTableNames];
-      }
-
-      return tableNames;
-   } catch (error) {
-      console.error("Error fetching tables from BigQuery:", error);
-      return [];
-   } finally {
-      try {
-         fs.unlinkSync(tmpKeyPath);
-      } catch (err) {
-         console.error("Error deleting temporary key file:", err);
-      }
    }
 }
 
@@ -341,9 +214,10 @@ function getTempServiceKeyPath(connection: ApiConnection): string {
    return tmpFilepath;
 }
 
-async function getTablesSnowflakeWithConnection(
+async function getSnowflakeTables(
    connection: snowflake.Connection,
    connInfo: SnowflakeConnection,
+   schemaName: string,
 ): Promise<string[]> {
    return new Promise((resolve, reject) => {
       connection.execute({
@@ -361,11 +235,12 @@ async function getTablesSnowflakeWithConnection(
             const query = `
           SELECT TABLE_NAME, TABLE_SCHEMA
           FROM INFORMATION_SCHEMA.TABLES
-          WHERE TABLE_SCHEMA NOT IN ('INFORMATION_SCHEMA', 'SNOWFLAKE', 'SNOWFLAKE_SAMPLE_DATA') AND TABLE_TYPE = 'BASE TABLE';
+          WHERE TABLE_SCHEMA=? AND TABLE_TYPE = 'BASE TABLE';
         `;
 
             connection.execute({
                sqlText: query,
+               binds: [schemaName],
                complete: (err, _, rows) => {
                   if (err) {
                      console.error(
@@ -374,14 +249,36 @@ async function getTablesSnowflakeWithConnection(
                      );
                      reject([]);
                   } else {
-                     resolve(
-                        rows?.map(
-                           (row) => `${row.TABLE_SCHEMA}.${row.TABLE_NAME}`,
-                        ) || [],
-                     );
+                     resolve(rows?.map((row) => `${row.TABLE_NAME}`) || []);
                   }
                },
             });
+         },
+      });
+   });
+}
+
+async function getSnowflakeSchemas(
+   connection: snowflake.Connection,
+): Promise<ApiSchemaName[]> {
+   return new Promise((resolve, reject) => {
+      connection.execute({
+         sqlText: "SHOW SCHEMAS",
+         complete: (err, stmt, rows) => {
+            if (err) {
+               reject(err);
+            } else {
+               resolve(
+                  rows?.map((row) => {
+                     console.log("row", JSON.stringify(row));
+                     return {
+                        name: row.name,
+                        isDefault: row.isDefault === "Y",
+                        isHidden: ["SNOWFLAKE", ""].includes(row.owner),
+                     };
+                  }) || [],
+               );
+            }
          },
       });
    });

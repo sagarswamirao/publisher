@@ -70,8 +70,7 @@ export function NotebookCell({
       )) ||
       (cell.type === "code" && (
          <StyledCard variant="outlined">
-            {(!hideCodeCellIcon ||
-               (!hideEmbeddingIcon && cell.result)) && (
+            {(!hideCodeCellIcon || (!hideEmbeddingIcon && cell.result)) && (
                <Stack sx={{ flexDirection: "row", justifyContent: "right" }}>
                   <CardActions
                      sx={{
@@ -172,11 +171,9 @@ export function NotebookCell({
             {cell.result && (
                <>
                   <Divider sx={{ mb: "10px" }} />
-                  <CardContent>
+                  <CardContent sx={{ maxHeight: "400px", overflow: "auto" }}>
                      <Suspense fallback="Loading malloy...">
-                        <RenderedResult
-                           result={cell.result}
-                        />
+                        <RenderedResult result={cell.result} />
                      </Suspense>
                   </CardContent>
                </>
