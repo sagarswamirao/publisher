@@ -18,6 +18,8 @@ import {
    TableContainer,
    TableHead,
    TableRow,
+   Switch,
+   FormControlLabel,
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ConnectionsApi } from "../../client/api";
@@ -46,6 +48,7 @@ export default function ConnectionExplorer({
    const [selectedSchema, setSelectedSchema] = React.useState<string | null>(
       null,
    );
+   const [showHiddenSchemas, setShowHiddenSchemas] = React.useState(false);
    const { data, isSuccess, isError, error, isLoading } = useQuery(
       {
          queryKey: ["tablePath", server, projectName, connectionName],
@@ -66,9 +69,29 @@ export default function ConnectionExplorer({
       <Grid container spacing={2}>
          <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 2 }}>
-               <Typography variant="overline" fontWeight="bold">
-                  Table Paths
-               </Typography>
+               <Box
+                  sx={{
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "space-between",
+                     mb: 1,
+                  }}
+               >
+                  <Typography variant="overline" fontWeight="bold">
+                     Table Paths
+                  </Typography>
+                  <FormControlLabel
+                     control={
+                        <Switch
+                           checked={showHiddenSchemas}
+                           onChange={(e) =>
+                              setShowHiddenSchemas(e.target.checked)
+                           }
+                        />
+                     }
+                     label="Hidden Schemas"
+                  />
+               </Box>
                <Divider />
                <Box sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}>
                   {isLoading && (
@@ -86,15 +109,30 @@ export default function ConnectionExplorer({
                   )}
                   {isSuccess && data.data.length > 0 && (
                      <List dense disablePadding>
-                        {data.data.map((schema: { name: string }) => (
-                           <ListItemButton
-                              key={schema.name}
-                              selected={selectedSchema === schema.name}
-                              onClick={() => setSelectedSchema(schema.name)}
-                           >
-                              <ListItemText primary={schema.name} />
-                           </ListItemButton>
-                        ))}
+                        {data.data
+                           .filter(
+                              ({ isHidden }) => showHiddenSchemas || !isHidden,
+                           )
+                           .sort((a, b) => {
+                              if (a.isDefault === b.isDefault) return 0;
+                              return a.isDefault ? -1 : 1;
+                           })
+                           .map(
+                              (schema: {
+                                 name: string;
+                                 isDefault: boolean;
+                              }) => (
+                                 <ListItemButton
+                                    key={schema.name}
+                                    selected={selectedSchema === schema.name}
+                                    onClick={() =>
+                                       setSelectedSchema(schema.name)
+                                    }
+                                 >
+                                    <ListItemText primary={schema.name} />
+                                 </ListItemButton>
+                              ),
+                           )}
                      </List>
                   )}
                </Box>
