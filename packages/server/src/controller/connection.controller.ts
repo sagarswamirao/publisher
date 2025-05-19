@@ -109,7 +109,11 @@ export class ConnectionController {
                type: field.type,
             };
          });
-         return { source: JSON.stringify(source), resource: tablePath, columns: fields };
+         return {
+            source: JSON.stringify(source),
+            resource: tablePath,
+            columns: fields,
+         };
       } catch (error) {
          console.log("error", error);
          throw new ConnectionError((error as Error).message);

@@ -114,8 +114,8 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
             error: { code: -32603, message: "Internal server error" },
             id:
                typeof req.body === "object" &&
-                  req.body !== null &&
-                  "id" in req.body
+               req.body !== null &&
+               "id" in req.body
                   ? req.body.id
                   : null,
          });
@@ -295,7 +295,7 @@ app.get(
                req.params.projectName,
                req.params.connectionName,
                req.query.tableKey as string,
-               req.query.tablePath as string
+               req.query.tablePath as string,
             ),
          );
       } catch (error) {
@@ -537,4 +537,3 @@ const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
 });
 
 export { app, mainServer as httpServer, mcpApp, mcpHttpServer };
-

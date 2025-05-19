@@ -163,8 +163,8 @@ function TableViewer({
             connectionsApi.getTablesource(
                projectName,
                connectionName,
+               tableName,
                `${schemaName}.${tableName}`,
-               undefined,
                {
                   baseURL: server,
                   withCredentials: !accessToken,
