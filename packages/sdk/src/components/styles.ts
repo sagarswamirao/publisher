@@ -20,13 +20,13 @@ export const StyledCardMedia = styled(CardMedia)({
    padding: "0px 10px 0px 10px",
 });
 
-export const StyledExplorerPage = styled('div')({
+export const StyledExplorerPage = styled("div")({
    display: "flex",
    flexDirection: "column",
    height: "100%",
 });
 
-export const StyledExplorerBanner = styled('div')({
+export const StyledExplorerBanner = styled("div")({
    height: "30px",
    backgroundColor: "rgba(225, 240, 255, 1)",
    display: "flex",
@@ -35,13 +35,14 @@ export const StyledExplorerBanner = styled('div')({
 });
 
 export const StyledExplorerContent = styled("div")({
-  display: "flex",
-  height: "100%",
-  overflowY: "auto",
+   display: "flex",
+   height: "75vh",
+   width: "100%",
+   overflowY: "auto",
 });
 
 export const StyledExplorerPanel = styled("div")({
-  position: "relative",
-  height: "100%",
-  flex: "0 0 auto",
+   position: "relative",
+   height: "100%",
+   flex: "0 0 auto",
 });
