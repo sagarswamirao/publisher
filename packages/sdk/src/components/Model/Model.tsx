@@ -54,6 +54,10 @@ interface ModelProps {
    accessToken?: string;
 }
 
+// Note: For this to properly render outside of publisher,
+// you must explicitly import the styles from the package:
+// import "@malloy-publisher/sdk/malloy-explorer.css";
+
 export default function Model({
    server,
    projectName,
