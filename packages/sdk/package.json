@@ -19,7 +19,7 @@
    "style": "./dist/malloy-explorer.css",
    "scripts": {
       "build": "bun generate-api-types && bunx vite build",
-      "postbuild": "cp ./node_modules/@malloydata/malloy-explorer/dist/malloy-explorer.css ./dist/malloy-explorer.css",
+      "postbuild": "cp ../../node_modules/@malloydata/malloy-explorer/dist/malloy-explorer.css ./dist/malloy-explorer.css",
       "test": "",
       "lint": "bunx eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
       "format": "bunx prettier --write --parser typescript '**/*.{ts,tsx}'",
