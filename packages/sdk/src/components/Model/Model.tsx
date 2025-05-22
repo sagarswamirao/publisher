@@ -11,47 +11,28 @@ import {
    Tabs,
    Tab,
 } from "@mui/material";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import axios from "axios";
-import { Configuration, ModelsApi, QueryresultsApi } from "../../client";
+import { Configuration, ModelsApi } from "../../client";
 import { ModelCell } from "./ModelCell";
-import {
-   StyledCard,
-   StyledCardContent,
-   StyledCardMedia,
-   StyledExplorerContent,
-   StyledExplorerPage,
-} from "../styles";
+import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { highlight } from "../highlighter";
-import {
-   MalloyExplorerProvider,
-   SourcePanel,
-   QueryPanel,
-   ResultPanel,
-} from "@malloydata/malloy-explorer";
-import * as Malloy from "@malloydata/malloy-interfaces";
-import * as QueryBuilder from "@malloydata/malloy-query-builder";
 
 import "@malloydata/malloy-explorer/styles.css";
-axios.defaults.baseURL = "http://localhost:4000";
+import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { SourceExplorerComponent } from "./SourcesExplorer";
 const modelsApi = new ModelsApi(new Configuration());
-const queryResultsApi = new QueryresultsApi(new Configuration());
 
 const queryClient = new QueryClient();
 
 interface ModelProps {
-   server?: string;
-   projectName: string;
-   packageName: string;
    modelPath: string;
    versionId?: string;
    expandResults?: boolean;
    hideResultIcons?: boolean;
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
-   accessToken?: string;
 }
 
 // Note: For this to properly render outside of publisher,
@@ -59,16 +40,11 @@ interface ModelProps {
 // import "@malloy-publisher/sdk/malloy-explorer.css";
 
 export default function Model({
-   server,
-   projectName,
-   packageName,
    modelPath,
-   versionId,
    expandResults,
    hideResultIcons,
    expandEmbeddings,
    hideEmbeddingIcons,
-   accessToken,
 }: ModelProps) {
    const [embeddingExpanded, setEmbeddingExpanded] =
       React.useState<boolean>(false);
@@ -76,8 +52,9 @@ export default function Model({
       React.useState<string>();
    const [selectedTab, setSelectedTab] = React.useState(0);
 
+   const { server, projectName, packageName, versionId, accessToken } =
+      usePublisherPackage();
    const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
-
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
          setHighlightedEmbedCode(code);
@@ -105,7 +82,6 @@ export default function Model({
       },
       queryClient,
    );
-
    if (isLoading) {
       return (
          <Typography sx={{ p: "20px", m: "auto" }}>
@@ -225,13 +201,12 @@ export default function Model({
                {Array.isArray(data.data.sourceInfos) &&
                   data.data.sourceInfos.length > 0 && (
                      <SourceExplorerComponent
-                        server={server}
-                        versionId={versionId}
-                        accessToken={accessToken}
-                        modelPath={modelPath}
-                        projectName={projectName}
-                        packageName={packageName}
-                        source={data.data.sourceInfos[selectedTab]}
+                        sourceAndPath={{
+                           modelPath,
+                           sourceInfo: JSON.parse(
+                              data.data.sourceInfos[selectedTab],
+                           ),
+                        }}
                      />
                   )}
                {data.data.queries?.length > 0 && (
@@ -285,130 +260,4 @@ function getModelCodeSnippet(
    modelPath="${modelPath}"
    accessToken={accessToken}
 />`;
-}
-
-function SourceExplorerComponent({
-   server,
-   versionId,
-   accessToken,
-   modelPath,
-   projectName,
-   packageName,
-   source,
-}) {
-   const [query, setQuery] = React.useState<Malloy.Query | undefined>(
-      undefined,
-   );
-   const [result, setResult] = React.useState<Malloy.Result | undefined>(
-      undefined,
-   );
-
-   if (!source) return null;
-   let sourceInfo;
-   try {
-      sourceInfo = JSON.parse(source);
-   } catch {
-      return null;
-   }
-
-   const mutation = useMutation(
-      {
-         mutationFn: () =>
-            queryResultsApi.executeQuery(
-               projectName,
-               packageName,
-               modelPath,
-               new QueryBuilder.ASTQuery({
-                  source: sourceInfo,
-                  query,
-               }).toMalloy(),
-               undefined,
-               // sourceInfo.name,
-               undefined,
-               versionId,
-               {
-                  baseURL: server,
-                  withCredentials: !accessToken,
-                  headers: {
-                     Authorization: accessToken && `Bearer ${accessToken}`,
-                  },
-               },
-            ),
-         onSuccess: (data) => {
-            if (data) {
-               const parsedResult = JSON.parse(data.data.result);
-               setResult(parsedResult as Malloy.Result);
-            }
-         },
-      },
-      queryClient,
-   );
-
-   const [oldSourceInfo, setOldSourceInfo] = React.useState(sourceInfo.name);
-
-   // This hack is needed since sourceInfo is updated before
-   // query is reset, which results in the query not being found
-   // because it does not exist on the new source.
-   React.useEffect(() => {
-      if (oldSourceInfo !== sourceInfo.name) {
-         setOldSourceInfo(sourceInfo.name);
-         setQuery(undefined);
-         setResult(undefined);
-      }
-   }, [source, sourceInfo]);
-
-   if (oldSourceInfo !== sourceInfo.name) {
-      return <div>Loading...</div>;
-   }
-
-   return (
-      <StyledExplorerPage key={sourceInfo.name}>
-         <StyledExplorerContent>
-            <MalloyExplorerProvider
-               source={sourceInfo}
-               query={query}
-               setQuery={setQuery}
-            >
-               <div style={{ height: "100%", width: "20%" }}>
-                  <SourcePanel
-                     onRefresh={() => {
-                        setQuery(undefined);
-                        setResult(undefined);
-                     }}
-                  />
-               </div>
-               <div style={{ height: "100%", width: "30%" }}>
-                  <QueryPanel
-                     runQuery={() => {
-                        mutation.mutate();
-                     }}
-                  />
-               </div>
-               <div style={{ height: "100%", width: "50%" }}>
-                  <ResultPanel
-                     source={sourceInfo}
-                     draftQuery={query}
-                     setDraftQuery={setQuery}
-                     submittedQuery={
-                        query
-                           ? {
-                                executionState: mutation.isPending
-                                   ? "running"
-                                   : "finished",
-                                response: {
-                                   result: result,
-                                },
-                                query,
-                                queryResolutionStartMillis: Date.now(),
-                                onCancel: mutation.reset,
-                             }
-                           : undefined
-                     }
-                     options={{ showRawQuery: true }}
-                  />
-               </div>
-            </MalloyExplorerProvider>
-         </StyledExplorerContent>
-      </StyledExplorerPage>
-   );
 }

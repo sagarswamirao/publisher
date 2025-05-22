@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import { Notebook } from "../Notebook";
 import Config from "./Config";
 import Connections from "./Connections";
@@ -82,6 +82,15 @@ export default function Package({
                versionId={versionId}
                accessToken={accessToken}
             />
+         </Grid>
+         <Grid size={{ xs: 12, md: 12 }}>
+            <Button
+               variant="contained"
+               onClick={() => navigate(`scratch_notebook`)}
+               sx={{ mb: 2 }}
+            >
+               New Scratch Notebook
+            </Button>
          </Grid>
          <Grid size={{ xs: 12, md: 12 }}>
             <Notebook
