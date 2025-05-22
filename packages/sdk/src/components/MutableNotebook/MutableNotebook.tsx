@@ -220,6 +220,11 @@ export default function MutableNotebook({
                      sx={{ flex: 1 }}
                   />
                </Box>
+               <Box
+                  sx={{ display: "flex", alignItems: "center", mt: 1, mb: 1 }}
+               >
+                  <ExportMalloyButton notebookData={notebookData} />
+               </Box>
             </Stack>
          </StyledCardContent>
          <ModelPicker
@@ -314,5 +319,30 @@ function AddIcon() {
             fill="currentColor"
          />
       </svg>
+   );
+}
+
+function ExportMalloyButton({
+   notebookData,
+}: {
+   notebookData: NotebookManager;
+}) {
+   const [copied, setCopied] = React.useState(false);
+   const handleExport = async () => {
+      if (!notebookData) return;
+      const malloy = notebookData.toMalloyNotebook();
+      try {
+         await navigator.clipboard.writeText(malloy);
+         setCopied(true);
+         setTimeout(() => setCopied(false), 1500);
+      } catch {
+         setCopied(false);
+         alert("Failed to copy to clipboard");
+      }
+   };
+   return (
+      <Button variant="contained" color="primary" onClick={handleExport}>
+         {copied ? "Copied!" : "Export To Malloy"}
+      </Button>
    );
 }

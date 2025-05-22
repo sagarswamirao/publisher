@@ -63,7 +63,11 @@ export interface SourceExplorerProps {
    sourceAndPaths: SourceAndPath[];
    existingQer?: QueryExplorerResult;
    existingSourceName?: string;
-   saveResult?: (sourceName: string, qer: QueryExplorerResult) => void;
+   saveResult?: (
+      modelPath: string,
+      sourceName: string,
+      qer: QueryExplorerResult,
+   ) => void;
 }
 
 /**
@@ -88,11 +92,7 @@ export function SourcesExplorer({
    );
 
    const [qer, setQer] = React.useState<QueryExplorerResult | undefined>(
-      existingQer || {
-         query: undefined,
-         malloyQuery: undefined,
-         malloyResult: undefined,
-      },
+      existingQer || emptyQueryExplorerResult(),
    );
 
    return (
@@ -129,6 +129,7 @@ export function SourcesExplorer({
                      <Button
                         onClick={() =>
                            saveResult(
+                              sourceAndPaths[selectedTab].modelPath,
                               sourceAndPaths[selectedTab].sourceInfo.name,
                               qer,
                            )
@@ -166,17 +167,20 @@ export interface QueryExplorerResult {
    malloyResult: Malloy.Result | undefined;
 }
 
+export function emptyQueryExplorerResult(): QueryExplorerResult {
+   return {
+      query: undefined,
+      malloyQuery: undefined,
+      malloyResult: undefined,
+   };
+}
 export function SourceExplorerComponent({
    sourceAndPath,
    onChange,
    existingQer,
 }: SourceExplorerComponentProps) {
    const [qer, setQer] = React.useState<QueryExplorerResult>(
-      existingQer || {
-         query: undefined,
-         malloyQuery: undefined,
-         malloyResult: undefined,
-      },
+      existingQer || emptyQueryExplorerResult(),
    );
 
    React.useEffect(() => {
@@ -184,7 +188,7 @@ export function SourceExplorerComponent({
          onChange(qer);
       }
    }, [onChange, qer]);
-
+   console.log("qer", qer);
    const { server, projectName, packageName, versionId, accessToken } =
       usePublisherPackage();
    const mutation = useMutation(
@@ -194,7 +198,10 @@ export function SourceExplorerComponent({
                source: sourceAndPath.sourceInfo,
                query: qer?.malloyQuery,
             }).toMalloy();
-            setQer({ ...qer, query: malloy });
+            setQer({
+               ...qer,
+               query: malloy,
+            });
             return queryResultsApi.executeQuery(
                projectName,
                packageName,
@@ -216,7 +223,10 @@ export function SourceExplorerComponent({
          onSuccess: (data) => {
             if (data) {
                const parsedResult = JSON.parse(data.data.result);
-               setQer({ ...qer, malloyResult: parsedResult as Malloy.Result });
+               setQer({
+                  ...qer,
+                  malloyResult: parsedResult as Malloy.Result,
+               });
             }
          },
       },
@@ -233,11 +243,7 @@ export function SourceExplorerComponent({
    React.useEffect(() => {
       if (oldSourceInfo !== sourceAndPath.sourceInfo.name) {
          setOldSourceInfo(sourceAndPath.sourceInfo.name);
-         setQer({
-            query: undefined,
-            malloyResult: undefined,
-            malloyQuery: undefined,
-         });
+         setQer(emptyQueryExplorerResult());
       }
    }, [sourceAndPath, oldSourceInfo]);
 
@@ -255,13 +261,7 @@ export function SourceExplorerComponent({
             >
                <div style={{ height: "100%", width: "20%" }}>
                   <SourcePanel
-                     onRefresh={() =>
-                        setQer({
-                           query: undefined,
-                           malloyQuery: undefined,
-                           malloyResult: undefined,
-                        })
-                     }
+                     onRefresh={() => setQer(emptyQueryExplorerResult())}
                   />
                </div>
                <div style={{ height: "100%", width: "30%" }}>

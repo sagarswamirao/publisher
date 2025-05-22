@@ -17,7 +17,7 @@ export interface NotebookData {
  * @property {boolean} isMarkdown - Whether the cell is a markdown cell
  * @property {string} [value] - The content of the cell
  * @property {string} [result] - The result of executing the cell
- * @property {string} [modelName] - Name of the model associated with the cell
+ * @property {string} [modelPath] - modelPath associated with the query in the cell
  * @property {string} [sourceName] - Name of the source associated with the cell
  * @property {string} [queryInfo] - Information about the query in the cell
  */
@@ -25,7 +25,7 @@ export interface NotebookCellValue {
    isMarkdown: boolean;
    value?: string;
    result?: string;
-   modelName?: string;
+   modelPath?: string;
    sourceName?: string;
    queryInfo?: string;
 }
@@ -147,6 +147,27 @@ export class NotebookManager {
          this.packageName,
          this.notebookData,
       );
+   }
+
+   /**
+    * Converts the notebook data to a Malloy notebook string.
+    * @returns {string} The Malloy notebook string
+    */
+   toMalloyNotebook(): string {
+      return this.notebookData.cells
+         .map((cell) => {
+            if (cell.isMarkdown) {
+               return ">>>markdown\n" + cell.value;
+            } else {
+               return (
+                  ">>>malloy\n" +
+                  `import "${cell.modelPath}"\n` +
+                  cell.value +
+                  "\n"
+               );
+            }
+         })
+         .join("\n");
    }
 
    static newNotebook(

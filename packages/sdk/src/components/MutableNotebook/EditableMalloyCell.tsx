@@ -25,7 +25,7 @@ export function EditableMalloyCell({
          sourceAndPaths={sourceAndPaths}
          existingQer={qer}
          existingSourceName={cell.sourceName}
-         saveResult={(sourceName, qer) => {
+         saveResult={(modelPath, sourceName, qer) => {
             // Convert the results of the Query Explorer into
             // the stringified JSON objects that are stored in the cell.
             onCellChange({
@@ -38,6 +38,7 @@ export function EditableMalloyCell({
                   ? JSON.stringify(qer.malloyQuery)
                   : undefined,
                sourceName,
+               modelPath,
             });
             onClose();
          }}
