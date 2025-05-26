@@ -2,7 +2,9 @@
   "version": "0.0.1",
   "license": "MIT",
   "name": "malloy-publisher",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "engines": {
     "bun": ">=1.2.2"
   },
