@@ -83,6 +83,7 @@ export function MutableCell({
       onDelete();
       setDeleteDialogOpen(false);
    };
+   const noSources = sourceAndPaths.length === 0;
 
    const deleteButton = (
       <Tooltip title="Delete Cell">
@@ -278,14 +279,19 @@ export function MutableCell({
                         />
                      </Stack>
                   </Collapse>
-                  {editingMalloy && (
-                     <EditableMalloyCell
-                        sourceAndPaths={sourceAndPaths}
-                        onCellChange={onCellChange}
-                        onClose={onClose}
-                        cell={cell}
-                     />
-                  )}
+                  {editingMalloy &&
+                     (noSources ? (
+                        <Typography>
+                           No Model Imports. Please add a model import above.
+                        </Typography>
+                     ) : (
+                        <EditableMalloyCell
+                           sourceAndPaths={sourceAndPaths}
+                           onCellChange={onCellChange}
+                           onClose={onClose}
+                           cell={cell}
+                        />
+                     ))}
                   {!editingMalloy && cell.result && (
                      <>
                         <CardContent

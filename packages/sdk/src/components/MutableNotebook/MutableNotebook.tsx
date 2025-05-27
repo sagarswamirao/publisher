@@ -19,6 +19,7 @@ import { ModelPicker } from "./ModelPicker";
 import { usePublisherPackage } from "../Package";
 import { NotebookManager } from "../NotebookManager";
 import { SourceAndPath } from "../Model/SourcesExplorer";
+import { useNotebookStorage } from "./NotebookStorageProvider";
 
 import * as Malloy from "@malloydata/malloy-interfaces";
 
@@ -46,6 +47,17 @@ export default function MutableNotebook({
 }: MutableNotebookProps) {
    const { server, projectName, packageName, versionId, accessToken } =
       usePublisherPackage();
+   if (!projectName || !packageName) {
+      throw new Error(
+         "Project and package must be provided via PubliserPackageProvider",
+      );
+   }
+   const { notebookStorage, userContext } = useNotebookStorage();
+   if (!notebookStorage || !userContext) {
+      throw new Error(
+         "Notebook storage and user context must be provided via NotebookStorageProvider",
+      );
+   }
    const [notebookData, setNotebookData] = React.useState<
       NotebookManager | undefined
    >();
@@ -146,14 +158,14 @@ export default function MutableNotebook({
       if (!notebookData) {
          setNotebookData(
             NotebookManager.loadNotebook(
-               projectName,
-               packageName,
+               notebookStorage,
+               userContext,
                getNotebookPath(),
             ),
          );
          setNotebookPath(getNotebookPath());
       }
-   }, [notebookData, packageName, projectName]);
+   }, [notebookData, packageName, projectName, notebookStorage, userContext]);
 
    if (!notebookData) {
       return <div>Loading...</div>;
@@ -200,8 +212,14 @@ export default function MutableNotebook({
                   justifyContent: "space-between",
                }}
             >
-               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography sx={{ fontSize: "150%", fontWeight: "bold" }}>
+               <Box sx={{ display: "flex", alignItems: "top", gap: 1 }}>
+                  <Typography
+                     sx={{
+                        fontSize: "150%",
+                        minHeight: "56px",
+                        fontWeight: "bold",
+                     }}
+                  >
                      Notebook :
                   </Typography>
                   <TextField
@@ -217,6 +235,12 @@ export default function MutableNotebook({
                      }}
                      size="medium"
                      variant="standard"
+                     error={!notebookPath}
+                     helperText={
+                        !notebookPath
+                           ? "Please enter a notebook name"
+                           : undefined
+                     }
                      sx={{ flex: 1 }}
                   />
                </Box>
