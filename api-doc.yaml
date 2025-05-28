@@ -531,10 +531,7 @@ paths:
           required: false
           schema:
             type: enum
-            enum:
-              - source
-              - notebook
-              - all
+            enum: ['source', 'notebook', 'all']
       responses:
         "200":
           description:
