@@ -525,6 +525,16 @@ paths:
           required: false
           schema:
             type: string
+        - name: filter
+          in: query
+          description: Filter to either "source" or "notebook" or "all"
+          required: false
+          schema:
+            type: enum
+            enum:
+              - source
+              - notebook
+              - all
       responses:
         "200":
           description:

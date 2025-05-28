@@ -16,6 +16,7 @@ import { ScheduleController } from "./controller/schedule.controller";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { initializeMcpServer } from "./mcp/server";
 import { ProjectStore } from "./service/project_store";
+import type { ListModelsFilterEnum } from "./controller/model.controller";
 
 const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
@@ -399,6 +400,7 @@ app.get(
             await modelController.listModels(
                req.params.projectName,
                req.params.packageName,
+               (req.query.filter as ListModelsFilterEnum) || "all",
             ),
          );
       } catch (error) {

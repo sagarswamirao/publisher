@@ -4,7 +4,8 @@ import { ProjectStore } from "../service/project_store";
 
 type ApiModel = components["schemas"]["Model"];
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
-
+export type ListModelsFilterEnum =
+   components["parameters"]["ListModelsFilterEnum"];
 export class ModelController {
    private projectStore: ProjectStore;
 
@@ -15,10 +16,13 @@ export class ModelController {
    public async listModels(
       projectName: string,
       packageName: string,
+      filter: ListModelsFilterEnum,
    ): Promise<ApiModel[]> {
-      const project = await this.projectStore.getProject(projectName);
-      const p = await project.getPackage(packageName);
-      return p.listModels();
+      const project = await this.projectStore.getProject(projectName, false);
+      const p = await project.getPackage(packageName, false);
+      return p
+         .listModels()
+         .filter((model: ApiModel) => filter === "all" || model.type == filter);
    }
 
    public async getModel(
@@ -26,8 +30,8 @@ export class ModelController {
       packageName: string,
       modelPath: string,
    ): Promise<ApiCompiledModel> {
-      const project = await this.projectStore.getProject(projectName);
-      const p = await project.getPackage(packageName);
+      const project = await this.projectStore.getProject(projectName, false);
+      const p = await project.getPackage(packageName, false);
       const model = p.getModel(modelPath);
       if (!model) {
          throw new ModelNotFoundError(`${modelPath} does not exist`);
