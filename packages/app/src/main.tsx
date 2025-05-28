@@ -12,6 +12,7 @@ import { ModelPage } from "./components/ModelPage";
 import { ConnectionsPage } from "./components/ConnectionsPage";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
+import { ScratchNotebookPageList } from "./components/ScatchNotebookPageList";
 
 const server = `${window.location.protocol}//${window.location.host}/api/v0`;
 const router = createBrowserRouter([
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
          {
             path: ":projectName/:packageName/scratch_notebook",
             element: <ScratchNotebookPage server={server} />,
+         },
+         {
+            path: ":projectName/:packageName/list_scratch_notebook",
+            element: <ScratchNotebookPageList server={server} />,
          },
          {
             path: ":projectName/:packageName/*",

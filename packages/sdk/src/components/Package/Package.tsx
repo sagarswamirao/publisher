@@ -100,10 +100,10 @@ export default function Package({
          <Grid size={{ xs: 12, md: 12 }}>
             <Button
                variant="contained"
-               onClick={() => navigate(`scratch_notebook`)}
+               onClick={() => navigate(`list_scratch_notebook`)}
                sx={{ mb: 2 }}
             >
-               New Scratch Notebook
+               Scratch Notebooks
             </Button>
          </Grid>
          <Grid size={{ xs: 12, md: 12 }}>

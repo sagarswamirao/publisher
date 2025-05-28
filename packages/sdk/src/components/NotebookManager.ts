@@ -1,3 +1,8 @@
+import type {
+   NotebookStorage,
+   UserContext,
+} from "./MutableNotebook/NotebookStorage";
+
 /**
  * Interface representing the data structure of a Mutable Notebook
  * @interface NotebookData
@@ -36,18 +41,22 @@ export interface NotebookCellValue {
  */
 export class NotebookManager {
    private isSaved: boolean;
+   private notebookStorage: NotebookStorage;
+   private userContext: UserContext;
 
    /**
     * Creates a new NotebookManager instance
-    * @param {string} projectName - Name of the project
-    * @param {string} packageName - Name of the package
+    * @param {NotebookStorage} notebookStorage - Storage implementation
+    * @param {UserContext} userContext - User context for storage
     * @param {NotebookData} notebookData - Initial notebook data
     */
    constructor(
-      private projectName: string,
-      private packageName: string,
+      notebookStorage: NotebookStorage,
+      userContext: UserContext,
       private notebookData: NotebookData,
    ) {
+      this.notebookStorage = notebookStorage;
+      this.userContext = userContext;
       if (this.notebookData) {
          this.isSaved = true;
       } else {
@@ -83,9 +92,14 @@ export class NotebookManager {
     */
    renameNotebook(notebookPath: string): NotebookManager {
       if (this.notebookData.notebookPath !== notebookPath) {
-         localStorage.removeItem(
-            `notebook__${this.projectName}__${this.packageName}__${this.notebookData.notebookPath}`,
-         );
+         try {
+            this.notebookStorage.deleteNotebook(
+               this.userContext,
+               this.notebookData.notebookPath,
+            );
+         } catch {
+            // ignore if not found
+         }
       }
       this.notebookData.notebookPath = notebookPath;
       this.isSaved = false;
@@ -135,16 +149,19 @@ export class NotebookManager {
 
    saveNotebook(): NotebookManager {
       if (!this.isSaved) {
-         localStorage.setItem(
-            `notebook__${this.projectName}__${this.packageName}__${this.notebookData.notebookPath}`,
+         if (!this.notebookData.notebookPath) {
+            throw new Error("Notebook path is not set");
+         }
+         this.notebookStorage.saveNotebook(
+            this.userContext,
+            this.notebookData.notebookPath,
             JSON.stringify(this.notebookData),
          );
-         console.log("saving: ", this.notebookData);
          this.isSaved = true;
       }
       return new NotebookManager(
-         this.projectName,
-         this.packageName,
+         this.notebookStorage,
+         this.userContext,
          this.notebookData,
       );
    }
@@ -171,33 +188,33 @@ export class NotebookManager {
    }
 
    static newNotebook(
-      projectName: string,
-      packageName: string,
+      notebookStorage: NotebookStorage,
+      userContext: UserContext,
    ): NotebookManager {
-      return new NotebookManager(projectName, packageName, undefined);
+      return new NotebookManager(notebookStorage, userContext, undefined);
    }
 
    /**
     * Creates a new notebook manager by loading from local storage.
     * Returns an empty instance if the notebook is not found.
-    * @param projectName - The name of the project
-    * @param packageName - The name of the package
+    * @param notebookStorage - The storage implementation
+    * @param userContext - The user context for storage
     * @param notebookPath - The path to the notebook file (relative to project/package)
     */
    static loadNotebook(
-      projectName: string,
-      packageName: string,
+      notebookStorage: NotebookStorage,
+      userContext: UserContext,
       notebookPath: string,
    ): NotebookManager {
-      const savedSnippet = localStorage.getItem(
-         `notebook__${projectName}__${packageName}__${notebookPath}`,
-      );
-      if (savedSnippet) {
-         const notebookData = JSON.parse(savedSnippet);
-         console.log("loading cells", notebookData.cells);
-         console.log("loading notebookData", notebookData);
-         return new NotebookManager(projectName, packageName, notebookData);
+      let notebookData: NotebookData | undefined = undefined;
+      try {
+         const saved = notebookStorage.getNotebook(userContext, notebookPath);
+         if (saved) {
+            notebookData = JSON.parse(saved);
+         }
+      } catch {
+         // Not found, return empty
       }
-      return new NotebookManager(projectName, packageName, undefined);
+      return new NotebookManager(notebookStorage, userContext, notebookData);
    }
 }
