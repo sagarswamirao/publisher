@@ -4,7 +4,7 @@ from .about import About
 from .bigquery_connection import BigqueryConnection
 from .column import Column
 from .compiled_model import CompiledModel
-from .compiled_model_type import CompiledModelType
+from .compiled_notebook import CompiledNotebook
 from .connection import Connection
 from .connection_attributes import ConnectionAttributes
 from .connection_type import ConnectionType
@@ -37,7 +37,7 @@ __all__ = (
     "BigqueryConnection",
     "Column",
     "CompiledModel",
-    "CompiledModelType",
+    "CompiledNotebook",
     "Connection",
     "ConnectionAttributes",
     "ConnectionType",

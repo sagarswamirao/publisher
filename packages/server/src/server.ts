@@ -437,6 +437,31 @@ app.get(
 );
 
 app.get(
+   `${API_PREFIX}/projects/:projectName/packages/:packageName/notebooks/*?`,
+   async (req, res) => {
+      if (req.query.versionId) {
+         setVersionIdError(res);
+         return;
+      }
+
+      try {
+         const zero = 0 as unknown;
+         res.status(200).json(
+            await modelController.getNotebook(
+               req.params.projectName,
+               req.params.packageName,
+               req.params[zero as keyof typeof req.params],
+            ),
+         );
+      } catch (error) {
+         console.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName/queryResults/*?`,
    async (req, res) => {
       if (req.query.versionId) {
