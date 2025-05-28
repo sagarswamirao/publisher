@@ -530,7 +530,7 @@ paths:
           description: Filter to either "source" or "notebook" or "all"
           required: false
           schema:
-            type: enum
+            type: string
             enum: ['source', 'notebook', 'all']
       responses:
         "200":
