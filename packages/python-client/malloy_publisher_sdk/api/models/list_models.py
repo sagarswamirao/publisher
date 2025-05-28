@@ -6,6 +6,7 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error import Error
+from ...models.list_models_filter import ListModelsFilter
 from ...models.model import Model
 from ...types import UNSET, Response, Unset
 
@@ -15,10 +16,17 @@ def _get_kwargs(
     package_name: str,
     *,
     version_id: Union[Unset, str] = UNSET,
+    filter_: Union[Unset, ListModelsFilter] = UNSET,
 ) -> dict[str, Any]:
     params: dict[str, Any] = {}
 
     params["versionId"] = version_id
+
+    json_filter_: Union[Unset, str] = UNSET
+    if not isinstance(filter_, Unset):
+        json_filter_ = filter_.value
+
+    params["filter"] = json_filter_
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
@@ -85,6 +93,7 @@ def sync_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
+    filter_: Union[Unset, ListModelsFilter] = UNSET,
 ) -> Response[Union[Error, list["Model"]]]:
     """Returns a list of relative paths to the models in the package.
 
@@ -92,6 +101,7 @@ def sync_detailed(
         project_name (str):
         package_name (str):
         version_id (Union[Unset, str]):
+        filter_ (Union[Unset, ListModelsFilter]):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -105,6 +115,7 @@ def sync_detailed(
         project_name=project_name,
         package_name=package_name,
         version_id=version_id,
+        filter_=filter_,
     )
 
     response = client.get_httpx_client().request(
@@ -120,6 +131,7 @@ def sync(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
+    filter_: Union[Unset, ListModelsFilter] = UNSET,
 ) -> Optional[Union[Error, list["Model"]]]:
     """Returns a list of relative paths to the models in the package.
 
@@ -127,6 +139,7 @@ def sync(
         project_name (str):
         package_name (str):
         version_id (Union[Unset, str]):
+        filter_ (Union[Unset, ListModelsFilter]):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -141,6 +154,7 @@ def sync(
         package_name=package_name,
         client=client,
         version_id=version_id,
+        filter_=filter_,
     ).parsed
 
 
@@ -150,6 +164,7 @@ async def asyncio_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
+    filter_: Union[Unset, ListModelsFilter] = UNSET,
 ) -> Response[Union[Error, list["Model"]]]:
     """Returns a list of relative paths to the models in the package.
 
@@ -157,6 +172,7 @@ async def asyncio_detailed(
         project_name (str):
         package_name (str):
         version_id (Union[Unset, str]):
+        filter_ (Union[Unset, ListModelsFilter]):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -170,6 +186,7 @@ async def asyncio_detailed(
         project_name=project_name,
         package_name=package_name,
         version_id=version_id,
+        filter_=filter_,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -183,6 +200,7 @@ async def asyncio(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
+    filter_: Union[Unset, ListModelsFilter] = UNSET,
 ) -> Optional[Union[Error, list["Model"]]]:
     """Returns a list of relative paths to the models in the package.
 
@@ -190,6 +208,7 @@ async def asyncio(
         project_name (str):
         package_name (str):
         version_id (Union[Unset, str]):
+        filter_ (Union[Unset, ListModelsFilter]):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -205,5 +224,6 @@ async def asyncio(
             package_name=package_name,
             client=client,
             version_id=version_id,
+            filter_=filter_,
         )
     ).parsed
