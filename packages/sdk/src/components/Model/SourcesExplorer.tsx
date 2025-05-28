@@ -188,7 +188,6 @@ export function SourceExplorerComponent({
          onChange(qer);
       }
    }, [onChange, qer]);
-   console.log("qer", qer);
    const { server, projectName, packageName, versionId, accessToken } =
       usePublisherPackage();
    const mutation = useMutation(

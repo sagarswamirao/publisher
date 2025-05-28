@@ -1,15 +1,17 @@
 import { useParams } from "react-router-dom";
 import {
    BrowserNotebookStorage,
-   MutableNotebook,
+   MutableNotebookList,
    NotebookStorageProvider,
+   PublisherPackageProvider,
 } from "@malloy-publisher/sdk";
-import { PublisherPackageProvider } from "@malloy-publisher/sdk";
-interface ScratchNotebookPageProps {
+interface ScratchNotebookPageListProps {
    server?: string;
 }
 
-export function ScratchNotebookPage({ server }: ScratchNotebookPageProps) {
+export function ScratchNotebookPageList({
+   server,
+}: ScratchNotebookPageListProps) {
    const { projectName, packageName } = useParams();
    if (!projectName) {
       return (
@@ -34,7 +36,7 @@ export function ScratchNotebookPage({ server }: ScratchNotebookPageProps) {
                notebookStorage={new BrowserNotebookStorage()}
                userContext={{ project: projectName, package: packageName }}
             >
-               <MutableNotebook inputNotebookPath={undefined} />
+               <MutableNotebookList />
             </NotebookStorageProvider>
          </PublisherPackageProvider>
       );
