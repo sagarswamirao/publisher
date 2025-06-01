@@ -128,22 +128,12 @@ export class Project {
             files
                .filter((file) => file.isDirectory())
                .map(async (directory) => {
-                  console.log(
-                     `[Project LOG] listPackages: Mapping directory: ${directory.name}`,
-                  );
                   try {
                      const _package = await this.getPackage(
                         directory.name,
                         false,
                      );
-                     console.log(
-                        `[Project LOG] listPackages: getPackage succeeded for ${directory.name}`,
-                     );
                      const metadata = _package.getPackageMetadata();
-                     console.log(
-                        `[Project LOG] listPackages: Got metadata for ${directory.name}:`,
-                        metadata ? JSON.stringify(metadata) : "undefined",
-                     );
                      return metadata;
                   } catch {
                      // Directory did not contain a valid package.json file -- therefore, it's not a package.
@@ -151,18 +141,10 @@ export class Project {
                   }
                }),
          );
-         console.log(
-            "[Project LOG] listPackages: Metadata before filter:",
-            JSON.stringify(packageMetadata),
-         );
          // Get rid of undefined entries (i.e, directories without publisher.json files).
          const filteredMetadata = packageMetadata.filter(
             (metadata) => metadata,
          ) as ApiPackage[];
-         console.log(
-            `[Project LOG] listPackages: Metadata after filter (length ${filteredMetadata.length}):`,
-            JSON.stringify(filteredMetadata),
-         );
          return filteredMetadata;
       } catch (error) {
          console.error("Error listing packages: " + error);

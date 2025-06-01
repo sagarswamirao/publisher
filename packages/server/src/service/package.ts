@@ -165,7 +165,7 @@ export class Package {
       try {
          files = await recursive(packagePath);
       } catch (error) {
-         console.log(error);
+         console.error(error);
          throw new PackageNotFoundError(
             `Package config for ${packagePath} does not exist.`,
          );
