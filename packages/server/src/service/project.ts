@@ -1,14 +1,13 @@
-import * as fs from "fs/promises";
-import { components } from "../api";
-import { Package } from "./package";
-import { ApiConnection } from "./model";
-type ApiPackage = components["schemas"]["Package"];
-import { createConnections, InternalConnection } from "./connection";
-import { ConnectionNotFoundError } from "../errors";
 import { BaseConnection } from "@malloydata/malloy/connection";
+import * as fs from "fs/promises";
 import * as path from "path";
-import { ProjectNotFoundError } from "../errors";
+import { components } from "../api";
 import { API_PREFIX, README_NAME } from "../constants";
+import { ConnectionNotFoundError, ProjectNotFoundError } from "../errors";
+import { createConnections, InternalConnection } from "./connection";
+import { ApiConnection } from "./model";
+import { Package } from "./package";
+type ApiPackage = components["schemas"]["Package"];
 type ApiProject = components["schemas"]["Project"];
 
 export class Project {
@@ -177,13 +176,19 @@ export class Project {
    ): Promise<Package> {
       let _package = this.packages.get(packageName);
       if (_package === undefined || reload) {
-         _package = await Package.create(
-            this.projectName,
-            packageName,
-            path.join(this.projectPath, packageName),
-            this.malloyConnections,
-         );
-         this.packages.set(packageName, _package);
+         try {
+            _package = await Package.create(
+               this.projectName,
+               packageName,
+               path.join(this.projectPath, packageName),
+               this.malloyConnections,
+            );
+            this.packages.set(packageName, _package);
+         } catch (error) {
+            console.error("Error creating package: " + error);
+            this.packages.delete(packageName);
+            throw error;
+         }
       }
       return _package;
    }
