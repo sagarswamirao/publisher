@@ -62,7 +62,7 @@ export class Package {
       packageName: string,
       packagePath: string,
       projectConnections: Map<string, Connection>,
-   ): Promise<Package | undefined> {
+   ): Promise<Package> {
       const startTime = performance.now();
       await Package.validatePackageManifestExistsOrThrowError(packagePath);
 

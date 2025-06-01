@@ -1,9 +1,9 @@
 import * as fs from "fs/promises";
-import { Project } from "./project";
-import { components } from "../api";
 import * as path from "path";
-import { ProjectNotFoundError } from "../errors";
+import { components } from "../api";
 import { API_PREFIX } from "../constants";
+import { ProjectNotFoundError } from "../errors";
+import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
