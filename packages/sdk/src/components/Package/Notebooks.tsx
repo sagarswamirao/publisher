@@ -5,11 +5,10 @@ import { Configuration, ModelsApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 
-axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
 const queryClient = new QueryClient();
 
-const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
+const DEFAULT_EXPANDED_FOLDERS = ["notebooks/"];
 
 interface ModelsProps {
    server?: string;
@@ -20,7 +19,7 @@ interface ModelsProps {
    accessToken?: string;
 }
 
-export default function Models({
+export default function Notebooks({
    server,
    projectName,
    packageName,
@@ -30,9 +29,9 @@ export default function Models({
 }: ModelsProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
-         queryKey: ["models", server, projectName, packageName, versionId],
+         queryKey: ["notebooks", server, projectName, packageName, versionId],
          queryFn: () =>
-            modelsApi.listModels(projectName, packageName, versionId, {
+            modelsApi.listNotebooks(projectName, packageName, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
@@ -48,7 +47,7 @@ export default function Models({
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
          <StyledCardContent>
             <Typography variant="overline" fontWeight="bold">
-               Models
+               Notebooks
             </Typography>
             <Divider />
             <Box
@@ -60,7 +59,7 @@ export default function Models({
             >
                {!isSuccess && !isError && (
                   <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-                     Fetching Models
+                     Fetching Notebooks
                   </Typography>
                )}
                {isSuccess && data.data.length > 0 && (

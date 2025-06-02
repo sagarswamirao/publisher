@@ -400,7 +400,6 @@ app.get(
             await modelController.listModels(
                req.params.projectName,
                req.params.packageName,
-               (req.query.filter as ListModelsFilterEnum) || "all",
             ),
          );
       } catch (error) {
@@ -426,6 +425,29 @@ app.get(
                req.params.projectName,
                req.params.packageName,
                req.params[zero as keyof typeof req.params],
+            ),
+         );
+      } catch (error) {
+         console.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.get(
+   `${API_PREFIX}/projects/:projectName/packages/:packageName/notebooks`,
+   async (req, res) => {
+      if (req.query.versionId) {
+         setVersionIdError(res);
+         return;
+      }
+
+      try {
+         res.status(200).json(
+            await modelController.listNotebooks(
+               req.params.projectName,
+               req.params.packageName,
             ),
          );
       } catch (error) {

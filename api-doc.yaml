@@ -525,13 +525,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: filter
-          in: query
-          description: Filter to either "source" or "notebook" or "all"
-          required: false
-          schema:
-            type: string
-            enum: ['source', 'notebook', 'all']
       responses:
         "200":
           description:
@@ -601,10 +594,55 @@ paths:
           $ref: "#/components/responses/NotImplementedError"
 
 
+  /projects/{projectName}/packages/{packageName}/notebooks:
+    get:
+      tags:
+      - notebooks
+      operationId: list-notebooks
+      summary: 
+        Returns a list of relative paths to the notebooks in the package.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: packageName
+          in: path
+          description: Name of package
+          required: true
+          schema:
+            type: string
+        - name: versionId
+          in: query
+          description: Version ID
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description:
+            A list of relative paths to the models in the package.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: "#/components/schemas/Model"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "501":
+          $ref: "#/components/responses/NotImplementedError"
+
   /projects/{projectName}/packages/{packageName}/notebooks/{path}:
     get:
       tags:
-      - models
+      - notebooks
       operationId: get-notebook
       summary: 
         Returns a Malloy notebook.

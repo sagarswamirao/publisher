@@ -82,8 +82,8 @@ export function registerNotebookResource(
                   }
 
                   // Now try to compile/get the actual notebook content
-                  const notebookContent: components["schemas"]["CompiledModel"] =
-                     await modelInstance.getModel(); // This can throw ModelCompilationError
+                  const notebookContent: components["schemas"]["CompiledNotebook"] =
+                     await modelInstance.getNotebook(); // This can throw ModelCompilationError
                   return notebookContent;
                } catch (error) {
                   if (error instanceof McpGetResourceError) {
