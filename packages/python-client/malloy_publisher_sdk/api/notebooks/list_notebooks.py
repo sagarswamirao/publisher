@@ -24,7 +24,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/projects/{project_name}/packages/{package_name}/models".format(
+        "url": "/projects/{project_name}/packages/{package_name}/notebooks".format(
             project_name=project_name,
             package_name=package_name,
         ),
@@ -86,7 +86,7 @@ def sync_detailed(
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
 ) -> Response[Union[Error, list["Model"]]]:
-    """Returns a list of relative paths to the models in the package.
+    """Returns a list of relative paths to the notebooks in the package.
 
     Args:
         project_name (str):
@@ -121,7 +121,7 @@ def sync(
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
 ) -> Optional[Union[Error, list["Model"]]]:
-    """Returns a list of relative paths to the models in the package.
+    """Returns a list of relative paths to the notebooks in the package.
 
     Args:
         project_name (str):
@@ -151,7 +151,7 @@ async def asyncio_detailed(
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
 ) -> Response[Union[Error, list["Model"]]]:
-    """Returns a list of relative paths to the models in the package.
+    """Returns a list of relative paths to the notebooks in the package.
 
     Args:
         project_name (str):
@@ -184,7 +184,7 @@ async def asyncio(
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
 ) -> Optional[Union[Error, list["Model"]]]:
-    """Returns a list of relative paths to the models in the package.
+    """Returns a list of relative paths to the notebooks in the package.
 
     Args:
         project_name (str):

@@ -11,7 +11,6 @@ from .connection_type import ConnectionType
 from .database import Database
 from .database_type import DatabaseType
 from .error import Error
-from .list_models_filter import ListModelsFilter
 from .model import Model
 from .model_type import ModelType
 from .notebook_cell import NotebookCell
@@ -44,7 +43,6 @@ __all__ = (
     "Database",
     "DatabaseType",
     "Error",
-    "ListModelsFilter",
     "Model",
     "ModelType",
     "NotebookCell",

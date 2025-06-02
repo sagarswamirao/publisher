@@ -1,10 +1,8 @@
 import { Box, Divider, Grid, Typography } from "@mui/material";
 import { Configuration, PackagesApi } from "../../client";
-import axios from "axios";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 
-axios.defaults.baseURL = "http://localhost:4000";
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
 

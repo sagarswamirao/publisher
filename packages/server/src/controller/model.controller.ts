@@ -17,13 +17,23 @@ export class ModelController {
    public async listModels(
       projectName: string,
       packageName: string,
-      filter: ListModelsFilterEnum,
    ): Promise<ApiModel[]> {
       const project = await this.projectStore.getProject(projectName, false);
       const p = await project.getPackage(packageName, false);
       return p
          .listModels()
-         .filter((model: ApiModel) => filter === "all" || model.type == filter);
+         .filter((model: ApiModel) => model.type === "source");
+   }
+
+   public async listNotebooks(
+      projectName: string,
+      packageName: string,
+   ): Promise<ApiModel[]> {
+      const project = await this.projectStore.getProject(projectName, false);
+      const p = await project.getPackage(packageName, false);
+      return p
+         .listModels()
+         .filter((model: ApiModel) => model.type === "notebook");
    }
 
    public async getModel(
