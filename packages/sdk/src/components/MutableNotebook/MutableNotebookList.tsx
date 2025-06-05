@@ -1,21 +1,21 @@
-import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
-   List,
-   ListItem,
-   ListItemText,
-   IconButton,
+   Box,
+   Button,
    Dialog,
-   DialogTitle,
+   DialogActions,
    DialogContent,
    DialogContentText,
-   DialogActions,
-   Button,
-   Typography,
-   Box,
+   DialogTitle,
+   IconButton,
+   List,
+   ListItem,
    ListItemButton,
+   ListItemText,
+   Typography,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useNotebookStorage } from "./NotebookStorageProvider";
 
 export function MutableNotebookList() {
@@ -57,7 +57,7 @@ export function MutableNotebookList() {
       if (projectName && packageName) {
          // Navigate to the ScratchNotebookPage with anchor text for notebookPath
          navigate(
-            `/${projectName}/${packageName}/scratch_notebook#notebookPath=${encodeURIComponent(notebook)}`,
+            `/${projectName}/${packageName}/scratchNotebook#notebookPath=${encodeURIComponent(notebook)}`,
          );
       }
    };
@@ -67,14 +67,6 @@ export function MutableNotebookList() {
          <Typography variant="h5" sx={{ mb: 2 }}>
             Notebooks
          </Typography>
-         <Button
-            variant="contained"
-            onClick={() => handleNotebookClick("")}
-            sx={{ mb: 2 }}
-         >
-            New Notebook
-         </Button>
-
          <List>
             {notebooks.length === 0 && (
                <ListItem>

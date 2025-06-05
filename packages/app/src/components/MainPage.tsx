@@ -1,13 +1,26 @@
-import { Box, Stack, Button } from "@mui/material";
-import Typography from "@mui/material/Typography";
+import { Button, Menu, MenuItem, Stack } from "@mui/material";
 import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import React from "react";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
-import { Outlet } from "react-router-dom";
 
 export default function MainPage() {
+   const { projectName, packageName } = useParams();
+   const navigate = useNavigate();
+
+   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+   const open = Boolean(anchorEl);
+   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorEl(event.currentTarget);
+   };
+   const handleClose = () => {
+      setAnchorEl(null);
+   };
+
    return (
       <Container
-         maxWidth="lg"
+         maxWidth="xl"
          component="main"
          sx={{ display: "flex", flexDirection: "column", my: 2, gap: 0 }}
       >
@@ -34,14 +47,61 @@ export default function MainPage() {
                   flexDirection: "row",
                }}
             >
-               <Button href="https://github.com/malloydata/publisher/blob/main/README.md">
-                  Getting Started
-               </Button>
-               <Button href="/api-doc.html">API</Button>
-               <Button href="https://malloydata.dev/">Malloy</Button>
+               {!(projectName && packageName) ? (
+                  <>
+                     <Button href="https://github.com/malloydata/publisher/blob/main/README.md">
+                        Getting Started
+                     </Button>
+                     <Button href="/api-doc.html">API</Button>
+                     <Button href="https://malloydata.dev/">Malloy</Button>
+                  </>
+               ) : (
+                  <>
+                     <Button
+                        aria-controls={open ? "basic-menu" : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? "true" : undefined}
+                        onClick={handleClick}
+                     >
+                        Analyze
+                     </Button>
+                     <Menu
+                        id="basic-menu"
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                        slotProps={{
+                           list: {
+                              "aria-labelledby": "basic-button",
+                           },
+                        }}
+                     >
+                        <MenuItem
+                           onClick={() => {
+                              navigate(
+                                 `/${projectName}/${packageName}/listScratchNotebooks`,
+                              );
+                              handleClose();
+                           }}
+                        >
+                           List Analyses
+                        </MenuItem>
+                        <MenuItem
+                           onClick={() => {
+                              navigate(
+                                 `/${projectName}/${packageName}/scratchNotebook#notebookPath=`,
+                              );
+                              handleClose();
+                           }}
+                        >
+                           Create New Analysis
+                        </MenuItem>
+                     </Menu>
+                  </>
+               )}
             </Stack>
          </Stack>
-         <Box
+         <Stack
             sx={{
                display: "flex",
                flexDirection: { xs: "column-reverse", md: "row" },
@@ -54,7 +114,7 @@ export default function MainPage() {
             }}
          >
             <BreadcrumbNav />
-         </Box>
+         </Stack>
          <Outlet />
       </Container>
    );

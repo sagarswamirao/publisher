@@ -1,13 +1,12 @@
-import { Button, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import { Notebook } from "../Notebook";
 import Config from "./Config";
 import Connections from "./Connections";
 import Databases from "./Databases";
 import Models from "./Models";
-import Schedules from "./Schedules";
-import { ListModelsFilterEnum } from "../../client/api";
-import { PublisherPackageProvider } from "./PublisherPackageProvider";
 import Notebooks from "./Notebooks";
+import { PublisherPackageProvider } from "./PublisherPackageProvider";
+import Schedules from "./Schedules";
 
 const README_NOTEBOOK = "README.malloynb";
 
@@ -57,27 +56,7 @@ export default function Package({
                   accessToken={accessToken}
                />
             </Grid>
-            <Grid size={{ xs: 8, md: 4 }}>
-               <Models
-                  server={server}
-                  projectName={projectName}
-                  packageName={packageName}
-                  versionId={versionId}
-                  navigate={navigate}
-                  accessToken={accessToken}
-               />
-            </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-               <Databases
-                  server={server}
-                  projectName={projectName}
-                  packageName={packageName}
-                  versionId={versionId}
-                  accessToken={accessToken}
-               />
-            </Grid>
-
-            <Grid size={{ xs: 8, md: 4 }}>
                <Notebooks
                   server={server}
                   projectName={projectName}
@@ -87,7 +66,26 @@ export default function Package({
                   accessToken={accessToken}
                />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
+               <Models
+                  server={server}
+                  projectName={projectName}
+                  packageName={packageName}
+                  versionId={versionId}
+                  navigate={navigate}
+                  accessToken={accessToken}
+               />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+               <Databases
+                  server={server}
+                  projectName={projectName}
+                  packageName={packageName}
+                  versionId={versionId}
+                  accessToken={accessToken}
+               />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
                <Connections
                   navigate={navigate}
                   server={server}
@@ -103,15 +101,6 @@ export default function Package({
                   versionId={versionId}
                   accessToken={accessToken}
                />
-            </Grid>
-            <Grid size={{ xs: 12, md: 12 }}>
-               <Button
-                  variant="contained"
-                  onClick={() => navigate(`list_scratch_notebook`)}
-                  sx={{ mb: 2 }}
-               >
-                  Scratch Notebooks
-               </Button>
             </Grid>
             <Grid size={{ xs: 12, md: 12 }}>
                <Notebook

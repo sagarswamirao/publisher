@@ -16,7 +16,6 @@ import { ScheduleController } from "./controller/schedule.controller";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { initializeMcpServer } from "./mcp/server";
 import { ProjectStore } from "./service/project_store";
-import type { ListModelsFilterEnum } from "./controller/model.controller";
 
 const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
@@ -115,8 +114,8 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
             error: { code: -32603, message: "Internal server error" },
             id:
                typeof req.body === "object" &&
-               req.body !== null &&
-               "id" in req.body
+                  req.body !== null &&
+                  "id" in req.body
                   ? req.body.id
                   : null,
          });

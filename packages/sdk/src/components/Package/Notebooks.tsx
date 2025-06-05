@@ -1,11 +1,10 @@
 import { Box, Divider, Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Configuration, ModelsApi } from "../../client";
+import { Configuration, NotebooksApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 
-const modelsApi = new ModelsApi(new Configuration());
+const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
 
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/"];
@@ -31,7 +30,7 @@ export default function Notebooks({
       {
          queryKey: ["notebooks", server, projectName, packageName, versionId],
          queryFn: () =>
-            modelsApi.listNotebooks(projectName, packageName, versionId, {
+            notebooksApi.listNotebooks(projectName, packageName, versionId, {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
