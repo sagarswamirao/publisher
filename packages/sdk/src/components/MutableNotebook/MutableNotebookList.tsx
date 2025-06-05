@@ -1,21 +1,20 @@
-import DeleteIcon from "@mui/icons-material/Delete";
 import {
-   Box,
    Button,
    Dialog,
    DialogActions,
    DialogContent,
    DialogContentText,
    DialogTitle,
-   IconButton,
-   List,
-   ListItem,
-   ListItemButton,
-   ListItemText,
+   Divider,
+   Table,
+   TableBody,
+   TableCell,
+   TableRow,
    Typography,
 } from "@mui/material";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { StyledCard, StyledCardContent } from "../styles";
 import { useNotebookStorage } from "./NotebookStorageProvider";
 
 export function MutableNotebookList() {
@@ -63,68 +62,66 @@ export function MutableNotebookList() {
    };
 
    return (
-      <Box>
-         <Typography variant="h5" sx={{ mb: 2 }}>
-            Notebooks
-         </Typography>
-         <List>
-            {notebooks.length === 0 && (
-               <ListItem>
-                  <ListItemText primary="No notebooks found." />
-               </ListItem>
-            )}
-            {notebooks.map((notebook) => (
-               <ListItem
-                  key={notebook}
-                  secondaryAction={
-                     <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={(e) => {
-                           e.stopPropagation();
-                           handleDeleteClick(notebook);
-                        }}
-                     >
-                        <DeleteIcon />
-                     </IconButton>
-                  }
-                  disablePadding
-               >
-                  <ListItemButton onClick={() => handleNotebookClick(notebook)}>
-                     <ListItemText
-                        primary={
-                           <Typography
-                              component="span"
-                              sx={{
-                                 color: "primary.main",
-                                 textDecoration: "underline",
-                              }}
-                           >
-                              {notebook}
-                           </Typography>
-                        }
-                     />
-                  </ListItemButton>
-               </ListItem>
-            ))}
-         </List>
-         <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-            <DialogTitle>Delete Notebook</DialogTitle>
-            <DialogContent>
-               <DialogContentText>
-                  Are you sure you want to delete the notebook &quot;
-                  {notebookToDelete}&quot;? This action cannot be undone.
-               </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-               <Button onClick={handleDeleteCancel} color="primary">
-                  Cancel
-               </Button>
-               <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-                  Delete
-               </Button>
-            </DialogActions>
-         </Dialog>
-      </Box>
+      <StyledCard
+         variant="outlined"
+         sx={{ padding: "10px", width: "400px", mt: "10px" }}
+      >
+         <StyledCardContent>
+            <Typography variant="overline" fontWeight="bold">
+               Notebook Analyses
+            </Typography>
+            <Divider />
+            <Table size="small">
+               <TableBody>
+                  {notebooks.length === 0 && (
+                     <TableRow>
+                        <TableCell>No notebooks found.</TableCell>
+                        <TableCell></TableCell>
+                     </TableRow>
+                  )}
+                  {notebooks.map((notebook) => (
+                     <TableRow key={notebook}>
+                        <TableCell sx={{ width: "200px", cursor: "pointer" }}>
+                           {notebook}
+                        </TableCell>
+                        <TableCell
+                           onClick={() => handleNotebookClick(notebook)}
+                           sx={{ width: "20px", cursor: "pointer" }}
+                        >
+                           <Button variant="text" size="small">
+                              View
+                           </Button>
+                        </TableCell>
+                        <TableCell
+                           onClick={() => handleDeleteClick(notebook)}
+                           sx={{ cursor: "pointer" }}
+                        >
+                           <Button variant="text" size="small">
+                              Delete
+                           </Button>
+                        </TableCell>
+                     </TableRow>
+                  ))}
+               </TableBody>
+            </Table>
+            <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
+               <DialogTitle>Delete Notebook</DialogTitle>
+               <DialogContent>
+                  <DialogContentText>
+                     Are you sure you want to delete the notebook &quot;
+                     {notebookToDelete}&quot;? This action cannot be undone.
+                  </DialogContentText>
+               </DialogContent>
+               <DialogActions>
+                  <Button onClick={handleDeleteCancel} color="primary">
+                     Cancel
+                  </Button>
+                  <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+                     Delete
+                  </Button>
+               </DialogActions>
+            </Dialog>
+         </StyledCardContent>
+      </StyledCard>
    );
 }

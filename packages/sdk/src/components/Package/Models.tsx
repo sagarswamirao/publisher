@@ -48,7 +48,7 @@ export default function Models({
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
          <StyledCardContent>
             <Typography variant="overline" fontWeight="bold">
-               Models
+               Semantic Models
             </Typography>
             <Divider />
             <Box

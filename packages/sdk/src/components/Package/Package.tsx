@@ -47,7 +47,7 @@ export default function Package({
             columns={12}
             sx={{ mb: (theme) => theme.spacing(2) }}
          >
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
                <Config
                   server={server}
                   projectName={projectName}
@@ -56,7 +56,7 @@ export default function Package({
                   accessToken={accessToken}
                />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
                <Notebooks
                   server={server}
                   projectName={projectName}
@@ -76,7 +76,7 @@ export default function Package({
                   accessToken={accessToken}
                />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
                <Databases
                   server={server}
                   projectName={projectName}
@@ -85,7 +85,7 @@ export default function Package({
                   accessToken={accessToken}
                />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
                <Connections
                   navigate={navigate}
                   server={server}
