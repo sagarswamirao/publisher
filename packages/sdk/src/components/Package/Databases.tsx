@@ -11,13 +11,12 @@ import {
    TableContainer,
    TableHead,
    TableRow,
-   Tooltip,
    Typography,
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
-import React from "react";
 
 const databasesApi = new DatabasesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -84,14 +83,25 @@ export default function DatabaseView({
                )}
                {isSuccess && data.data.length > 0 && (
                   <TableContainer>
-                     <Table
-                        size="small"
-                        sx={{ "& .MuiTableCell-root": { padding: "10px" } }}
-                     >
+                     <Table size="small">
                         <TableHead>
                            <TableRow>
-                              <TableCell>Database Name</TableCell>
-                              <TableCell align="right">Table Rows</TableCell>
+                              <TableCell>
+                                 <Typography
+                                    variant="subtitle2"
+                                    fontWeight="bold"
+                                 >
+                                    Database Name
+                                 </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                 <Typography
+                                    variant="subtitle2"
+                                    fontWeight="bold"
+                                 >
+                                    Table Rows
+                                 </Typography>
+                              </TableCell>
                            </TableRow>
                         </TableHead>
                         <TableBody>

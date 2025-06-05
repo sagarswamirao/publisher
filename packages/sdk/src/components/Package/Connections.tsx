@@ -9,8 +9,8 @@ import {
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, ConnectionsApi } from "../../client";
-import { StyledCard, StyledCardContent } from "../styles";
 import { Connection as ApiConnection } from "../../client/api";
+import { StyledCard, StyledCardContent } from "../styles";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -75,7 +75,7 @@ export default function Connections(connectionProps: ConnectionsProps) {
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
          <StyledCardContent>
             <Typography variant="overline" fontWeight="bold">
-               Connections
+               Database Connections
             </Typography>
             <Divider />
             <Box
