@@ -1,4 +1,6 @@
-import { CardActions, Button } from "@mui/material";
+import * as Malloy from "@malloydata/malloy-interfaces";
+import * as QueryBuilder from "@malloydata/malloy-query-builder";
+import { Button, CardActions } from "@mui/material";
 import { Box, Stack } from "@mui/system";
 import {
    StyledCard,
@@ -7,20 +9,19 @@ import {
    StyledExplorerContent,
    StyledExplorerPage,
 } from "../styles";
-import * as Malloy from "@malloydata/malloy-interfaces";
-import * as QueryBuilder from "@malloydata/malloy-query-builder";
 
-import React from "react";
-import { QueryClient, useMutation } from "@tanstack/react-query";
-import { Configuration, QueryresultsApi } from "../../client";
-import { usePublisherPackage } from "../Package/PublisherPackageProvider";
 import {
    MalloyExplorerProvider,
    QueryPanel,
+   ResizableCollapsiblePanel,
    ResultPanel,
    SourcePanel,
 } from "@malloydata/malloy-explorer";
 import { styled } from "@mui/material/styles";
+import { QueryClient, useMutation } from "@tanstack/react-query";
+import React from "react";
+import { Configuration, QueryresultsApi } from "../../client";
+import { usePublisherPackage } from "../Package/PublisherPackageProvider";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -61,12 +62,12 @@ const MultiRowTab = styled(Button)<{ selected?: boolean }>(
 
 export interface SourceExplorerProps {
    sourceAndPaths: SourceAndPath[];
-   existingQer?: QueryExplorerResult;
+   existingQuery?: QueryExplorerResult;
    existingSourceName?: string;
    saveResult?: (
       modelPath: string,
       sourceName: string,
-      qer: QueryExplorerResult,
+      query: QueryExplorerResult,
    ) => void;
 }
 
@@ -80,19 +81,19 @@ export interface SourceExplorerProps {
 export function SourcesExplorer({
    sourceAndPaths,
    saveResult,
-   existingQer,
+   existingQuery,
    existingSourceName,
 }: SourceExplorerProps) {
    const [selectedTab, setSelectedTab] = React.useState(
       existingSourceName
          ? sourceAndPaths.findIndex(
-              (entry) => entry.sourceInfo.name === existingSourceName,
-           )
+            (entry) => entry.sourceInfo.name === existingSourceName,
+         )
          : 0,
    );
 
-   const [qer, setQer] = React.useState<QueryExplorerResult | undefined>(
-      existingQer || emptyQueryExplorerResult(),
+   const [query, setQuery] = React.useState<QueryExplorerResult | undefined>(
+      existingQuery || emptyQueryExplorerResult(),
    );
 
    return (
@@ -131,7 +132,7 @@ export function SourcesExplorer({
                            saveResult(
                               sourceAndPaths[selectedTab].modelPath,
                               sourceAndPaths[selectedTab].sourceInfo.name,
-                              qer,
+                              query,
                            )
                         }
                      >
@@ -145,8 +146,8 @@ export function SourcesExplorer({
             <Stack spacing={2} component="section">
                <SourceExplorerComponent
                   sourceAndPath={sourceAndPaths[selectedTab]}
-                  existingQer={qer}
-                  onChange={setQer}
+                  existingQuery={query}
+                  onChange={setQuery}
                />
                <Box height="5px" />
             </Stack>
@@ -157,13 +158,13 @@ export function SourcesExplorer({
 
 interface SourceExplorerComponentProps {
    sourceAndPath: SourceAndPath;
-   existingQer?: QueryExplorerResult;
-   onChange?: (qer: QueryExplorerResult) => void;
+   existingQuery?: QueryExplorerResult;
+   onChange?: (query: QueryExplorerResult) => void;
 }
 
 export interface QueryExplorerResult {
    query: string | undefined;
-   malloyQuery: Malloy.Query;
+   malloyQuery: Malloy.Query | undefined;
    malloyResult: Malloy.Result | undefined;
 }
 
@@ -177,17 +178,20 @@ export function emptyQueryExplorerResult(): QueryExplorerResult {
 export function SourceExplorerComponent({
    sourceAndPath,
    onChange,
-   existingQer,
+   existingQuery,
 }: SourceExplorerComponentProps) {
-   const [qer, setQer] = React.useState<QueryExplorerResult>(
-      existingQer || emptyQueryExplorerResult(),
+   const [query, setQuery] = React.useState<QueryExplorerResult>(
+      existingQuery || emptyQueryExplorerResult(),
    );
+   const [focusedNestViewPath, setFocusedNestViewPath] = React.useState<
+      string[]
+   >([]);
 
    React.useEffect(() => {
       if (onChange) {
-         onChange(qer);
+         onChange(query);
       }
-   }, [onChange, qer]);
+   }, [onChange, query]);
    const { server, projectName, packageName, versionId, accessToken } =
       usePublisherPackage();
    const mutation = useMutation(
@@ -195,10 +199,10 @@ export function SourceExplorerComponent({
          mutationFn: () => {
             const malloy = new QueryBuilder.ASTQuery({
                source: sourceAndPath.sourceInfo,
-               query: qer?.malloyQuery,
+               query: query?.malloyQuery,
             }).toMalloy();
-            setQer({
-               ...qer,
+            setQuery({
+               ...query,
                query: malloy,
             });
             return queryResultsApi.executeQuery(
@@ -222,8 +226,8 @@ export function SourceExplorerComponent({
          onSuccess: (data) => {
             if (data) {
                const parsedResult = JSON.parse(data.data.result);
-               setQer({
-                  ...qer,
+               setQuery({
+                  ...query,
                   malloyResult: parsedResult as Malloy.Result,
                });
             }
@@ -242,7 +246,7 @@ export function SourceExplorerComponent({
    React.useEffect(() => {
       if (oldSourceInfo !== sourceAndPath.sourceInfo.name) {
          setOldSourceInfo(sourceAndPath.sourceInfo.name);
-         setQer(emptyQueryExplorerResult());
+         setQuery(emptyQueryExplorerResult());
       }
    }, [sourceAndPath, oldSourceInfo]);
 
@@ -250,50 +254,92 @@ export function SourceExplorerComponent({
       return <div>Loading...</div>;
    }
 
+   const onQueryChange = React.useCallback(
+      (malloyQuery: Malloy.Query) => {
+         setQuery({ ...query, malloyQuery });
+      },
+      [query],
+   );
+
    return (
       <StyledExplorerPage key={sourceAndPath.sourceInfo.name}>
          <StyledExplorerContent>
             <MalloyExplorerProvider
                source={sourceAndPath.sourceInfo}
-               query={qer?.malloyQuery}
-               setQuery={(query) => setQer({ ...qer, malloyQuery: query })}
+               query={query?.malloyQuery}
+               onQueryChange={onQueryChange}
+               focusedNestViewPath={focusedNestViewPath}
+               onFocusedNestViewPathChange={setFocusedNestViewPath}
+               onDrill={(params) => {
+                  console.info(params);
+                  window.alert("Drill!");
+               }}
             >
-               <div style={{ height: "100%", width: "20%" }}>
-                  <SourcePanel
-                     onRefresh={() => setQer(emptyQueryExplorerResult())}
-                  />
-               </div>
-               <div style={{ height: "100%", width: "30%" }}>
-                  <QueryPanel
-                     runQuery={() => {
-                        mutation.mutate();
+               <div
+                  style={{
+                     display: "flex",
+                     flexDirection: "column",
+                     height: "100%",
+                  }}
+               >
+                  <div
+                     style={{
+                        display: "flex",
+                        height: "100%",
+                        overflowY: "auto",
                      }}
-                  />
-               </div>
-               <div style={{ height: "100%", width: "50%" }}>
-                  <ResultPanel
-                     source={sourceAndPath.sourceInfo}
-                     draftQuery={qer?.malloyQuery}
-                     setDraftQuery={(malloyQuery) =>
-                        setQer({ ...qer, malloyQuery: malloyQuery })
-                     }
-                     submittedQuery={
-                        qer?.malloyQuery
-                           ? {
-                                executionState: mutation.isPending
-                                   ? "running"
-                                   : "finished",
-                                response: {
-                                   result: qer.malloyResult,
-                                },
-                                query: qer.malloyQuery,
-                                queryResolutionStartMillis: Date.now(),
-                                onCancel: mutation.reset,
-                             }
-                           : undefined
-                     }
-                     options={{ showRawQuery: true }}
-                  />
+                  >
+                     <ResizableCollapsiblePanel
+                        isInitiallyExpanded={true}
+                        initialWidth={280}
+                        minWidth={180}
+                        icon="database"
+                        title={sourceAndPath.sourceInfo.name}
+                     >
+                        <SourcePanel
+                           onRefresh={() =>
+                              setQuery(emptyQueryExplorerResult())
+                           }
+                        />
+                     </ResizableCollapsiblePanel>
+                     <ResizableCollapsiblePanel
+                        isInitiallyExpanded={true}
+                        initialWidth={360}
+                        minWidth={280}
+                        icon="filterSliders"
+                        title="Query"
+                     >
+                        <QueryPanel
+                           runQuery={() => {
+                              mutation.mutate();
+                              window.alert(query.malloyQuery);
+                           }}
+                        />
+                     </ResizableCollapsiblePanel>
+                     <ResultPanel
+                        source={sourceAndPath.sourceInfo}
+                        draftQuery={query?.malloyQuery}
+                        setDraftQuery={(malloyQuery) =>
+                           setQuery({ ...query, malloyQuery: malloyQuery })
+                        }
+                        submittedQuery={
+                           query?.malloyQuery
+                              ? {
+                                 executionState: mutation.isPending
+                                    ? "running"
+                                    : "finished",
+                                 response: {
+                                    result: query.malloyResult,
+                                 },
+                                 query: query.malloyQuery,
+                                 queryResolutionStartMillis: Date.now(),
+                                 onCancel: mutation.reset,
+                              }
+                              : undefined
+                        }
+                        options={{ showRawQuery: true }}
+                     />
+                  </div>
                </div>
             </MalloyExplorerProvider>
          </StyledExplorerContent>

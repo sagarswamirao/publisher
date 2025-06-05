@@ -33,8 +33,10 @@
    "dependencies": {
       "@emotion/react": "^11.14.0",
       "@emotion/styled": "^11.14.0",
-      "@malloydata/malloy-explorer": "^0.0.278-dev250516210719",
-      "@malloydata/render": "^0.0.275",
+      "@malloydata/malloy-explorer": "^0.0.285-dev250530165648",
+      "@malloydata/malloy-query-builder": "^0.0.285",
+      "@malloydata/malloy-interfaces": "^0.0.285",
+      "@malloydata/render": "^0.0.285",
       "@mui/icons-material": "^7.0.2",
       "@mui/material": "^7.0.2",
       "@mui/system": "^7.0.2",

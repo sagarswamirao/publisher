@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
-import axios from "axios";
-import Stack from "@mui/material/Stack";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
    CardActions,
    Collapse,
@@ -9,16 +8,16 @@ import {
    Tooltip,
    Typography,
 } from "@mui/material";
-import { useQuery, QueryClient } from "@tanstack/react-query";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import Stack from "@mui/material/Stack";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import React, { useEffect } from "react";
+import { Configuration, NotebooksApi } from "../../client";
 import { highlight } from "../highlighter";
-import { NotebookCell } from "./NotebookCell";
-import { Configuration, ModelsApi } from "../../client";
 import { usePublisherPackage } from "../Package";
+import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import { NotebookCell } from "./NotebookCell";
 
-const modelsApi = new ModelsApi(new Configuration());
+const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
 
 interface NotebookProps {
@@ -71,7 +70,7 @@ export default function Notebook({
             versionId,
          ],
          queryFn: () =>
-            modelsApi.getNotebook(
+            notebooksApi.getNotebook(
                projectName,
                packageName,
                notebookPath,

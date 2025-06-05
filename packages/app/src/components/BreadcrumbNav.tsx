@@ -1,8 +1,8 @@
+import LinkIcon from "@mui/icons-material/Link";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
-import { useParams, NavLink } from "react-router-dom";
-import { Box, IconButton, Tooltip } from "@mui/material";
-import LinkIcon from "@mui/icons-material/Link";
+import { NavLink, useParams } from "react-router-dom";
 
 export default function BreadcrumbNav() {
    const params = useParams();
@@ -18,7 +18,7 @@ export default function BreadcrumbNav() {
       >
          <Breadcrumbs aria-label="breadcrumb">
             <Typography
-               color={(params.packageName && "primary.main") || "text.primary"}
+               color="primary.main"
                component={NavLink}
                to={`/${params.projectName}/`}
                sx={{ textDecoration: "none" }}
@@ -29,7 +29,7 @@ export default function BreadcrumbNav() {
             {params.packageName && (
                <>
                   <Typography
-                     color={(modelPath && "primary.main") || "text.primary"}
+                     color="primary.main"
                      component={NavLink}
                      to={`/${params.projectName}/${params.packageName}/`}
                      sx={{ textDecoration: "none" }}
@@ -42,7 +42,7 @@ export default function BreadcrumbNav() {
             {modelPath && (
                <>
                   <Typography
-                     color="text.primary"
+                     color="primary.main"
                      component={NavLink}
                      to={`/${params.projectName}/${params.packageName}/${modelPath}`}
                      sx={{ textDecoration: "none" }}
@@ -54,7 +54,7 @@ export default function BreadcrumbNav() {
             )}
          </Breadcrumbs>
          {(params.packageName || modelPath) && (
-            <Tooltip title="View Code">
+            <Tooltip title="Copy Link">
                <IconButton
                   sx={{ width: "24px", height: "24px", mt: "auto", mb: "auto" }}
                   onClick={() => {

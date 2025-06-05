@@ -1,18 +1,18 @@
+import { CssBaseline } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline } from "@mui/material";
-import theme from "./theme";
-import MainPage from "./components/MainPage";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { ConnectionsPage } from "./components/ConnectionsPage";
 import { HomePage } from "./components/HomePage";
-import { RouteError } from "./components/RouteError";
+import MainPage from "./components/MainPage";
+import { ModelPage } from "./components/ModelPage";
 import { PackagePage } from "./components/PackagePage";
 import { ProjectPage } from "./components/ProjectPage";
-import { ModelPage } from "./components/ModelPage";
-import { ConnectionsPage } from "./components/ConnectionsPage";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
+import { RouteError } from "./components/RouteError";
 import { ScratchNotebookPageList } from "./components/ScatchNotebookPageList";
+import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
+import theme from "./theme";
 
 const server = `${window.location.protocol}//${window.location.host}/api/v0`;
 const router = createBrowserRouter([
@@ -40,11 +40,11 @@ const router = createBrowserRouter([
             element: <PackagePage server={server} />,
          },
          {
-            path: ":projectName/:packageName/scratch_notebook",
+            path: ":projectName/:packageName/scratchNotebook",
             element: <ScratchNotebookPage server={server} />,
          },
          {
-            path: ":projectName/:packageName/list_scratch_notebook",
+            path: ":projectName/:packageName/listScratchNotebooks",
             element: <ScratchNotebookPageList server={server} />,
          },
          {

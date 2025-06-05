@@ -15,7 +15,7 @@ export function EditableMalloyCell({
    onCellChange,
    onClose,
 }: EditableMalloyCellProps) {
-   const qer = {
+   const query = {
       query: cell.value,
       malloyResult: cell.result ? JSON.parse(cell.result) : undefined,
       malloyQuery: cell.queryInfo ? JSON.parse(cell.queryInfo) : undefined,
@@ -23,7 +23,7 @@ export function EditableMalloyCell({
    return (
       <SourcesExplorer
          sourceAndPaths={sourceAndPaths}
-         existingQer={qer}
+         existingQuery={query}
          existingSourceName={cell.sourceName}
          saveResult={(modelPath, sourceName, qer) => {
             // Convert the results of the Query Explorer into
