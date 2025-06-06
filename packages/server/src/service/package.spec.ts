@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import sinon from "sinon";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import fs from "fs/promises";
+import { join } from "path";
+import sinon from "sinon";
+import { PackageNotFoundError } from "../errors";
+import { readConnectionConfig } from "./connection";
+import { Model } from "./model";
 import { Package } from "./package";
 import { Scheduler } from "./scheduler";
-import { Model } from "./model";
-import { PackageNotFoundError } from "../errors";
-import { join } from "path";
-import { readConnectionConfig } from "./connection";
 
 // Minimal partial types for mocking
 type PartialScheduler = Pick<Scheduler, "list">;
@@ -147,8 +147,8 @@ describe("service/package", () => {
             const models = packageInstance.listModels();
 
             expect(models).toEqual([
-               { path: "model1.malloy", type: "source" },
-               { path: "model2.malloynb", type: "notebook" },
+               { path: "model1.malloy" },
+               { path: "model2.malloynb" },
             ]);
          });
       });
