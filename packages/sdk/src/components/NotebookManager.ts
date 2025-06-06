@@ -213,7 +213,12 @@ export class NotebookManager {
             notebookData = JSON.parse(saved);
          }
       } catch {
-         // Not found, return empty
+         // Not found, create a new notebook
+         notebookData = {
+            models: [],
+            cells: [],
+            notebookPath: notebookPath,
+         };
       }
       return new NotebookManager(notebookStorage, userContext, notebookData);
    }

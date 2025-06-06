@@ -1,21 +1,65 @@
-import { Button, Menu, MenuItem, Stack } from "@mui/material";
+import {
+   BrowserNotebookStorage,
+   NotebookStorageProvider,
+} from "@malloy-publisher/sdk";
+import { Add, Launch } from "@mui/icons-material";
+import {
+   Button,
+   Dialog,
+   DialogContent,
+   DialogTitle,
+   FormControl,
+   ListItemIcon,
+   ListItemText,
+   Menu,
+   MenuItem,
+   Stack,
+   TextField,
+} from "@mui/material";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import React from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
+import { MutableNotebookList } from "./MutableNotebookList";
 
 export default function MainPage() {
    const { projectName, packageName } = useParams();
    const navigate = useNavigate();
 
+   const [analysisName, setAnalysisName] = React.useState("");
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+   const [newDialogOpen, setNewDialogOpen] = React.useState(false);
+   const [openDialogOpen, setOpenDialogOpen] = React.useState(false);
    const open = Boolean(anchorEl);
    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget);
    };
-   const handleClose = () => {
+   const handleMenuClose = () => {
       setAnchorEl(null);
+   };
+   const handleOpenDialogClose = () => {
+      setOpenDialogOpen(false);
+   };
+   const handleNewDialogClose = () => {
+      setNewDialogOpen(false);
+   };
+
+   const handleNotebookClick = (notebook: string) => {
+      setOpenDialogOpen(false);
+      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
+      navigate(
+         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
+      );
+   };
+
+   const createNotebookClick = () => {
+      setNewDialogOpen(false);
+      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
+      navigate(
+         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(analysisName)}`,
+      );
+      setAnalysisName("");
    };
 
    return (
@@ -30,14 +74,11 @@ export default function MainPage() {
                flexDirection: "row",
                gap: 0,
                justifyContent: "space-between",
+               alignItems: "center",
             }}
          >
             <div>
-               <Typography
-                  variant="h4"
-                  gutterBottom
-                  sx={{ color: "text.primary" }}
-               >
+               <Typography variant="h4" sx={{ color: "text.primary" }}>
                   Malloy Publisher
                </Typography>
             </div>
@@ -45,6 +86,7 @@ export default function MainPage() {
                sx={{
                   display: "flex",
                   flexDirection: "row",
+                  alignItems: "center",
                }}
             >
                {!(projectName && packageName) ? (
@@ -62,14 +104,16 @@ export default function MainPage() {
                         aria-haspopup="true"
                         aria-expanded={open ? "true" : undefined}
                         onClick={handleClick}
+                        variant="outlined"
+                        sx={{ height: "40px" }}
                      >
-                        Analyze
+                        Analyze Package
                      </Button>
                      <Menu
                         id="basic-menu"
                         anchorEl={anchorEl}
                         open={open}
-                        onClose={handleClose}
+                        onClose={handleMenuClose}
                         slotProps={{
                            list: {
                               "aria-labelledby": "basic-button",
@@ -78,25 +122,70 @@ export default function MainPage() {
                      >
                         <MenuItem
                            onClick={() => {
-                              navigate(
-                                 `/${projectName}/${packageName}/listScratchNotebooks`,
-                              );
-                              handleClose();
+                              setNewDialogOpen(true);
+                              handleMenuClose();
                            }}
                         >
-                           List Analyses
+                           <ListItemIcon>
+                              <Add fontSize="small" />
+                           </ListItemIcon>
+                           <ListItemText>New Analysis</ListItemText>
                         </MenuItem>
                         <MenuItem
                            onClick={() => {
-                              navigate(
-                                 `/${projectName}/${packageName}/scratchNotebook#notebookPath=`,
-                              );
-                              handleClose();
+                              setOpenDialogOpen(true);
+                              handleMenuClose();
                            }}
                         >
-                           Create New Analysis
+                           <ListItemIcon>
+                              <Launch fontSize="small" />
+                           </ListItemIcon>
+                           <ListItemText>Open Analysis</ListItemText>
                         </MenuItem>
                      </Menu>
+                     <Dialog
+                        open={newDialogOpen}
+                        onClose={handleNewDialogClose}
+                        maxWidth="md"
+                        fullWidth
+                     >
+                        <DialogTitle>New Analysis</DialogTitle>
+                        <DialogContent>
+                           <FormControl>
+                              <TextField
+                                 label="Analysis Name"
+                                 value={analysisName}
+                                 onChange={(e) =>
+                                    setAnalysisName(e.target.value)
+                                 }
+                              />
+                              <Button onClick={createNotebookClick}>
+                                 Create
+                              </Button>
+                           </FormControl>
+                        </DialogContent>
+                     </Dialog>
+                     <Dialog
+                        open={openDialogOpen}
+                        onClose={handleOpenDialogClose}
+                        maxWidth="md"
+                        fullWidth
+                     >
+                        <DialogTitle>Open Analysis</DialogTitle>
+                        <DialogContent>
+                           <NotebookStorageProvider
+                              notebookStorage={new BrowserNotebookStorage()}
+                              userContext={{
+                                 project: projectName,
+                                 package: packageName,
+                              }}
+                           >
+                              <MutableNotebookList
+                                 onNotebookClick={handleNotebookClick}
+                              />
+                           </NotebookStorageProvider>
+                        </DialogContent>
+                     </Dialog>
                   </>
                )}
             </Stack>

@@ -1,5 +1,8 @@
-export { default as MutableNotebook } from "./MutableNotebook";
-export { default as NotebookStorageProvider } from "./NotebookStorageProvider";
 export { BrowserNotebookStorage } from "./BrowserNotebookStorage";
-export type { UserContext, NotebookStorage } from "./NotebookStorage";
-export { MutableNotebookList } from "./MutableNotebookList";
+export { default as MutableNotebook } from "./MutableNotebook";
+export type { NotebookStorage, UserContext } from "./NotebookStorage";
+export {
+    default as NotebookStorageProvider,
+    useNotebookStorage
+} from "./NotebookStorageProvider";
+
