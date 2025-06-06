@@ -19,18 +19,38 @@ export default ({ mode }) => {
          },
          rollupOptions: {
             onwarn(warning, warn) {
-               if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
-                  return;
-               }
-               if (warning.code === "SOURCEMAP_ERROR") {
+               if (
+                  warning.code === "MODULE_LEVEL_DIRECTIVE" ||
+                  warning.code === "SOURCEMAP_ERROR"
+               ) {
                   return;
                }
                warn(warning);
             },
             external: [...Object.keys(peerDependencies)], // Defines external dependencies for Rollup bundling.
+            output: {
+               manualChunks: {
+                  vendor: [
+                     "@emotion/react",
+                     "@emotion/styled",
+                     "@mui/material",
+                     "@mui/icons-material",
+                     "@mui/system",
+                     "@mui/x-tree-view",
+                     "@react-spring/web",
+                     "@tanstack/react-query",
+                     "@uiw/react-md-editor",
+                     "axios",
+                     "markdown-to-jsx",
+                     "react-router-dom",
+                  ],
+               },
+            },
          },
-         sourcemap: true, // Generates source maps for debugging.
+         sourcemap: mode !== "production",
          emptyOutDir: true, // Clears the output directory before building.
+         chunkSizeWarningLimit: 1000,
+         target: "es2020",
       },
       plugins: [
          dts({
