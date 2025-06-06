@@ -145,11 +145,10 @@ describe("service/package", () => {
             );
 
             const models = packageInstance.listModels();
+            expect(models).toEqual([{ path: "model1.malloy" }]);
 
-            expect(models).toEqual([
-               { path: "model1.malloy" },
-               { path: "model2.malloynb" },
-            ]);
+            const notebooks = packageInstance.listNotebooks();
+            expect(notebooks).toEqual([{ path: "model2.malloynb" }]);
          });
       });
 

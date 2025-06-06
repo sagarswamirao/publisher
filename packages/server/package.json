@@ -7,7 +7,7 @@
       "publisher": "dist/server.js"
    },
    "scripts": {
-      "test": "bun test ./tests/**/*.ts",
+      "test": "bun test ./**/*.spec.ts",
       "build": "bun generate-api-types && NODE_ENV=production bun build src/server.ts src/instrumentation.ts --outdir dist --target bun",
       "start": "bun run ./dist/server.js",
       "start:dev": "NODE_ENV=development bun --watch src/server.ts",
