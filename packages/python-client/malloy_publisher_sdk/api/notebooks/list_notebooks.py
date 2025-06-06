@@ -6,7 +6,7 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error import Error
-from ...models.model import Model
+from ...models.notebook import Notebook
 from ...types import UNSET, Response, Unset
 
 
@@ -36,12 +36,12 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Error, list["Model"]]]:
+) -> Optional[Union[Error, list["Notebook"]]]:
     if response.status_code == 200:
         response_200 = []
         _response_200 = response.json()
         for response_200_item_data in _response_200:
-            response_200_item = Model.from_dict(response_200_item_data)
+            response_200_item = Notebook.from_dict(response_200_item_data)
 
             response_200.append(response_200_item)
 
@@ -70,7 +70,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Error, list["Model"]]]:
+) -> Response[Union[Error, list["Notebook"]]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -85,7 +85,7 @@ def sync_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
-) -> Response[Union[Error, list["Model"]]]:
+) -> Response[Union[Error, list["Notebook"]]]:
     """Returns a list of relative paths to the notebooks in the package.
 
     Args:
@@ -98,7 +98,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Error, list['Model']]]
+        Response[Union[Error, list['Notebook']]]
     """
 
     kwargs = _get_kwargs(
@@ -120,7 +120,7 @@ def sync(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
-) -> Optional[Union[Error, list["Model"]]]:
+) -> Optional[Union[Error, list["Notebook"]]]:
     """Returns a list of relative paths to the notebooks in the package.
 
     Args:
@@ -133,7 +133,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Error, list['Model']]
+        Union[Error, list['Notebook']]
     """
 
     return sync_detailed(
@@ -150,7 +150,7 @@ async def asyncio_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
-) -> Response[Union[Error, list["Model"]]]:
+) -> Response[Union[Error, list["Notebook"]]]:
     """Returns a list of relative paths to the notebooks in the package.
 
     Args:
@@ -163,7 +163,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Error, list['Model']]]
+        Response[Union[Error, list['Notebook']]]
     """
 
     kwargs = _get_kwargs(
@@ -183,7 +183,7 @@ async def asyncio(
     *,
     client: Union[AuthenticatedClient, Client],
     version_id: Union[Unset, str] = UNSET,
-) -> Optional[Union[Error, list["Model"]]]:
+) -> Optional[Union[Error, list["Notebook"]]]:
     """Returns a list of relative paths to the notebooks in the package.
 
     Args:
@@ -196,7 +196,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Error, list['Model']]
+        Union[Error, list['Notebook']]
     """
 
     return (

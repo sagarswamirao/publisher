@@ -505,7 +505,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Notebook"
+                  $ref: "#/components/schemas/Model"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "404":
@@ -595,7 +595,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Model"
+                  $ref: "#/components/schemas/Notebook"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "404":
