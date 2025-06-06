@@ -21,8 +21,10 @@ import {
 import { createConnections } from "./connection";
 import { Model } from "./model";
 import { Scheduler } from "./scheduler";
+
 type ApiDatabase = components["schemas"]["Database"];
 type ApiModel = components["schemas"]["Model"];
+type ApiNotebook = components["schemas"]["Notebook"];
 export type ApiPackage = components["schemas"]["Package"];
 type ApiSchedule = components["schemas"]["Schedule"];
 type ApiColumn = components["schemas"]["Column"];
@@ -138,12 +140,27 @@ export class Package {
    }
 
    public listModels(): ApiModel[] {
-      return Array.from(this.models.keys()).map((modelPath) => {
-         return {
-            path: modelPath,
-            type: modelPath.endsWith(MODEL_FILE_SUFFIX) ? "source" : "notebook",
-         };
-      });
+      return Array.from(this.models.keys())
+         .filter((modelPath) => {
+            return modelPath.endsWith(MODEL_FILE_SUFFIX);
+         })
+         .map((modelPath) => {
+            return {
+               path: modelPath,
+            };
+         });
+   }
+
+   public listNotebooks(): ApiNotebook[] {
+      return Array.from(this.models.keys())
+         .filter((modelPath) => {
+            return modelPath.endsWith(NOTEBOOK_FILE_SUFFIX);
+         })
+         .map((modelPath) => {
+            return {
+               path: modelPath,
+            };
+         });
    }
 
    private static async loadModels(

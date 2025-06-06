@@ -1,25 +1,25 @@
-import React from "react";
-import { QueryClient, useQuery } from "@tanstack/react-query";
-import { ModelsApi, Configuration } from "../../client";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import {
-   FormControl,
-   Chip,
-   Typography,
    Button,
+   Chip,
    Dialog,
-   DialogTitle,
-   DialogContent,
    DialogActions,
+   DialogContent,
+   DialogTitle,
+   FormControl,
    List,
    ListItem,
    ListItemButton,
    ListItemText,
    Stack,
+   Typography,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
-import { StyledCard } from "../styles";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import React from "react";
+import { Configuration, ModelsApi } from "../../client";
 import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { StyledCard } from "../styles";
 
 const modelsApi = new ModelsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -79,10 +79,7 @@ export function ModelPicker({
    let availableModels: string[] = [];
    if (isSuccess && data?.data) {
       availableModels = data.data
-         .filter(
-            (model) =>
-               model.type === "source" && !selectedModels.includes(model.path),
-         )
+         .filter((model) => !selectedModels.includes(model.path))
          .map((model) => model.path);
    }
 

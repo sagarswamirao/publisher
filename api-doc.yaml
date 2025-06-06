@@ -13,14 +13,12 @@ paths:
   /projects:
     get:
       tags:
-      - projects
+        - projects
       operationId: list-projects
-      summary:
-        Returns a list of the Projects hosted on this server.
+      summary: Returns a list of the Projects hosted on this server.
       responses:
         "200":
-          description:
-            A list of the Projects names.
+          description: A list of the Projects names.
           content:
             application/json:
               schema:
@@ -31,14 +29,13 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  
+
   /projects/{projectName}:
     get:
       tags:
-      - projects
+        - projects
       operationId: get-project
-      summary:
-        Returns metadata about the project.
+      summary: Returns metadata about the project.
       parameters:
         - name: projectName
           in: path
@@ -54,8 +51,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description:
-            Metadata about the project.
+          description: Metadata about the project.
           content:
             application/json:
               schema:
@@ -70,10 +66,9 @@ paths:
   /projects/{projectName}/connections:
     get:
       tags:
-      - connections
+        - connections
       operationId: list-connections
-      summary:
-        Returns a list of the connections in the project.
+      summary: Returns a list of the connections in the project.
       parameters:
         - name: projectName
           in: path
@@ -83,8 +78,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of the connections in the project.
+          description: A list of the connections in the project.
           content:
             application/json:
               schema:
@@ -95,14 +89,13 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  
+
   /projects/{projectName}/connections/{connectionName}:
     get:
       tags:
-      - connections
+        - connections
       operationId: get-connection
-      summary:
-        Returns a connection.
+      summary: Returns a connection.
       parameters:
         - name: projectName
           in: path
@@ -118,8 +111,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A connection.
+          description: A connection.
           content:
             application/json:
               schema:
@@ -134,10 +126,9 @@ paths:
   /projects/{projectName}/connections/{connectionName}/test:
     get:
       tags:
-      - connections
+        - connections
       operationId: get-test
-      summary:
-        Returns a test.
+      summary: Returns a test.
       parameters:
         - name: projectName
           in: path
@@ -153,8 +144,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            Test passed.
+          description: Test passed.
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "404":
@@ -165,10 +155,9 @@ paths:
   /projects/{projectName}/connections/{connectionName}/sqlSource:
     get:
       tags:
-      - connections
+        - connections
       operationId: get-sqlsource
-      summary:
-        Returns a SQL source.
+      summary: Returns a SQL source.
       parameters:
         - name: projectName
           in: path
@@ -190,8 +179,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A SQL source.
+          description: A SQL source.
           content:
             application/json:
               schema:
@@ -202,14 +190,13 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  
+
   /projects/{projectName}/connections/{connectionName}/tableSource:
     get:
       tags:
-      - connections
+        - connections
       operationId: get-tablesource
-      summary:
-        Returns a table source.
+      summary: Returns a table source.
       parameters:
         - name: projectName
           in: path
@@ -237,8 +224,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A table source.
+          description: A table source.
           content:
             application/json:
               schema:
@@ -253,10 +239,9 @@ paths:
   /projects/{projectName}/connections/{connectionName}/schemas/{schemaName}/tables:
     get:
       tags:
-      - connections
+        - connections
       operationId: list-tables
-      summary:
-        Returns a list of tables available in the specified schema.
+      summary: Returns a list of tables available in the specified schema.
       parameters:
         - name: projectName
           in: path
@@ -278,8 +263,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of table names available in the specified schema.
+          description: A list of table names available in the specified schema.
           content:
             application/json:
               schema:
@@ -296,10 +280,9 @@ paths:
   /projects/{projectName}/connections/{connectionName}/schemas:
     get:
       tags:
-      - connections
+        - connections
       operationId: list-schemas
-      summary:
-        Returns a list of schemas available in the connection.
+      summary: Returns a list of schemas available in the connection.
       parameters:
         - name: projectName
           in: path
@@ -315,8 +298,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of schemas available in the connection with metadata.
+          description: A list of schemas available in the connection with metadata.
           content:
             application/json:
               schema:
@@ -333,10 +315,9 @@ paths:
   /projects/{projectName}/connections/{connectionName}/queryData:
     get:
       tags:
-      - connections
+        - connections
       operationId: get-querydata
-      summary:
-        Returns a query and its results.
+      summary: Returns a query and its results.
       parameters:
         - name: projectName
           in: path
@@ -364,8 +345,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A query and its results.
+          description: A query and its results.
           content:
             application/json:
               schema:
@@ -380,10 +360,9 @@ paths:
   /projects/{projectName}/connections/{connectionName}/temporaryTable:
     get:
       tags:
-      - connections
+        - connections
       operationId: get-temporarytable
-      summary:
-        Returns a temporary table.
+      summary: Returns a temporary table.
       parameters:
         - name: projectName
           in: path
@@ -405,8 +384,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A temporary table.
+          description: A temporary table.
           content:
             application/json:
               schema:
@@ -417,15 +395,13 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "500":
           $ref: "#/components/responses/InternalServerError"
-          
 
   /projects/{projectName}/packages:
     get:
       tags:
-      - packages
+        - packages
       operationId: list-packages
-      summary:
-        Returns a list of the Packages hosted on this server.
+      summary: Returns a list of the Packages hosted on this server.
       parameters:
         - name: projectName
           in: path
@@ -435,8 +411,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of the Packages names.
+          description: A list of the Packages names.
           content:
             application/json:
               schema:
@@ -453,10 +428,9 @@ paths:
   /projects/{projectName}/packages/{packageName}:
     get:
       tags:
-      - packages
+        - packages
       operationId: get-package
-      summary:
-        Returns the package metadata.
+      summary: Returns the package metadata.
       parameters:
         - name: projectName
           in: path
@@ -484,8 +458,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description:
-            Package metadata.
+          description: Package metadata.
           content:
             application/json:
               schema:
@@ -502,10 +475,9 @@ paths:
   /projects/{projectName}/packages/{packageName}/models:
     get:
       tags:
-      - models
+        - models
       operationId: list-models
-      summary: 
-        Returns a list of relative paths to the models in the package.
+      summary: Returns a list of relative paths to the models in the package.
       parameters:
         - name: projectName
           in: path
@@ -527,14 +499,13 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of relative paths to the models in the package.
+          description: A list of relative paths to the models in the package.
           content:
             application/json:
               schema:
                 type: array
-                items: 
-                  $ref: "#/components/schemas/Model"
+                items:
+                  $ref: "#/components/schemas/Notebook"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "404":
@@ -547,10 +518,9 @@ paths:
   /projects/{projectName}/packages/{packageName}/models/{path}:
     get:
       tags:
-      - models
+        - models
       operationId: get-model
-      summary: 
-        Returns a Malloy model.
+      summary: Returns a Malloy model.
       parameters:
         - name: projectName
           in: path
@@ -578,8 +548,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A Malloy model.
+          description: A Malloy model.
           content:
             "application/json":
               schema:
@@ -593,14 +562,12 @@ paths:
         "501":
           $ref: "#/components/responses/NotImplementedError"
 
-
   /projects/{projectName}/packages/{packageName}/notebooks:
     get:
       tags:
-      - notebooks
+        - notebooks
       operationId: list-notebooks
-      summary: 
-        Returns a list of relative paths to the notebooks in the package.
+      summary: Returns a list of relative paths to the notebooks in the package.
       parameters:
         - name: projectName
           in: path
@@ -622,13 +589,12 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of relative paths to the models in the package.
+          description: A list of relative paths to the models in the package.
           content:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   $ref: "#/components/schemas/Model"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
@@ -642,10 +608,9 @@ paths:
   /projects/{projectName}/packages/{packageName}/notebooks/{path}:
     get:
       tags:
-      - notebooks
+        - notebooks
       operationId: get-notebook
-      summary: 
-        Returns a Malloy notebook.
+      summary: Returns a Malloy notebook.
       parameters:
         - name: projectName
           in: path
@@ -673,8 +638,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A Malloy notebook.
+          description: A Malloy notebook.
           content:
             "application/json":
               schema:
@@ -691,10 +655,9 @@ paths:
   /projects/{projectName}/packages/{packageName}/queryResults/{path}:
     get:
       tags:
-      - queryresults
+        - queryresults
       operationId: execute-query
-      summary: 
-        Returns a query and its results.
+      summary: Returns a query and its results.
       parameters:
         - name: projectName
           in: path
@@ -716,8 +679,7 @@ paths:
             type: string
         - in: query
           name: query
-          description:
-            Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty.
+          description: Query string to execute on the model.  If the query is paramter is set, the queryName parameter must be empty.
           required: false
           schema:
             type: string
@@ -741,8 +703,7 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A query and its results.
+          description: A query and its results.
           content:
             "application/json":
               schema:
@@ -761,10 +722,9 @@ paths:
   /projects/{projectName}/packages/{packageName}/databases:
     get:
       tags:
-      - databases
+        - databases
       operationId: list-databases
-      summary: 
-        Returns a list of relative paths to the databases embedded in the package.
+      summary: Returns a list of relative paths to the databases embedded in the package.
       parameters:
         - name: projectName
           in: path
@@ -786,13 +746,12 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of relative paths to the databases embedded in the package.
+          description: A list of relative paths to the databases embedded in the package.
           content:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   $ref: "#/components/schemas/Database"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
@@ -802,14 +761,13 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         "501":
           $ref: "#/components/responses/NotImplementedError"
-  
+
   /projects/{projectName}/packages/{packageName}/schedules:
     get:
       tags:
-      - schedules
+        - schedules
       operationId: list-schedules
-      summary: 
-        Returns a list of running schedules.
+      summary: Returns a list of running schedules.
       parameters:
         - name: projectName
           in: path
@@ -831,13 +789,12 @@ paths:
             type: string
       responses:
         "200":
-          description:
-            A list of running schedules.
+          description: A list of running schedules.
           content:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   $ref: "#/components/schemas/Schedule"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
@@ -863,7 +820,7 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
     NotImplementedError:
-      description:  Not implemented
+      description: Not implemented
       content:
         application/json:
           schema:
@@ -888,7 +845,7 @@ components:
         readme:
           type: string
           description: Readme markdown.
-  
+
     Project:
       type: object
       properties:
@@ -901,7 +858,7 @@ components:
         readme:
           type: string
           description: Project readme.
-    
+
     Package:
       type: object
       properties:
@@ -917,7 +874,7 @@ components:
 
     Model:
       type: object
-      description: Malloy model def and result data.  Malloy model def and result data is Malloy version depdendent.
+      description: Malloy Model metadata
       properties:
         resource:
           type: string
@@ -928,11 +885,21 @@ components:
         path:
           type: string
           description: Model's relative path in its package directory.
-        type:
+
+    Notebook:
+      type: object
+      description: Malloy Notebook metadata
+      properties:
+        resource:
           type: string
-          enum: ["source", "notebook"]
-          description: Type of malloy model file -- source file or notebook file.
-  
+          description: Resource path to the notebook.
+        packageName:
+          type: string
+          description: Notebook's package Name
+        path:
+          type: string
+          description: Notebook's relative path in its package directory.
+
     CompiledNotebook:
       type: object
       description: Malloy notebook def and result data.  Malloy notebook def and result data is Malloy version depdendent.
@@ -984,7 +951,7 @@ components:
           descript: Array of named queries.
           items:
             $ref: "#/components/schemas/Query"
-  
+
     View:
       type: object
       description: Named model view.
@@ -1022,12 +989,13 @@ components:
         text:
           type: string
           description: Text contents of the notebook cell.
-        result: 
+        result:
           type: string
           description: JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
         newSources:
           type: array
-          description: Array of JSON string of SourceInfo made available in the notebook cell. Only *new*
+          description:
+            Array of JSON string of SourceInfo made available in the notebook cell. Only *new*
             SourceInfos are returned. The complete list of SourceInfos is available be concatenating the prior
             notebook cells.  The SourceInfos are in the order they are made available in the notebook cell.
           items:
@@ -1037,7 +1005,7 @@ components:
       type: object
       description: A Malloy query's results.
       properties:
-        result: 
+        result:
           type: string
           description: JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
 
@@ -1127,7 +1095,7 @@ components:
         canPersist:
           type: boolean
         canStream:
-          type: boolean   
+          type: boolean
 
     PostgresConnection:
       type: object
@@ -1160,7 +1128,7 @@ components:
           type: string
         queryTimeoutMilliseconds:
           type: string
-      
+
     SnowflakeConnection:
       type: object
       properties:
@@ -1204,7 +1172,7 @@ components:
         # Pass source as an opaque JSON string that is malloyVersion depdendent.
         source:
           type: string
-    
+
     TableSource:
       type: object
       properties:
@@ -1220,7 +1188,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Column"
-          
 
     TemporaryTable:
       type: object
@@ -1249,7 +1216,7 @@ components:
           type: string
         message:
           type: string
-    
+
     Column:
       type: object
       properties:
@@ -1269,4 +1236,3 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Column"
-      
