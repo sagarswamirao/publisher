@@ -1,24 +1,29 @@
 // TODO(jjs) - Export to .malloynb
 // TOOD(jjs) - Import via Publisher API that parses whole NB
 
-import React from "react";
-import Stack from "@mui/material/Stack";
 import {
    Box,
    Button,
    CardActions,
-   TextField,
-   Typography,
+   Dialog,
+   DialogActions,
+   DialogContent,
+   DialogContentText,
+   DialogTitle,
    Menu,
    MenuItem,
+   Typography,
 } from "@mui/material";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
-import { MutableCell } from "./MutableCell";
+import Stack from "@mui/material/Stack";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Configuration, ModelsApi } from "../../client";
-import { ModelPicker } from "./ModelPicker";
-import { usePublisherPackage } from "../Package";
-import { NotebookManager } from "../NotebookManager";
 import { SourceAndPath } from "../Model/SourcesExplorer";
+import { NotebookManager } from "../NotebookManager";
+import { usePublisherPackage } from "../Package";
+import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import { ModelPicker } from "./ModelPicker";
+import { MutableCell } from "./MutableCell";
 import { useNotebookStorage } from "./NotebookStorageProvider";
 
 import * as Malloy from "@malloydata/malloy-interfaces";
@@ -26,25 +31,22 @@ import * as Malloy from "@malloydata/malloy-interfaces";
 const modelsApi = new ModelsApi(new Configuration());
 
 interface MutableNotebookProps {
-   inputNotebookPath: string | undefined;
+   notebookPath?: string;
    expandCodeCells?: boolean;
    expandEmbeddings?: boolean;
 }
 
-function getNotebookPath() {
-   const params = new URLSearchParams(window.location.hash.substring(1));
-   return params.get("notebookPath");
-}
 interface PathToSources {
    modelPath: string;
    sourceInfos: Malloy.SourceInfo[];
 }
 
 export default function MutableNotebook({
-   inputNotebookPath,
+   notebookPath,
    expandCodeCells,
    expandEmbeddings,
 }: MutableNotebookProps) {
+   const navigate = useNavigate();
    const { server, projectName, packageName, versionId, accessToken } =
       usePublisherPackage();
    if (!projectName || !packageName) {
@@ -61,7 +63,6 @@ export default function MutableNotebook({
    const [notebookData, setNotebookData] = React.useState<
       NotebookManager | undefined
    >();
-   const [notebookPath, setNotebookPath] = React.useState(inputNotebookPath);
    const [editingMalloyIndex, setEditingMalloyIndex] = React.useState<
       number | undefined
    >();
@@ -100,6 +101,24 @@ export default function MutableNotebook({
       }
       handleMenuClose();
    };
+
+   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+   const handleDeleteClick = () => {
+      setDeleteDialogOpen(true);
+   };
+
+   const handleDeleteConfirm = () => {
+      if (notebookPath && notebookStorage && userContext) {
+         notebookStorage.deleteNotebook(userContext, notebookPath);
+      }
+      setDeleteDialogOpen(false);
+      navigate(`/${projectName}/${packageName}`);
+   };
+
+   const handleDeleteCancel = () => {
+      setDeleteDialogOpen(false);
+   };
+
    const saveNotebook = React.useCallback(() => {
       setNotebookData(notebookData.saveNotebook());
    }, [notebookData]);
@@ -155,17 +174,17 @@ export default function MutableNotebook({
    ]);
 
    React.useEffect(() => {
-      if (!notebookData) {
-         setNotebookData(
-            NotebookManager.loadNotebook(
-               notebookStorage,
-               userContext,
-               getNotebookPath(),
-            ),
-         );
-         setNotebookPath(getNotebookPath());
+      if (!notebookPath) {
+         return;
       }
-   }, [notebookData, packageName, projectName, notebookStorage, userContext]);
+      setNotebookData(
+         NotebookManager.loadNotebook(
+            notebookStorage,
+            userContext,
+            notebookPath,
+         ),
+      );
+   }, [notebookPath, notebookStorage, userContext]);
 
    if (!notebookData) {
       return <div>Loading...</div>;
@@ -220,35 +239,63 @@ export default function MutableNotebook({
                         fontWeight: "bold",
                      }}
                   >
-                     Notebook :
+                     Notebook - {notebookPath}
                   </Typography>
-                  <TextField
-                     value={notebookPath}
-                     onChange={(e) => {
-                        setNotebookPath(e.target.value);
-                     }}
-                     onBlur={(e) => {
-                        const url = new URL(window.location.href);
-                        url.hash = `notebookPath=${e.target.value}`;
-                        notebookData.renameNotebook(e.target.value);
-                        window.history.pushState({}, "", url);
-                     }}
-                     size="medium"
-                     variant="standard"
-                     error={!notebookPath}
-                     helperText={
-                        !notebookPath
-                           ? "Please enter a notebook name"
-                           : undefined
-                     }
-                     sx={{ flex: 1 }}
-                  />
                </Box>
-               <Box
-                  sx={{ display: "flex", alignItems: "center", mt: 1, mb: 1 }}
-               >
-                  <ExportMalloyButton notebookData={notebookData} />
-               </Box>
+               <Stack sx={{ display: "flex", flexDirection: "row", gap: 1 }}>
+                  <Box
+                     sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        mt: 1,
+                        mb: 1,
+                     }}
+                  >
+                     <ExportMalloyButton notebookData={notebookData} />
+                  </Box>
+                  <Box
+                     sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        mt: 1,
+                        mb: 1,
+                     }}
+                  >
+                     <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={handleDeleteClick}
+                     >
+                        Delete Notebook
+                     </Button>
+                     <Dialog
+                        open={deleteDialogOpen}
+                        onClose={handleDeleteCancel}
+                     >
+                        <DialogTitle>Delete Notebook</DialogTitle>
+                        <DialogContent>
+                           <DialogContentText>
+                              Are you sure you want to delete the notebook
+                              &quot;
+                              {notebookPath}&quot;? This action cannot be
+                              undone.
+                           </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                           <Button onClick={handleDeleteCancel} color="primary">
+                              Cancel
+                           </Button>
+                           <Button
+                              onClick={handleDeleteConfirm}
+                              color="error"
+                              autoFocus
+                           >
+                              Delete
+                           </Button>
+                        </DialogActions>
+                     </Dialog>
+                  </Box>
+               </Stack>
             </Stack>
          </StyledCardContent>
          <ModelPicker
@@ -365,7 +412,7 @@ function ExportMalloyButton({
       }
    };
    return (
-      <Button variant="contained" color="primary" onClick={handleExport}>
+      <Button variant="outlined" color="primary" onClick={handleExport}>
          {copied ? "Copied!" : "Export To Malloy"}
       </Button>
    );

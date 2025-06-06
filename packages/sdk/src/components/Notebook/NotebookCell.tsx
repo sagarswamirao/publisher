@@ -1,25 +1,23 @@
-import React from "react";
-import { Suspense, lazy } from "react";
+import * as Malloy from "@malloydata/malloy-interfaces";
+import CodeIcon from "@mui/icons-material/Code";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
-   Stack,
-   Collapse,
    CardActions,
    CardContent,
+   Collapse,
+   Divider,
    IconButton,
+   Stack,
    Tooltip,
+   Typography,
 } from "@mui/material";
-import { StyledCard, StyledCardContent } from "../styles";
 import Markdown from "markdown-to-jsx";
+import React, { Suspense, lazy, useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
-import { Typography } from "@mui/material";
-import { Divider } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { highlight } from "../highlighter";
-import { useEffect } from "react";
-import CodeIcon from "@mui/icons-material/Code";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import { SourcesExplorer } from "../Model";
-import * as Malloy from "@malloydata/malloy-interfaces";
+import { StyledCard, StyledCardContent } from "../styles";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
@@ -215,7 +213,7 @@ export function NotebookCell({
             {cell.result && !sourcesExpanded && (
                <>
                   <Divider sx={{ mb: "10px" }} />
-                  <CardContent sx={{ maxHeight: "400px", overflow: "auto" }}>
+                  <CardContent sx={{ maxHeight: "800px", overflow: "auto" }}>
                      <Suspense fallback="Loading malloy...">
                         <RenderedResult result={cell.result} />
                      </Suspense>

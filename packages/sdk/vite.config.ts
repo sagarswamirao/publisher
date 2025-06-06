@@ -1,8 +1,8 @@
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
-import { peerDependencies } from "./package.json";
 import svgr from "vite-plugin-svgr";
-import react from "@vitejs/plugin-react";
+import { peerDependencies } from "./package.json";
 
 export default ({ mode }) => {
    return defineConfig({
@@ -32,6 +32,17 @@ export default ({ mode }) => {
          sourcemap: true, // Generates source maps for debugging.
          emptyOutDir: true, // Clears the output directory before building.
       },
-      plugins: [dts(), svgr(), react()],
+      plugins: [
+         dts({
+            outDir: "dist",
+            entryRoot: "src",
+            include: ["src/**/*.ts", "src/**/*.tsx"],
+            exclude: ["src/**/__test__/**", "src/**/__docs__/**"],
+            staticImport: true,
+            insertTypesEntry: true,
+         }),
+         svgr(),
+         react(),
+      ],
    });
 };

@@ -10,7 +10,6 @@ import { ModelPage } from "./components/ModelPage";
 import { PackagePage } from "./components/PackagePage";
 import { ProjectPage } from "./components/ProjectPage";
 import { RouteError } from "./components/RouteError";
-import { ScratchNotebookPageList } from "./components/ScatchNotebookPageList";
 import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
 import theme from "./theme";
 
@@ -40,12 +39,8 @@ const router = createBrowserRouter([
             element: <PackagePage server={server} />,
          },
          {
-            path: ":projectName/:packageName/scratchNotebook",
+            path: ":projectName/:packageName/scratchNotebook/:notebookPath",
             element: <ScratchNotebookPage server={server} />,
-         },
-         {
-            path: ":projectName/:packageName/listScratchNotebooks",
-            element: <ScratchNotebookPageList server={server} />,
          },
          {
             path: ":projectName/:packageName/*",

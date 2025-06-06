@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useRef } from "react";
 import type { MalloyRenderProps } from "@malloydata/render";
 import "@malloydata/render/webcomponent";
+import React, { useEffect, useRef } from "react";
 
 type MalloyRenderElement = HTMLElement & MalloyRenderProps;
 
