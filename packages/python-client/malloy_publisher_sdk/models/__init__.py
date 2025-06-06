@@ -12,7 +12,7 @@ from .database import Database
 from .database_type import DatabaseType
 from .error import Error
 from .model import Model
-from .model_type import ModelType
+from .notebook import Notebook
 from .notebook_cell import NotebookCell
 from .notebook_cell_type import NotebookCellType
 from .package import Package
@@ -44,7 +44,7 @@ __all__ = (
     "DatabaseType",
     "Error",
     "Model",
-    "ModelType",
+    "Notebook",
     "NotebookCell",
     "NotebookCellType",
     "Package",

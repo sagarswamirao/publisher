@@ -10,39 +10,40 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="Package")
+T = TypeVar("T", bound="Notebook")
 
 
 @_attrs_define
-class Package:
-    """
+class Notebook:
+    """Malloy Notebook metadata
+
     Attributes:
-        resource (Union[Unset, str]): Resource path to the package.
-        name (Union[Unset, str]): Package name.
-        description (Union[Unset, str]): Package description.
+        resource (Union[Unset, str]): Resource path to the notebook.
+        package_name (Union[Unset, str]): Notebook's package Name
+        path (Union[Unset, str]): Notebook's relative path in its package directory.
     """
 
     resource: Union[Unset, str] = UNSET
-    name: Union[Unset, str] = UNSET
-    description: Union[Unset, str] = UNSET
+    package_name: Union[Unset, str] = UNSET
+    path: Union[Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         resource = self.resource
 
-        name = self.name
+        package_name = self.package_name
 
-        description = self.description
+        path = self.path
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if resource is not UNSET:
             field_dict["resource"] = resource
-        if name is not UNSET:
-            field_dict["name"] = name
-        if description is not UNSET:
-            field_dict["description"] = description
+        if package_name is not UNSET:
+            field_dict["packageName"] = package_name
+        if path is not UNSET:
+            field_dict["path"] = path
 
         return field_dict
 
@@ -51,18 +52,18 @@ class Package:
         d = dict(src_dict)
         resource = d.pop("resource", UNSET)
 
-        name = d.pop("name", UNSET)
+        package_name = d.pop("packageName", UNSET)
 
-        description = d.pop("description", UNSET)
+        path = d.pop("path", UNSET)
 
-        package = cls(
+        notebook = cls(
             resource=resource,
-            name=name,
-            description=description,
+            package_name=package_name,
+            path=path,
         )
 
-        package.additional_properties = d
-        return package
+        notebook.additional_properties = d
+        return notebook
 
     @property
     def additional_keys(self) -> list[str]:
