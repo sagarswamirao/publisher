@@ -2,6 +2,7 @@ import { components } from "../api";
 import { ModelNotFoundError } from "../errors";
 import { ProjectStore } from "../service/project_store";
 
+type ApiNotebook = components["schemas"]["Notebook"];
 type ApiModel = components["schemas"]["Model"];
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 type ApiCompiledNotebook = components["schemas"]["CompiledNotebook"];
@@ -20,20 +21,16 @@ export class ModelController {
    ): Promise<ApiModel[]> {
       const project = await this.projectStore.getProject(projectName, false);
       const p = await project.getPackage(packageName, false);
-      return p
-         .listModels()
-         .filter((model: ApiModel) => model.type === "source");
+      return p.listModels();
    }
 
    public async listNotebooks(
       projectName: string,
       packageName: string,
-   ): Promise<ApiModel[]> {
+   ): Promise<ApiNotebook[]> {
       const project = await this.projectStore.getProject(projectName, false);
       const p = await project.getPackage(packageName, false);
-      return p
-         .listModels()
-         .filter((model: ApiModel) => model.type === "notebook");
+      return p.listNotebooks();
    }
 
    public async getModel(
