@@ -28,7 +28,7 @@ export default function Models({
    navigate,
    accessToken,
 }: ModelsProps) {
-   const { data, isSuccess, isError, error } = useQuery(
+   const { data, isError, error, isLoading } = useQuery(
       {
          queryKey: ["models", server, projectName, packageName, versionId],
          queryFn: () =>
@@ -43,6 +43,20 @@ export default function Models({
       },
       queryClient,
    );
+   if (isError) {
+      return (
+         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+            {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
+         </Typography>
+      );
+   }
+   if (isLoading) {
+      return (
+         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+            Fetching Models...
+         </Typography>
+      );
+   }
 
    return (
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
@@ -58,12 +72,7 @@ export default function Models({
                   overflowY: "auto",
                }}
             >
-               {!isSuccess && !isError && (
-                  <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-                     Fetching Models
-                  </Typography>
-               )}
-               {isSuccess && data.data.length > 0 && (
+               {data.data.length > 0 ? (
                   <FileTreeView
                      items={data.data.sort((a, b) => {
                         return a.path.localeCompare(b.path);
@@ -71,10 +80,9 @@ export default function Models({
                      defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
                      navigate={navigate}
                   />
-               )}
-               {isError && (
+               ) : (
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
+                     No models found
                   </Typography>
                )}
             </Box>
