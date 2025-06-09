@@ -9,7 +9,7 @@ export const surfacesCustomizations: Components<Theme> = {
       },
       styleOverrides: {
          root: ({ theme }) => ({
-            padding: 4,
+            padding: 2,
             overflow: "clip",
             backgroundColor: theme.palette.background.default,
             border: "1px solid",
@@ -46,7 +46,7 @@ export const surfacesCustomizations: Components<Theme> = {
    },
    MuiAccordionDetails: {
       styleOverrides: {
-         root: { mb: 20, border: "none" },
+         root: { mb: 4, border: "none" },
       },
    },
    MuiPaper: {
@@ -58,8 +58,8 @@ export const surfacesCustomizations: Components<Theme> = {
       styleOverrides: {
          root: ({ theme }) => {
             return {
-               padding: 16,
-               gap: 16,
+               padding: 2,
+               gap: 2,
                transition: "all 100ms ease",
                backgroundColor: gray[50],
                borderRadius: theme.shape.borderRadius,
@@ -84,6 +84,13 @@ export const surfacesCustomizations: Components<Theme> = {
                   },
                ],
             };
+         },
+      },
+   },
+   MuiIconButton: {
+      styleOverrides: {
+         root: {
+            padding: 0,
          },
       },
    },
