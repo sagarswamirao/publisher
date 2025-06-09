@@ -213,7 +213,13 @@ export function NotebookCell({
             {cell.result && !sourcesExpanded && (
                <>
                   <Divider sx={{ mb: "10px" }} />
-                  <CardContent sx={{ maxHeight: "800px", overflow: "auto" }}>
+                  <CardContent
+                     sx={{
+                        minHeight: "100px",
+                        maxHeight: "800px",
+                        overflow: "auto",
+                     }}
+                  >
                      <Suspense fallback="Loading malloy...">
                         <RenderedResult result={cell.result} />
                      </Suspense>
