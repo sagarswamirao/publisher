@@ -27,18 +27,18 @@ jobs:
 
       - name: Update package version
         run: |
-          cd worker/publisher/packages/sdk
+          cd packages/sdk
           VERSION=${GITHUB_REF#refs/tags/}
           npm version ${VERSION#v} --no-git-tag-version
 
       - name: Build package
         run: |
-          cd worker/publisher/packages/sdk
+          cd packages/sdk
           bun run build
 
       - name: Publish to NPM
         run: |
-          cd worker/publisher/packages/sdk
+          cd packages/sdk
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
