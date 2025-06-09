@@ -1,0 +1,56 @@
+name: Publish SDK to NPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'GitHub tag to use for versioning (format: v1.0.0)'
+        required: true
+        type: string
+        default: 'v1.0.0'
+      branch:
+        description: 'Branch to build from'
+        required: true
+        type: string
+        default: 'main'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: cd worker/publisher && bun install
+
+      - name: Update package version
+        run: |
+          cd worker/publisher/packages/sdk
+          VERSION=${GITHUB_REF#refs/tags/}
+          npm version ${VERSION#v} --no-git-tag-version
+
+      - name: Build package
+        run: |
+          cd worker/publisher/packages/sdk
+          bun run build
+
+      - name: Publish to NPM
+        run: |
+          cd worker/publisher/packages/sdk
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
