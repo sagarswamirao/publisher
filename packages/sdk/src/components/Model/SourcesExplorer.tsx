@@ -250,16 +250,16 @@ export function SourceExplorerComponent({
       }
    }, [sourceAndPath, oldSourceInfo]);
 
-   if (oldSourceInfo !== sourceAndPath.sourceInfo.name) {
-      return <div>Loading...</div>;
-   }
-
    const onQueryChange = React.useCallback(
       (malloyQuery: Malloy.Query) => {
          setQuery({ ...query, malloyQuery });
       },
       [query],
    );
+
+   if (oldSourceInfo !== sourceAndPath.sourceInfo.name) {
+      return <div>Loading...</div>;
+   }
 
    return (
       <StyledExplorerPage key={sourceAndPath.sourceInfo.name}>
