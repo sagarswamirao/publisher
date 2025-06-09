@@ -27,9 +27,8 @@ jobs:
 
       - name: Update package version
         run: |
-          cd packages/sdk
           VERSION=${GITHUB_REF#refs/tags/}
-          npm version ${VERSION#v} --no-git-tag-version --allow-same-version
+          npm version ${VERSION#v} --no-git-tag-version --allow-same-version --prefix packages/sdk
 
       - name: Build package
         run: |
