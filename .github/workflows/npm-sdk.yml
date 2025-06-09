@@ -2,17 +2,6 @@ name: Publish SDK to NPM
 
 on:
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'GitHub tag to use for versioning (format: v1.0.0)'
-        required: true
-        type: string
-        default: 'v1.0.0'
-      branch:
-        description: 'Branch to build from'
-        required: true
-        type: string
-        default: 'main'
 
 jobs:
   publish:
@@ -20,7 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
           fetch-depth: 0
 
       - name: Setup Node.js
