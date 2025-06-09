@@ -23,7 +23,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: cd worker/publisher && bun install
+        run: bun install
 
       - name: Update package version
         run: |
