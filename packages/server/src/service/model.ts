@@ -13,12 +13,14 @@ import {
    isSourceDef,
    modelDefToModelInfo,
 } from "@malloydata/malloy";
+import * as Malloy from "@malloydata/malloy-interfaces";
 import {
    MalloySQLParser,
    MalloySQLStatementType,
 } from "@malloydata/malloy-sql";
 import malloyPackage from "@malloydata/malloy/package.json";
 import { DataStyles } from "@malloydata/render";
+import { metrics } from "@opentelemetry/api";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
@@ -28,9 +30,12 @@ import {
    ModelCompilationError,
    ModelNotFoundError,
 } from "../errors";
-import { URL_READER, MODEL_FILE_SUFFIX, NOTEBOOK_FILE_SUFFIX } from "../utils";
-import { metrics } from "@opentelemetry/api";
-import * as Malloy from "@malloydata/malloy-interfaces";
+import {
+   MODEL_FILE_SUFFIX,
+   NOTEBOOK_FILE_SUFFIX,
+   ROW_LIMIT,
+   URL_READER,
+} from "../utils";
 
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 type ApiNotebookCell = components["schemas"]["NotebookCell"];
@@ -175,8 +180,8 @@ export class Model {
    public getSourceInfos(): Malloy.SourceInfo[] | undefined {
       return this.modelDef
          ? modelDefToModelInfo(this.modelDef).entries.filter((entry) => {
-              return entry.kind === "source";
-           })
+            return entry.kind === "source";
+         })
          : undefined;
    }
 
@@ -251,7 +256,7 @@ export class Model {
       const rowLimit =
          runnable instanceof QueryMaterializer
             ? (await runnable.getPreparedResult()).resultExplore.limit
-            : undefined;
+            : ROW_LIMIT;
       const endTime = performance.now();
       const executionTime = endTime - startTime;
       const queryResults = await runnable.run({ rowLimit });
@@ -301,8 +306,9 @@ export class Model {
                   try {
                      const rowLimit = cell.runnable
                         ? (await cell.runnable.getPreparedResult())
-                             .resultExplore.limit
-                        : undefined;
+                           .resultExplore.limit
+                        : ROW_LIMIT;
+                     console.log("rowLimit", rowLimit);
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
                         ._query;
