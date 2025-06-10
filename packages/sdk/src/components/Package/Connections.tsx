@@ -89,11 +89,7 @@ export default function Connections(connectionProps: ConnectionsProps) {
                            </TableCell>
                         </TableRow>
                         {data.data.map((conn) => (
-                           <Connection
-                              key={conn.name}
-                              connectionProps={connectionProps}
-                              connection={conn}
-                           />
+                           <Connection key={conn.name} connection={conn} />
                         ))}
                      </TableBody>
                   </Table>
