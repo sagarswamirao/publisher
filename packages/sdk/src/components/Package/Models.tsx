@@ -28,7 +28,7 @@ export default function Models({
    navigate,
    accessToken,
 }: ModelsProps) {
-   const { data, isError, error, isLoading } = useQuery(
+   const { data, isError, error, isLoading, isSuccess } = useQuery(
       {
          queryKey: ["models", server, projectName, packageName, versionId],
          queryFn: () =>
@@ -43,20 +43,6 @@ export default function Models({
       },
       queryClient,
    );
-   if (isError) {
-      return (
-         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-            {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
-         </Typography>
-      );
-   }
-   if (isLoading) {
-      return (
-         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-            Fetching Models...
-         </Typography>
-      );
-   }
 
    return (
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
@@ -72,17 +58,28 @@ export default function Models({
                   overflowY: "auto",
                }}
             >
-               {data.data.length > 0 ? (
-                  <FileTreeView
-                     items={data.data.sort((a, b) => {
-                        return a.path.localeCompare(b.path);
-                     })}
-                     defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
-                     navigate={navigate}
-                  />
-               ) : (
+               {isLoading && (
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     No models found
+                     Fetching Models...
+                  </Typography>
+               )}
+               {isSuccess &&
+                  (data.data.length > 0 ? (
+                     <FileTreeView
+                        items={data.data.sort((a, b) => {
+                           return a.path.localeCompare(b.path);
+                        })}
+                        defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
+                        navigate={navigate}
+                     />
+                  ) : (
+                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+                        No models found
+                     </Typography>
+                  ))}
+               {isError && (
+                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+                     {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
                   </Typography>
                )}
             </Box>
