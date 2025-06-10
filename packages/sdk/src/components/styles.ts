@@ -9,7 +9,7 @@ export const StyledCard = styled(Card)({
 export const StyledCardContent = styled(CardContent)({
    display: "flex",
    flexDirection: "column",
-   padding: "0px 10px 10px 10px",
+   padding: "0px 4px 4px 4px",
    flexGrow: 1,
    "&:last-child": {
       paddingBottom: 0,
@@ -17,7 +17,7 @@ export const StyledCardContent = styled(CardContent)({
 });
 
 export const StyledCardMedia = styled(CardMedia)({
-   padding: "0px 10px 0px 10px",
+   padding: "0px 4px 0px 4px",
 });
 
 export const StyledExplorerPage = styled("div")({

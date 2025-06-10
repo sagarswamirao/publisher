@@ -4,13 +4,13 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
    CardActions,
-   CardContent,
    Collapse,
    Divider,
    IconButton,
    Stack,
    Tooltip,
    Typography,
+   Box,
 } from "@mui/material";
 import Markdown from "markdown-to-jsx";
 import React, { Suspense, lazy, useEffect } from "react";
@@ -18,8 +18,7 @@ import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { SourcesExplorer } from "../Model";
 import { StyledCard, StyledCardContent } from "../styles";
-
-const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
+import ResultContainer from "../RenderedResult/ResultContainer";
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
@@ -72,7 +71,7 @@ export function NotebookCell({
          </StyledCard>
       )) ||
       (cell.type === "code" && (
-         <StyledCard variant="outlined">
+         <StyledCard variant="outlined" sx={{ height: "auto" }}>
             {(!hideCodeCellIcon || (!hideEmbeddingIcon && cell.result)) && (
                <Stack sx={{ flexDirection: "row", justifyContent: "right" }}>
                   <CardActions
@@ -212,18 +211,11 @@ export function NotebookCell({
             </Collapse>
             {cell.result && !sourcesExpanded && (
                <>
-                  <Divider sx={{ mb: "10px" }} />
-                  <CardContent
-                     sx={{
-                        minHeight: "100px",
-                        maxHeight: "800px",
-                        overflow: "auto",
-                     }}
-                  >
-                     <Suspense fallback="Loading malloy...">
-                        <RenderedResult result={cell.result} />
-                     </Suspense>
-                  </CardContent>
+                  <ResultContainer
+                     result={cell.result}
+                     minHeight={200}
+                     maxHeight={800}
+                  />
                </>
             )}
          </StyledCard>
