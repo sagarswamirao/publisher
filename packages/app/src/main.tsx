@@ -31,23 +31,23 @@ const router = createBrowserRouter([
             element: <HomePage server={server} />,
          },
          {
-            path: ":projectName",
+            path: "/projects/:projectName",
             element: <ProjectPage server={server} />,
          },
          {
-            path: ":projectName/:packageName",
+            path: "/projects/:projectName/packages/:packageName",
             element: <PackagePage server={server} />,
          },
          {
-            path: ":projectName/:packageName/scratchNotebook/:notebookPath",
+            path: "/projects/:projectName/packages/:packageName/scratchNotebook/:notebookPath",
             element: <ScratchNotebookPage server={server} />,
          },
          {
-            path: ":projectName/:packageName/*",
+            path: "/projects/:projectName/packages/:packageName/*",
             element: <ModelPage server={server} />,
          },
          {
-            path: ":projectName/connections/:connectionName",
+            path: "/projects/:projectName/connections/:connectionName",
             element: <ConnectionsPage server={server} />,
          },
       ],

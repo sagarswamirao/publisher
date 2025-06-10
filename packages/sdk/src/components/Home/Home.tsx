@@ -1,7 +1,7 @@
 import { Grid, Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
-import { ProjectsApi, Configuration } from "../../client";
 import axios from "axios";
+import { Configuration, ProjectsApi } from "../../client";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const projectsApi = new ProjectsApi(new Configuration());
@@ -30,7 +30,7 @@ export default function Home({ server, navigate }: HomeProps) {
       if (data.data.length === 0) {
          return <Typography variant="h4">No projects found</Typography>;
       } else if (data.data.length === 1) {
-         navigate(`/${data.data[0].name}/`);
+         navigate(`/projects/${data.data[0].name}/`);
          return <></>;
       } else {
          return (
@@ -44,7 +44,7 @@ export default function Home({ server, navigate }: HomeProps) {
                   <Grid key={project.name}>
                      <Typography
                         variant="h1"
-                        onClick={() => navigate(`/${project.name}/`)}
+                        onClick={() => navigate(`/projects/${project.name}/`)}
                      >
                         {project.name}
                      </Typography>

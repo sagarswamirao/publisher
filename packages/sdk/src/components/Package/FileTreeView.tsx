@@ -1,28 +1,28 @@
-import * as React from "react";
+import ArticleIcon from "@mui/icons-material/ArticleOutlined";
+import DataArrayIcon from "@mui/icons-material/DataArrayOutlined";
+import DnsIcon from "@mui/icons-material/DnsOutlined";
+import ErrorIcon from "@mui/icons-material/ErrorOutlined";
+import FolderIcon from "@mui/icons-material/FolderOutlined";
+import { Typography } from "@mui/material";
+import Collapse from "@mui/material/Collapse";
+import { TransitionProps } from "@mui/material/transitions";
+import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import {
    TreeItem2Content,
+   TreeItem2IconContainer,
    TreeItem2Label,
    TreeItem2Root,
-   TreeItem2IconContainer,
 } from "@mui/x-tree-view/TreeItem2";
-import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
+import { TreeItem2Icon } from "@mui/x-tree-view/TreeItem2Icon";
 import { TreeItem2Provider } from "@mui/x-tree-view/TreeItem2Provider";
 import { TreeViewBaseItem } from "@mui/x-tree-view/models";
 import {
    unstable_useTreeItem2 as useTreeItem2,
    UseTreeItem2Parameters,
 } from "@mui/x-tree-view/useTreeItem2";
-import { TreeItem2Icon } from "@mui/x-tree-view/TreeItem2Icon";
-import FolderIcon from "@mui/icons-material/FolderOutlined";
-import ArticleIcon from "@mui/icons-material/ArticleOutlined";
-import ErrorIcon from "@mui/icons-material/ErrorOutlined";
-import { TransitionProps } from "@mui/material/transitions";
 import { animated, useSpring } from "@react-spring/web";
-import Collapse from "@mui/material/Collapse";
-import DnsIcon from "@mui/icons-material/DnsOutlined";
-import DataArrayIcon from "@mui/icons-material/DataArrayOutlined";
+import * as React from "react";
 import { Database, Model } from "../../client";
-import { Typography } from "@mui/material";
 
 interface FiieTreeViewProps {
    items: Model[] | Database[];
@@ -98,7 +98,7 @@ function CustomTreeItem2Label({ item, ...other }: CustomLabelProps) {
 
 interface CustomTreeItemProps
    extends Omit<UseTreeItem2Parameters, "rootRef">,
-      Omit<React.HTMLAttributes<HTMLLIElement>, "onFocus"> {}
+   Omit<React.HTMLAttributes<HTMLLIElement>, "onFocus"> { }
 
 const CustomTreeItem = React.forwardRef(function CustomTreeItem(
    props: CustomTreeItemProps,

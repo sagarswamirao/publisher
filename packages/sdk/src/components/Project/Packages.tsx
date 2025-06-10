@@ -1,7 +1,7 @@
 import { Box, Divider, Grid, Typography } from "@mui/material";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, PackagesApi } from "../../client";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -74,7 +74,7 @@ export default function Project({
                               <StyledCard
                                  variant="outlined"
                                  sx={{ padding: "10px", cursor: "pointer" }}
-                                 onClick={() => navigate(p.name + "/")}
+                                 onClick={() => navigate(`packages/${p.name}/`)}
                               >
                                  <StyledCardContent>
                                     <Typography
