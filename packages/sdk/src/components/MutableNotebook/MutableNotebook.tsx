@@ -112,7 +112,7 @@ export default function MutableNotebook({
          notebookStorage.deleteNotebook(userContext, notebookPath);
       }
       setDeleteDialogOpen(false);
-      navigate(`/${projectName}/${packageName}`);
+      navigate(`/projects/${projectName}/packages/${packageName}`);
    };
 
    const handleDeleteCancel = () => {
