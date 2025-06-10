@@ -26,7 +26,7 @@ export default function Notebooks({
    navigate,
    accessToken,
 }: ModelsProps) {
-   const { data, isLoading, isError, error } = useQuery(
+   const { data, isLoading, isError, error, isSuccess } = useQuery(
       {
          queryKey: ["notebooks", server, projectName, packageName, versionId],
          queryFn: () =>
@@ -42,22 +42,6 @@ export default function Notebooks({
       queryClient,
    );
 
-   if (isError) {
-      return (
-         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-            {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
-         </Typography>
-      );
-   }
-
-   if (isLoading) {
-      return (
-         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-            Fetching Notebooks...
-         </Typography>
-      );
-   }
-
    return (
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
          <StyledCardContent>
@@ -72,17 +56,28 @@ export default function Notebooks({
                   overflowY: "auto",
                }}
             >
-               {data.data.length > 0 ? (
-                  <FileTreeView
-                     items={data.data.sort((a, b) => {
-                        return a.path.localeCompare(b.path);
-                     })}
-                     defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
-                     navigate={navigate}
-                  />
-               ) : (
+               {isLoading && (
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     No notebooks found
+                     Fetching Notebooks...
+                  </Typography>
+               )}
+               {isSuccess &&
+                  (data.data.length > 0 ? (
+                     <FileTreeView
+                        items={data.data.sort((a, b) => {
+                           return a.path.localeCompare(b.path);
+                        })}
+                        defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
+                        navigate={navigate}
+                     />
+                  ) : (
+                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+                        No notebooks found
+                     </Typography>
+                  ))}
+               {isError && (
+                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+                     {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
                   </Typography>
                )}
             </Box>
