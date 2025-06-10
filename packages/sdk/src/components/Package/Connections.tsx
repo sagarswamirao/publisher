@@ -23,28 +23,11 @@ interface ConnectionsProps {
 }
 
 // TODO(jjs) - Move this UI to the ConnectionExplorer component
-function Connection({
-   connectionProps,
-   connection,
-}: {
-   connectionProps: ConnectionsProps;
-   connection: ApiConnection;
-}) {
-   const { projectName } = connectionProps;
+function Connection({ connection }: { connection: ApiConnection }) {
    return (
       <TableRow key={connection.name}>
          <TableCell>
-            <Typography
-               variant="body2"
-               sx={{ cursor: "pointer", color: "primary.main" }}
-               onClick={() =>
-                  connectionProps.navigate(
-                     `/${projectName}/connections/${connection.name}/`,
-                  )
-               }
-            >
-               {connection.name}
-            </Typography>
+            <Typography variant="body2">{connection.name}</Typography>
          </TableCell>
          <TableCell>
             <Typography variant="body2">{connection.type}</Typography>

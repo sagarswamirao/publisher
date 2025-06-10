@@ -3,7 +3,6 @@ import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ConnectionsPage } from "./components/ConnectionsPage";
 import { HomePage } from "./components/HomePage";
 import MainPage from "./components/MainPage";
 import { ModelPage } from "./components/ModelPage";
@@ -39,16 +38,12 @@ const router = createBrowserRouter([
             element: <PackagePage server={server} />,
          },
          {
-            path: ":projectName/:packageName/scratchNotebook/:notebookPath",
-            element: <ScratchNotebookPage server={server} />,
-         },
-         {
             path: ":projectName/:packageName/*",
             element: <ModelPage server={server} />,
          },
          {
-            path: ":projectName/connections/:connectionName",
-            element: <ConnectionsPage server={server} />,
+            path: ":projectName/:packageName/scratchNotebook/:notebookPath",
+            element: <ScratchNotebookPage server={server} />,
          },
       ],
    },
