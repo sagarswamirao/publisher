@@ -39,7 +39,7 @@ function Connection({
                sx={{ cursor: "pointer", color: "primary.main" }}
                onClick={() =>
                   connectionProps.navigate(
-                     `/projects/${projectName}/connections/${connection.name}/`,
+                     `/${projectName}/connections/${connection.name}/`,
                   )
                }
             >

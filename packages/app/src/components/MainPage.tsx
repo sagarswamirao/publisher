@@ -49,7 +49,7 @@ export default function MainPage() {
       setOpenDialogOpen(false);
       // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
-         `/projects/${projectName}/packages/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
+         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
       );
    };
 
@@ -57,7 +57,7 @@ export default function MainPage() {
       setNewDialogOpen(false);
       // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
-         `/projects/${projectName}/packages/${packageName}/scratchNotebook/${encodeURIComponent(analysisName)}`,
+         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(analysisName)}`,
       );
       setAnalysisName("");
    };

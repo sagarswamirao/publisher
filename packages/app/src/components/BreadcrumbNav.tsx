@@ -20,7 +20,7 @@ export default function BreadcrumbNav() {
             <Typography
                color="primary.main"
                component={NavLink}
-               to={`/projects/${params.projectName}/`}
+               to={`/${params.projectName}/`}
                sx={{ textDecoration: "none" }}
                variant="subtitle1"
             >
@@ -31,7 +31,7 @@ export default function BreadcrumbNav() {
                   <Typography
                      color="primary.main"
                      component={NavLink}
-                     to={`/projects/${params.projectName}/packages/${params.packageName}/`}
+                     to={`/${params.projectName}/${params.packageName}/`}
                      sx={{ textDecoration: "none" }}
                      variant="subtitle1"
                   >
@@ -44,7 +44,7 @@ export default function BreadcrumbNav() {
                   <Typography
                      color="primary.main"
                      component={NavLink}
-                     to={`/projects/${params.projectName}/packages/${params.packageName}/${modelPath}`}
+                     to={`/${params.projectName}/${params.packageName}/${modelPath}`}
                      sx={{ textDecoration: "none" }}
                      variant="subtitle1"
                   >
