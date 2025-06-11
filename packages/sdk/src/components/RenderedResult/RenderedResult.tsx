@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import type { MalloyRenderProps } from "@malloydata/render";
-import "@malloydata/render/webcomponent";
-import React, { useEffect, useRef, useCallback } from "react";
+import { MalloyRenderer } from "@malloydata/render";
+import React, { useEffect, useRef } from "react";
 
 type MalloyRenderElement = HTMLElement & MalloyRenderProps;
 
@@ -26,13 +26,19 @@ export default function RenderedResult({
    result,
    onSizeChange,
 }: RenderedResultProps) {
-   const ref = useRef<MalloyRenderElement>(null);
+   const ref = useRef<HTMLDivElement>(null);
 
    useEffect(() => {
       if (ref.current) {
-         ref.current.malloyResult = JSON.parse(result);
+         const viz = renderer.createViz();
+         // Remove all content from ref.current before rendering new viz
+         while (ref.current.firstChild) {
+            ref.current.removeChild(ref.current.firstChild);
+         }
+         viz.setResult(JSON.parse(result));
+         viz.render(ref.current);
       }
-   }, [result]);
+   }, [result, ref]);
 
    // Set up size measurement using scrollHeight instead of ResizeObserver
    useEffect(() => {
@@ -68,5 +74,10 @@ export default function RenderedResult({
       };
    }, [onSizeChange, result]);
 
-   return <malloy-render ref={ref} />;
+   const renderer = new MalloyRenderer({
+      onClick: (payload) => console.log("Click:", payload),
+      // other options...
+   });
+
+   return <div ref={ref} />;
 }

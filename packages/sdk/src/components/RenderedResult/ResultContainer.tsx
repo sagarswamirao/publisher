@@ -100,7 +100,7 @@ export default function ResultContainer({
                sx={{
                   flex: 1,
                   overflow: isExpanded ? "auto" : "hidden",
-                  p: 1,
+                  p: 0,
                   // Adjust bottom padding when toggle is shown to prevent content overlap
                   pb: shouldShowToggle ? "40px" : 1,
                }}
