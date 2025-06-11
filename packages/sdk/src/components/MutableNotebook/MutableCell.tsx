@@ -311,7 +311,9 @@ export function MutableCell({
 }
 
 function useDebounce<T>(callback: (value: T) => void, delay: number = 2000) {
-   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(
+      undefined,
+   );
 
    return React.useCallback(
       (value: T) => {
