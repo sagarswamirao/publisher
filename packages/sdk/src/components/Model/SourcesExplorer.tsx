@@ -87,8 +87,8 @@ export function SourcesExplorer({
    const [selectedTab, setSelectedTab] = React.useState(
       existingSourceName
          ? sourceAndPaths.findIndex(
-              (entry) => entry.sourceInfo.name === existingSourceName,
-           )
+            (entry) => entry.sourceInfo.name === existingSourceName,
+         )
          : 0,
    );
 
@@ -291,7 +291,7 @@ export function SourceExplorerComponent({
                   >
                      <ResizableCollapsiblePanel
                         isInitiallyExpanded={true}
-                        initialWidth={280}
+                        initialWidth={180}
                         minWidth={180}
                         icon="database"
                         title={sourceAndPath.sourceInfo.name}
@@ -304,7 +304,7 @@ export function SourceExplorerComponent({
                      </ResizableCollapsiblePanel>
                      <ResizableCollapsiblePanel
                         isInitiallyExpanded={true}
-                        initialWidth={360}
+                        initialWidth={280}
                         minWidth={280}
                         icon="filterSliders"
                         title="Query"
@@ -324,16 +324,16 @@ export function SourceExplorerComponent({
                         submittedQuery={
                            query?.malloyQuery
                               ? {
-                                   executionState: mutation.isPending
-                                      ? "running"
-                                      : "finished",
-                                   response: {
-                                      result: query.malloyResult,
-                                   },
-                                   query: query.malloyQuery,
-                                   queryResolutionStartMillis: Date.now(),
-                                   onCancel: mutation.reset,
-                                }
+                                 executionState: mutation.isPending
+                                    ? "running"
+                                    : "finished",
+                                 response: {
+                                    result: query.malloyResult,
+                                 },
+                                 query: query.malloyQuery,
+                                 queryResolutionStartMillis: Date.now(),
+                                 onCancel: mutation.reset,
+                              }
                               : undefined
                         }
                         options={{ showRawQuery: true }}

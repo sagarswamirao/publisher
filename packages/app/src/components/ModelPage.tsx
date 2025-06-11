@@ -1,9 +1,9 @@
-import { useParams } from "react-router-dom";
 import {
    Model,
    Notebook,
    PublisherPackageProvider,
 } from "@malloy-publisher/sdk";
+import { useParams } from "react-router-dom";
 
 interface ModelPageProps {
    server?: string;
@@ -32,7 +32,7 @@ export function ModelPage({ server }: ModelPageProps) {
             packageName={params.packageName}
             server={server}
          >
-            <Model modelPath={modelPath} />
+            <Model modelPath={modelPath} hideEmbeddingIcons={true} />
          </PublisherPackageProvider>
       );
    } else if (modelPath?.endsWith(".malloynb")) {
@@ -42,12 +42,7 @@ export function ModelPage({ server }: ModelPageProps) {
             packageName={params.packageName}
             server={server}
          >
-            <Notebook
-               server={server}
-               projectName={params.projectName}
-               packageName={params.packageName}
-               notebookPath={modelPath}
-            />
+            <Notebook notebookPath={modelPath} hideEmbeddingIcons={true} />
          </PublisherPackageProvider>
       );
    } else {
