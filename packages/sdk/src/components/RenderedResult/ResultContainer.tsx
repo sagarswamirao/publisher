@@ -65,12 +65,6 @@ export default function ResultContainer({
       if (contentHeight < availableHeight) {
          setExplicitHeight(contentHeight + 20);
       }
-      console.log("Height comparison:", {
-         contentHeight,
-         minHeight,
-         availableHeight,
-         exceedsHeight,
-      });
       setShouldShowToggle(exceedsHeight);
    }, [contentHeight, minHeight]);
 
@@ -92,8 +86,8 @@ export default function ResultContainer({
                position: "relative",
                minHeight: `${minHeight}px`,
                maxHeight: `${isExpanded ? maxHeight : minHeight}px`,
-               border: "1px solid #e0e0e0",
-               borderRadius: 1,
+               border: "0px",
+               borderRadius: 0,
                overflow: "hidden",
                display: "flex",
                flexDirection: "column",

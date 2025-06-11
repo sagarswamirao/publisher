@@ -1,5 +1,6 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Package } from "@malloy-publisher/sdk";
+import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 interface PackagePageProps {
    server?: string;
@@ -7,7 +8,7 @@ interface PackagePageProps {
 
 export function PackagePage({ server }: PackagePageProps) {
    const { projectName, packageName } = useParams();
-   const navigate = useNavigate();
+   const navigate = useRouterClickHandler();
    if (!projectName) {
       return (
          <div>

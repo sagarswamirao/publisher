@@ -9,7 +9,7 @@ const queryClient = new QueryClient();
 interface ProjectProps {
    server?: string;
    projectName: string;
-   navigate?: (to: string) => void;
+   navigate: (to: string, event?: React.MouseEvent) => void;
    accessToken?: string;
 }
 
@@ -33,12 +33,6 @@ export default function Project({
       },
       queryClient,
    );
-
-   if (!navigate) {
-      navigate = (to: string) => {
-         window.location.href = to;
-      };
-   }
 
    return (
       <>
@@ -74,7 +68,9 @@ export default function Project({
                               <StyledCard
                                  variant="outlined"
                                  sx={{ padding: "10px", cursor: "pointer" }}
-                                 onClick={() => navigate(p.name + "/")}
+                                 onClick={(event) =>
+                                    navigate(p.name + "/", event)
+                                 }
                               >
                                  <StyledCardContent>
                                     <Typography

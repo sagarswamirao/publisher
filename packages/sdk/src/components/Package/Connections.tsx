@@ -19,7 +19,7 @@ interface ConnectionsProps {
    server?: string;
    projectName: string;
    accessToken: string;
-   navigate: (to: string) => void;
+   navigate: (to: string, event?: React.MouseEvent) => void;
 }
 
 // TODO(jjs) - Move this UI to the ConnectionExplorer component

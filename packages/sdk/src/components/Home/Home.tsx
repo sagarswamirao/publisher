@@ -9,7 +9,7 @@ const queryClient = new QueryClient();
 
 interface HomeProps {
    server?: string;
-   navigate?: (to: string) => void;
+   navigate?: (to: string, event?: React.MouseEvent) => void;
 }
 
 export default function Home({ server, navigate }: HomeProps) {
@@ -44,7 +44,9 @@ export default function Home({ server, navigate }: HomeProps) {
                   <Grid key={project.name}>
                      <Typography
                         variant="h1"
-                        onClick={() => navigate(`/${project.name}/`)}
+                        onClick={(event) =>
+                           navigate(`/${project.name}/`, event)
+                        }
                      >
                         {project.name}
                      </Typography>

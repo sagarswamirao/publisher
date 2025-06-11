@@ -27,7 +27,7 @@ import { Typography } from "@mui/material";
 interface FiieTreeViewProps {
    items: Model[] | Database[];
    defaultExpandedItems: string[];
-   navigate?: (to: string) => void;
+   navigate?: (to: string, event?: React.MouseEvent) => void;
 }
 
 export function FileTreeView({
@@ -64,7 +64,7 @@ type ExtendedTreeItemProps = {
    label: string;
    fileType: FileType;
    selectable: boolean;
-   link: () => void | undefined;
+   link: ((event?: React.MouseEvent) => void) | undefined;
 };
 
 interface CustomLabelProps {
@@ -135,7 +135,7 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
             <TreeItem2Content
                {...getContentProps()}
                {...(item.link && {
-                  onClick: () => item.link(),
+                  onClick: (event) => item.link(event),
                })}
                sx={{
                   // If the item is not selectable, disable pointer events.
@@ -159,7 +159,7 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 
 function getTreeView(
    metadataEntries: Model[] | Database[],
-   navigate: (to: string) => void,
+   navigate: (to: string, event?: React.MouseEvent) => void,
 ): TreeViewBaseItem<ExtendedTreeItemProps>[] {
    const tree = new Map<string, unknown>();
    metadataEntries.map((entry: Model | Database) => {
@@ -182,7 +182,7 @@ function getTreeView(
 function getTreeViewRecursive(
    node: Map<string, unknown>,
    path: string,
-   navigate: (to: string) => void,
+   navigate: (to: string, event?: React.MouseEvent) => void,
 ): TreeViewBaseItem<ExtendedTreeItemProps>[] {
    const treeViewItems: TreeViewBaseItem<ExtendedTreeItemProps>[] = [];
    node.forEach((value, key) => {
@@ -199,7 +199,7 @@ function getTreeViewRecursive(
             fileType: fileType,
             link:
                fileType === "model" || fileType === "notebook"
-                  ? navigate.bind(null, path + key)
+                  ? (event) => navigate(path + key, event)
                   : undefined,
             selectable: fileType === "model" || fileType === "notebook",
          });
