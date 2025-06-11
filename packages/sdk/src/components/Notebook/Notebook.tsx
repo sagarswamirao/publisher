@@ -100,28 +100,32 @@ export default function Notebook({
                <Typography variant="overline" fontWeight="bold">
                   Notebook
                </Typography>
-               <CardActions
-                  sx={{
-                     padding: "0px 10px 0px 10px",
-                     mb: "auto",
-                     mt: "auto",
-                  }}
-               >
-                  <Tooltip
-                     title={
-                        embeddingExpanded ? "Hide Embedding" : "View Embedding"
-                     }
+               {!hideEmbeddingIcons && (
+                  <CardActions
+                     sx={{
+                        padding: "0px 10px 0px 10px",
+                        mb: "auto",
+                        mt: "auto",
+                     }}
                   >
-                     <IconButton
-                        size="small"
-                        onClick={() => {
-                           setEmbeddingExpanded(!embeddingExpanded);
-                        }}
+                     <Tooltip
+                        title={
+                           embeddingExpanded
+                              ? "Hide Embedding"
+                              : "View Embedding"
+                        }
                      >
-                        <LinkOutlinedIcon />
-                     </IconButton>
-                  </Tooltip>
-               </CardActions>
+                        <IconButton
+                           size="small"
+                           onClick={() => {
+                              setEmbeddingExpanded(!embeddingExpanded);
+                           }}
+                        >
+                           <LinkOutlinedIcon />
+                        </IconButton>
+                     </Tooltip>
+                  </CardActions>
+               )}
             </Stack>
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
                <Divider />

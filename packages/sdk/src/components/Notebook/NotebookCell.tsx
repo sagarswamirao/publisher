@@ -82,6 +82,31 @@ export function NotebookCell({
                         mt: "auto",
                      }}
                   >
+                     {cell.newSources && cell.newSources.length > 0 && (
+                        <Tooltip title="Explore Data Sources">
+                           <IconButton
+                              size="small"
+                              onClick={() => {
+                                 setSourcesExpanded(!sourcesExpanded);
+                                 setEmbeddingExpanded(false);
+                                 setCodeExpanded(false);
+                              }}
+                           >
+                              <svg
+                                 width="24"
+                                 height="24"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 xmlns="http://www.w3.org/2000/svg"
+                              >
+                                 <path
+                                    d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h10v2H7v-2z"
+                                    fill="currentColor"
+                                 />
+                              </svg>
+                           </IconButton>
+                        </Tooltip>
+                     )}
                      {!hideCodeCellIcon && (
                         <Tooltip
                            title={codeExpanded ? "Hide Code" : "View Code"}
@@ -111,31 +136,6 @@ export function NotebookCell({
                               }}
                            >
                               <LinkOutlinedIcon />
-                           </IconButton>
-                        </Tooltip>
-                     )}
-                     {cell.newSources && cell.newSources.length > 0 && (
-                        <Tooltip title="Explore Data Sources">
-                           <IconButton
-                              size="small"
-                              onClick={() => {
-                                 setSourcesExpanded(!sourcesExpanded);
-                                 setEmbeddingExpanded(false);
-                                 setCodeExpanded(false);
-                              }}
-                           >
-                              <svg
-                                 width="24"
-                                 height="24"
-                                 viewBox="0 0 24 24"
-                                 fill="none"
-                                 xmlns="http://www.w3.org/2000/svg"
-                              >
-                                 <path
-                                    d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h10v2H7v-2z"
-                                    fill="currentColor"
-                                 />
-                              </svg>
                            </IconButton>
                         </Tooltip>
                      )}

@@ -1,23 +1,23 @@
-import React, { useEffect } from "react";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
    Box,
-   Typography,
-   Stack,
    CardActions,
-   Tooltip,
-   IconButton,
    Collapse,
    Divider,
-   Tabs,
+   IconButton,
+   Stack,
    Tab,
+   Tabs,
+   Tooltip,
+   Typography,
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import React, { useEffect } from "react";
 import { Configuration, ModelsApi } from "../../client";
-import { ModelCell } from "./ModelCell";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { highlight } from "../highlighter";
+import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import { ModelCell } from "./ModelCell";
 
 import "@malloydata/malloy-explorer/styles.css";
 import { usePublisherPackage } from "../Package/PublisherPackageProvider";
@@ -136,28 +136,32 @@ export default function Model({
                         })}
                      </Tabs>
                   )}
-               <CardActions
-                  sx={{
-                     padding: "0px 10px 0px 10px",
-                     mb: "auto",
-                     mt: "auto",
-                  }}
-               >
-                  <Tooltip
-                     title={
-                        embeddingExpanded ? "Hide Embedding" : "View Embedding"
-                     }
+               {!hideEmbeddingIcons && (
+                  <CardActions
+                     sx={{
+                        padding: "0px 10px 0px 10px",
+                        mb: "auto",
+                        mt: "auto",
+                     }}
                   >
-                     <IconButton
-                        size="small"
-                        onClick={() => {
-                           setEmbeddingExpanded(!embeddingExpanded);
-                        }}
+                     <Tooltip
+                        title={
+                           embeddingExpanded
+                              ? "Hide Embedding"
+                              : "View Embedding"
+                        }
                      >
-                        <LinkOutlinedIcon />
-                     </IconButton>
-                  </Tooltip>
-               </CardActions>
+                        <IconButton
+                           size="small"
+                           onClick={() => {
+                              setEmbeddingExpanded(!embeddingExpanded);
+                           }}
+                        >
+                           <LinkOutlinedIcon />
+                        </IconButton>
+                     </Tooltip>
+                  </CardActions>
+               )}
             </Stack>
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
                <Divider />
