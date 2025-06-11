@@ -3,7 +3,7 @@ import { Divider, Table, TableBody, TableCell, TableRow } from "@mui/material";
 import React from "react";
 
 interface MutableNotebookListProps {
-   onNotebookClick: (notebook: string) => void;
+   onNotebookClick: (notebook: string, event: React.MouseEvent) => void;
 }
 
 export function MutableNotebookList({
@@ -32,7 +32,9 @@ export function MutableNotebookList({
                {notebooks.map((notebook) => (
                   <TableRow key={notebook}>
                      <TableCell
-                        onClick={() => onNotebookClick(notebook)}
+                        onClick={(event: React.MouseEvent) =>
+                           onNotebookClick(notebook, event)
+                        }
                         sx={{ width: "200px", cursor: "pointer" }}
                      >
                         {notebook}

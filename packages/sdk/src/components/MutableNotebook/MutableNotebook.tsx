@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouterClickHandler } from "../click_helper";
 import { Configuration, ModelsApi } from "../../client";
 import { SourceAndPath } from "../Model/SourcesExplorer";
 import { NotebookManager } from "../NotebookManager";
@@ -46,7 +46,7 @@ export default function MutableNotebook({
    expandCodeCells,
    expandEmbeddings,
 }: MutableNotebookProps) {
-   const navigate = useNavigate();
+   const navigate = useRouterClickHandler();
    const { server, projectName, packageName, versionId, accessToken } =
       usePublisherPackage();
    if (!projectName || !packageName) {
@@ -107,12 +107,12 @@ export default function MutableNotebook({
       setDeleteDialogOpen(true);
    };
 
-   const handleDeleteConfirm = () => {
+   const handleDeleteConfirm = (event?: React.MouseEvent) => {
       if (notebookPath && notebookStorage && userContext) {
          notebookStorage.deleteNotebook(userContext, notebookPath);
       }
       setDeleteDialogOpen(false);
-      navigate(`/${projectName}/${packageName}`);
+      navigate(`/${projectName}/${packageName}`, event);
    };
 
    const handleDeleteCancel = () => {
@@ -286,7 +286,7 @@ export default function MutableNotebook({
                               Cancel
                            </Button>
                            <Button
-                              onClick={handleDeleteConfirm}
+                              onClick={(event) => handleDeleteConfirm(event)}
                               color="error"
                               autoFocus
                            >

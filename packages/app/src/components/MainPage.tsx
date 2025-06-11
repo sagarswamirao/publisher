@@ -19,13 +19,14 @@ import {
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import React from "react";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
 import { MutableNotebookList } from "./MutableNotebookList";
+import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 export default function MainPage() {
    const { projectName, packageName } = useParams();
-   const navigate = useNavigate();
+   const navigate = useRouterClickHandler();
 
    const [analysisName, setAnalysisName] = React.useState("");
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -45,19 +46,21 @@ export default function MainPage() {
       setNewDialogOpen(false);
    };
 
-   const handleNotebookClick = (notebook: string) => {
+   const handleNotebookClick = (notebook: string, event: React.MouseEvent) => {
       setOpenDialogOpen(false);
       // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
          `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
+         event,
       );
    };
 
-   const createNotebookClick = () => {
+   const createNotebookClick = (event?: React.MouseEvent) => {
       setNewDialogOpen(false);
       // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
          `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(analysisName)}`,
+         event,
       );
       setAnalysisName("");
    };
@@ -159,7 +162,9 @@ export default function MainPage() {
                                     setAnalysisName(e.target.value)
                                  }
                               />
-                              <Button onClick={createNotebookClick}>
+                              <Button
+                                 onClick={(event) => createNotebookClick(event)}
+                              >
                                  Create
                               </Button>
                            </FormControl>
