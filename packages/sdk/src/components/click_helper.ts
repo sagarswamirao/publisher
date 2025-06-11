@@ -24,7 +24,7 @@ export function useRouterClickHandler() {
       }
 
       // For modifier keys or middle mouse, let browser handle it by opening URL
-      const href = window.location.origin + to;
+      const href = new URL(to, window.location.href).href;
 
       if (event.metaKey || event.ctrlKey || event.button === 1) {
          // CMD/Ctrl click or middle mouse - open in new tab

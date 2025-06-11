@@ -5,7 +5,7 @@ import Packages from "./Packages";
 interface ProjectProps {
    server?: string;
    projectName: string;
-   navigate?: (to: string) => void;
+   navigate: (to: string, event?: React.MouseEvent) => void;
    accessToken?: string;
 }
 
