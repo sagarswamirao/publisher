@@ -16,7 +16,7 @@ interface ModelsProps {
    projectName: string;
    packageName: string;
    versionId?: string;
-   navigate: (to: string) => void;
+   navigate: (to: string, event?: React.MouseEvent) => void;
    accessToken?: string;
 }
 
