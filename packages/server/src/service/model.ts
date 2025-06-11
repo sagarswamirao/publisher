@@ -254,9 +254,7 @@ export class Model {
          );
       }
       const rowLimit =
-         runnable instanceof QueryMaterializer
-            ? (await runnable.getPreparedResult()).resultExplore.limit
-            : ROW_LIMIT;
+         (await runnable.getPreparedResult()).resultExplore.limit || ROW_LIMIT;
       const endTime = performance.now();
       const executionTime = endTime - startTime;
       const queryResults = await runnable.run({ rowLimit });
@@ -304,10 +302,10 @@ export class Model {
                let queryResult: string | undefined = undefined;
                if (cell.runnable) {
                   try {
-                     const rowLimit = cell.runnable
-                        ? (await cell.runnable.getPreparedResult())
-                           .resultExplore.limit
-                        : ROW_LIMIT;
+                     const rowLimit =
+                        (await cell.runnable.getPreparedResult()).resultExplore
+                           .limit || ROW_LIMIT;
+                     console.log("rowLimit", rowLimit);
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
                         ._query;
