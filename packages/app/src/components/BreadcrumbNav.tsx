@@ -1,5 +1,4 @@
-import LinkIcon from "@mui/icons-material/Link";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box } from "@mui/material";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Typography from "@mui/material/Typography";
 import { NavLink, useParams } from "react-router-dom";
@@ -53,18 +52,6 @@ export default function BreadcrumbNav() {
                </>
             )}
          </Breadcrumbs>
-         {(params.packageName || modelPath) && (
-            <Tooltip title="Copy Link">
-               <IconButton
-                  sx={{ width: "24px", height: "24px", mt: "auto", mb: "auto" }}
-                  onClick={() => {
-                     navigator.clipboard.writeText(window.location.href);
-                  }}
-               >
-                  <LinkIcon />
-               </IconButton>
-            </Tooltip>
-         )}
       </Box>
    );
 }
