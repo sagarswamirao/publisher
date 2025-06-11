@@ -42,7 +42,6 @@ export default ({ mode }) => {
                      "@uiw/react-md-editor",
                      "axios",
                      "markdown-to-jsx",
-                     "react-router-dom",
                   ],
                },
             },
