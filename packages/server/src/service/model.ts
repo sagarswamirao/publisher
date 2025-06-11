@@ -401,6 +401,11 @@ export class Model {
          .filter(isNamedQuery)
          .map((queryObj: NamedQuery) => ({
             name: queryObj.as || queryObj.name,
+            // What to do when the source is not a string?
+            sourceName:
+               typeof queryObj.structRef === "string"
+                  ? queryObj.structRef
+                  : undefined,
             annotations: queryObj?.annotation?.blockNotes
                ?.filter((note) => note.at.url.includes(modelPath))
                .map((note) => note.text),

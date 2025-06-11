@@ -22,6 +22,7 @@ import { ModelCell } from "./ModelCell";
 import "@malloydata/malloy-explorer/styles.css";
 import { usePublisherPackage } from "../Package/PublisherPackageProvider";
 import { SourceExplorerComponent } from "./SourcesExplorer";
+import NamedQueries from "./NamedQueries";
 const modelsApi = new ModelsApi(new Configuration());
 
 const queryClient = new QueryClient();

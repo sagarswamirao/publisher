@@ -20,15 +20,19 @@ class Query:
 
     Attributes:
         name (Union[Unset, str]): Query's name.
+        source_name (Union[Unset, str]): Source name.
         annotations (Union[Unset, list[str]]): Annotations attached to query.
     """
 
     name: Union[Unset, str] = UNSET
+    source_name: Union[Unset, str] = UNSET
     annotations: Union[Unset, list[str]] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         name = self.name
+
+        source_name = self.source_name
 
         annotations: Union[Unset, list[str]] = UNSET
         if not isinstance(self.annotations, Unset):
@@ -39,6 +43,8 @@ class Query:
         field_dict.update({})
         if name is not UNSET:
             field_dict["name"] = name
+        if source_name is not UNSET:
+            field_dict["sourceName"] = source_name
         if annotations is not UNSET:
             field_dict["annotations"] = annotations
 
@@ -49,10 +55,13 @@ class Query:
         d = dict(src_dict)
         name = d.pop("name", UNSET)
 
+        source_name = d.pop("sourceName", UNSET)
+
         annotations = cast(list[str], d.pop("annotations", UNSET))
 
         query = cls(
             name=name,
+            source_name=source_name,
             annotations=annotations,
         )
 
