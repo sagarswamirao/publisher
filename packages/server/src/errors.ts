@@ -1,3 +1,5 @@
+import { MalloyError } from "@malloydata/malloy";
+
 export function internalErrorToHttpError(error: Error) {
    if (error instanceof BadRequestError) {
       return httpError(400, error.message);
@@ -20,12 +22,7 @@ function httpError(code: number, message: string) {
    return {
       status: code,
       json: {
-         content: {
-            "application/json": {
-               code: code,
-               message: message,
-            },
-         },
+         message: message,
       },
    };
 }
@@ -73,7 +70,7 @@ export class ConnectionError extends Error {
 }
 
 export class ModelCompilationError extends Error {
-   constructor(message: string) {
-      super(message);
+   constructor(error: MalloyError) {
+      super(error.message);
    }
 }

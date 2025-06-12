@@ -557,6 +557,8 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "404":
           $ref: "#/components/responses/NotFoundError"
+        "424":
+          $ref: "#/components/responses/ModelCompilationError"
         "500":
           $ref: "#/components/responses/InternalServerError"
         "501":
@@ -837,6 +839,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    ModelCompilationError:
+      description: Model compilation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
 
   schemas:
     About:
@@ -885,6 +893,9 @@ components:
         path:
           type: string
           description: Model's relative path in its package directory.
+        error: 
+          type: string
+          description: Error message for this model object.
 
     Notebook:
       type: object
@@ -899,6 +910,9 @@ components:
         path:
           type: string
           description: Notebook's relative path in its package directory.
+        error: 
+          type: string
+          description: Error message for this notebook object.
 
     CompiledNotebook:
       type: object

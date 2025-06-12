@@ -22,7 +22,7 @@ import Collapse from "@mui/material/Collapse";
 import DnsIcon from "@mui/icons-material/DnsOutlined";
 import DataArrayIcon from "@mui/icons-material/DataArrayOutlined";
 import { Database, Model } from "../../client";
-import { Typography } from "@mui/material";
+import { Typography, Tooltip } from "@mui/material";
 
 interface FiieTreeViewProps {
    items: Model[] | Database[];
@@ -65,6 +65,7 @@ type ExtendedTreeItemProps = {
    fileType: FileType;
    selectable: boolean;
    link: ((event?: React.MouseEvent) => void) | undefined;
+   error?: string;
 };
 
 interface CustomLabelProps {
@@ -72,13 +73,13 @@ interface CustomLabelProps {
 }
 
 function CustomTreeItem2Label({ item, ...other }: CustomLabelProps) {
-   return (
+   const label = (
       <TreeItem2Label
          {...other}
          sx={{
             display: "flex",
             alignItems: "center",
-            color: "grey.600",
+            color: item.error ? "error.main" : "grey.600",
          }}
       >
          {(item.fileType === "directory" && <FolderIcon />) ||
@@ -88,11 +89,25 @@ function CustomTreeItem2Label({ item, ...other }: CustomLabelProps) {
          <Typography
             variant="body2"
             sx={{ marginLeft: "5px" }}
-            color={item.link ? "primary.main" : "grey.600"}
+            color={
+               item.error
+                  ? "error.main"
+                  : item.link
+                    ? "primary.main"
+                    : "grey.600"
+            }
          >
             {item.label}
          </Typography>
       </TreeItem2Label>
+   );
+
+   return item.error ? (
+      <Tooltip title={item.error} placement="right">
+         {label}
+      </Tooltip>
+   ) : (
+      label
    );
 }
 
@@ -193,6 +208,7 @@ function getTreeViewRecursive(
          "unknown";
       if (fileType !== "unknown") {
          // This is a model or database.
+         const entry = value as Model | Database;
          treeViewItems.push({
             id: path + key,
             label: key,
@@ -202,6 +218,7 @@ function getTreeViewRecursive(
                   ? (event) => navigate(path + key, event)
                   : undefined,
             selectable: fileType === "model" || fileType === "notebook",
+            error: "error" in entry ? entry.error : undefined,
          });
       } else {
          // This is a directory.

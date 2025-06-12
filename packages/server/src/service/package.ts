@@ -31,6 +31,7 @@ type ApiColumn = components["schemas"]["Column"];
 type ApiTableDescription = components["schemas"]["TableDescription"];
 
 export class Package {
+   private projectName: string;
    private packageName: string;
    private packageMetadata: ApiPackage;
    private databases: ApiDatabase[];
@@ -46,12 +47,14 @@ export class Package {
    );
 
    constructor(
+      projectName: string,
       packageName: string,
       packageMetadata: ApiPackage,
       databases: ApiDatabase[],
       models: Map<string, Model>,
       scheduler: Scheduler | undefined,
    ) {
+      this.projectName = projectName;
       this.packageName = packageName;
       this.packageMetadata = packageMetadata;
       this.databases = databases;
@@ -101,6 +104,7 @@ export class Package {
             status: "success",
          });
          return new Package(
+            projectName,
             packageName,
             packageConfig,
             databases,
@@ -139,28 +143,56 @@ export class Package {
       return this.models.get(modelPath);
    }
 
-   public listModels(): ApiModel[] {
-      return Array.from(this.models.keys())
-         .filter((modelPath) => {
-            return modelPath.endsWith(MODEL_FILE_SUFFIX);
-         })
-         .map((modelPath) => {
-            return {
-               path: modelPath,
-            };
-         });
+   public async listModels(): Promise<ApiModel[]> {
+      const values = await Promise.all(
+         Array.from(this.models.keys())
+            .filter((modelPath) => {
+               return modelPath.endsWith(MODEL_FILE_SUFFIX);
+            })
+            .map(async (modelPath) => {
+               let error: string | undefined;
+               try {
+                  await this.models.get(modelPath)?.getModel();
+               } catch (modelError) {
+                  error =
+                     modelError instanceof Error
+                        ? modelError.message
+                        : undefined;
+               }
+               return {
+                  projectName: this.projectName,
+                  path: modelPath,
+                  packageName: this.packageName,
+                  error,
+               };
+            }),
+      );
+      return values;
    }
 
-   public listNotebooks(): ApiNotebook[] {
-      return Array.from(this.models.keys())
-         .filter((modelPath) => {
-            return modelPath.endsWith(NOTEBOOK_FILE_SUFFIX);
-         })
-         .map((modelPath) => {
-            return {
-               path: modelPath,
-            };
-         });
+   public async listNotebooks(): Promise<ApiNotebook[]> {
+      return await Promise.all(
+         Array.from(this.models.keys())
+            .filter((modelPath) => {
+               return modelPath.endsWith(NOTEBOOK_FILE_SUFFIX);
+            })
+            .map(async (modelPath) => {
+               let error: string | undefined;
+               try {
+                  await this.models.get(modelPath)?.getNotebook();
+               } catch (modelError) {
+                  error =
+                     modelError instanceof Error
+                        ? modelError.message
+                        : undefined;
+               }
+               return {
+                  packageName: this.packageName,
+                  path: modelPath,
+                  error,
+               };
+            }),
+      );
    }
 
    private static async loadModels(

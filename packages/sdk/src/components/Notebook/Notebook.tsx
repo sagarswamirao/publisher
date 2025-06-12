@@ -11,11 +11,13 @@ import {
 import Stack from "@mui/material/Stack";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import React, { useEffect } from "react";
-import { Configuration, NotebooksApi } from "../../client";
+import { Configuration, NotebooksApi, CompiledNotebook } from "../../client";
 import { highlight } from "../highlighter";
 import { usePublisherPackage } from "../Package";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { NotebookCell } from "./NotebookCell";
+import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
+import { AxiosError } from "axios";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
@@ -59,7 +61,7 @@ export default function Notebook({
       isSuccess,
       isError,
       error,
-   } = useQuery(
+   } = useQuery<CompiledNotebook, ApiError>(
       {
          queryKey: [
             "notebook",
@@ -69,21 +71,44 @@ export default function Notebook({
             notebookPath,
             versionId,
          ],
-         queryFn: () =>
-            notebooksApi.getNotebook(
-               projectName,
-               packageName,
-               notebookPath,
-               versionId,
-               {
-                  baseURL: server,
-                  withCredentials: !accessToken,
-                  headers: {
-                     Authorization: accessToken && `Bearer ${accessToken}`,
+         queryFn: async () => {
+            try {
+               const response = await notebooksApi.getNotebook(
+                  projectName,
+                  packageName,
+                  notebookPath,
+                  versionId,
+                  {
+                     baseURL: server,
+                     withCredentials: !accessToken,
+                     headers: {
+                        Authorization: accessToken && `Bearer ${accessToken}`,
+                     },
                   },
-               },
-            ),
+               );
+               return response.data;
+            } catch (err) {
+               // If it's an Axios error, it will have response data
+               if (err && typeof err === "object" && "response" in err) {
+                  const axiosError = err as AxiosError<{
+                     code: string;
+                     message: string;
+                  }>;
+                  if (axiosError.response?.data) {
+                     const apiError: ApiError = new Error(
+                        axiosError.response.data.message || axiosError.message,
+                     );
+                     apiError.status = axiosError.response.status;
+                     apiError.data = axiosError.response.data;
+                     throw apiError;
+                  }
+               }
+               // For other errors, throw as is
+               throw err;
+            }
+         },
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -171,7 +196,7 @@ export default function Notebook({
                   </Typography>
                )}
                {isSuccess &&
-                  notebook.data.notebookCells?.map((cell, index) => (
+                  notebook.notebookCells?.map((cell, index) => (
                      <NotebookCell
                         cell={cell}
                         notebookPath={notebookPath}
@@ -190,11 +215,10 @@ export default function Notebook({
                      />
                   ))}
                {isError && (
-                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {(error.message.includes("404") &&
-                        `${notebookPath} does not exist`) ||
-                        `${projectName} > ${packageName} > ${notebookPath} > ${versionId} - ${error.message}`}
-                  </Typography>
+                  <ApiErrorDisplay
+                     error={error}
+                     context={`${projectName} > ${packageName} > ${notebookPath}`}
+                  />
                )}
             </Stack>
          </StyledCardMedia>

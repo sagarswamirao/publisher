@@ -87,8 +87,8 @@ export function SourcesExplorer({
    const [selectedTab, setSelectedTab] = React.useState(
       existingSourceName
          ? sourceAndPaths.findIndex(
-            (entry) => entry.sourceInfo.name === existingSourceName,
-         )
+              (entry) => entry.sourceInfo.name === existingSourceName,
+           )
          : 0,
    );
 
@@ -272,7 +272,6 @@ export function SourceExplorerComponent({
                onFocusedNestViewPathChange={setFocusedNestViewPath}
                onDrill={(params) => {
                   console.info(params);
-                  window.alert("Drill!");
                }}
             >
                <div
@@ -324,16 +323,16 @@ export function SourceExplorerComponent({
                         submittedQuery={
                            query?.malloyQuery
                               ? {
-                                 executionState: mutation.isPending
-                                    ? "running"
-                                    : "finished",
-                                 response: {
-                                    result: query.malloyResult,
-                                 },
-                                 query: query.malloyQuery,
-                                 queryResolutionStartMillis: Date.now(),
-                                 onCancel: mutation.reset,
-                              }
+                                   executionState: mutation.isPending
+                                      ? "running"
+                                      : "finished",
+                                   response: {
+                                      result: query.malloyResult,
+                                   },
+                                   query: query.malloyQuery,
+                                   queryResolutionStartMillis: Date.now(),
+                                   onCancel: mutation.reset,
+                                }
                               : undefined
                         }
                         options={{ showRawQuery: true }}
