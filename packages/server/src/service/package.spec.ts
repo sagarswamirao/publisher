@@ -128,27 +128,53 @@ describe("service/package", () => {
       });
 
       describe("listModels", () => {
-         it("should return a list of models with their paths and types", () => {
+         it("should return a list of models with their paths and types", async () => {
             // Using 'as any' for simplified mock Map value in test
             const packageInstance = new Package(
+               "testProject",
                "testPackage",
                { name: "testPackage", description: "Test package" },
                [],
                new Map([
-                  ["model1.malloy", { getPath: () => "model1.malloy" } as any],
+                  [
+                     "model1.malloy",
+                     {
+                        getPath: () => "model1.malloy",
+                        getModel: () => "foo",
+                     } as any,
+                  ],
                   [
                      "model2.malloynb",
-                     { getPath: () => "model2.malloynb" } as any,
+                     {
+                        getPath: () => "model2.malloynb",
+                        getNotebook: () => {
+                           throw new Error("This is the error");
+                        },
+                     } as any,
                   ],
                ]),
                undefined,
             );
 
-            const models = packageInstance.listModels();
-            expect(models).toEqual([{ path: "model1.malloy" }]);
+            const models = await packageInstance.listModels();
+            expect(models).toEqual([
+               {
+                  projectName: "testProject",
+                  packageName: "testPackage",
+                  path: "model1.malloy",
+                  error: undefined,
+               },
+            ]);
 
-            const notebooks = packageInstance.listNotebooks();
-            expect(notebooks).toEqual([{ path: "model2.malloynb" }]);
+            const notebooks = await packageInstance.listNotebooks();
+            expect(notebooks).toEqual([
+               {
+                  projectName: "testProject",
+                  packageName: "testPackage",
+                  path: "model2.malloynb",
+                  error: "This is the error",
+               },
+            ]);
          });
       });
 

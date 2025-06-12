@@ -14,15 +14,17 @@ import {
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import React, { useEffect } from "react";
-import { Configuration, ModelsApi } from "../../client";
+import { Configuration, ModelsApi, CompiledModel } from "../../client";
 import { highlight } from "../highlighter";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { ModelCell } from "./ModelCell";
+import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
 
 import "@malloydata/malloy-explorer/styles.css";
 import { usePublisherPackage } from "../Package/PublisherPackageProvider";
 import { SourceExplorerComponent } from "./SourcesExplorer";
 import NamedQueries from "./NamedQueries";
+
 const modelsApi = new ModelsApi(new Configuration());
 
 const queryClient = new QueryClient();
@@ -62,7 +64,10 @@ export default function Model({
       });
    }, [embeddingExpanded, modelCodeSnippet]);
 
-   const { data, isError, isLoading, error } = useQuery(
+   const { data, isError, isLoading, error } = useQuery<
+      CompiledModel,
+      ApiError
+   >(
       {
          queryKey: [
             "package",
@@ -72,17 +77,46 @@ export default function Model({
             modelPath,
             versionId,
          ],
-         queryFn: () =>
-            modelsApi.getModel(projectName, packageName, modelPath, versionId, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
+         queryFn: async () => {
+            try {
+               const response = await modelsApi.getModel(
+                  projectName,
+                  packageName,
+                  modelPath,
+                  versionId,
+                  {
+                     baseURL: server,
+                     withCredentials: !accessToken,
+                     headers: {
+                        Authorization: accessToken && `Bearer ${accessToken}`,
+                     },
+                  },
+               );
+               return response.data;
+            } catch (err) {
+               // If it's an Axios error, it will have response data
+               if (err && typeof err === "object" && "response" in err) {
+                  console.log("axios err", err);
+                  const axiosError = err as any;
+                  if (axiosError.response?.data) {
+                     const apiError: ApiError = new Error(
+                        axiosError.response.data.message || axiosError.message,
+                     );
+                     apiError.status = axiosError.response.status;
+                     apiError.data = axiosError.response.data;
+                     throw apiError;
+                  }
+               }
+               // For other errors, throw as is
+               throw err;
+            }
+         },
+         retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
+
    if (isLoading) {
       return (
          <Typography sx={{ p: "20px", m: "auto" }}>
@@ -92,10 +126,12 @@ export default function Model({
    }
 
    if (isError) {
+      console.log("error", error);
       return (
-         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-            {`${packageName} > ${modelPath} > ${versionId} - ${error.message}`}
-         </Typography>
+         <ApiErrorDisplay
+            error={error}
+            context={`${packageName} > ${modelPath}`}
+         />
       );
    }
    return (
@@ -107,8 +143,8 @@ export default function Model({
                   justifyContent: "space-between",
                }}
             >
-               {Array.isArray(data.data.sourceInfos) &&
-                  data.data.sourceInfos.length > 0 && (
+               {Array.isArray(data.sourceInfos) &&
+                  data.sourceInfos.length > 0 && (
                      <Tabs
                         value={selectedTab}
                         onChange={(_, newValue) => setSelectedTab(newValue)}
@@ -120,7 +156,7 @@ export default function Model({
                            minHeight: 36,
                         }}
                      >
-                        {data.data.sourceInfos.map((source, idx) => {
+                        {data.sourceInfos.map((source, idx) => {
                            let sourceInfo;
                            try {
                               sourceInfo = JSON.parse(source);
@@ -203,18 +239,18 @@ export default function Model({
          <StyledCardMedia>
             <Stack spacing={2} component="section">
                {/* Only render the selected sourceInfo */}
-               {Array.isArray(data.data.sourceInfos) &&
-                  data.data.sourceInfos.length > 0 && (
+               {Array.isArray(data.sourceInfos) &&
+                  data.sourceInfos.length > 0 && (
                      <SourceExplorerComponent
                         sourceAndPath={{
                            modelPath,
                            sourceInfo: JSON.parse(
-                              data.data.sourceInfos[selectedTab],
+                              data.sourceInfos[selectedTab],
                            ),
                         }}
                      />
                   )}
-               {data.data.queries?.length > 0 && (
+               {data.queries?.length > 0 && (
                   <StyledCard
                      variant="outlined"
                      sx={{ padding: "0px 10px 0px 10px" }}
@@ -225,7 +261,7 @@ export default function Model({
                         </Typography>
                      </StyledCardContent>
                      <Stack spacing={1} component="section">
-                        {data.data.queries.map((query) => (
+                        {data.queries.map((query) => (
                            <ModelCell
                               key={query.name}
                               server={server}

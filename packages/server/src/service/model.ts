@@ -2,6 +2,7 @@ import {
    API,
    Connection,
    FixedConnectionMap,
+   MalloyError,
    ModelDef,
    ModelMaterializer,
    NamedModelObject,
@@ -70,7 +71,7 @@ export class Model {
    private sources: ApiSource[] | undefined;
    private queries: ApiQuery[] | undefined;
    private runnableNotebookCells: RunnableNotebookCell[] | undefined;
-   private compilationError: string | undefined;
+   private compilationError: MalloyError | Error | undefined;
    private meter = metrics.getMeter("publisher");
    private queryExecutionHistogram = this.meter.createHistogram(
       "malloy_model_query_duration",
@@ -91,7 +92,7 @@ export class Model {
       sources: ApiSource[] | undefined,
       queries: ApiQuery[] | undefined,
       runnableNotebookCells: RunnableNotebookCell[] | undefined,
-      compilationError: string | undefined,
+      compilationError: MalloyError | Error | undefined,
    ) {
       this.packageName = packageName;
       this.modelPath = modelPath;
@@ -150,6 +151,10 @@ export class Model {
             undefined,
          );
       } catch (error) {
+         let computedError = error;
+         if (error instanceof MalloyError) {
+            computedError = new ModelCompilationError(error);
+         }
          return new Model(
             packageName,
             modelPath,
@@ -160,7 +165,7 @@ export class Model {
             undefined,
             undefined,
             undefined,
-            (error as Error).message,
+            computedError as Error,
          );
       }
    }
@@ -180,8 +185,8 @@ export class Model {
    public getSourceInfos(): Malloy.SourceInfo[] | undefined {
       return this.modelDef
          ? modelDefToModelInfo(this.modelDef).entries.filter((entry) => {
-            return entry.kind === "source";
-         })
+              return entry.kind === "source";
+           })
          : undefined;
    }
 
@@ -191,7 +196,7 @@ export class Model {
 
    public async getModel(): Promise<ApiCompiledModel> {
       if (this.compilationError) {
-         throw new ModelCompilationError(this.compilationError);
+         throw this.compilationError;
       }
 
       if (this.modelType === "model") {
@@ -205,7 +210,7 @@ export class Model {
 
    public async getNotebook(): Promise<ApiCompiledNotebook> {
       if (this.compilationError) {
-         throw new ModelCompilationError(this.compilationError);
+         throw this.compilationError;
       }
       if (this.modelType === "notebook") {
          return this.getNotebookModel();
@@ -227,7 +232,7 @@ export class Model {
    }> {
       const startTime = performance.now();
       if (this.compilationError) {
-         throw new ModelCompilationError(this.compilationError);
+         throw this.compilationError;
       }
       console.log("queryName", queryName, "query", query);
       let runnable: QueryMaterializer;

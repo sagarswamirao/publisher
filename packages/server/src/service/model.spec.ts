@@ -1,14 +1,10 @@
 import { expect, it, describe } from "bun:test";
-import { Runtime } from "@malloydata/malloy";
+import { MalloyError, Runtime } from "@malloydata/malloy";
 import sinon from "sinon";
 import fs from "fs/promises";
 
 import { Model, ModelType } from "./model";
-import {
-   BadRequestError,
-   ModelCompilationError,
-   ModelNotFoundError,
-} from "../errors";
+import { BadRequestError, ModelNotFoundError } from "../errors";
 
 describe("service/model", () => {
    const packageName = "test-package";
@@ -111,12 +107,12 @@ describe("service/model", () => {
                undefined,
                undefined,
                undefined,
-               "Compilation error",
+               new MalloyError("Compilation error"),
             );
 
             await expect(async () => {
                await model.getModel();
-            }).toThrowError(ModelCompilationError);
+            }).toThrowError(MalloyError);
 
             sinon.restore();
          });
@@ -155,12 +151,12 @@ describe("service/model", () => {
                undefined,
                undefined,
                undefined,
-               "Compilation error",
+               new Error("Compilation error"),
             );
 
             await expect(async () => {
                await model.getNotebook();
-            }).toThrowError(ModelCompilationError);
+            }).toThrowError(Error);
 
             sinon.restore();
          });
@@ -189,6 +185,7 @@ describe("service/model", () => {
 
       describe("getQueryResults", () => {
          it("should throw ModelCompilationError if a compilation error exists", async () => {
+            const error = new Error("Compilation error");
             const model = new Model(
                packageName,
                mockModelPath,
@@ -199,12 +196,12 @@ describe("service/model", () => {
                undefined,
                undefined,
                undefined,
-               "Compilation error",
+               error,
             );
 
             await expect(async () => {
                await model.getQueryResults();
-            }).toThrowError(ModelCompilationError);
+            }).toThrowError(Error);
 
             sinon.restore();
          });
