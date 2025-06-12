@@ -21,11 +21,13 @@ class Notebook:
         resource (Union[Unset, str]): Resource path to the notebook.
         package_name (Union[Unset, str]): Notebook's package Name
         path (Union[Unset, str]): Notebook's relative path in its package directory.
+        error (Union[Unset, str]): Error message for this notebook object.
     """
 
     resource: Union[Unset, str] = UNSET
     package_name: Union[Unset, str] = UNSET
     path: Union[Unset, str] = UNSET
+    error: Union[Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -34,6 +36,8 @@ class Notebook:
         package_name = self.package_name
 
         path = self.path
+
+        error = self.error
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -44,6 +48,8 @@ class Notebook:
             field_dict["packageName"] = package_name
         if path is not UNSET:
             field_dict["path"] = path
+        if error is not UNSET:
+            field_dict["error"] = error
 
         return field_dict
 
@@ -56,10 +62,13 @@ class Notebook:
 
         path = d.pop("path", UNSET)
 
+        error = d.pop("error", UNSET)
+
         notebook = cls(
             resource=resource,
             package_name=package_name,
             path=path,
+            error=error,
         )
 
         notebook.additional_properties = d

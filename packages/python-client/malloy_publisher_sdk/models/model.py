@@ -21,11 +21,13 @@ class Model:
         resource (Union[Unset, str]): Resource path to the model.
         package_name (Union[Unset, str]): Model's package Name
         path (Union[Unset, str]): Model's relative path in its package directory.
+        error (Union[Unset, str]): Error message for this model object.
     """
 
     resource: Union[Unset, str] = UNSET
     package_name: Union[Unset, str] = UNSET
     path: Union[Unset, str] = UNSET
+    error: Union[Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -34,6 +36,8 @@ class Model:
         package_name = self.package_name
 
         path = self.path
+
+        error = self.error
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -44,6 +48,8 @@ class Model:
             field_dict["packageName"] = package_name
         if path is not UNSET:
             field_dict["path"] = path
+        if error is not UNSET:
+            field_dict["error"] = error
 
         return field_dict
 
@@ -56,10 +62,13 @@ class Model:
 
         path = d.pop("path", UNSET)
 
+        error = d.pop("error", UNSET)
+
         model = cls(
             resource=resource,
             package_name=package_name,
             path=path,
+            error=error,
         )
 
         model.additional_properties = d
