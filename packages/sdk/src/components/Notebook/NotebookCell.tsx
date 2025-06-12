@@ -225,11 +225,13 @@ export function NotebookCell({
                />
             </Collapse>
             {cell.result && !sourcesExpanded && (
-               <ResultContainer
-                  result={cell.result}
-                  minHeight={200}
-                  maxHeight={800}
-               />
+               <>
+                  <ResultContainer
+                     result={cell.result}
+                     minHeight={300}
+                     maxHeight={700}
+                  />
+               </>
             )}
          </StyledCard>
       ))

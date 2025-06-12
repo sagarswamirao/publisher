@@ -26,7 +26,7 @@ import MDEditor from "@uiw/react-md-editor";
 import { EditableMalloyCell } from "./EditableMalloyCell";
 import { NotebookCellValue } from "../NotebookManager";
 import { SourceAndPath } from "../Model/SourcesExplorer";
-const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
+import ResultContainer from "../RenderedResult/ResultContainer";
 
 interface NotebookCellProps {
    cell: NotebookCellValue;
@@ -295,10 +295,15 @@ export function MutableCell({
                   {!editingMalloy && cell.result && (
                      <>
                         <CardContent
-                           sx={{ maxHeight: "400px", overflow: "auto" }}
+                           sx={{ maxHeight: "500px", overflow: "auto" }}
                         >
+                           {/* TODO: Integrate expando better */}
                            <Suspense fallback="Loading malloy...">
-                              <RenderedResult result={cell.result} />
+                              <ResultContainer
+                                 result={cell.result}
+                                 minHeight={500}
+                                 maxHeight={500}
+                              />
                            </Suspense>
                         </CardContent>
                      </>
