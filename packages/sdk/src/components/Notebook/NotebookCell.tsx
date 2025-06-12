@@ -5,20 +5,26 @@ import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
    CardActions,
    Collapse,
-   Divider,
    IconButton,
    Stack,
    Tooltip,
    Typography,
-   Box,
 } from "@mui/material";
 import Markdown from "markdown-to-jsx";
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { SourcesExplorer } from "../Model";
-import { StyledCard, StyledCardContent } from "../styles";
 import ResultContainer from "../RenderedResult/ResultContainer";
+import { StyledCard, StyledCardContent } from "../styles";
+
+// Add global style for code display
+const codeStyle = `
+  .code-display pre {
+    margin: 0;
+    padding: 0;
+  }
+`;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
@@ -39,9 +45,8 @@ export function NotebookCell({
    expandEmbedding,
    hideEmbeddingIcon,
 }: NotebookCellProps) {
-   const [codeExpanded, setCodeExpanded] = React.useState<boolean>(
-      expandCodeCell || (cell.type === "code" && !cell.result),
-   );
+   const [codeExpanded, setCodeExpanded] =
+      React.useState<boolean>(expandCodeCell);
    const [embeddingExpanded, setEmbeddingExpanded] =
       React.useState<boolean>(expandEmbedding);
    const [highlightedMalloyCode, setHighlightedMalloyCode] =
@@ -73,7 +78,12 @@ export function NotebookCell({
       (cell.type === "code" && (
          <StyledCard variant="outlined" sx={{ height: "auto" }}>
             {(!hideCodeCellIcon || (!hideEmbeddingIcon && cell.result)) && (
-               <Stack sx={{ flexDirection: "row", justifyContent: "right" }}>
+               <Stack
+                  sx={{
+                     flexDirection: "row",
+                     justifyContent: "right",
+                  }}
+               >
                   <CardActions
                      sx={{
                         padding: "0px 10px 0px 10px",
@@ -142,7 +152,6 @@ export function NotebookCell({
                </Stack>
             )}
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
-               <Divider />
                <Stack
                   sx={{
                      p: "10px",
@@ -176,29 +185,35 @@ export function NotebookCell({
                </Stack>
             </Collapse>
             <Collapse in={codeExpanded} timeout="auto" unmountOnExit>
-               <Divider />
+               <style>{codeStyle}</style>
                <Stack
                   sx={{
-                     p: "10px",
+                     mx: "15px",
+                     mb: "10px",
                      borderRadius: 0,
                      flexDirection: "row",
                      justifyContent: "space-between",
                   }}
                >
-                  <Typography
-                     component="div"
-                     className="content"
-                     sx={{ fontSize: "12px", "& .line": { textWrap: "wrap" } }}
+                  <div
+                     className="code-display"
+                     style={{
+                        fontSize: "12px",
+                        width: "800px",
+                        border: "1px solid rgb(220,220,220)",
+                     }}
                      dangerouslySetInnerHTML={{
                         __html: highlightedMalloyCode,
                      }}
                   />
                </Stack>
             </Collapse>
-            <Collapse in={sourcesExpanded} timeout="auto" unmountOnExit>
-               <Stack sx={{ p: "10px" }}>
-                  <Typography>Sources</Typography>
-               </Stack>
+            <Collapse
+               in={sourcesExpanded}
+               timeout="auto"
+               unmountOnExit
+               sx={{ p: "5px" }}
+            >
                <SourcesExplorer
                   sourceAndPaths={cell.newSources.map((source) => {
                      const sourceInfo = JSON.parse(source) as Malloy.SourceInfo;
@@ -210,13 +225,11 @@ export function NotebookCell({
                />
             </Collapse>
             {cell.result && !sourcesExpanded && (
-               <>
-                  <ResultContainer
-                     result={cell.result}
-                     minHeight={200}
-                     maxHeight={800}
-                  />
-               </>
+               <ResultContainer
+                  result={cell.result}
+                  minHeight={200}
+                  maxHeight={800}
+               />
             )}
          </StyledCard>
       ))

@@ -1,13 +1,13 @@
-import React, {
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Box, IconButton } from "@mui/material";
+import {
    lazy,
    Suspense,
-   useState,
-   useRef,
    useCallback,
    useEffect,
+   useRef,
+   useState,
 } from "react";
-import { Box, IconButton } from "@mui/material";
-import { ExpandMore, ExpandLess } from "@mui/icons-material";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
@@ -74,9 +74,9 @@ export default function ResultContainer({
 
    const height = explicitHeight
       ? {
-           minHeight: `${explicitHeight}px`,
-           height: `${explicitHeight}px`,
-        }
+         minHeight: `${explicitHeight}px`,
+         height: `${explicitHeight}px`,
+      }
       : {};
    return (
       <>
@@ -124,12 +124,10 @@ export default function ResultContainer({
                      left: 0,
                      right: 0,
                      height: "32px",
-                     backgroundColor: "rgba(255, 255, 255, 0.9)",
-                     borderTop: "1px solid #e0e0e0",
+                     backgroundColor: "rgba(255,255,255,0.75)",
                      display: "flex",
                      alignItems: "center",
                      justifyContent: "center",
-                     backdropFilter: "blur(2px)",
                   }}
                >
                   <IconButton
@@ -148,9 +146,9 @@ export default function ResultContainer({
                      }
                   >
                      {isExpanded ? (
-                        <ExpandLess sx={{ fontSize: 20 }} />
+                        <ExpandLess sx={{ fontSize: 30 }} />
                      ) : (
-                        <ExpandMore sx={{ fontSize: 20 }} />
+                        <ExpandMore sx={{ fontSize: 30 }} />
                      )}
                   </IconButton>
                </Box>
