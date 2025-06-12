@@ -187,6 +187,7 @@ export class Package {
                         : undefined;
                }
                return {
+                  projectName: this.projectName,
                   packageName: this.packageName,
                   path: modelPath,
                   error,
