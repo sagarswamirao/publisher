@@ -17,6 +17,10 @@ interface ResultContainerProps {
    maxHeight: number;
 }
 
+// ResultContainer is a component that renders a result, with a toggle button to expand/collapse the result.
+// For fill-elements, the result is rendered at minHeight, and the toggle button is shown to scale up to maxHeight.
+// For non-fill-elements, the result is rendered at explicitHeight, with a small window (minHeight) that can be expanded to maxHeight.
+// Non-fill elements that are smaller than minHeight will be shrunk down to their natural height.
 export default function ResultContainer({
    result,
    minHeight,
@@ -28,7 +32,7 @@ export default function ResultContainer({
    const contentRef = useRef<HTMLDivElement>(null);
    const containerRef = useRef<HTMLDivElement>(null);
    const [explicitHeight, setExplicitHeight] = useState<number>(undefined);
-
+   const [isFillElement, setIsFillElement] = useState(false);
    const handleToggle = useCallback(() => {
       const wasExpanded = isExpanded;
       setIsExpanded(!isExpanded);
@@ -46,12 +50,15 @@ export default function ResultContainer({
 
    // Handle size changes from RenderedResult
    const handleSizeChange = useCallback((height: number) => {
-      console.log("Content height received:", height);
       setContentHeight(height);
    }, []);
 
    // Determine if toggle should be shown based on content height vs container height
    useEffect(() => {
+      if (isFillElement) {
+         setShouldShowToggle(true);
+         return;
+      }
       // Only proceed if we have a measured content height
       if (contentHeight === 0) {
          setShouldShowToggle(false);
@@ -66,18 +73,22 @@ export default function ResultContainer({
          setExplicitHeight(contentHeight + 20);
       }
       setShouldShowToggle(exceedsHeight);
-   }, [contentHeight, minHeight]);
+   }, [contentHeight, isFillElement, minHeight]);
 
    if (!result) {
       return null;
    }
-
+   const renderedHeight = isFillElement
+      ? isExpanded
+         ? maxHeight - 40
+         : minHeight - 40
+      : undefined;
    const height = explicitHeight
       ? {
            minHeight: `${explicitHeight}px`,
-           height: `${explicitHeight}px`,
+           height: `100%`,
         }
-      : {};
+      : { height: `100%` };
    return (
       <>
          <Box
@@ -109,6 +120,11 @@ export default function ResultContainer({
                   <Suspense fallback={<div>Loading result...</div>}>
                      <RenderedResult
                         result={result}
+                        height={renderedHeight}
+                        isFillElement={(isFill) => {
+                           console.log("isFill", isFill);
+                           setIsFillElement(isFill);
+                        }}
                         onSizeChange={handleSizeChange}
                      />
                   </Suspense>
