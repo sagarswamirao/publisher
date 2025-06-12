@@ -105,7 +105,7 @@ export default function Package({
             <Grid size={{ xs: 12, md: 12 }}>
                <Notebook
                   notebookPath={README_NOTEBOOK}
-                  expandCodeCells={true}
+                  expandCodeCells={false}
                   hideEmbeddingIcons={true}
                />
             </Grid>

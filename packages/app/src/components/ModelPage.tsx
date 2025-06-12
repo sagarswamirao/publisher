@@ -42,7 +42,11 @@ export function ModelPage({ server }: ModelPageProps) {
             packageName={params.packageName}
             server={server}
          >
-            <Notebook notebookPath={modelPath} hideEmbeddingIcons={true} />
+            <Notebook
+               notebookPath={modelPath}
+               hideEmbeddingIcons={true}
+               expandCodeCells={false}
+            />
          </PublisherPackageProvider>
       );
    } else {

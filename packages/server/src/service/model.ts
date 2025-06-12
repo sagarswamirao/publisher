@@ -305,7 +305,6 @@ export class Model {
                      const rowLimit =
                         (await cell.runnable.getPreparedResult()).resultExplore
                            .limit || ROW_LIMIT;
-                     console.log("rowLimit", rowLimit);
                      const result = await cell.runnable.run({ rowLimit });
                      const query = (await cell.runnable.getPreparedQuery())
                         ._query;
