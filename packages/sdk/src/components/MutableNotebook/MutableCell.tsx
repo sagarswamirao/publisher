@@ -293,20 +293,11 @@ export function MutableCell({
                         />
                      ))}
                   {!editingMalloy && cell.result && (
-                     <>
-                        <CardContent
-                           sx={{ maxHeight: "500px", overflow: "auto" }}
-                        >
-                           {/* TODO: Integrate expando better */}
-                           <Suspense fallback="Loading malloy...">
-                              <ResultContainer
-                                 result={cell.result}
-                                 minHeight={500}
-                                 maxHeight={500}
-                              />
-                           </Suspense>
-                        </CardContent>
-                     </>
+                     <ResultContainer
+                        result={cell.result}
+                        minHeight={300}
+                        maxHeight={800}
+                     />
                   )}
                </>
             ))}
