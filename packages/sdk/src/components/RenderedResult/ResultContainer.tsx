@@ -26,7 +26,7 @@ export default function ResultContainer({
    minHeight,
    maxHeight,
 }: ResultContainerProps) {
-   const [isExpanded, setIsExpanded] = useState(false);
+   const [isExpanded, setIsExpanded] = useState(minHeight !== maxHeight);
    const [contentHeight, setContentHeight] = useState<number>(0);
    const [shouldShowToggle, setShouldShowToggle] = useState(false);
    const contentRef = useRef<HTMLDivElement>(null);

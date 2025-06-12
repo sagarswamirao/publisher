@@ -10,10 +10,9 @@ import {
    Stack,
    Tooltip,
    Typography,
-   Box,
 } from "@mui/material";
 import Markdown from "markdown-to-jsx";
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { SourcesExplorer } from "../Model";
