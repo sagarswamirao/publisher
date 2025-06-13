@@ -3,6 +3,7 @@ import { Configuration, PackagesApi } from "../../client";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useProject } from "./Project";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -25,6 +26,8 @@ export default function Packages({ navigate }: PackagesProps) {
                   Authorization: accessToken && `Bearer ${accessToken}`,
                },
             }),
+         retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -95,9 +98,10 @@ export default function Packages({ navigate }: PackagesProps) {
             </StyledCard>
          )}
          {isError && (
-            <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-               {error.message}
-            </Typography>
+            <ApiErrorDisplay
+               error={error}
+               context={`${projectName} > Packages`}
+            />
          )}
       </>
    );

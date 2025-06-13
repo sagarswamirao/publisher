@@ -4,6 +4,7 @@ import { Configuration, NotebooksApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
@@ -55,9 +56,10 @@ export default function Notebooks({ navigate }: NotebooksProps) {
                   </Typography>
                )}
                {isError && (
-                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {error.message}
-                  </Typography>
+                  <ApiErrorDisplay
+                     error={error}
+                     context={`${projectName} > ${packageName} > Notebooks`}
+                  />
                )}
                {isSuccess && (
                   <FileTreeView

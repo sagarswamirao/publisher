@@ -12,8 +12,8 @@ import axios from "axios";
 import { Configuration, PackagesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
-axios.defaults.baseURL = "http://localhost:4000";
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
 
@@ -33,6 +33,7 @@ export default function Config() {
                },
             }),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -84,9 +85,10 @@ export default function Config() {
                         </ListItem>
                      ))}
                   {isError && (
-                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                        {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
-                     </Typography>
+                     <ApiErrorDisplay
+                        error={error}
+                        context={`${projectName} > ${packageName} > ${versionId}`}
+                     />
                   )}
                </List>
             </Box>

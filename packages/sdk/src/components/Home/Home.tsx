@@ -2,6 +2,7 @@ import { Grid, Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ProjectsApi, Configuration } from "../../client";
 import axios from "axios";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const projectsApi = new ProjectsApi(new Configuration());
@@ -13,18 +14,24 @@ interface HomeProps {
 }
 
 export default function Home({ server, navigate }: HomeProps) {
-   const { data, isSuccess } = useQuery(
+   const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["projects", server],
          queryFn: () =>
             projectsApi.listProjects({
                baseURL: server,
             }),
+         retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
 
    console.log(JSON.stringify(data?.data, null, 2));
+
+   if (isError) {
+      return <ApiErrorDisplay error={error} context="Projects List" />;
+   }
 
    if (isSuccess) {
       if (data.data.length === 0) {

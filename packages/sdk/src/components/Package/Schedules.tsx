@@ -11,12 +11,11 @@ import {
    Typography,
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { Configuration, SchedulesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
-axios.defaults.baseURL = "http://localhost:4000";
 const schedulesApi = new SchedulesApi(new Configuration());
 const queryClient = new QueryClient();
 
@@ -36,6 +35,7 @@ export default function Schedules() {
                },
             }),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -50,9 +50,10 @@ export default function Schedules() {
 
    if (isError) {
       return (
-         <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-            {`${packageName} > ${versionId} - ${error.message}`}
-         </Typography>
+         <ApiErrorDisplay
+            error={error}
+            context={`${projectName} > ${packageName} > Schedules`}
+         />
       );
    }
 

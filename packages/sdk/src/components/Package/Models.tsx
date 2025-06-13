@@ -5,6 +5,7 @@ import { Configuration, ModelsApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
@@ -57,9 +58,10 @@ export default function Models({ navigate }: ModelsProps) {
                   </Typography>
                )}
                {isError && (
-                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {error.message}
-                  </Typography>
+                  <ApiErrorDisplay
+                     error={error}
+                     context={`${projectName} > ${packageName} > Models`}
+                  />
                )}
                {isSuccess && (
                   <FileTreeView

@@ -12,13 +12,10 @@ import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 const queryClient = new QueryClient();
-
-interface ConnectionsProps {
-   navigate: (to: string, event?: React.MouseEvent) => void;
-}
 
 // TODO(jjs) - Move this UI to the ConnectionExplorer component
 function Connection({ connection }: { connection: ApiConnection }) {
@@ -34,7 +31,7 @@ function Connection({ connection }: { connection: ApiConnection }) {
    );
 }
 
-export default function Connections({ navigate }: ConnectionsProps) {
+export default function Connections() {
    const { server, projectName, accessToken } = usePackage();
 
    const { data, isSuccess, isError, error } = useQuery(
@@ -49,6 +46,7 @@ export default function Connections({ navigate }: ConnectionsProps) {
                },
             }),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -97,9 +95,10 @@ export default function Connections({ navigate }: ConnectionsProps) {
                   <Typography variant="body2">No Connections</Typography>
                )}
                {isError && (
-                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {`${projectName} - ${error.message}`}
-                  </Typography>
+                  <ApiErrorDisplay
+                     error={error}
+                     context={`${projectName} > Connections`}
+                  />
                )}
             </Box>
          </StyledCardContent>
