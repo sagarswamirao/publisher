@@ -4,6 +4,7 @@ import Markdown from "markdown-to-jsx";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useProject } from "./Project";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const projectsApi = new ProjectsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -22,6 +23,8 @@ export default function About() {
                   Authorization: accessToken && `Bearer ${accessToken}`,
                },
             }),
+         retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -47,9 +50,7 @@ export default function About() {
             </StyledCard>
          )}
          {isError && (
-            <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-               {error.message}
-            </Typography>
+            <ApiErrorDisplay error={error} context={`${projectName} > About`} />
          )}
       </>
    );

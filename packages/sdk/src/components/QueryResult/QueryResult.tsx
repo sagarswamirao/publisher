@@ -59,6 +59,7 @@ export default function QueryResult({
                },
             ),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );

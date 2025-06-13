@@ -12,19 +12,20 @@ import {
    DialogContent,
    DialogTitle,
    IconButton,
+   Switch,
+   FormControlLabel,
    Table,
    TableBody,
    TableCell,
    TableContainer,
    TableHead,
    TableRow,
-   Switch,
-   FormControlLabel,
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ConnectionsApi } from "../../client/api";
 import { Configuration } from "../../client/configuration";
 import { useProject } from "./Project";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ export default function ConnectionExplorer({
                },
             }),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -96,9 +98,10 @@ export default function ConnectionExplorer({
                      </Typography>
                   )}
                   {isError && (
-                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                        {`${projectName} > ${connectionName} - ${error.message}`}
-                     </Typography>
+                     <ApiErrorDisplay
+                        error={error}
+                        context={`${projectName} > ${connectionName}`}
+                     />
                   )}
                   {isSuccess && data.data.length === 0 && (
                      <Typography variant="body2">No Schemas</Typography>
@@ -199,6 +202,7 @@ function TableViewer({
                },
             ),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -240,13 +244,14 @@ function TableViewer({
          <DialogContent>
             {isLoading && (
                <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-                  Loading table schema...
+                  Fetching Table Details...
                </Typography>
             )}
             {isError && (
-               <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                  {error.message}
-               </Typography>
+               <ApiErrorDisplay
+                  error={error}
+                  context={`${projectName} > ${connectionName} > ${schemaName}.${tableName}`}
+               />
             )}
             {isSuccess && data && (
                <TableContainer>
@@ -309,6 +314,7 @@ function TablesInSchema({
                },
             }),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -326,9 +332,10 @@ function TablesInSchema({
                </Typography>
             )}
             {isError && (
-               <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                  {error.message}
-               </Typography>
+               <ApiErrorDisplay
+                  error={error}
+                  context={`${projectName} > ${connectionName} > ${schemaName}`}
+               />
             )}
             {isSuccess && data.data.length === 0 && (
                <Typography variant="body2">No Tables</Typography>

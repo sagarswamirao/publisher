@@ -20,6 +20,7 @@ import React from "react";
 import { Configuration, ModelsApi } from "../../client";
 import { usePackage } from "../Package/PackageProvider";
 import { StyledCard } from "../styles";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const modelsApi = new ModelsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ export function ModelPicker({
                },
             }),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -83,6 +85,15 @@ export function ModelPicker({
          .map((model) => model.path);
    }
 
+   if (isError) {
+      return (
+         <ApiErrorDisplay
+            error={error}
+            context={`${projectName} > ${packageName} > Model Picker`}
+         />
+      );
+   }
+
    return (
       <StyledCard
          sx={{ maxWidth: 400, marginLeft: "10px", padding: "10px 5px 5px 5px" }}
@@ -90,7 +101,6 @@ export function ModelPicker({
          <Typography variant="h6">Imported Models</Typography>
          <FormControl fullWidth>
             {isLoading && <Typography>Loading...</Typography>}
-            {isError && <Typography>Error: {error.message}</Typography>}
             <Stack
                direction="row"
                spacing={1}

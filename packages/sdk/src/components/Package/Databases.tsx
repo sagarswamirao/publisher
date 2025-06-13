@@ -17,6 +17,7 @@ import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const databasesApi = new DatabasesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ export default function Databases() {
                },
             }),
          retry: false,
+         throwOnError: false,
       },
       queryClient,
    );
@@ -86,9 +88,10 @@ export default function Databases() {
                      </Typography>
                   )}
                   {isError && (
-                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                        {error.message}
-                     </Typography>
+                     <ApiErrorDisplay
+                        error={error}
+                        context={`${projectName} > ${packageName} > Databases`}
+                     />
                   )}
                   {isSuccess && data.data.length > 0 && (
                      <Table size="small">
