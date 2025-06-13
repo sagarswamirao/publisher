@@ -1,25 +1,16 @@
 import { Divider, Typography } from "@mui/material";
 import { Configuration, ProjectsApi } from "../../client";
-import axios from "axios";
 import Markdown from "markdown-to-jsx";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import { useProject } from "./Project";
 
-axios.defaults.baseURL = "http://localhost:4000";
 const projectsApi = new ProjectsApi(new Configuration());
 const queryClient = new QueryClient();
 
-interface AboutProps {
-   server?: string;
-   projectName: string;
-   accessToken?: string;
-}
+export default function About() {
+   const { server, projectName, accessToken } = useProject();
 
-export default function About({
-   server,
-   projectName,
-   accessToken,
-}: AboutProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["about", server, projectName],

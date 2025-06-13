@@ -11,14 +11,12 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { StyledCard, StyledCardContent } from "../styles";
+import { usePublisherPackage } from "./PublisherPackageProvider";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 const queryClient = new QueryClient();
 
 interface ConnectionsProps {
-   server?: string;
-   projectName: string;
-   accessToken: string;
    navigate: (to: string, event?: React.MouseEvent) => void;
 }
 
@@ -36,8 +34,9 @@ function Connection({ connection }: { connection: ApiConnection }) {
    );
 }
 
-export default function Connections(connectionProps: ConnectionsProps) {
-   const { server, projectName, accessToken } = connectionProps;
+export default function Connections({ navigate }: ConnectionsProps) {
+   const { server, projectName, accessToken } = usePublisherPackage();
+
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["connections", server, projectName],

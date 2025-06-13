@@ -11,26 +11,16 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Configuration, PackagesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
+import { usePublisherPackage } from "./PublisherPackageProvider";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
 
-interface PackageProps {
-   server?: string;
-   projectName: string;
-   packageName: string;
-   versionId?: string;
-   accessToken?: string;
-}
+export default function Config() {
+   const { server, projectName, packageName, versionId, accessToken } =
+      usePublisherPackage();
 
-export default function Package({
-   server,
-   projectName,
-   packageName,
-   versionId,
-   accessToken,
-}: PackageProps) {
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["package", server, projectName, packageName, versionId],

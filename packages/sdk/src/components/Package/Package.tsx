@@ -5,28 +5,15 @@ import Connections from "./Connections";
 import Databases from "./Databases";
 import Models from "./Models";
 import Notebooks from "./Notebooks";
-import { PublisherPackageProvider } from "./PublisherPackageProvider";
 import Schedules from "./Schedules";
 
 const README_NOTEBOOK = "README.malloynb";
 
 interface PackageProps {
-   server?: string;
-   projectName: string;
-   packageName: string;
-   versionId?: string;
    navigate?: (to: string, event?: React.MouseEvent) => void;
-   accessToken?: string;
 }
 
-export default function Package({
-   server,
-   projectName,
-   packageName,
-   versionId,
-   navigate,
-   accessToken,
-}: PackageProps) {
+export default function Package({ navigate }: PackageProps) {
    if (!navigate) {
       navigate = (to: string) => {
          window.location.href = to;
@@ -34,82 +21,37 @@ export default function Package({
    }
 
    return (
-      <PublisherPackageProvider
-         server={server}
-         accessToken={accessToken}
-         projectName={projectName}
-         packageName={packageName}
-         versionId={versionId}
+      <Grid
+         container
+         spacing={2}
+         columns={12}
+         sx={{ mb: (theme) => theme.spacing(2) }}
       >
-         <Grid
-            container
-            spacing={2}
-            columns={12}
-            sx={{ mb: (theme) => theme.spacing(2) }}
-         >
-            <Grid size={{ xs: 12, md: 4 }}>
-               <Config
-                  server={server}
-                  projectName={projectName}
-                  packageName={packageName}
-                  versionId={versionId}
-                  accessToken={accessToken}
-               />
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-               <Notebooks
-                  server={server}
-                  projectName={projectName}
-                  packageName={packageName}
-                  versionId={versionId}
-                  navigate={navigate}
-                  accessToken={accessToken}
-               />
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-               <Models
-                  server={server}
-                  projectName={projectName}
-                  packageName={packageName}
-                  versionId={versionId}
-                  navigate={navigate}
-                  accessToken={accessToken}
-               />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-               <Databases
-                  server={server}
-                  projectName={projectName}
-                  packageName={packageName}
-                  versionId={versionId}
-                  accessToken={accessToken}
-               />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-               <Connections
-                  navigate={navigate}
-                  server={server}
-                  projectName={projectName}
-                  accessToken={accessToken}
-               />
-            </Grid>
-            <Grid size={{ xs: 12, md: 12 }}>
-               <Schedules
-                  server={server}
-                  projectName={projectName}
-                  packageName={packageName}
-                  versionId={versionId}
-                  accessToken={accessToken}
-               />
-            </Grid>
-            <Grid size={{ xs: 12, md: 12 }}>
-               <Notebook
-                  notebookPath={README_NOTEBOOK}
-                  expandCodeCells={false}
-                  hideEmbeddingIcons={true}
-               />
-            </Grid>
+         <Grid size={{ xs: 12, md: 4 }}>
+            <Config />
          </Grid>
-      </PublisherPackageProvider>
+         <Grid size={{ xs: 12, md: 4 }}>
+            <Notebooks navigate={navigate} />
+         </Grid>
+         <Grid size={{ xs: 12, md: 4 }}>
+            <Models navigate={navigate} />
+         </Grid>
+         <Grid size={{ xs: 12, md: 6 }}>
+            <Databases />
+         </Grid>
+         <Grid size={{ xs: 12, md: 6 }}>
+            <Connections navigate={navigate} />
+         </Grid>
+         <Grid size={{ xs: 12, md: 12 }}>
+            <Schedules />
+         </Grid>
+         <Grid size={{ xs: 12, md: 12 }}>
+            <Notebook
+               notebookPath={README_NOTEBOOK}
+               expandCodeCells={false}
+               hideEmbeddingIcons={true}
+            />
+         </Grid>
+      </Grid>
    );
 }

@@ -17,6 +17,7 @@ import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useEffect } from "react";
 import { highlight } from "../highlighter";
+import { usePublisherPackage } from "../Package/PublisherPackageProvider";
 
 const StyledCard = styled(Card)({
    display: "flex",
@@ -25,75 +26,61 @@ const StyledCard = styled(Card)({
 });
 
 interface ModelCellProps {
-   server: string;
-   projectName: string;
-   packageName: string;
    modelPath: string;
-   versionId: string;
    sourceName?: string;
    queryName: string;
    expandResult?: boolean;
    hideResultIcon?: boolean;
    expandEmbedding?: boolean;
    hideEmbeddingIcon?: boolean;
-   accessToken?: string;
    noView?: boolean;
    annotations?: string[];
 }
 
 export function ModelCell({
-   server,
-   projectName,
-   packageName,
    modelPath,
-   versionId,
    sourceName,
    queryName,
    expandResult,
    hideResultIcon,
    expandEmbedding,
    hideEmbeddingIcon,
-   accessToken,
    noView,
    annotations,
 }: ModelCellProps) {
    const [resultsExpanded, setResultsExpanded] = React.useState(expandResult);
    const [embeddingExpanded, setEmbeddingExpanded] =
-      React.useState(expandEmbedding);
+      React.useState<boolean>(expandEmbedding);
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
    const [highlightedAnnotations, setHighlightedAnnotations] =
       React.useState<string>();
 
-   useEffect(() => {
-      highlight(
-         getQueryResultCodeSnippet(
-            server,
-            projectName,
-            packageName,
-            modelPath,
-            versionId,
-            sourceName,
-            queryName,
-         ),
-         "typescript",
-      ).then((code) => {
-         setHighlightedEmbedCode(code);
-      });
-   }, [
+   const { server, projectName, packageName, versionId } =
+      usePublisherPackage();
+
+   const queryResultCodeSnippet = getQueryResultCodeSnippet(
       server,
       projectName,
       packageName,
-      modelPath,
       versionId,
       sourceName,
       queryName,
-   ]);
+   );
 
    useEffect(() => {
-      if (annotations) {
-         highlight(getAnnotations(annotations), "malloy").then((code) => {
-            setHighlightedAnnotations(code);
+      highlight(queryResultCodeSnippet, "typescript").then((code) => {
+         setHighlightedEmbedCode(code);
+      });
+   }, [embeddingExpanded, queryResultCodeSnippet]);
+
+   useEffect(() => {
+      if (annotations && annotations.length > 0) {
+         const code = annotations
+            .map((annotation) => `// ${annotation}`)
+            .join("\n");
+         highlight(code, "typescript").then((highlightedCode) => {
+            setHighlightedAnnotations(highlightedCode);
          });
       }
    }, [annotations]);
@@ -155,39 +142,33 @@ export function ModelCell({
                </CardActions>
             </Stack>
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
-               <Divider sx={{ mb: "10px" }} />
+               <Divider />
                <Stack
                   sx={{
+                     p: "10px",
                      borderRadius: 0,
                      flexDirection: "row",
                      justifyContent: "space-between",
                   }}
                >
                   <Typography
-                     fontSize="12px"
-                     sx={{ fontSize: "12px", "& .line": { textWrap: "wrap" } }}
+                     sx={{
+                        fontSize: "12px",
+                        "& .line": { textWrap: "wrap" },
+                     }}
                   >
                      <div
-                        className="content"
                         dangerouslySetInnerHTML={{
                            __html: highlightedEmbedCode,
                         }}
                      />
                   </Typography>
-                  <Tooltip title="View Code">
+                  <Tooltip title="Copy Embeddable Code">
                      <IconButton
                         sx={{ width: "24px", height: "24px" }}
                         onClick={() => {
                            navigator.clipboard.writeText(
-                              getQueryResultCodeSnippet(
-                                 server,
-                                 projectName,
-                                 packageName,
-                                 modelPath,
-                                 versionId,
-                                 sourceName,
-                                 queryName,
-                              ),
+                              queryResultCodeSnippet,
                            );
                         }}
                      >
@@ -227,14 +208,9 @@ export function ModelCell({
                )}
                <CardContent>
                   <QueryResult
-                     server={server}
-                     projectName={projectName}
-                     packageName={packageName}
                      modelPath={modelPath}
-                     versionId={versionId}
                      sourceName={sourceName}
                      queryName={queryName}
-                     accessToken={accessToken}
                   />
                </CardContent>
             </Collapse>
@@ -247,7 +223,6 @@ function getQueryResultCodeSnippet(
    server: string,
    projectName: string,
    packageName: string,
-   modelPath: string,
    versionId: string,
    sourceName: string,
    queryName: string,
@@ -257,19 +232,8 @@ server="${server}"
 accessToken={accessToken}
 projectName="${projectName}"
 packageName="${packageName}"
-modelPath="${modelPath}"
 versionId="${versionId}"
 sourceName="${sourceName}"
 queryName="${queryName}"
 />`;
-}
-
-function getAnnotations(annotations: string[]): string {
-   let res = "";
-
-   for (const an of annotations) {
-      res += an;
-   }
-
-   return res;
 }

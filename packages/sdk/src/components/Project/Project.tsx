@@ -1,20 +1,48 @@
 import { Grid } from "@mui/material";
 import About from "./About";
 import Packages from "./Packages";
+import { createContext, useContext, ReactNode } from "react";
 
-interface ProjectProps {
+export interface ProjectContextProps {
    server?: string;
    projectName: string;
-   navigate: (to: string, event?: React.MouseEvent) => void;
    accessToken?: string;
 }
 
-export default function Project({
+const ProjectContext = createContext<ProjectContextProps | undefined>(
+   undefined,
+);
+
+interface ProjectProviderProps extends ProjectContextProps {
+   children: ReactNode;
+}
+
+export const ProjectProvider = ({
    server,
    projectName,
-   navigate,
    accessToken,
-}: ProjectProps) {
+   children,
+}: ProjectProviderProps) => {
+   return (
+      <ProjectContext.Provider value={{ server, projectName, accessToken }}>
+         {children}
+      </ProjectContext.Provider>
+   );
+};
+
+export function useProject() {
+   const context = useContext(ProjectContext);
+   if (!context) {
+      throw new Error("useProject must be used within a ProjectProvider");
+   }
+   return context;
+}
+
+interface ProjectProps {
+   navigate: (to: string, event?: React.MouseEvent) => void;
+}
+
+export default function Project({ navigate }: ProjectProps) {
    return (
       <Grid
          container
@@ -23,19 +51,10 @@ export default function Project({
          sx={{ mb: (theme) => theme.spacing(2) }}
       >
          <Grid size={{ xs: 12, md: 12 }}>
-            <Packages
-               server={server}
-               projectName={projectName}
-               navigate={navigate}
-               accessToken={accessToken}
-            />
+            <Packages navigate={navigate} />
          </Grid>
          <Grid size={{ xs: 12, md: 12 }}>
-            <About
-               server={server}
-               projectName={projectName}
-               accessToken={accessToken}
-            />
+            <About />
          </Grid>
       </Grid>
    );
