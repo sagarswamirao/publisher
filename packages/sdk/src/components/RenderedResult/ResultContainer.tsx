@@ -122,7 +122,6 @@ export default function ResultContainer({
                         result={result}
                         height={renderedHeight}
                         isFillElement={(isFill) => {
-                           console.log("isFill", isFill);
                            setIsFillElement(isFill);
                         }}
                         onSizeChange={handleSizeChange}
