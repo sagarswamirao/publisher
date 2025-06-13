@@ -4,7 +4,7 @@ import axios from "axios";
 import { Configuration, ModelsApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
-import { usePublisherPackage } from "./PublisherPackageProvider";
+import { usePackage } from "./PackageProvider";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
@@ -18,7 +18,7 @@ interface ModelsProps {
 
 export default function Models({ navigate }: ModelsProps) {
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
 
    const { data, isError, error, isLoading, isSuccess } = useQuery(
       {

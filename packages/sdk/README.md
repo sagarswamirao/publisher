@@ -12,13 +12,13 @@ There are current 2 Providers, 1 for Packages, 1 for Project components.
     <Project navigate={navigate} />
 </ProjectProvider>
 ``` 
-**PublisherPackageProvider**
+**PackageProvider**
 ```react
-<PublisherPackageProvider
+<PackageProvider
     server={server}
     projectName={projectName}
     packageName={packageName}
     >
     <Package navigate={navigate} />
-</PublisherPackageProvider>
+</PackageProvider>
 ```

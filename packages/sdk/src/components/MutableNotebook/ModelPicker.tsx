@@ -18,7 +18,7 @@ import {
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import React from "react";
 import { Configuration, ModelsApi } from "../../client";
-import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { usePackage } from "../Package/PackageProvider";
 import { StyledCard } from "../styles";
 
 const modelsApi = new ModelsApi(new Configuration());
@@ -38,7 +38,7 @@ export function ModelPicker({
    onModelChange,
 }: ModelPickerProps) {
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
    const { data, isLoading, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["models", server, projectName, packageName, versionId],

@@ -21,7 +21,7 @@ import { styled } from "@mui/material/styles";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import React from "react";
 import { Configuration, QueryresultsApi } from "../../client";
-import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { usePackage } from "../Package/PackageProvider";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -193,7 +193,7 @@ export function SourceExplorerComponent({
       }
    }, [onChange, query]);
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
    const mutation = useMutation(
       {
          mutationFn: () => {
