@@ -1,4 +1,5 @@
 import { components } from "../api";
+import { API_PREFIX } from "../constants";
 import { ModelNotFoundError } from "../errors";
 import { ProjectStore } from "../service/project_store";
 
@@ -33,6 +34,7 @@ export class QueryController {
          );
          return {
             result: JSON.stringify(result),
+            resource: `${API_PREFIX}/projects/${projectName}/packages/${packageName}/queryResults/${modelPath}`,
          } as ApiQuery;
       }
    }
