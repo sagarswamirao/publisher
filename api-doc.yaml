@@ -1025,6 +1025,9 @@ components:
         result:
           type: string
           description: JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
+        resource:
+          type: string
+          description: Resource path to the query result.
 
     Database:
       type: object
