@@ -264,17 +264,12 @@ export default function Model({
                         {data.queries.map((query) => (
                            <ModelCell
                               key={query.name}
-                              server={server}
-                              projectName={projectName}
-                              packageName={packageName}
                               modelPath={modelPath}
-                              versionId={versionId}
                               queryName={query.name}
                               expandResult={expandResults}
                               hideResultIcon={hideResultIcons}
                               expandEmbedding={expandEmbeddings}
                               hideEmbeddingIcon={hideEmbeddingIcons}
-                              accessToken={accessToken}
                               noView={true}
                               annotations={query.annotations}
                            />

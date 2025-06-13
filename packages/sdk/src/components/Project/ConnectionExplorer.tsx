@@ -24,24 +24,20 @@ import {
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ConnectionsApi } from "../../client/api";
 import { Configuration } from "../../client/configuration";
-import TablesInSchema from "./TablesInSchema";
+import { useProject } from "./Project";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 const queryClient = new QueryClient();
 
 interface ConnectionExplorerProps {
-   server?: string;
-   projectName: string;
    connectionName: string;
-   accessToken?: string;
 }
 
 export default function ConnectionExplorer({
-   server,
-   projectName,
    connectionName,
-   accessToken,
 }: ConnectionExplorerProps) {
+   const { server, projectName, accessToken } = useProject();
+
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
    );
@@ -142,11 +138,8 @@ export default function ConnectionExplorer({
             {selectedSchema && (
                <Paper sx={{ p: 2 }}>
                   <TablesInSchema
-                     server={server}
-                     projectName={projectName}
                      connectionName={connectionName}
                      schemaName={selectedSchema}
-                     accessToken={accessToken}
                      onTableClick={(tableName) => {
                         setSelectedTable(tableName);
                      }}
@@ -156,12 +149,9 @@ export default function ConnectionExplorer({
          </Grid>
          {selectedTable && (
             <TableViewer
-               server={server}
-               projectName={projectName}
                connectionName={connectionName}
                schemaName={selectedSchema}
                tableName={selectedTable}
-               accessToken={accessToken}
                onClose={() => setSelectedTable(undefined)}
             />
          )}
@@ -170,23 +160,20 @@ export default function ConnectionExplorer({
 }
 
 type TableViewerProps = {
-   server: string;
-   projectName: string;
    connectionName: string;
    schemaName: string;
    tableName: string;
-   accessToken: string;
    onClose: () => void;
 };
+
 function TableViewer({
-   server,
-   projectName,
    connectionName,
    schemaName,
    tableName,
-   accessToken,
    onClose,
 }: TableViewerProps) {
+   const { server, projectName, accessToken } = useProject();
+
    const { data, isSuccess, isError, error, isLoading } = useQuery(
       {
          queryKey: [
@@ -215,12 +202,13 @@ function TableViewer({
       },
       queryClient,
    );
+
    if (isSuccess && data) {
       console.log(data);
    }
+
    return (
-      // TODO(jjs) - Add a min height to the dialog, so when it loads the UI is not so jarring.
-      <Dialog open={true} onClose={onclose} maxWidth="sm" fullWidth>
+      <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
          <DialogTitle>
             Table: {schemaName}.{tableName}
             <Typography
@@ -228,7 +216,9 @@ function TableViewer({
                variant="body2"
                fontFamily="monospace"
                component="span"
-            ></Typography>
+            >
+               {tableName}
+            </Typography>
             <IconButton
                aria-label="close"
                onClick={onClose}
@@ -248,32 +238,114 @@ function TableViewer({
             </IconButton>
          </DialogTitle>
          <DialogContent>
-            <TableContainer>
-               <Table
-                  size="small"
-                  sx={{ "& .MuiTableCell-root": { padding: "10px" } }}
-               >
-                  <TableHead>
-                     <TableRow>
-                        <TableCell>NAME</TableCell>
-                        <TableCell>TYPE</TableCell>
-                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                     {isSuccess &&
-                        data &&
-                        data.data.columns.map((row) => (
-                           <TableRow key={row.name}>
-                              <TableCell>{row.name}</TableCell>
-                              <TableCell>{row.type}</TableCell>
-                           </TableRow>
-                        ))}
-                     {isLoading && <div>Loading...</div>}
-                     {isError && <div>Error: {error.message}</div>}
-                  </TableBody>
-               </Table>
-            </TableContainer>
+            {isLoading && (
+               <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
+                  Loading table schema...
+               </Typography>
+            )}
+            {isError && (
+               <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+                  {error.message}
+               </Typography>
+            )}
+            {isSuccess && data && (
+               <TableContainer>
+                  <Table
+                     size="small"
+                     sx={{ "& .MuiTableCell-root": { padding: "10px" } }}
+                  >
+                     <TableHead>
+                        <TableRow>
+                           <TableCell>NAME</TableCell>
+                           <TableCell>TYPE</TableCell>
+                        </TableRow>
+                     </TableHead>
+                     <TableBody>
+                        {data.data.columns?.map(
+                           (column: { name: string; type: string }) => (
+                              <TableRow key={column.name}>
+                                 <TableCell>{column.name}</TableCell>
+                                 <TableCell>{column.type}</TableCell>
+                              </TableRow>
+                           ),
+                        )}
+                     </TableBody>
+                  </Table>
+               </TableContainer>
+            )}
          </DialogContent>
       </Dialog>
+   );
+}
+
+interface TablesInSchemaProps {
+   connectionName: string;
+   schemaName: string;
+   onTableClick: (tableName: string) => void;
+}
+
+function TablesInSchema({
+   connectionName,
+   schemaName,
+   onTableClick,
+}: TablesInSchemaProps) {
+   const { server, projectName, accessToken } = useProject();
+
+   const { data, isSuccess, isError, error, isLoading } = useQuery(
+      {
+         queryKey: [
+            "tablesInSchema",
+            server,
+            projectName,
+            connectionName,
+            schemaName,
+         ],
+         queryFn: () =>
+            connectionsApi.listTables(projectName, connectionName, schemaName, {
+               baseURL: server,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
+            }),
+         retry: false,
+      },
+      queryClient,
+   );
+
+   return (
+      <>
+         <Typography variant="overline" fontWeight="bold">
+            Tables in {schemaName}
+         </Typography>
+         <Divider />
+         <Box sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}>
+            {isLoading && (
+               <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
+                  Fetching Tables...
+               </Typography>
+            )}
+            {isError && (
+               <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+                  {error.message}
+               </Typography>
+            )}
+            {isSuccess && data.data.length === 0 && (
+               <Typography variant="body2">No Tables</Typography>
+            )}
+            {isSuccess && data.data.length > 0 && (
+               <List dense disablePadding>
+                  {data.data.map((tableName: string) => (
+                     <ListItemButton
+                        key={tableName}
+                        onClick={() => onTableClick(tableName)}
+                     >
+                        <ListItemText primary={tableName} />
+                     </ListItemButton>
+                  ))}
+               </List>
+            )}
+         </Box>
+      </>
    );
 }

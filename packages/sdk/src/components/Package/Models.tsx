@@ -4,6 +4,7 @@ import axios from "axios";
 import { Configuration, ModelsApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
+import { usePublisherPackage } from "./PublisherPackageProvider";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
@@ -12,22 +13,13 @@ const queryClient = new QueryClient();
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
 
 interface ModelsProps {
-   server?: string;
-   projectName: string;
-   packageName: string;
-   versionId?: string;
    navigate: (to: string, event?: React.MouseEvent) => void;
-   accessToken?: string;
 }
 
-export default function Models({
-   server,
-   projectName,
-   packageName,
-   versionId,
-   navigate,
-   accessToken,
-}: ModelsProps) {
+export default function Models({ navigate }: ModelsProps) {
+   const { server, projectName, packageName, versionId, accessToken } =
+      usePublisherPackage();
+
    const { data, isError, error, isLoading, isSuccess } = useQuery(
       {
          queryKey: ["models", server, projectName, packageName, versionId],
@@ -39,6 +31,7 @@ export default function Models({
                   Authorization: accessToken && `Bearer ${accessToken}`,
                },
             }),
+         throwOnError: false,
          retry: false,
       },
       queryClient,
@@ -58,29 +51,24 @@ export default function Models({
                   overflowY: "auto",
                }}
             >
-               {isLoading && (
+               {!isSuccess && !isError && (
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
                      Fetching Models...
                   </Typography>
                )}
-               {isSuccess &&
-                  (data.data.length > 0 ? (
-                     <FileTreeView
-                        items={data.data.sort((a, b) => {
-                           return a.path.localeCompare(b.path);
-                        })}
-                        defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
-                        navigate={navigate}
-                     />
-                  ) : (
-                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                        No models found
-                     </Typography>
-                  ))}
                {isError && (
                   <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     {`${projectName} > ${packageName} > ${versionId} - ${error.message}`}
+                     {error.message}
                   </Typography>
+               )}
+               {isSuccess && (
+                  <FileTreeView
+                     items={data.data.sort((a, b) => {
+                        return a.path.localeCompare(b.path);
+                     })}
+                     navigate={navigate}
+                     defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
+                  />
                )}
             </Box>
          </StyledCardContent>

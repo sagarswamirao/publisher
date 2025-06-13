@@ -14,26 +14,16 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Configuration, SchedulesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
+import { usePublisherPackage } from "./PublisherPackageProvider";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const schedulesApi = new SchedulesApi(new Configuration());
 const queryClient = new QueryClient();
 
-interface PackageProps {
-   server?: string;
-   projectName: string;
-   packageName: string;
-   versionId?: string;
-   accessToken: string;
-}
+export default function Schedules() {
+   const { server, projectName, packageName, versionId, accessToken } =
+      usePublisherPackage();
 
-export default function Package({
-   server,
-   projectName,
-   packageName,
-   versionId,
-   accessToken,
-}: PackageProps) {
    const { data, isError, isLoading, error } = useQuery(
       {
          queryKey: ["schedules", server, projectName, packageName, versionId],

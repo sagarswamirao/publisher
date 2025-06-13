@@ -3,6 +3,8 @@ import { Configuration, QueryresultsApi } from "../../client";
 import axios from "axios";
 import { Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
@@ -11,28 +13,21 @@ const queryResultsApi = new QueryresultsApi(new Configuration());
 const queryClient = new QueryClient();
 
 interface QueryResultProps {
-   server?: string;
-   projectName: string;
-   packageName: string;
    modelPath: string;
-   versionId?: string;
    query?: string;
    sourceName?: string;
    queryName?: string;
-   accessToken?: string;
 }
 
 export default function QueryResult({
-   server,
-   projectName,
-   packageName,
    modelPath,
-   versionId,
    query,
    sourceName,
    queryName,
-   accessToken,
 }: QueryResultProps) {
+   const { server, projectName, packageName, versionId, accessToken } =
+      usePublisherPackage();
+
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: [
@@ -45,7 +40,6 @@ export default function QueryResult({
             query,
             sourceName,
             queryName,
-            accessToken,
          ],
          queryFn: () =>
             queryResultsApi.executeQuery(
@@ -64,6 +58,7 @@ export default function QueryResult({
                   },
                },
             ),
+         retry: false,
       },
       queryClient,
    );
@@ -76,14 +71,15 @@ export default function QueryResult({
             </Typography>
          )}
          {isSuccess && (
-            <Suspense fallback="Loading malloy...">
+            <Suspense fallback={<div>Loading...</div>}>
                <RenderedResult result={data.data.result} />
             </Suspense>
          )}
          {isError && (
-            <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-               {`${projectName} > ${packageName} > ${modelPath} > ${versionId} - ${error.message}`}
-            </Typography>
+            <ApiErrorDisplay
+               context={`${projectName} > ${packageName} > ${modelPath}`}
+               error={error}
+            />
          )}
       </>
    );

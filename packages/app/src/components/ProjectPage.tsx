@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Project } from "@malloy-publisher/sdk";
+import { Project, ProjectProvider } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 interface ProjectPageProps {
@@ -17,11 +17,9 @@ export function ProjectPage({ server }: ProjectPageProps) {
       );
    } else {
       return (
-         <Project
-            server={server}
-            projectName={projectName}
-            navigate={navigate}
-         />
+         <ProjectProvider server={server} projectName={projectName}>
+            <Project navigate={navigate} />
+         </ProjectProvider>
       );
    }
 }

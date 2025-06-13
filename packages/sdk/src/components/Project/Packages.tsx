@@ -2,23 +2,18 @@ import { Box, Divider, Grid, Typography } from "@mui/material";
 import { Configuration, PackagesApi } from "../../client";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import { useProject } from "./Project";
 
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
 
-interface ProjectProps {
-   server?: string;
-   projectName: string;
+interface PackagesProps {
    navigate: (to: string, event?: React.MouseEvent) => void;
-   accessToken?: string;
 }
 
-export default function Project({
-   server,
-   projectName,
-   navigate,
-   accessToken,
-}: ProjectProps) {
+export default function Packages({ navigate }: PackagesProps) {
+   const { server, projectName, accessToken } = useProject();
+
    const { data, isSuccess, isError, error } = useQuery(
       {
          queryKey: ["packages", server, projectName],
