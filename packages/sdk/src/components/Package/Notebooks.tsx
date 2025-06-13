@@ -3,7 +3,7 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, NotebooksApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
-import { usePublisherPackage } from "./PublisherPackageProvider";
+import { usePackage } from "./PackageProvider";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
@@ -16,7 +16,7 @@ interface NotebooksProps {
 
 export default function Notebooks({ navigate }: NotebooksProps) {
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
 
    const { data, isLoading, isError, error, isSuccess } = useQuery(
       {

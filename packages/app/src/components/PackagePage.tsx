@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Package, PublisherPackageProvider } from "@malloy-publisher/sdk";
+import { Package, PackageProvider } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 interface PackagePageProps {
@@ -23,13 +23,13 @@ export function PackagePage({ server }: PackagePageProps) {
       );
    } else {
       return (
-         <PublisherPackageProvider
+         <PackageProvider
             server={server}
             projectName={projectName}
             packageName={packageName}
          >
             <Package navigate={navigate} />
-         </PublisherPackageProvider>
+         </PackageProvider>
       );
    }
 }

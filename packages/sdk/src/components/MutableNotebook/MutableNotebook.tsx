@@ -20,7 +20,7 @@ import { useRouterClickHandler } from "../click_helper";
 import { Configuration, ModelsApi } from "../../client";
 import { SourceAndPath } from "../Model/SourcesExplorer";
 import { NotebookManager } from "../NotebookManager";
-import { usePublisherPackage } from "../Package";
+import { usePackage } from "../Package";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { ModelPicker } from "./ModelPicker";
 import { MutableCell } from "./MutableCell";
@@ -48,7 +48,7 @@ export default function MutableNotebook({
 }: MutableNotebookProps) {
    const navigate = useRouterClickHandler();
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
    if (!projectName || !packageName) {
       throw new Error(
          "Project and package must be provided via PubliserPackageProvider",

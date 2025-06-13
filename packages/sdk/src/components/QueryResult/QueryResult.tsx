@@ -3,7 +3,7 @@ import { Configuration, QueryresultsApi } from "../../client";
 import axios from "axios";
 import { Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
-import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { usePackage } from "../Package/PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
@@ -26,7 +26,7 @@ export default function QueryResult({
    queryName,
 }: QueryResultProps) {
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
 
    const { data, isSuccess, isError, error } = useQuery(
       {

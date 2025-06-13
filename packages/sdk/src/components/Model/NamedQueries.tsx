@@ -10,7 +10,7 @@ import { StyledCard, StyledCardContent } from "../styles";
 
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { Configuration } from "../../client";
-import { usePublisherPackage } from "../Package";
+import { usePackage } from "../Package";
 import React from "react";
 import ResultContainer from "../RenderedResult/ResultContainer";
 
@@ -27,7 +27,7 @@ export default function NamedQueries({
    modelPath,
 }: NamedQueryProps) {
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
    const [namedQueryResults, setNamedQueryResults] = React.useState<
       Record<string, string>
    >({});

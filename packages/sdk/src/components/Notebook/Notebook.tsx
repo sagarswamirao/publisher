@@ -13,7 +13,7 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import { Configuration, NotebooksApi, CompiledNotebook } from "../../client";
 import { highlight } from "../highlighter";
-import { usePublisherPackage } from "../Package";
+import { usePackage } from "../Package";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { NotebookCell } from "./NotebookCell";
 import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
@@ -29,7 +29,7 @@ interface NotebookProps {
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
 }
-// Requires PublisherPackageProvider
+// Requires PackageProvider
 export default function Notebook({
    notebookPath,
    expandCodeCells,
@@ -42,7 +42,7 @@ export default function Notebook({
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
    const { server, projectName, packageName, accessToken, versionId } =
-      usePublisherPackage();
+      usePackage();
    const notebookCodeSnippet = getNotebookCodeSnippet(
       server,
       packageName,

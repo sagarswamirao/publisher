@@ -16,14 +16,14 @@ import { QueryClient, useQuery } from "@tanstack/react-query";
 import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
-import { usePublisherPackage } from "./PublisherPackageProvider";
+import { usePackage } from "./PackageProvider";
 
 const databasesApi = new DatabasesApi(new Configuration());
 const queryClient = new QueryClient();
 
 export default function Databases() {
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
 
    const [open, setOpen] = React.useState(false);
    const [selectedDatabase, setSelectedDatabase] =

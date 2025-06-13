@@ -17,7 +17,7 @@ import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useEffect } from "react";
 import { highlight } from "../highlighter";
-import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { usePackage } from "../Package/PackageProvider";
 
 const StyledCard = styled(Card)({
    display: "flex",
@@ -56,8 +56,7 @@ export function ModelCell({
    const [highlightedAnnotations, setHighlightedAnnotations] =
       React.useState<string>();
 
-   const { server, projectName, packageName, versionId } =
-      usePublisherPackage();
+   const { server, projectName, packageName, versionId } = usePackage();
 
    const queryResultCodeSnippet = getQueryResultCodeSnippet(
       server,

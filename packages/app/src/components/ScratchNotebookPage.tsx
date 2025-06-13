@@ -2,7 +2,7 @@ import {
    BrowserNotebookStorage,
    MutableNotebook,
    NotebookStorageProvider,
-   PublisherPackageProvider,
+   PackageProvider,
 } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 interface ScratchNotebookPageProps {
@@ -25,7 +25,7 @@ export function ScratchNotebookPage({ server }: ScratchNotebookPageProps) {
       );
    } else {
       return (
-         <PublisherPackageProvider
+         <PackageProvider
             server={server}
             projectName={projectName}
             packageName={packageName}
@@ -36,7 +36,7 @@ export function ScratchNotebookPage({ server }: ScratchNotebookPageProps) {
             >
                <MutableNotebook notebookPath={notebookPath} />
             </NotebookStorageProvider>
-         </PublisherPackageProvider>
+         </PackageProvider>
       );
    }
 }

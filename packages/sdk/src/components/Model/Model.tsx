@@ -21,7 +21,7 @@ import { ModelCell } from "./ModelCell";
 import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
 
 import "@malloydata/malloy-explorer/styles.css";
-import { usePublisherPackage } from "../Package/PublisherPackageProvider";
+import { usePackage } from "../Package/PackageProvider";
 import { SourceExplorerComponent } from "./SourcesExplorer";
 import NamedQueries from "./NamedQueries";
 
@@ -56,7 +56,7 @@ export default function Model({
    const [selectedTab, setSelectedTab] = React.useState(0);
 
    const { server, projectName, packageName, versionId, accessToken } =
-      usePublisherPackage();
+      usePackage();
    const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
