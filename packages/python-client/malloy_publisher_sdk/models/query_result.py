@@ -19,19 +19,25 @@ class QueryResult:
 
     Attributes:
         result (Union[Unset, str]): JSON string of Malloy.Result. See malloy/packages/malloy-interfaces/src/types.ts
+        resource (Union[Unset, str]): Resource path to the query result.
     """
 
     result: Union[Unset, str] = UNSET
+    resource: Union[Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         result = self.result
+
+        resource = self.resource
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if result is not UNSET:
             field_dict["result"] = result
+        if resource is not UNSET:
+            field_dict["resource"] = resource
 
         return field_dict
 
@@ -40,8 +46,11 @@ class QueryResult:
         d = dict(src_dict)
         result = d.pop("result", UNSET)
 
+        resource = d.pop("resource", UNSET)
+
         query_result = cls(
             result=result,
+            resource=resource,
         )
 
         query_result.additional_properties = d
