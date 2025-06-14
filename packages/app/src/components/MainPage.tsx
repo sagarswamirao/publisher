@@ -1,6 +1,7 @@
 import {
    BrowserNotebookStorage,
    NotebookStorageProvider,
+   useRouterClickHandler,
 } from "@malloy-publisher/sdk";
 import { Add, Launch } from "@mui/icons-material";
 import {
@@ -22,13 +23,12 @@ import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
 import { MutableNotebookList } from "./MutableNotebookList";
-import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 export default function MainPage() {
    const { projectName, packageName } = useParams();
    const navigate = useRouterClickHandler();
 
-   const [analysisName, setAnalysisName] = React.useState("");
+   const [workbookName, setWorkbookName] = React.useState("");
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
    const [newDialogOpen, setNewDialogOpen] = React.useState(false);
    const [openDialogOpen, setOpenDialogOpen] = React.useState(false);
@@ -59,10 +59,10 @@ export default function MainPage() {
       setNewDialogOpen(false);
       // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
-         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(analysisName)}`,
+         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(workbookName)}`,
          event,
       );
-      setAnalysisName("");
+      setWorkbookName("");
    };
 
    return (
@@ -107,7 +107,6 @@ export default function MainPage() {
                         aria-haspopup="true"
                         aria-expanded={open ? "true" : undefined}
                         onClick={handleClick}
-                        variant="outlined"
                         sx={{ height: "40px" }}
                      >
                         Analyze Package
@@ -132,7 +131,11 @@ export default function MainPage() {
                            <ListItemIcon>
                               <Add fontSize="small" />
                            </ListItemIcon>
-                           <ListItemText>New Analysis</ListItemText>
+                           <ListItemText>
+                              <Typography variant="body2">
+                                 New Workbook
+                              </Typography>
+                           </ListItemText>
                         </MenuItem>
                         <MenuItem
                            onClick={() => {
@@ -143,24 +146,49 @@ export default function MainPage() {
                            <ListItemIcon>
                               <Launch fontSize="small" />
                            </ListItemIcon>
-                           <ListItemText>Open Analysis</ListItemText>
+                           <ListItemText>
+                              <Typography variant="body2">
+                                 Open Workbook
+                              </Typography>
+                           </ListItemText>
                         </MenuItem>
                      </Menu>
                      <Dialog
                         open={newDialogOpen}
                         onClose={handleNewDialogClose}
-                        maxWidth="md"
-                        fullWidth
+                        sx={{
+                           "& .MuiDialog-paper": {
+                              width: "100%",
+                              maxWidth: "300px",
+                           },
+                        }}
                      >
-                        <DialogTitle>New Analysis</DialogTitle>
+                        <DialogTitle
+                           variant="subtitle1"
+                           sx={{ fontWeight: "medium" }}
+                        >
+                           Create Workbook
+                        </DialogTitle>
                         <DialogContent>
-                           <FormControl>
+                           <FormControl
+                              sx={{
+                                 width: "100%",
+                                 display: "flex",
+                                 alignItems: "center",
+                                 gap: 2,
+                              }}
+                           >
                               <TextField
-                                 label="Analysis Name"
-                                 value={analysisName}
+                                 label="Workbook Name"
+                                 value={workbookName}
                                  onChange={(e) =>
-                                    setAnalysisName(e.target.value)
+                                    setWorkbookName(e.target.value)
                                  }
+                                 sx={{
+                                    width: "100%",
+                                    maxWidth: "400px",
+                                    mt: 1,
+                                 }}
                               />
                               <Button
                                  onClick={(event) => createNotebookClick(event)}
@@ -173,10 +201,19 @@ export default function MainPage() {
                      <Dialog
                         open={openDialogOpen}
                         onClose={handleOpenDialogClose}
-                        maxWidth="md"
-                        fullWidth
+                        sx={{
+                           "& .MuiDialog-paper": {
+                              width: "100%",
+                              maxWidth: "300px",
+                           },
+                        }}
                      >
-                        <DialogTitle>Open Analysis</DialogTitle>
+                        <DialogTitle
+                           variant="subtitle1"
+                           sx={{ fontWeight: "medium" }}
+                        >
+                           Open Workbook
+                        </DialogTitle>
                         <DialogContent>
                            <NotebookStorageProvider
                               notebookStorage={new BrowserNotebookStorage()}

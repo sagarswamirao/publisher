@@ -1,37 +1,40 @@
-import React, { useState } from "react";
-import { Suspense, lazy } from "react";
+import CheckIcon from "@mui/icons-material/Check";
+import CodeIcon from "@mui/icons-material/Code";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
-   Stack,
-   Collapse,
-   CardActions,
-   CardContent,
-   IconButton,
-   Tooltip,
-   Button,
    Box,
-   DialogContent,
+   Button,
+   CardActions,
+   Collapse,
    Dialog,
    DialogActions,
+   DialogContent,
    DialogTitle,
+   IconButton,
+   Stack,
+   Tooltip,
+   Typography,
 } from "@mui/material";
-import { StyledCard } from "../styles";
-import Markdown from "markdown-to-jsx";
-import { Typography } from "@mui/material";
-import { Divider } from "@mui/material";
-import { highlight } from "../highlighter";
-import { useEffect } from "react";
-import CodeIcon from "@mui/icons-material/Code";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import MDEditor from "@uiw/react-md-editor";
-import { EditableMalloyCell } from "./EditableMalloyCell";
+import Markdown from "markdown-to-jsx";
+import React, { useEffect, useState } from "react";
+import { highlight } from "../highlighter";
+import {
+   emptyQueryExplorerResult,
+   QueryExplorerResult,
+   SourceAndPath,
+} from "../Model/SourcesExplorer";
 import { NotebookCellValue } from "../NotebookManager";
-import { SourceAndPath } from "../Model/SourcesExplorer";
 import ResultContainer from "../RenderedResult/ResultContainer";
+import { StyledCard } from "../styles";
+import { EditableMalloyCell } from "./EditableMalloyCell";
 
 interface NotebookCellProps {
    cell: NotebookCellValue;
    expandCodeCell?: boolean;
    expandEmbedding?: boolean;
+   hideEmbeddingIcons?: boolean;
    editingMalloy?: boolean;
    editingMarkdown?: boolean;
    sourceAndPaths: SourceAndPath[];
@@ -46,6 +49,7 @@ export function MutableCell({
    cell,
    expandCodeCell,
    expandEmbedding,
+   hideEmbeddingIcons,
    editingMalloy,
    editingMarkdown,
    sourceAndPaths,
@@ -63,6 +67,9 @@ export function MutableCell({
       React.useState<string>();
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
+   const [query, setQuery] = React.useState<QueryExplorerResult>(
+      emptyQueryExplorerResult(),
+   );
 
    useEffect(() => {
       if (!cell.isMarkdown)
@@ -84,6 +91,23 @@ export function MutableCell({
       setDeleteDialogOpen(false);
    };
    const noSources = sourceAndPaths.length === 0;
+
+   const saveResult = (modelPath: string, sourceName: string) => {
+      // Convert the results of the Query Explorer into
+      // the stringified JSON objects that are stored in the cell.
+      onCellChange({
+         ...cell,
+         value: query.query,
+         result: query.malloyResult
+            ? JSON.stringify(query.malloyResult)
+            : undefined,
+         queryInfo: query.malloyQuery
+            ? JSON.stringify(query.malloyQuery)
+            : undefined,
+         sourceName,
+         modelPath,
+      });
+   };
 
    const deleteButton = (
       <Tooltip title="Delete Cell">
@@ -126,17 +150,20 @@ export function MutableCell({
    );
    const buttons = cell.isMarkdown ? (
       <>
-         {deleteButton}
-         {(editingMarkdown && (
-            <Button variant="outlined" size="small" onClick={onClose}>
-               Save
-            </Button>
-         )) || (
-            <Button variant="outlined" size="small" onClick={onEdit}>
-               Edit
-            </Button>
+         {editingMarkdown ? (
+            <Tooltip title="Save">
+               <IconButton size="small" onClick={onClose}>
+                  <CheckIcon />
+               </IconButton>
+            </Tooltip>
+         ) : (
+            <Tooltip title="Edit">
+               <IconButton size="small" onClick={onEdit}>
+                  <EditOutlinedIcon />
+               </IconButton>
+            </Tooltip>
          )}
-         {newCell}
+         {!editingMarkdown && deleteButton}
       </>
    ) : (
       <>
@@ -152,7 +179,7 @@ export function MutableCell({
                </IconButton>
             </Tooltip>
          )}
-         {!editingMalloy && cell.result && (
+         {!hideEmbeddingIcons && !editingMalloy && cell.result && (
             <Tooltip
                title={embeddingExpanded ? "Hide Embedding" : "View Embedding"}
             >
@@ -166,45 +193,49 @@ export function MutableCell({
                </IconButton>
             </Tooltip>
          )}
-         {deleteButton}
-
-         {!editingMalloy && (
-            <Button variant="outlined" size="small" onClick={onEdit}>
-               Edit
-            </Button>
+         {editingMalloy && (
+            <Tooltip title="Save">
+               <IconButton
+                  size="small"
+                  onClick={() => {
+                     saveResult(cell.modelPath, cell.sourceName);
+                     onClose();
+                  }}
+               >
+                  <CheckIcon />
+               </IconButton>
+            </Tooltip>
          )}
-         {newCell}
+         {!editingMalloy && (
+            <Tooltip title="Edit">
+               <IconButton size="small" onClick={onEdit}>
+                  <EditOutlinedIcon />
+               </IconButton>
+            </Tooltip>
+         )}
+         {!editingMalloy && deleteButton}
       </>
    );
+
    const buttonStack = (
-      <>
-         <Stack sx={{ flexDirection: "row", justifyContent: "right" }}>
-            <CardActions
-               sx={{
-                  padding: "4px",
-                  mb: "auto",
-                  mt: "auto",
-               }}
-            >
-               {buttons}
-            </CardActions>
-         </Stack>
-         <Box
-            sx={{
-               borderBottom: "1px solid #e0e0e0",
-               mx: "10px",
-               width: "auto",
-            }}
-         />
-      </>
+      <Stack
+         sx={{
+            flexDirection: "row",
+            justifyContent: "right",
+            mt: "20px",
+            mb: "5px",
+            mx: "5px",
+         }}
+      >
+         <CardActions>{buttons}</CardActions>
+      </Stack>
    );
    return (
-      <StyledCard variant="outlined" sx={{ marginTop: "10px" }}>
-         {(cell.isMarkdown && (
-            // <StyledCard variant="outlined" sx={{ border: 0 }}>
+      <>
+         {buttonStack}
+         {cell.isMarkdown ? (
             <>
-               {buttonStack}
-               {editingMarkdown && (
+               {editingMarkdown ? (
                   <MDEditor
                      value={value}
                      preview="edit"
@@ -213,96 +244,159 @@ export function MutableCell({
                         updateMarkdown(newValue);
                      }}
                   />
+               ) : (
+                  <StyledCard variant="outlined" sx={{ borderRadius: 0 }}>
+                     <Box
+                        sx={{
+                           px: 0.5,
+                           pt: 0,
+                           mt: 0,
+                           "& h1, & h2, & h3, & h4, & h5, & h6": {
+                              mt: 0.5,
+                              mb: 0.5,
+                           },
+                           "& p": { mt: 0.5, mb: 0.5 },
+                           "& ul, & ol": { mt: 0.5, mb: 0.5 },
+                           "& li": { mt: 0, mb: 0 },
+                           "& pre, & code": { mt: 0.5, mb: 0.5 },
+                           "& blockquote": { mt: 0.5, mb: 0.5 },
+                        }}
+                     >
+                        {value ? (
+                           <Markdown>{value}</Markdown>
+                        ) : (
+                           <>
+                              <Typography
+                                 sx={{
+                                    p: 2,
+                                    textAlign: "center",
+                                    variant: "subtitle2",
+                                    fontWeight: "medium",
+                                 }}
+                              >
+                                 Markdown is empty
+                              </Typography>
+                              <Typography
+                                 sx={{
+                                    mb: 2,
+                                    textAlign: "center",
+                                    variant: "body2",
+                                 }}
+                              >
+                                 Click the edit button and add some markdown.
+                              </Typography>
+                           </>
+                        )}
+                     </Box>
+                  </StyledCard>
                )}
-               <Box
-                  sx={{
-                     px: 0.5,
-                     pt: 0,
-                     mt: 0,
-                     "& h1, & h2, & h3, & h4, & h5, & h6": { mt: 0.5, mb: 0.5 },
-                     "& p": { mt: 0.5, mb: 0.5 },
-                     "& ul, & ol": { mt: 0.5, mb: 0.5 },
-                     "& li": { mt: 0, mb: 0 },
-                     "& pre, & code": { mt: 0.5, mb: 0.5 },
-                     "& blockquote": { mt: 0.5, mb: 0.5 },
-                  }}
-               >
-                  <Markdown>{value}</Markdown>
-               </Box>
             </>
-         )) ||
-            (!cell.isMarkdown && (
-               <>
-                  {buttonStack}
-                  <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
-                     <Divider />
-                     <Stack
+         ) : (
+            <>
+               <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
+                  <Stack
+                     sx={{
+                        p: "10px",
+                        borderRadius: 0,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                     }}
+                  >
+                     <Typography
+                        component="div"
                         sx={{
-                           p: "10px",
-                           borderRadius: 0,
-                           flexDirection: "row",
-                           justifyContent: "space-between",
+                           fontSize: "12px",
+                           "& .line": { textWrap: "wrap" },
                         }}
-                     >
-                        <Typography
-                           component="div"
-                           sx={{
-                              fontSize: "12px",
-                              "& .line": { textWrap: "wrap" },
-                           }}
-                           dangerouslySetInnerHTML={{
-                              __html: highlightedEmbedCode,
-                           }}
-                        />
-                     </Stack>
-                  </Collapse>
-                  <Collapse in={codeExpanded} timeout="auto" unmountOnExit>
-                     <Divider />
-                     <Stack
+                        dangerouslySetInnerHTML={{
+                           __html: highlightedEmbedCode,
+                        }}
+                     />
+                  </Stack>
+               </Collapse>
+               <Collapse in={codeExpanded} timeout="auto" unmountOnExit>
+                  <Stack
+                     sx={{
+                        p: "10px",
+                        borderRadius: 0,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                     }}
+                  >
+                     <Typography
+                        component="div"
+                        className="content"
                         sx={{
-                           p: "10px",
-                           borderRadius: 0,
-                           flexDirection: "row",
-                           justifyContent: "space-between",
+                           fontSize: "12px",
+                           "& .line": { textWrap: "wrap" },
                         }}
-                     >
+                        dangerouslySetInnerHTML={{
+                           __html: highlightedMalloyCode,
+                        }}
+                     />
+                  </Stack>
+               </Collapse>
+               {editingMalloy &&
+                  (noSources ? (
+                     <>
                         <Typography
-                           component="div"
-                           className="content"
                            sx={{
-                              fontSize: "12px",
-                              "& .line": { textWrap: "wrap" },
+                              p: 2,
+                              textAlign: "center",
+                              variant: "subtitle2",
+                              fontWeight: "medium",
                            }}
-                           dangerouslySetInnerHTML={{
-                              __html: highlightedMalloyCode,
-                           }}
-                        />
-                     </Stack>
-                  </Collapse>
-                  {editingMalloy &&
-                     (noSources ? (
-                        <Typography>
-                           No Model Imports. Please add a model import above.
+                        >
+                           No Model Imports
                         </Typography>
-                     ) : (
-                        <EditableMalloyCell
-                           sourceAndPaths={sourceAndPaths}
-                           onCellChange={onCellChange}
-                           onClose={onClose}
-                           cell={cell}
-                        />
-                     ))}
-                  {!editingMalloy && cell.result && (
+                        <Typography
+                           sx={{ mb: 2, textAlign: "center", variant: "body2" }}
+                        >
+                           Please add a model import above.
+                        </Typography>
+                     </>
+                  ) : (
+                     <EditableMalloyCell
+                        sourceAndPaths={sourceAndPaths}
+                        onChange={(query) => {
+                           setQuery(query);
+                        }}
+                        cell={cell}
+                     />
+                  ))}
+               {!editingMalloy && cell.result && (
+                  <StyledCard variant="outlined" sx={{ borderRadius: 0 }}>
                      <ResultContainer
                         result={cell.result}
                         minHeight={300}
                         maxHeight={800}
                      />
-                  )}
-               </>
-            ))}
+                  </StyledCard>
+               )}
+               {!editingMalloy && !cell.result && (
+                  <StyledCard variant="outlined" sx={{ borderRadius: 0 }}>
+                     <Typography
+                        sx={{
+                           p: 2,
+                           textAlign: "center",
+                           variant: "subtitle2",
+                           fontWeight: "medium",
+                        }}
+                     >
+                        Explore is empty
+                     </Typography>
+                     <Typography
+                        sx={{ mb: 2, textAlign: "center", variant: "body2" }}
+                     >
+                        Click the edit button and explore the data in the model
+                        to see results.
+                     </Typography>
+                  </StyledCard>
+               )}
+            </>
+         )}
          {deleteDialogOpen && deleteDialog}
-      </StyledCard>
+      </>
    );
 }
 
