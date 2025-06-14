@@ -34,7 +34,10 @@ export function ScratchNotebookPage({ server }: ScratchNotebookPageProps) {
                notebookStorage={new BrowserNotebookStorage()}
                userContext={{ project: projectName, package: packageName }}
             >
-               <MutableNotebook notebookPath={notebookPath} />
+               <MutableNotebook
+                  notebookPath={notebookPath}
+                  hideEmbeddingIcons={true}
+               />
             </NotebookStorageProvider>
          </PackageProvider>
       );

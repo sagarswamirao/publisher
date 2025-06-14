@@ -1,6 +1,6 @@
 import * as Malloy from "@malloydata/malloy-interfaces";
 import * as QueryBuilder from "@malloydata/malloy-query-builder";
-import { Button, CardActions } from "@mui/material";
+import { Button } from "@mui/material";
 import { Box, Stack } from "@mui/system";
 import {
    StyledCard,
@@ -64,11 +64,7 @@ export interface SourceExplorerProps {
    sourceAndPaths: SourceAndPath[];
    existingQuery?: QueryExplorerResult;
    existingSourceName?: string;
-   saveResult?: (
-      modelPath: string,
-      sourceName: string,
-      query: QueryExplorerResult,
-   ) => void;
+   onChange?: (query: QueryExplorerResult) => void;
 }
 
 /**
@@ -80,15 +76,15 @@ export interface SourceExplorerProps {
  */
 export function SourcesExplorer({
    sourceAndPaths,
-   saveResult,
    existingQuery,
    existingSourceName,
+   onChange,
 }: SourceExplorerProps) {
    const [selectedTab, setSelectedTab] = React.useState(
       existingSourceName
          ? sourceAndPaths.findIndex(
-              (entry) => entry.sourceInfo.name === existingSourceName,
-           )
+            (entry) => entry.sourceInfo.name === existingSourceName,
+         )
          : 0,
    );
 
@@ -119,27 +115,6 @@ export function SourcesExplorer({
                      ))}
                   </MultiRowTabBar>
                )}
-               {saveResult && (
-                  <CardActions
-                     sx={{
-                        padding: "0px 10px 0px 10px",
-                        mb: "auto",
-                        mt: "auto",
-                     }}
-                  >
-                     <Button
-                        onClick={() =>
-                           saveResult(
-                              sourceAndPaths[selectedTab].modelPath,
-                              sourceAndPaths[selectedTab].sourceInfo.name,
-                              query,
-                           )
-                        }
-                     >
-                        Save
-                     </Button>
-                  </CardActions>
-               )}
             </Stack>
          </StyledCardContent>
          <StyledCardMedia>
@@ -147,7 +122,12 @@ export function SourcesExplorer({
                <SourceExplorerComponent
                   sourceAndPath={sourceAndPaths[selectedTab]}
                   existingQuery={query}
-                  onChange={setQuery}
+                  onChange={(query) => {
+                     setQuery(query);
+                     if (onChange) {
+                        onChange(query);
+                     }
+                  }}
                />
                <Box height="5px" />
             </Stack>
@@ -323,16 +303,16 @@ export function SourceExplorerComponent({
                         submittedQuery={
                            query?.malloyQuery
                               ? {
-                                   executionState: mutation.isPending
-                                      ? "running"
-                                      : "finished",
-                                   response: {
-                                      result: query.malloyResult,
-                                   },
-                                   query: query.malloyQuery,
-                                   queryResolutionStartMillis: Date.now(),
-                                   onCancel: mutation.reset,
-                                }
+                                 executionState: mutation.isPending
+                                    ? "running"
+                                    : "finished",
+                                 response: {
+                                    result: query.malloyResult,
+                                 },
+                                 query: query.malloyQuery,
+                                 queryResolutionStartMillis: Date.now(),
+                                 onCancel: mutation.reset,
+                              }
                               : undefined
                         }
                         options={{ showRawQuery: true }}

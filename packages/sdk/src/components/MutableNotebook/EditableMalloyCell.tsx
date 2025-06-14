@@ -1,19 +1,17 @@
 import { SourceAndPath, SourcesExplorer } from "../Model";
+import { QueryExplorerResult } from "../Model/SourcesExplorer";
 import { NotebookCellValue } from "../NotebookManager";
 
 interface EditableMalloyCellProps {
    cell: NotebookCellValue;
    sourceAndPaths: SourceAndPath[];
-   onCellChange: (cell: NotebookCellValue) => void;
-
-   onClose: () => void;
+   onChange: (query: QueryExplorerResult) => void;
 }
 
 export function EditableMalloyCell({
    cell,
    sourceAndPaths,
-   onCellChange,
-   onClose,
+   onChange,
 }: EditableMalloyCellProps) {
    const query = {
       query: cell.value,
@@ -25,23 +23,7 @@ export function EditableMalloyCell({
          sourceAndPaths={sourceAndPaths}
          existingQuery={query}
          existingSourceName={cell.sourceName}
-         saveResult={(modelPath, sourceName, qer) => {
-            // Convert the results of the Query Explorer into
-            // the stringified JSON objects that are stored in the cell.
-            onCellChange({
-               ...cell,
-               value: qer.query,
-               result: qer.malloyResult
-                  ? JSON.stringify(qer.malloyResult)
-                  : undefined,
-               queryInfo: qer.malloyQuery
-                  ? JSON.stringify(qer.malloyQuery)
-                  : undefined,
-               sourceName,
-               modelPath,
-            });
-            onClose();
-         }}
+         onChange={onChange}
       />
    );
 }

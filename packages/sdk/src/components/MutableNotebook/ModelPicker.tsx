@@ -1,26 +1,20 @@
-import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import {
    Button,
    Chip,
-   Dialog,
-   DialogActions,
-   DialogContent,
-   DialogTitle,
+   Divider,
    FormControl,
-   List,
-   ListItem,
-   ListItemButton,
-   ListItemText,
+   Menu,
+   MenuItem,
    Stack,
    Typography,
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import React from "react";
 import { Configuration, ModelsApi } from "../../client";
-import { usePackage } from "../Package/PackageProvider";
-import { StyledCard } from "../styles";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { usePackage } from "../Package/PackageProvider";
 
 const modelsApi = new ModelsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -59,7 +53,7 @@ export function ModelPicker({
    const [selectedModels, setSelectedModels] = React.useState<string[]>(
       initialSelectedModels || [],
    );
-   const [addDialogOpen, setAddDialogOpen] = React.useState(false);
+   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
    React.useEffect(() => {
       setSelectedModels(initialSelectedModels || []);
@@ -75,7 +69,7 @@ export function ModelPicker({
       const newModels = [...selectedModels, model];
       setSelectedModels(newModels);
       onModelChange(newModels);
-      setAddDialogOpen(false);
+      setAnchorEl(null);
    };
 
    let availableModels: string[] = [];
@@ -95,22 +89,10 @@ export function ModelPicker({
    }
 
    return (
-      <StyledCard
-         sx={{ maxWidth: 400, marginLeft: "10px", padding: "10px 5px 5px 5px" }}
-      >
-         <Typography variant="h6">Imported Models</Typography>
+      <>
          <FormControl fullWidth>
             {isLoading && <Typography>Loading...</Typography>}
-            <Stack
-               direction="row"
-               spacing={1}
-               sx={{
-                  flexWrap: "wrap",
-                  minHeight: 30,
-                  alignItems: "center",
-                  rowGap: "8px",
-               }}
-            >
+            <Stack direction="row" spacing={1}>
                {selectedModels.map((model) => (
                   <Chip
                      key={model}
@@ -121,11 +103,9 @@ export function ModelPicker({
                   />
                ))}
                <Button
-                  variant="outlined"
                   size="small"
-                  startIcon={<AddIcon />}
-                  onClick={() => setAddDialogOpen(true)}
-                  sx={{ height: 32, marginTop: "10px" }}
+                  startIcon={<FileUploadOutlinedIcon />}
+                  onClick={(e) => setAnchorEl(e.currentTarget)}
                   disabled={
                      isLoading || isError || availableModels.length === 0
                   }
@@ -134,26 +114,25 @@ export function ModelPicker({
                </Button>
             </Stack>
          </FormControl>
-         <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>
-            <DialogTitle>Select a Model</DialogTitle>
-            <DialogContent>
-               {availableModels.length === 0 && (
-                  <Typography>No models available</Typography>
-               )}
-               <List>
-                  {availableModels.map((model) => (
-                     <ListItem key={model} disablePadding>
-                        <ListItemButton onClick={() => handleAdd(model)}>
-                           <ListItemText primary={model} />
-                        </ListItemButton>
-                     </ListItem>
-                  ))}
-               </List>
-            </DialogContent>
-            <DialogActions>
-               <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
-            </DialogActions>
-         </Dialog>
-      </StyledCard>
+         <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+         >
+            <Typography variant="subtitle2" sx={{ ml: 1 }}>
+               Models
+            </Typography>
+            <Divider />
+            {availableModels.length === 0 ? (
+               <MenuItem disabled>No models available</MenuItem>
+            ) : (
+               availableModels.map((model) => (
+                  <MenuItem key={model} onClick={() => handleAdd(model)}>
+                     <Typography variant="body2">{model}</Typography>
+                  </MenuItem>
+               ))
+            )}
+         </Menu>
+      </>
    );
 }

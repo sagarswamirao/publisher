@@ -1,32 +1,33 @@
 // TODO(jjs) - Export to .malloynb
 // TOOD(jjs) - Import via Publisher API that parses whole NB
 
+import AddIcon from "@mui/icons-material/Add";
 import {
    Box,
    Button,
-   CardActions,
    Dialog,
    DialogActions,
    DialogContent,
    DialogContentText,
    DialogTitle,
+   Divider,
    Menu,
    MenuItem,
    Typography,
 } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import React from "react";
-import { useRouterClickHandler } from "../click_helper";
 import { Configuration, ModelsApi } from "../../client";
+import { useRouterClickHandler } from "../click_helper";
 import { SourceAndPath } from "../Model/SourcesExplorer";
 import { NotebookManager } from "../NotebookManager";
 import { usePackage } from "../Package";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
-import { ModelPicker } from "./ModelPicker";
 import { MutableCell } from "./MutableCell";
 import { useNotebookStorage } from "./NotebookStorageProvider";
 
 import * as Malloy from "@malloydata/malloy-interfaces";
+import { ModelPicker } from "./ModelPicker";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -34,6 +35,7 @@ interface MutableNotebookProps {
    notebookPath?: string;
    expandCodeCells?: boolean;
    expandEmbeddings?: boolean;
+   hideEmbeddingIcons?: boolean;
 }
 
 interface PathToSources {
@@ -45,6 +47,7 @@ export default function MutableNotebook({
    notebookPath,
    expandCodeCells,
    expandEmbeddings,
+   hideEmbeddingIcons,
 }: MutableNotebookProps) {
    const navigate = useRouterClickHandler();
    const { server, projectName, packageName, versionId, accessToken } =
@@ -203,23 +206,14 @@ export default function MutableNotebook({
    };
    const createButtons = (index: number) => {
       return (
-         <CardActions
-            sx={{
-               padding: "0px 10px 0px 10px",
-               mb: "auto",
-               mt: "auto",
-               justifyContent: "flex-end",
-            }}
+         <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={(e) => handleMenuClick(e, index)}
          >
-            <Button
-               variant="outlined"
-               size="small"
-               startIcon={<AddIcon />}
-               onClick={(e) => handleMenuClick(e, index)}
-            >
-               New Cell
-            </Button>
-         </CardActions>
+            New Cell
+         </Button>
       );
    };
    return (
@@ -229,19 +223,32 @@ export default function MutableNotebook({
                sx={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  alignItems: "center",
                }}
             >
-               <Box sx={{ display: "flex", alignItems: "top", gap: 1 }}>
+               <Stack direction="row" spacing={1} alignItems="center">
                   <Typography
+                     variant="overline"
                      sx={{
-                        fontSize: "150%",
-                        minHeight: "56px",
+                        fontSize: "13px",
                         fontWeight: "bold",
+                        verticalAlign: "middle",
                      }}
                   >
-                     Notebook - {notebookPath}
+                     Workbook
                   </Typography>
-               </Box>
+                  <Typography
+                     variant="subtitle2"
+                     sx={{
+                        fontSize: "13px",
+                        fontWeight: "normal",
+                        verticalAlign: "middle",
+                        ml: 1,
+                     }}
+                  >
+                     {`${projectName} > ${packageName} > ${notebookPath}`}
+                  </Typography>
+               </Stack>
                <Stack sx={{ display: "flex", flexDirection: "row", gap: 1 }}>
                   <Box
                      sx={{
@@ -262,11 +269,11 @@ export default function MutableNotebook({
                      }}
                   >
                      <Button
-                        variant="outlined"
                         color="error"
                         onClick={handleDeleteClick}
+                        size="small"
                      >
-                        Delete Notebook
+                        Delete
                      </Button>
                      <Dialog
                         open={deleteDialogOpen}
@@ -282,13 +289,18 @@ export default function MutableNotebook({
                            </DialogContentText>
                         </DialogContent>
                         <DialogActions>
-                           <Button onClick={handleDeleteCancel} color="primary">
+                           <Button
+                              onClick={handleDeleteCancel}
+                              color="primary"
+                              size="small"
+                           >
                               Cancel
                            </Button>
                            <Button
                               onClick={(event) => handleDeleteConfirm(event)}
                               color="error"
                               autoFocus
+                              size="small"
                            >
                               Delete
                            </Button>
@@ -297,17 +309,76 @@ export default function MutableNotebook({
                   </Box>
                </Stack>
             </Stack>
+            <Divider />
+            <Stack
+               sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  width: "100%",
+                  mt: 2,
+               }}
+            >
+               <Box sx={{ flex: 1 }}>
+                  <ModelPicker
+                     initialSelectedModels={notebookData.getModels()}
+                     onModelChange={(models) => {
+                        setNotebookData(notebookData.setModels(models));
+                        saveNotebook();
+                     }}
+                  />
+               </Box>
+               <Box
+                  sx={{
+                     display: "flex",
+                     gap: 1,
+                     justifyContent: "center",
+                     flex: 2,
+                  }}
+               >
+                  <Button
+                     size="small"
+                     startIcon={<AddIcon />}
+                     onClick={() =>
+                        handleAddCell(false, notebookData.getCells().length)
+                     }
+                  >
+                     Explore
+                  </Button>
+                  <Button
+                     size="small"
+                     startIcon={<AddIcon />}
+                     onClick={() =>
+                        handleAddCell(true, notebookData.getCells().length)
+                     }
+                  >
+                     Markdown
+                  </Button>
+               </Box>
+               <Box sx={{ flex: 1 }} />
+            </Stack>
          </StyledCardContent>
-         <ModelPicker
-            initialSelectedModels={notebookData.getModels()}
-            onModelChange={(models) => {
-               setNotebookData(notebookData.setModels(models));
-               saveNotebook();
-            }}
-         />
-
          <StyledCardMedia>
             <Stack>
+               {notebookData.getCells().length === 0 && (
+                  <>
+                     <Typography
+                        sx={{
+                           textAlign: "center",
+                           p: 2,
+                           variant: "subtitle2",
+                           fontWeight: "medium",
+                        }}
+                     >
+                        Workbook is empty
+                     </Typography>
+                     <Typography
+                        variant="body2"
+                        sx={{ textAlign: "center", mb: 2, variant: "body2" }}
+                     >
+                        Click the + buttons to add a markdown or code cell.
+                     </Typography>
+                  </>
+               )}
                {notebookData.getCells().map((cell, index) => (
                   <React.Fragment
                      key={`${index}-${notebookData.getCells().length}`}
@@ -318,6 +389,7 @@ export default function MutableNotebook({
                         sourceAndPaths={getSourceList(sourceAndPaths)}
                         expandCodeCell={expandCodeCells}
                         expandEmbedding={expandEmbeddings}
+                        hideEmbeddingIcons={hideEmbeddingIcons}
                         editingMarkdown={editingMarkdownIndex === index}
                         editingMalloy={editingMalloyIndex === index}
                         onDelete={() => {
@@ -345,9 +417,6 @@ export default function MutableNotebook({
                      />
                   </React.Fragment>
                ))}
-               <Box style={{ paddingRight: "7px", paddingTop: "10px" }}>
-                  {createButtons(notebookData.getCells().length)}
-               </Box>
                <Menu
                   anchorEl={menuAnchorEl}
                   open={menuOpen}
@@ -376,22 +445,6 @@ export default function MutableNotebook({
       </StyledCard>
    );
 }
-function AddIcon() {
-   return (
-      <svg
-         width="24"
-         height="24"
-         viewBox="0 0 24 24"
-         fill="none"
-         xmlns="http://www.w3.org/2000/svg"
-      >
-         <path
-            d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"
-            fill="currentColor"
-         />
-      </svg>
-   );
-}
 
 function ExportMalloyButton({
    notebookData,
@@ -412,8 +465,8 @@ function ExportMalloyButton({
       }
    };
    return (
-      <Button variant="outlined" color="primary" onClick={handleExport}>
-         {copied ? "Copied!" : "Export To Malloy"}
+      <Button color="primary" onClick={handleExport} size="small">
+         {copied ? "Copied!" : "Export"}
       </Button>
    );
 }
