@@ -38,7 +38,6 @@ interface NotebookCellProps {
    editingMalloy?: boolean;
    editingMarkdown?: boolean;
    sourceAndPaths: SourceAndPath[];
-   newCell: React.ReactNode;
    onCellChange: (cell: NotebookCellValue) => void;
    onClose: () => void;
    onEdit: () => void;
@@ -53,7 +52,6 @@ export function MutableCell({
    editingMalloy,
    editingMarkdown,
    sourceAndPaths,
-   newCell,
    onCellChange,
    onClose,
    onEdit,

@@ -1,17 +1,17 @@
 import {
-   Typography,
    Accordion,
-   AccordionSummary,
    AccordionDetails,
+   AccordionSummary,
+   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
 import { Query, QueryresultsApi } from "../../client/api";
 import { StyledCard, StyledCardContent } from "../styles";
 
 import { QueryClient, useMutation } from "@tanstack/react-query";
+import React from "react";
 import { Configuration } from "../../client";
 import { usePackage } from "../Package";
-import React from "react";
 import ResultContainer from "../RenderedResult/ResultContainer";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
@@ -70,17 +70,17 @@ export default function NamedQueries({
 
    const handleAccordionChange =
       (query: Query, queryKey: string) =>
-      (event: React.SyntheticEvent, isExpanded: boolean) => {
-         setExpandedAccordions((prev) => ({
-            ...prev,
-            [queryKey]: isExpanded,
-         }));
+         (_event: React.SyntheticEvent, isExpanded: boolean) => {
+            setExpandedAccordions((prev) => ({
+               ...prev,
+               [queryKey]: isExpanded,
+            }));
 
-         // Trigger mutation only if expanding and we haven't executed this query before
-         if (isExpanded && !namedQueryResults[query.name]) {
-            mutation.mutate({ query });
-         }
-      };
+            // Trigger mutation only if expanding and we haven't executed this query before
+            if (isExpanded && !namedQueryResults[query.name]) {
+               mutation.mutate({ query });
+            }
+         };
 
    if (!namedQueries) {
       return <div> Loading Named Queries</div>;

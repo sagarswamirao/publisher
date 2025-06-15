@@ -204,18 +204,6 @@ export default function MutableNotebook({
       }
       return sourceAndPath;
    };
-   const createButtons = (index: number) => {
-      return (
-         <Button
-            variant="outlined"
-            size="small"
-            startIcon={<AddIcon />}
-            onClick={(e) => handleMenuClick(e, index)}
-         >
-            New Cell
-         </Button>
-      );
-   };
    return (
       <StyledCard variant="outlined">
          <StyledCardContent>
@@ -385,7 +373,6 @@ export default function MutableNotebook({
                   >
                      <MutableCell
                         cell={cell}
-                        newCell={createButtons(index)}
                         sourceAndPaths={getSourceList(sourceAndPaths)}
                         expandCodeCell={expandCodeCells}
                         expandEmbedding={expandEmbeddings}
