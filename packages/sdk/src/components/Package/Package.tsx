@@ -40,7 +40,7 @@ export default function Package({ navigate }: PackageProps) {
             <Databases />
          </Grid>
          <Grid size={{ xs: 12, md: 6 }}>
-            <Connections navigate={navigate} />
+            <Connections />
          </Grid>
          <Grid size={{ xs: 12, md: 12 }}>
             <Schedules />
