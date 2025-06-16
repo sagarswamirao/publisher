@@ -4,6 +4,7 @@ import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useProject } from "./Project";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -34,11 +35,7 @@ export default function Packages({ navigate }: PackagesProps) {
 
    return (
       <>
-         {!isSuccess && !isError && (
-            <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-               Fetching Packages...
-            </Typography>
-         )}
+         {!isSuccess && !isError && <Loading text="Fetching Packages..." />}
          {isSuccess && (
             <StyledCard variant="outlined">
                <StyledCardContent>

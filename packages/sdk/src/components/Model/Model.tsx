@@ -23,7 +23,7 @@ import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
 import "@malloydata/malloy-explorer/styles.css";
 import { usePackage } from "../Package/PackageProvider";
 import { SourceExplorerComponent } from "./SourcesExplorer";
-import NamedQueries from "./NamedQueries";
+import { Loading } from "../Loading";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -118,11 +118,7 @@ export default function Model({
    );
 
    if (isLoading) {
-      return (
-         <Typography sx={{ p: "20px", m: "auto" }}>
-            Fetching Model...
-         </Typography>
-      );
+      return <Loading text="Fetching Model..." />;
    }
 
    if (isError) {

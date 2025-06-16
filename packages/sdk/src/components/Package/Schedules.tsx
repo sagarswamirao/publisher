@@ -15,6 +15,7 @@ import { Configuration, SchedulesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 const schedulesApi = new SchedulesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -41,11 +42,7 @@ export default function Schedules() {
    );
 
    if (isLoading) {
-      return (
-         <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-            Fetching Schedules...
-         </Typography>
-      );
+      return <Loading text="Fetching Schedules..." />;
    }
 
    if (isError) {

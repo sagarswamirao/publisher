@@ -18,6 +18,7 @@ import { Configuration, Database, DatabasesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 const databasesApi = new DatabasesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -83,9 +84,7 @@ export default function Databases() {
                   }}
                >
                   {!isSuccess && !isError && (
-                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                        Fetching Databases...
-                     </Typography>
+                     <Loading text="Fetching Databases..." />
                   )}
                   {isError && (
                      <ApiErrorDisplay

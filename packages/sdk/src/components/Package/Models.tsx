@@ -6,6 +6,7 @@ import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
@@ -52,11 +53,7 @@ export default function Models({ navigate }: ModelsProps) {
                   overflowY: "auto",
                }}
             >
-               {!isSuccess && !isError && (
-                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     Fetching Models...
-                  </Typography>
-               )}
+               {!isSuccess && !isError && <Loading text="Fetching Models..." />}
                {isError && (
                   <ApiErrorDisplay
                      error={error}

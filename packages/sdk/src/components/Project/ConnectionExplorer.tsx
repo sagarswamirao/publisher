@@ -26,6 +26,7 @@ import { ConnectionsApi } from "../../client/api";
 import { Configuration } from "../../client/configuration";
 import { useProject } from "./Project";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -92,11 +93,7 @@ export default function ConnectionExplorer({
                </Box>
                <Divider />
                <Box sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}>
-                  {isLoading && (
-                     <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-                        Fetching Table Paths...
-                     </Typography>
-                  )}
+                  {isLoading && <Loading text="Fetching Table Paths..." />}
                   {isError && (
                      <ApiErrorDisplay
                         error={error}
@@ -242,11 +239,7 @@ function TableViewer({
             </IconButton>
          </DialogTitle>
          <DialogContent>
-            {isLoading && (
-               <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-                  Fetching Table Details...
-               </Typography>
-            )}
+            {isLoading && <Loading text="Fetching Table Details..." />}
             {isError && (
                <ApiErrorDisplay
                   error={error}
@@ -326,11 +319,7 @@ function TablesInSchema({
          </Typography>
          <Divider />
          <Box sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}>
-            {isLoading && (
-               <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-                  Fetching Tables...
-               </Typography>
-            )}
+            {isLoading && <Loading text="Fetching Tables..." />}
             {isError && (
                <ApiErrorDisplay
                   error={error}

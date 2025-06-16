@@ -1,14 +1,12 @@
 import { Suspense, lazy } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
-import axios from "axios";
-import { Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { usePackage } from "../Package/PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
-axios.defaults.baseURL = "http://localhost:4000";
 const queryResultsApi = new QueryresultsApi(new Configuration());
 const queryClient = new QueryClient();
 
@@ -67,9 +65,7 @@ export default function QueryResult({
    return (
       <>
          {!isSuccess && !isError && (
-            <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-               Fetching Query Results...
-            </Typography>
+            <Loading text="Fetching Query Results..." />
          )}
          {isSuccess && (
             <Suspense fallback={<div>Loading...</div>}>
