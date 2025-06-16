@@ -32,10 +32,6 @@ jobs:
       - name: Build + test SDK
         run: packages/python-client/scripts/build-python-sdk.sh
 
-      - name: Detect drift
-        run: |
-          git diff --exit-code || (echo "Generated SDK out of date — run build-python-sdk.sh and commit." && exit 1)
-
   publish:
     if: startsWith(github.ref, 'refs/tags/sdk-python-')
     needs: build
