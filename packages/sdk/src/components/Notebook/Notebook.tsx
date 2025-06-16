@@ -213,7 +213,14 @@ export default function Notebook({
                         key={index}
                      />
                   ))}
-               {isError && (
+               {isError && error.data?.code === 404 && (
+                  <Typography>
+                     <code>{`${projectName} > ${packageName} > ${notebookPath}`}</code>{" "}
+                     not found.
+                  </Typography>
+               )}
+
+               {isError && error.data?.code !== 404 && (
                   <ApiErrorDisplay
                      error={error}
                      context={`${projectName} > ${packageName} > ${notebookPath}`}

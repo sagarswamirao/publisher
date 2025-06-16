@@ -4,7 +4,7 @@ import React from "react";
 export interface ApiError extends Error {
    status?: number;
    data?: {
-      code: string;
+      code: number;
       message: string;
    };
 }

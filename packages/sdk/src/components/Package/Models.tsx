@@ -60,7 +60,7 @@ export default function Models({ navigate }: ModelsProps) {
                      context={`${projectName} > ${packageName} > Models`}
                   />
                )}
-               {isSuccess && (
+               {isSuccess && data.data.length > 0 && (
                   <FileTreeView
                      items={data.data.sort((a, b) => {
                         return a.path.localeCompare(b.path);
@@ -68,6 +68,9 @@ export default function Models({ navigate }: ModelsProps) {
                      navigate={navigate}
                      defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
                   />
+               )}
+               {isSuccess && data.data.length === 0 && (
+                  <Typography>No models found.</Typography>
                )}
             </Box>
          </StyledCardContent>

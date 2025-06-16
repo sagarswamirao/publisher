@@ -60,7 +60,7 @@ export default function Notebooks({ navigate }: NotebooksProps) {
                      context={`${projectName} > ${packageName} > Notebooks`}
                   />
                )}
-               {isSuccess && (
+               {isSuccess && data.data.length > 0 && (
                   <FileTreeView
                      items={data.data.sort((a, b) => {
                         return a.path.localeCompare(b.path);
@@ -68,6 +68,9 @@ export default function Notebooks({ navigate }: NotebooksProps) {
                      defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
                      navigate={navigate}
                   />
+               )}
+               {isSuccess && data.data.length === 0 && (
+                  <Typography>No notebooks found.</Typography>
                )}
             </Box>
          </StyledCardContent>

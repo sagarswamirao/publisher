@@ -147,8 +147,8 @@ describe("service/package", () => {
                      "model2.malloynb",
                      {
                         getPath: () => "model2.malloynb",
-                        getNotebook: () => {
-                           throw new Error("This is the error");
+                        getNotebookError: () => {
+                           return "This is the error";
                         },
                      } as any,
                   ],

@@ -177,15 +177,7 @@ export class Package {
                return modelPath.endsWith(NOTEBOOK_FILE_SUFFIX);
             })
             .map(async (modelPath) => {
-               let error: string | undefined;
-               try {
-                  await this.models.get(modelPath)?.getNotebook();
-               } catch (modelError) {
-                  error =
-                     modelError instanceof Error
-                        ? modelError.message
-                        : undefined;
-               }
+               const error = this.models.get(modelPath)?.getNotebookError();
                return {
                   projectName: this.projectName,
                   packageName: this.packageName,
