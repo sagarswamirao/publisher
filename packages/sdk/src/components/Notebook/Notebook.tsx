@@ -18,6 +18,7 @@ import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { NotebookCell } from "./NotebookCell";
 import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
 import { AxiosError } from "axios";
+import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
@@ -191,9 +192,7 @@ export default function Notebook({
          <StyledCardMedia>
             <Stack spacing={1} component="section">
                {!isSuccess && !isError && (
-                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     Fetching Notebook...
-                  </Typography>
+                  <Loading text="Fetching Notebook..." />
                )}
                {isSuccess &&
                   notebook.notebookCells?.map((cell, index) => (

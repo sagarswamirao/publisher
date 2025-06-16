@@ -5,6 +5,7 @@ import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { useProject } from "./Project";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 const projectsApi = new ProjectsApi(new Configuration());
 const queryClient = new QueryClient();
@@ -31,11 +32,7 @@ export default function About() {
 
    return (
       <>
-         {!isSuccess && !isError && (
-            <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-               Fetching About...
-            </Typography>
-         )}
+         {!isSuccess && !isError && <Loading text="Fetching About..." />}
          {isSuccess && (
             <StyledCard variant="outlined">
                <StyledCardContent>

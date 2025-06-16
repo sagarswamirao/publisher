@@ -8,6 +8,7 @@ import {
    useRef,
    useState,
 } from "react";
+import { Loading } from "../Loading";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
@@ -78,6 +79,7 @@ export default function ResultContainer({
    if (!result) {
       return null;
    }
+   const loading = <Loading text="Loading..." centered={false} size={32} />;
    const renderedHeight = isFillElement
       ? isExpanded
          ? maxHeight - 40
@@ -117,7 +119,7 @@ export default function ResultContainer({
                }}
             >
                {(result && (
-                  <Suspense fallback={<div>Loading result...</div>}>
+                  <Suspense fallback={loading}>
                      <RenderedResult
                         result={result}
                         height={renderedHeight}
@@ -127,7 +129,8 @@ export default function ResultContainer({
                         onSizeChange={handleSizeChange}
                      />
                   </Suspense>
-               )) || <div> Loading...</div>}
+               )) ||
+                  loading}
             </Box>
 
             {/* Toggle button - only show if content exceeds container height */}

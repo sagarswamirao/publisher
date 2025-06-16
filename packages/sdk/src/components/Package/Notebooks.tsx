@@ -5,6 +5,7 @@ import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
@@ -19,7 +20,7 @@ export default function Notebooks({ navigate }: NotebooksProps) {
    const { server, projectName, packageName, versionId, accessToken } =
       usePackage();
 
-   const { data, isLoading, isError, error, isSuccess } = useQuery(
+   const { data, isError, error, isSuccess } = useQuery(
       {
          queryKey: ["notebooks", server, projectName, packageName, versionId],
          queryFn: () =>
@@ -51,9 +52,7 @@ export default function Notebooks({ navigate }: NotebooksProps) {
                }}
             >
                {!isSuccess && !isError && (
-                  <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
-                     Fetching Notebooks...
-                  </Typography>
+                  <Loading text="Fetching Notebooks..." />
                )}
                {isError && (
                   <ApiErrorDisplay

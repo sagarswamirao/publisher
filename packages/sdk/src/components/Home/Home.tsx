@@ -1,10 +1,9 @@
 import { Grid, Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ProjectsApi, Configuration } from "../../client";
-import axios from "axios";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 
-axios.defaults.baseURL = "http://localhost:4000";
 const projectsApi = new ProjectsApi(new Configuration());
 const queryClient = new QueryClient();
 
@@ -63,6 +62,6 @@ export default function Home({ server, navigate }: HomeProps) {
          );
       }
    } else {
-      return <Typography variant="h6">Loading projects...</Typography>;
+      return <Loading text="Loading projects..." />;
    }
 }
