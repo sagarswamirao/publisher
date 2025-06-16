@@ -208,6 +208,10 @@ export class Model {
       }
    }
 
+   public getNotebookError(): MalloyError | Error | undefined {
+      return this.compilationError;
+   }
+
    public async getNotebook(): Promise<ApiCompiledNotebook> {
       if (this.compilationError) {
          throw this.compilationError;

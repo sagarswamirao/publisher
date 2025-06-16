@@ -22,6 +22,7 @@ function httpError(code: number, message: string) {
    return {
       status: code,
       json: {
+         code,
          message: message,
       },
    };
