@@ -54,7 +54,9 @@ asyncio.run(main())
 
 ---
 
-## Regenerating the SDK (maintainers)
+## Development
+
+### Regenerating the SDK
 
 When the OpenAPI spec (`api-doc.yaml`) changes, run the helper script and commit the diff:
 
@@ -65,17 +67,44 @@ scripts/build-python-sdk.sh
 
 The script performs:
 1. Spec validation
-2. Code generation via **OpenAPI Generator** (`library=pydantic-v2`)
-3. Formatting, linting, type-checking
-4. Test execution
+2. Code generation via **openapi-python-client**
+3. Version synchronization
+4. Formatting, linting, type-checking
+5. Test execution
+
+### Building the Package
+
+To build the Python package for distribution:
+
+```bash
+# Build only (for testing)
+./scripts/build-package.sh
+
+# Or build as part of SDK generation
+BUILD_PACKAGE=true ./scripts/build-python-sdk.sh
+```
+
+This creates wheel and source distributions in the `dist/` directory.
+
+
+#### Version Management
+
+The package version is managed in `pyproject.toml`. Update the version there and run the build script to synchronize it across all files.
 
 ---
 
 ## Contributing
-Pull requests welcome!  Make sure `./scripts/build-python-sdk.sh` passes before opening a PR.
+
+Pull requests welcome! Make sure `./scripts/build-python-sdk.sh` passes before opening a PR.
+
+For packaging changes, also verify:
+```bash
+./scripts/build-package.sh  # Test package building
+pip install dist/*.whl      # Test local installation
+```
 
 ---
 
-
 ## License
+
 MIT © Malloy Data

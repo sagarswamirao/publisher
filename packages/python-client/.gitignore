@@ -33,4 +33,14 @@ htmlcov/
 .ruff_cache/
 
 # MkDocs
-site/ 
+site/
+
+# PyPI configuration (contains secrets)
+.pypirc
+
+# Temporary files
+*.bak
+*.tmp
+
+malloy_publisher_sdk/*
+!malloy_publisher_sdk/__init__.py

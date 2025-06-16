@@ -1,11 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "malloy_publisher_sdk"
+name = "malloy-publisher-sdk"
 version = "0.1.0"
 requires-python = ">=3.9"
-description = "Auto-generated client for Malloy Publisher"
-authors = [ {name = "Malloy Data"} ]
+description = "Auto-generated Python client for the Malloy Publisher REST API"
+authors = [
+    {name = "Malloy Publisher", email = "xxx@ms2.co"}
+]
+maintainers = [
+    {name = "Malloy Publisher", email = "xxx@ms2.co"}
+]
 license = {text = "MIT"}
 readme = "README.md"
+homepage = "https://github.com/malloydata/publisher"
+repository = "https://github.com/malloydata/publisher"
+documentation = "https://malloydata.github.io/malloy/"
+keywords = ["malloy", "api", "client", "sdk", "rest", "openapi"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Typing :: Typed",
+]
 
 # Runtime dependencies generated client relies on
 dependencies = [
@@ -34,6 +61,11 @@ dev = [
     "ruff>=0.4.1",
     "pyright>=1.1.360"
 ]
+
+[project.urls]
+"Bug Reports" = "https://github.com/malloydata/publisher/issues"
+"Source" = "https://github.com/malloydata/publisher"
+"Documentation" = "https://malloydata.github.io/malloy/"
 
 [tool.pytest.ini_options]
 addopts = "--cov=malloy_publisher_sdk"

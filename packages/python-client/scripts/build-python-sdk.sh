@@ -39,22 +39,36 @@ uvx openapi-python-client generate \
     --output-path "$SDK_OUTPUT_DIR" \
     --overwrite
 
-# Step 5: Format generated code
+# Step 5: Add version to __init__.py
+echo "Adding version to SDK __init__.py..."
+VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+sed -i.bak "s/__version__ = \".*\"/__version__ = \"$VERSION\"/" "$SDK_OUTPUT_DIR/__init__.py" && rm "$SDK_OUTPUT_DIR/__init__.py.bak"
+
+# Step 6: Format generated code
 echo "Formatting generated code..."
 black "$SDK_OUTPUT_DIR" tests
 ruff check "$SDK_OUTPUT_DIR" tests --fix
 
-# Step 6: Type check
+# Step 7: Type check
 echo "Type checking..."
 pyright "$SDK_OUTPUT_DIR" tests || true
 
-# Step 7: Run tests
+# Step 8: Run tests
 echo "Running tests..."
 # Ensure the current directory is in PYTHONPATH so malloy_publisher_sdk is found
 export PYTHONPATH=$(pwd):${PYTHONPATH:-}
 pytest tests/
 
-# Step 8: Clean up build artifacts (not the SDK itself)
+# Step 9: Build package (optional, for validation)
+if [ "${BUILD_PACKAGE:-}" = "true" ]; then
+    echo "Building package..."
+    uv pip install build
+    rm -rf build/ dist/ *.egg-info/
+    python -m build
+    echo "Package built successfully in dist/"
+fi
+
+# Step 10: Clean up build artifacts (not the SDK itself)
 find . -type d -name "__pycache__" -exec rm -rf {} + # General cleanup
 find "$SDK_OUTPUT_DIR" -type d -name "__pycache__" -exec rm -rf {} + # SDK specific
 find . -type f -name "*.pyc" -delete
