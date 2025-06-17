@@ -18,13 +18,12 @@ import {
    SourcePanel,
 } from "@malloydata/malloy-explorer";
 import { styled } from "@mui/material/styles";
-import { QueryClient, useMutation } from "@tanstack/react-query";
 import React from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { usePackage } from "../Package/PackageProvider";
+import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
-const queryClient = new QueryClient();
 
 export interface SourceAndPath {
    modelPath: string;
@@ -83,8 +82,8 @@ export function SourcesExplorer({
    const [selectedTab, setSelectedTab] = React.useState(
       existingSourceName
          ? sourceAndPaths.findIndex(
-            (entry) => entry.sourceInfo.name === existingSourceName,
-         )
+              (entry) => entry.sourceInfo.name === existingSourceName,
+           )
          : 0,
    );
 
@@ -174,47 +173,44 @@ export function SourceExplorerComponent({
    }, [onChange, query]);
    const { server, projectName, packageName, versionId, accessToken } =
       usePackage();
-   const mutation = useMutation(
-      {
-         mutationFn: () => {
-            const malloy = new QueryBuilder.ASTQuery({
-               source: sourceAndPath.sourceInfo,
-               query: query?.malloyQuery,
-            }).toMalloy();
+   const mutation = useMutationWithApiError({
+      mutationFn: () => {
+         const malloy = new QueryBuilder.ASTQuery({
+            source: sourceAndPath.sourceInfo,
+            query: query?.malloyQuery,
+         }).toMalloy();
+         setQuery({
+            ...query,
+            query: malloy,
+         });
+         return queryResultsApi.executeQuery(
+            projectName,
+            packageName,
+            sourceAndPath.modelPath,
+            malloy,
+            undefined,
+            // sourceInfo.name,
+            undefined,
+            versionId,
+            {
+               baseURL: server,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
+            },
+         );
+      },
+      onSuccess: (data) => {
+         if (data) {
+            const parsedResult = JSON.parse(data.data.result);
             setQuery({
                ...query,
-               query: malloy,
+               malloyResult: parsedResult as Malloy.Result,
             });
-            return queryResultsApi.executeQuery(
-               projectName,
-               packageName,
-               sourceAndPath.modelPath,
-               malloy,
-               undefined,
-               // sourceInfo.name,
-               undefined,
-               versionId,
-               {
-                  baseURL: server,
-                  withCredentials: !accessToken,
-                  headers: {
-                     Authorization: accessToken && `Bearer ${accessToken}`,
-                  },
-               },
-            );
-         },
-         onSuccess: (data) => {
-            if (data) {
-               const parsedResult = JSON.parse(data.data.result);
-               setQuery({
-                  ...query,
-                  malloyResult: parsedResult as Malloy.Result,
-               });
-            }
-         },
+         }
       },
-      queryClient,
-   );
+   });
 
    const [oldSourceInfo, setOldSourceInfo] = React.useState(
       sourceAndPath.sourceInfo.name,
@@ -303,16 +299,16 @@ export function SourceExplorerComponent({
                         submittedQuery={
                            query?.malloyQuery
                               ? {
-                                 executionState: mutation.isPending
-                                    ? "running"
-                                    : "finished",
-                                 response: {
-                                    result: query.malloyResult,
-                                 },
-                                 query: query.malloyQuery,
-                                 queryResolutionStartMillis: Date.now(),
-                                 onCancel: mutation.reset,
-                              }
+                                   executionState: mutation.isPending
+                                      ? "running"
+                                      : "finished",
+                                   response: {
+                                      result: query.malloyResult,
+                                   },
+                                   query: query.malloyQuery,
+                                   queryResolutionStartMillis: Date.now(),
+                                   onCancel: mutation.reset,
+                                }
                               : undefined
                         }
                         options={{ showRawQuery: true }}

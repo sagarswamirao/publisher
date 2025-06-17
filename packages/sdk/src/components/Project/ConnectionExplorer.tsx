@@ -21,15 +21,14 @@ import {
    TableHead,
    TableRow,
 } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ConnectionsApi } from "../../client/api";
 import { Configuration } from "../../client/configuration";
 import { useProject } from "./Project";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
-const queryClient = new QueryClient();
 
 interface ConnectionExplorerProps {
    connectionName: string;
@@ -47,22 +46,17 @@ export default function ConnectionExplorer({
       null,
    );
    const [showHiddenSchemas, setShowHiddenSchemas] = React.useState(false);
-   const { data, isSuccess, isError, error, isLoading } = useQuery(
-      {
-         queryKey: ["tablePath", server, projectName, connectionName],
-         queryFn: () =>
-            connectionsApi.listSchemas(projectName, connectionName, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+   const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
+      queryKey: ["tablePath", server, projectName, connectionName],
+      queryFn: () =>
+         connectionsApi.listSchemas(projectName, connectionName, {
+            baseURL: server,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
+         }),
+   });
 
    return (
       <Grid container spacing={2}>
@@ -174,35 +168,30 @@ function TableViewer({
 }: TableViewerProps) {
    const { server, projectName, accessToken } = useProject();
 
-   const { data, isSuccess, isError, error, isLoading } = useQuery(
-      {
-         queryKey: [
-            "tablePathSchema",
-            server,
+   const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
+      queryKey: [
+         "tablePathSchema",
+         server,
+         projectName,
+         connectionName,
+         schemaName,
+         tableName,
+      ],
+      queryFn: () =>
+         connectionsApi.getTablesource(
             projectName,
             connectionName,
-            schemaName,
             tableName,
-         ],
-         queryFn: () =>
-            connectionsApi.getTablesource(
-               projectName,
-               connectionName,
-               tableName,
-               `${schemaName}.${tableName}`,
-               {
-                  baseURL: server,
-                  withCredentials: !accessToken,
-                  headers: {
-                     Authorization: accessToken && `Bearer ${accessToken}`,
-                  },
+            `${schemaName}.${tableName}`,
+            {
+               baseURL: server,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
                },
-            ),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+            },
+         ),
+   });
 
    if (isSuccess && data) {
       console.log(data);
@@ -289,28 +278,23 @@ function TablesInSchema({
 }: TablesInSchemaProps) {
    const { server, projectName, accessToken } = useProject();
 
-   const { data, isSuccess, isError, error, isLoading } = useQuery(
-      {
-         queryKey: [
-            "tablesInSchema",
-            server,
-            projectName,
-            connectionName,
-            schemaName,
-         ],
-         queryFn: () =>
-            connectionsApi.listTables(projectName, connectionName, schemaName, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+   const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
+      queryKey: [
+         "tablesInSchema",
+         server,
+         projectName,
+         connectionName,
+         schemaName,
+      ],
+      queryFn: () =>
+         connectionsApi.listTables(projectName, connectionName, schemaName, {
+            baseURL: server,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
+         }),
+   });
 
    return (
       <>

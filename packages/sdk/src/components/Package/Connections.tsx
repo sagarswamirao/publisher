@@ -7,15 +7,14 @@ import {
    TableRow,
    Typography,
 } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
-const queryClient = new QueryClient();
 
 // TODO(jjs) - Move this UI to the ConnectionExplorer component
 function Connection({ connection }: { connection: ApiConnection }) {
@@ -34,22 +33,17 @@ function Connection({ connection }: { connection: ApiConnection }) {
 export default function Connections() {
    const { server, projectName, accessToken } = usePackage();
 
-   const { data, isSuccess, isError, error } = useQuery(
-      {
-         queryKey: ["connections", server, projectName],
-         queryFn: () =>
-            connectionsApi.listConnections(projectName, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+   const { data, isSuccess, isError, error } = useQueryWithApiError({
+      queryKey: ["connections", server, projectName],
+      queryFn: () =>
+         connectionsApi.listConnections(projectName, {
+            baseURL: server,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
+         }),
+   });
 
    return (
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>

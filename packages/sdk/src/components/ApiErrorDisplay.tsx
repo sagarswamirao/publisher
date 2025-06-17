@@ -14,6 +14,7 @@ interface ApiErrorDisplayProps {
 }
 
 export function ApiErrorDisplay({ error, context }: ApiErrorDisplayProps) {
+   const errorMessage = error.data?.message || "Unknown Error";
    return (
       <>
          {context && (
@@ -21,18 +22,17 @@ export function ApiErrorDisplay({ error, context }: ApiErrorDisplayProps) {
                {context}
             </Typography>
          )}
-         {error.data && (
-            <pre
-               style={{
-                  whiteSpace: "pre-wrap",
-                  color: "red",
-                  padding: "10px",
-                  margin: "auto",
-               }}
-            >
-               {error.data.message}
-            </pre>
-         )}
+
+         <pre
+            style={{
+               whiteSpace: "pre-wrap",
+               color: "red",
+               padding: "10px",
+               margin: "auto",
+            }}
+         >
+            {errorMessage}
+         </pre>
       </>
    );
 }

@@ -1,16 +1,13 @@
 import { Box, Divider, Typography } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { Configuration, ModelsApi } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
-axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
-const queryClient = new QueryClient();
 
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
 
@@ -22,22 +19,17 @@ export default function Models({ navigate }: ModelsProps) {
    const { server, projectName, packageName, versionId, accessToken } =
       usePackage();
 
-   const { data, isError, error, isSuccess } = useQuery(
-      {
-         queryKey: ["models", server, projectName, packageName, versionId],
-         queryFn: () =>
-            modelsApi.listModels(projectName, packageName, versionId, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
-         throwOnError: false,
-         retry: false,
-      },
-      queryClient,
-   );
+   const { data, isError, error, isSuccess } = useQueryWithApiError({
+      queryKey: ["models", server, projectName, packageName, versionId],
+      queryFn: () =>
+         modelsApi.listModels(projectName, packageName, versionId, {
+            baseURL: server,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
+         }),
+   });
 
    return (
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
