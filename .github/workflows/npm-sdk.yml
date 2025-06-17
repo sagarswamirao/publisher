@@ -7,7 +7,7 @@ on:
         description: 'Version number (e.g., 1.0.0)'
         required: true
         type: string
-        default: '0.0.41'
+        default: '0.0.XX'
 
 jobs:
   publish:
@@ -41,13 +41,24 @@ jobs:
         run: |
           npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/sdk
 
-      - name: Commit updated package.json
+      - name: Create version update branch
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "${{ github.actor }}"
+          
+          # Create and switch to a new branch
+          BRANCH_NAME="update-sdk-version-${{ inputs.version }}"
+          git checkout -b $BRANCH_NAME
+          
+          # Stage and commit the changes
           git add packages/sdk/package.json
           git commit -s -m "Update SDK version to ${{ inputs.version }}"
-          git push
+          
+          # Push the branch
+          git push origin $BRANCH_NAME
+          
+          echo "::notice title=Branch Created::Created branch $BRANCH_NAME with version update"
+          echo "::notice title=Next Step::Please create a pull request from branch $BRANCH_NAME to main"
 
       - name: Build package
         run: |
