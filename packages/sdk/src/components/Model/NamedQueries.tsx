@@ -8,14 +8,13 @@ import { Box } from "@mui/system";
 import { Query, QueryresultsApi } from "../../client/api";
 import { StyledCard, StyledCardContent } from "../styles";
 
-import { QueryClient, useMutation } from "@tanstack/react-query";
 import React from "react";
 import { Configuration } from "../../client";
 import { usePackage } from "../Package";
 import ResultContainer from "../RenderedResult/ResultContainer";
+import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
-const queryClient = new QueryClient();
 
 interface NamedQueryProps {
    modelPath: string;
@@ -35,52 +34,49 @@ export default function NamedQueries({
       Record<string, boolean>
    >({});
 
-   const mutation = useMutation(
-      {
-         mutationFn: ({ query }: { query: Query }) => {
-            const val = queryResultsApi.executeQuery(
-               projectName,
-               packageName,
-               modelPath,
-               undefined,
-               undefined,
-               query.name,
-               versionId,
-               {
-                  baseURL: server,
-                  withCredentials: !accessToken,
-                  headers: {
-                     Authorization: accessToken && `Bearer ${accessToken}`,
-                  },
+   const mutation = useMutationWithApiError({
+      mutationFn: ({ query }: { query: Query }) => {
+         const val = queryResultsApi.executeQuery(
+            projectName,
+            packageName,
+            modelPath,
+            undefined,
+            undefined,
+            query.name,
+            versionId,
+            {
+               baseURL: server,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
                },
-            );
-            return val;
-         },
-         onSuccess: (data, { query }: { query: Query }) => {
-            if (data) {
-               setNamedQueryResults((prev) => ({
-                  ...prev,
-                  [query.name]: data.data.result,
-               }));
-            }
-         },
+            },
+         );
+         return val;
       },
-      queryClient,
-   );
+      onSuccess: (data, { query }: { query: Query }) => {
+         if (data) {
+            setNamedQueryResults((prev) => ({
+               ...prev,
+               [query.name]: data.data.result,
+            }));
+         }
+      },
+   });
 
    const handleAccordionChange =
       (query: Query, queryKey: string) =>
-         (_event: React.SyntheticEvent, isExpanded: boolean) => {
-            setExpandedAccordions((prev) => ({
-               ...prev,
-               [queryKey]: isExpanded,
-            }));
+      (_event: React.SyntheticEvent, isExpanded: boolean) => {
+         setExpandedAccordions((prev) => ({
+            ...prev,
+            [queryKey]: isExpanded,
+         }));
 
-            // Trigger mutation only if expanding and we haven't executed this query before
-            if (isExpanded && !namedQueryResults[query.name]) {
-               mutation.mutate({ query });
-            }
-         };
+         // Trigger mutation only if expanding and we haven't executed this query before
+         if (isExpanded && !namedQueryResults[query.name]) {
+            mutation.mutate({ query });
+         }
+      };
 
    if (!namedQueries) {
       return <div> Loading Named Queries</div>;

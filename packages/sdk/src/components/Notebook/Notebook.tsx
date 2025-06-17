@@ -1,40 +1,42 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
+   Box,
    CardActions,
    Collapse,
    Divider,
    IconButton,
+   Stack,
    Tooltip,
    Typography,
 } from "@mui/material";
-import Stack from "@mui/material/Stack";
-import { QueryClient, useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import React, { useEffect } from "react";
-import { CompiledNotebook, Configuration, NotebooksApi } from "../../client";
-import { ApiError, ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Configuration, NotebooksApi, CompiledNotebook } from "../../client";
 import { highlight } from "../highlighter";
-import { Loading } from "../Loading";
-import { usePackage } from "../Package";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { NotebookCell } from "./NotebookCell";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import "@malloydata/malloy-explorer/styles.css";
+import { usePackage } from "../Package/PackageProvider";
+import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
-const queryClient = new QueryClient();
 
 interface NotebookProps {
    notebookPath: string;
-   expandCodeCells?: boolean;
-   hideCodeCellIcons?: boolean;
+   versionId?: string;
+   expandResults?: boolean;
+   hideResultIcons?: boolean;
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
 }
+
 // Requires PackageProvider
 export default function Notebook({
    notebookPath,
-   expandCodeCells,
-   hideCodeCellIcons,
+   expandResults,
+   hideResultIcons,
    expandEmbeddings,
    hideEmbeddingIcons,
 }: NotebookProps) {
@@ -62,57 +64,32 @@ export default function Notebook({
       isSuccess,
       isError,
       error,
-   } = useQuery<CompiledNotebook, ApiError>(
-      {
-         queryKey: [
-            "notebook",
-            server,
+   } = useQueryWithApiError<CompiledNotebook>({
+      queryKey: [
+         "notebook",
+         server,
+         projectName,
+         packageName,
+         notebookPath,
+         versionId,
+      ],
+      queryFn: async () => {
+         const response = await notebooksApi.getNotebook(
             projectName,
             packageName,
             notebookPath,
             versionId,
-         ],
-         queryFn: async () => {
-            try {
-               const response = await notebooksApi.getNotebook(
-                  projectName,
-                  packageName,
-                  notebookPath,
-                  versionId,
-                  {
-                     baseURL: server,
-                     withCredentials: !accessToken,
-                     headers: {
-                        Authorization: accessToken && `Bearer ${accessToken}`,
-                     },
-                  },
-               );
-               return response.data;
-            } catch (err) {
-               // If it's an Axios error, it will have response data
-               if (err && typeof err === "object" && "response" in err) {
-                  const axiosError = err as AxiosError<{
-                     code: string;
-                     message: string;
-                  }>;
-                  if (axiosError.response?.data) {
-                     const apiError: ApiError = new Error(
-                        axiosError.response.data.message || axiosError.message,
-                     );
-                     apiError.status = axiosError.response.status;
-                     apiError.data = axiosError.response.data;
-                     throw apiError;
-                  }
-               }
-               // For other errors, throw as is
-               throw err;
-            }
-         },
-         retry: false,
-         throwOnError: false,
+            {
+               baseURL: server,
+               withCredentials: !accessToken,
+               headers: {
+                  Authorization: accessToken && `Bearer ${accessToken}`,
+               },
+            },
+         );
+         return response.data;
       },
-      queryClient,
-   );
+   });
 
    return (
       <StyledCard variant="outlined">
@@ -206,8 +183,8 @@ export default function Notebook({
                            notebookPath,
                            cell.text,
                         )}
-                        expandCodeCell={expandCodeCells}
-                        hideCodeCellIcon={hideCodeCellIcons}
+                        expandCodeCell={expandResults}
+                        hideCodeCellIcon={hideResultIcons}
                         expandEmbedding={expandEmbeddings}
                         hideEmbeddingIcon={hideEmbeddingIcons}
                         key={index}

@@ -12,16 +12,15 @@ import {
    TableRow,
    Typography,
 } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const databasesApi = new DatabasesApi(new Configuration());
-const queryClient = new QueryClient();
 
 export default function Databases() {
    const { server, projectName, packageName, versionId, accessToken } =
@@ -41,22 +40,17 @@ export default function Databases() {
       setSelectedDatabase(null);
    };
 
-   const { data, isError, error, isSuccess } = useQuery(
-      {
-         queryKey: ["databases", server, projectName, packageName, versionId],
-         queryFn: () =>
-            databasesApi.listDatabases(projectName, packageName, versionId, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+   const { data, isError, error, isSuccess } = useQueryWithApiError({
+      queryKey: ["databases", server, projectName, packageName, versionId],
+      queryFn: () =>
+         databasesApi.listDatabases(projectName, packageName, versionId, {
+            baseURL: server,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
+         }),
+   });
    const formatRowSize = (size: number) => {
       if (size >= 1024 * 1024 * 1024 * 1024) {
          return `${(size / (1024 * 1024 * 1024)).toFixed(2)} T`;

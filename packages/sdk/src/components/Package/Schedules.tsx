@@ -10,36 +10,30 @@ import {
    TableRow,
    Typography,
 } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, SchedulesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const schedulesApi = new SchedulesApi(new Configuration());
-const queryClient = new QueryClient();
 
 export default function Schedules() {
    const { server, projectName, packageName, versionId, accessToken } =
       usePackage();
 
-   const { data, isError, isLoading, error } = useQuery(
-      {
-         queryKey: ["schedules", server, projectName, packageName, versionId],
-         queryFn: () =>
-            schedulesApi.listSchedules(projectName, packageName, versionId, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+   const { data, isError, isLoading, error } = useQueryWithApiError({
+      queryKey: ["schedules", server, projectName, packageName, versionId],
+      queryFn: () =>
+         schedulesApi.listSchedules(projectName, packageName, versionId, {
+            baseURL: server,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
+         }),
+   });
 
    if (isLoading) {
       return <Loading text="Fetching Schedules..." />;

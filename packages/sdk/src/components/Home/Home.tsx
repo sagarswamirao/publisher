@@ -1,11 +1,10 @@
 import { Grid, Typography } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import { ProjectsApi, Configuration } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const projectsApi = new ProjectsApi(new Configuration());
-const queryClient = new QueryClient();
 
 interface HomeProps {
    server?: string;
@@ -13,18 +12,14 @@ interface HomeProps {
 }
 
 export default function Home({ server, navigate }: HomeProps) {
-   const { data, isSuccess, isError, error } = useQuery(
-      {
-         queryKey: ["projects", server],
-         queryFn: () =>
-            projectsApi.listProjects({
-               baseURL: server,
-            }),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+   const { data, isSuccess, isError, error } = useQueryWithApiError({
+      queryKey: ["projects", server],
+      queryFn: () =>
+         projectsApi.listProjects({
+            baseURL: server,
+            withCredentials: true,
+         }),
+   });
 
    console.log(JSON.stringify(data?.data, null, 2));
 

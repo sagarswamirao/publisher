@@ -12,22 +12,20 @@ import {
    Tooltip,
    Typography,
 } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import { Configuration, ModelsApi, CompiledModel } from "../../client";
 import { highlight } from "../highlighter";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { ModelCell } from "./ModelCell";
-import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 import "@malloydata/malloy-explorer/styles.css";
 import { usePackage } from "../Package/PackageProvider";
 import { SourceExplorerComponent } from "./SourcesExplorer";
 import { Loading } from "../Loading";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const modelsApi = new ModelsApi(new Configuration());
-
-const queryClient = new QueryClient();
 
 interface ModelProps {
    modelPath: string;
@@ -64,11 +62,8 @@ export default function Model({
       });
    }, [embeddingExpanded, modelCodeSnippet]);
 
-   const { data, isError, isLoading, error } = useQuery<
-      CompiledModel,
-      ApiError
-   >(
-      {
+   const { data, isError, isLoading, error } =
+      useQueryWithApiError<CompiledModel>({
          queryKey: [
             "package",
             server,
@@ -78,44 +73,22 @@ export default function Model({
             versionId,
          ],
          queryFn: async () => {
-            try {
-               const response = await modelsApi.getModel(
-                  projectName,
-                  packageName,
-                  modelPath,
-                  versionId,
-                  {
-                     baseURL: server,
-                     withCredentials: !accessToken,
-                     headers: {
-                        Authorization: accessToken && `Bearer ${accessToken}`,
-                     },
+            const response = await modelsApi.getModel(
+               projectName,
+               packageName,
+               modelPath,
+               versionId,
+               {
+                  baseURL: server,
+                  withCredentials: !accessToken,
+                  headers: {
+                     Authorization: accessToken && `Bearer ${accessToken}`,
                   },
-               );
-               return response.data;
-            } catch (err) {
-               // If it's an Axios error, it will have response data
-               if (err && typeof err === "object" && "response" in err) {
-                  console.log("axios err", err);
-                  const axiosError = err as any;
-                  if (axiosError.response?.data) {
-                     const apiError: ApiError = new Error(
-                        axiosError.response.data.message || axiosError.message,
-                     );
-                     apiError.status = axiosError.response.status;
-                     apiError.data = axiosError.response.data;
-                     throw apiError;
-                  }
-               }
-               // For other errors, throw as is
-               throw err;
-            }
+               },
+            );
+            return response.data;
          },
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+      });
 
    if (isLoading) {
       return <Loading text="Fetching Model..." />;

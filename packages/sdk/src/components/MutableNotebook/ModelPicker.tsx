@@ -10,14 +10,13 @@ import {
    Stack,
    Typography,
 } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import React from "react";
 import { Configuration, ModelsApi } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { usePackage } from "../Package/PackageProvider";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const modelsApi = new ModelsApi(new Configuration());
-const queryClient = new QueryClient();
 
 interface ModelPickerProps {
    initialSelectedModels: string[];
@@ -34,22 +33,17 @@ export function ModelPicker({
 }: ModelPickerProps) {
    const { server, projectName, packageName, versionId, accessToken } =
       usePackage();
-   const { data, isLoading, isSuccess, isError, error } = useQuery(
-      {
-         queryKey: ["models", server, projectName, packageName, versionId],
-         queryFn: () =>
-            modelsApi.listModels(projectName, packageName, versionId, {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            }),
-         retry: false,
-         throwOnError: false,
-      },
-      queryClient,
-   );
+   const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
+      queryKey: ["models", server, projectName, packageName, versionId],
+      queryFn: () =>
+         modelsApi.listModels(projectName, packageName, versionId, {
+            baseURL: server,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
+         }),
+   });
    const [selectedModels, setSelectedModels] = React.useState<string[]>(
       initialSelectedModels || [],
    );

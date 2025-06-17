@@ -1,14 +1,13 @@
 import { Box, Divider, Typography } from "@mui/material";
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, NotebooksApi } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const notebooksApi = new NotebooksApi(new Configuration());
-const queryClient = new QueryClient();
 
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/"];
 
@@ -20,22 +19,24 @@ export default function Notebooks({ navigate }: NotebooksProps) {
    const { server, projectName, packageName, versionId, accessToken } =
       usePackage();
 
-   const { data, isError, error, isSuccess } = useQuery(
-      {
-         queryKey: ["notebooks", server, projectName, packageName, versionId],
-         queryFn: () =>
-            notebooksApi.listNotebooks(projectName, packageName, versionId, {
+   const { data, isError, error, isSuccess } = useQueryWithApiError({
+      queryKey: ["notebooks", server, projectName, packageName, versionId],
+      queryFn: async () => {
+         const response = await notebooksApi.listNotebooks(
+            projectName,
+            packageName,
+            versionId,
+            {
                baseURL: server,
                withCredentials: !accessToken,
                headers: {
                   Authorization: accessToken && `Bearer ${accessToken}`,
                },
-            }),
-         throwOnError: false,
-         retry: false,
+            },
+         );
+         return response;
       },
-      queryClient,
-   );
+   });
 
    return (
       <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
