@@ -2,11 +2,11 @@ import { Box, Divider, Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Configuration, ModelsApi } from "../../client";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
-import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { Loading } from "../Loading";
 
 axios.defaults.baseURL = "http://localhost:4000";
 const modelsApi = new ModelsApi(new Configuration());
@@ -22,7 +22,7 @@ export default function Models({ navigate }: ModelsProps) {
    const { server, projectName, packageName, versionId, accessToken } =
       usePackage();
 
-   const { data, isError, error, isLoading, isSuccess } = useQuery(
+   const { data, isError, error, isSuccess } = useQuery(
       {
          queryKey: ["models", server, projectName, packageName, versionId],
          queryFn: () =>
@@ -70,7 +70,7 @@ export default function Models({ navigate }: ModelsProps) {
                   />
                )}
                {isSuccess && data.data.length === 0 && (
-                  <Typography>No models found.</Typography>
+                  <Typography variant="body2">No models found</Typography>
                )}
             </Box>
          </StyledCardContent>

@@ -8,11 +8,11 @@ import {
    Typography,
 } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { Configuration, PackagesApi } from "../../client";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
-import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 const packagesApi = new PackagesApi(new Configuration());
 const queryClient = new QueryClient();
@@ -58,7 +58,7 @@ export default function Config() {
                   </ListItem>
                   {!isSuccess && !isError && (
                      <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
-                        Fethching Package Metadata...
+                        <Loading text="Fetching Package Metadata..." />
                      </Typography>
                   )}
                   {isSuccess &&
@@ -70,20 +70,20 @@ export default function Config() {
                            />
                         </ListItem>
                      )) || (
-                        <ListItem
-                           disablePadding={true}
-                           dense={true}
-                           sx={{ mt: "20px" }}
-                        >
-                           <ErrorIcon
-                              sx={{
-                                 color: "grey.600",
-                                 mr: "10px",
-                              }}
-                           />
-                           <ListItemText primary={"No package manifest"} />
-                        </ListItem>
-                     ))}
+                           <ListItem
+                              disablePadding={true}
+                              dense={true}
+                              sx={{ mt: "20px" }}
+                           >
+                              <ErrorIcon
+                                 sx={{
+                                    color: "grey.600",
+                                    mr: "10px",
+                                 }}
+                              />
+                              <ListItemText primary={"No package manifest"} />
+                           </ListItem>
+                        ))}
                   {isError && (
                      <ApiErrorDisplay
                         error={error}
