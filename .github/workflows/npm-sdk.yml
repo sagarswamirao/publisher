@@ -41,6 +41,14 @@ jobs:
         run: |
           npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/sdk
 
+      - name: Commit updated package.json
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+          git add packages/sdk/package.json
+          git commit -s -m "Update SDK version to ${{ inputs.version }}"
+          git push
+
       - name: Build package
         run: |
           cd packages/sdk
