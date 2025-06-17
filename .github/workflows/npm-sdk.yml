@@ -41,7 +41,7 @@ jobs:
         run: |
           npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/sdk
 
-      - name: Create version update branch and PR
+      - name: Create version update branch
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "${{ github.actor }}"
@@ -57,14 +57,8 @@ jobs:
           # Push the branch
           git push origin $BRANCH_NAME
           
-          # Create a pull request using GitHub CLI
-          gh pr create \
-            --title "Update SDK version to ${{ inputs.version }}" \
-            --body "Automated version update from ${{ inputs.version }} release workflow." \
-            --head $BRANCH_NAME \
-            --base main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "::notice title=Branch Created::Created branch $BRANCH_NAME with version update"
+          echo "::notice title=Next Step::Please create a pull request from branch $BRANCH_NAME to main"
 
       - name: Build package
         run: |
