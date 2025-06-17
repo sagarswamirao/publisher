@@ -204,6 +204,47 @@ export default function MutableNotebook({
       }
       return sourceAndPath;
    };
+   const plusButton = (isMarkdown: boolean, index: number) => {
+      return (
+         <Button
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => handleAddCell(isMarkdown, index)}
+            variant="contained"
+            sx={{
+               backgroundColor: "#fff",
+               color: (theme) =>
+                  theme.palette.mode === "dark"
+                     ? theme.palette.grey[100]
+                     : theme.palette.grey[700],
+               boxShadow: "none",
+               "&:hover": {
+                  backgroundColor: (theme) =>
+                     theme.palette.mode === "dark"
+                        ? theme.palette.grey[500]
+                        : theme.palette.grey[300],
+                  boxShadow: "none",
+               },
+            }}
+         >
+            {isMarkdown ? "Markdown" : "Explore"}
+         </Button>
+      );
+   };
+   const addButtonSet = (
+      <Box
+         sx={{
+            display: "flex",
+            gap: 1,
+            justifyContent: "center",
+            flex: 2,
+         }}
+      >
+         {plusButton(false, notebookData.getCells().length)}
+         {plusButton(true, notebookData.getCells().length)}
+      </Box>
+   );
+
    return (
       <StyledCard variant="outlined">
          <StyledCardContent>
@@ -315,33 +356,6 @@ export default function MutableNotebook({
                      }}
                   />
                </Box>
-               <Box
-                  sx={{
-                     display: "flex",
-                     gap: 1,
-                     justifyContent: "center",
-                     flex: 2,
-                  }}
-               >
-                  <Button
-                     size="small"
-                     startIcon={<AddIcon />}
-                     onClick={() =>
-                        handleAddCell(false, notebookData.getCells().length)
-                     }
-                  >
-                     Explore
-                  </Button>
-                  <Button
-                     size="small"
-                     startIcon={<AddIcon />}
-                     onClick={() =>
-                        handleAddCell(true, notebookData.getCells().length)
-                     }
-                  >
-                     Markdown
-                  </Button>
-               </Box>
                <Box sx={{ flex: 1 }} />
             </Stack>
          </StyledCardContent>
@@ -373,6 +387,9 @@ export default function MutableNotebook({
                   >
                      <MutableCell
                         cell={cell}
+                        addButtonCallback={(isMarkdown) =>
+                           plusButton(isMarkdown, index)
+                        }
                         sourceAndPaths={getSourceList(sourceAndPaths)}
                         expandCodeCell={expandCodeCells}
                         expandEmbedding={expandEmbeddings}
@@ -404,6 +421,7 @@ export default function MutableNotebook({
                      />
                   </React.Fragment>
                ))}
+               {addButtonSet}
                <Menu
                   anchorEl={menuAnchorEl}
                   open={menuOpen}
