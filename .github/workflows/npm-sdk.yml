@@ -2,6 +2,12 @@ name: Publish SDK to NPM
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+        default: '0.0.41'
 
 jobs:
   publish:
@@ -22,13 +28,18 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Show current version
+        run: |
+          CURRENT_VERSION=$(cat packages/sdk/package.json | grep '"version"' | sed 's/.*"version": "\(.*\)".*/\1/')
+          echo "::notice title=Current Version::Current SDK version is $CURRENT_VERSION"
+          echo "::notice title=New Version::Will update to version ${{ inputs.version }}"
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
       - name: Update package version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          npm version ${VERSION#v} --no-git-tag-version --allow-same-version --prefix packages/sdk
+          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/sdk
 
       - name: Build package
         run: |
