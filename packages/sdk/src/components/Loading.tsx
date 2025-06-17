@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
 export interface LoadingProps {
@@ -8,7 +7,7 @@ export interface LoadingProps {
    text?: string;
    /**
     * The size of the CircularProgress component
-    * @default 40
+    * @default 20
     */
    size?: number | string;
    /**
@@ -16,13 +15,13 @@ export interface LoadingProps {
     * @default "primary"
     */
    color?:
-      | "primary"
-      | "secondary"
-      | "error"
-      | "info"
-      | "success"
-      | "warning"
-      | "inherit";
+   | "primary"
+   | "secondary"
+   | "error"
+   | "info"
+   | "success"
+   | "warning"
+   | "inherit";
    /**
     * The thickness of the circular progress
     * @default 3.6
@@ -43,28 +42,28 @@ export interface LoadingProps {
     * @default "body1"
     */
    textVariant?:
-      | "h1"
-      | "h2"
-      | "h3"
-      | "h4"
-      | "h5"
-      | "h6"
-      | "subtitle1"
-      | "subtitle2"
-      | "body1"
-      | "body2"
-      | "caption"
-      | "overline";
+   | "h1"
+   | "h2"
+   | "h3"
+   | "h4"
+   | "h5"
+   | "h6"
+   | "subtitle1"
+   | "subtitle2"
+   | "body1"
+   | "body2"
+   | "caption"
+   | "overline";
 }
 
 export function Loading({
    text,
-   size = 40,
+   size = 20,
    color = "primary",
    thickness = 3.6,
    centered = true,
    spacing = 2,
-   textVariant = "body1",
+   textVariant = "body2",
 }: LoadingProps) {
    const content = (
       <Box

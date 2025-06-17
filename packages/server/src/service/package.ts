@@ -182,7 +182,7 @@ export class Package {
                   projectName: this.projectName,
                   packageName: this.packageName,
                   path: modelPath,
-                  error,
+                  error: error?.message,
                };
             }),
       );

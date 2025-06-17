@@ -1,5 +1,4 @@
 import { Typography } from "@mui/material";
-import React from "react";
 
 export interface ApiError extends Error {
    status?: number;
@@ -27,7 +26,6 @@ export function ApiErrorDisplay({ error, context }: ApiErrorDisplayProps) {
                style={{
                   whiteSpace: "pre-wrap",
                   color: "red",
-                  backgroundColor: "black",
                   padding: "10px",
                   margin: "auto",
                }}

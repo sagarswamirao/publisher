@@ -10,15 +10,15 @@ import {
 } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import React, { useEffect } from "react";
-import { Configuration, NotebooksApi, CompiledNotebook } from "../../client";
+import { CompiledNotebook, Configuration, NotebooksApi } from "../../client";
+import { ApiError, ApiErrorDisplay } from "../ApiErrorDisplay";
 import { highlight } from "../highlighter";
+import { Loading } from "../Loading";
 import { usePackage } from "../Package";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { NotebookCell } from "./NotebookCell";
-import { ApiErrorDisplay, ApiError } from "../ApiErrorDisplay";
-import { AxiosError } from "axios";
-import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
@@ -213,14 +213,14 @@ export default function Notebook({
                         key={index}
                      />
                   ))}
-               {isError && error.data?.code === 404 && (
-                  <Typography>
+               {isError && error.status === 404 && (
+                  <Typography variant="body2">
                      <code>{`${projectName} > ${packageName} > ${notebookPath}`}</code>{" "}
                      not found.
                   </Typography>
                )}
 
-               {isError && error.data?.code !== 404 && (
+               {isError && error.status !== 404 && (
                   <ApiErrorDisplay
                      error={error}
                      context={`${projectName} > ${packageName} > ${notebookPath}`}

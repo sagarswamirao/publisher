@@ -1,11 +1,11 @@
 import { Box, Divider, Typography } from "@mui/material";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Configuration, NotebooksApi } from "../../client";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
-import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 const queryClient = new QueryClient();
@@ -70,7 +70,7 @@ export default function Notebooks({ navigate }: NotebooksProps) {
                   />
                )}
                {isSuccess && data.data.length === 0 && (
-                  <Typography>No notebooks found.</Typography>
+                  <Typography variant="body2">No notebooks found</Typography>
                )}
             </Box>
          </StyledCardContent>
