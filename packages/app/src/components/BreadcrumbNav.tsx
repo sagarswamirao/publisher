@@ -26,30 +26,26 @@ export default function BreadcrumbNav() {
                {params.projectName}
             </Typography>
             {params.packageName && (
-               <>
-                  <Typography
-                     color="primary.main"
-                     component={NavLink}
-                     to={`/${params.projectName}/${params.packageName}/`}
-                     sx={{ textDecoration: "none" }}
-                     variant="subtitle1"
-                  >
-                     {params.packageName}
-                  </Typography>
-               </>
+               <Typography
+                  color="primary.main"
+                  component={NavLink}
+                  to={`/${params.projectName}/${params.packageName}/`}
+                  sx={{ textDecoration: "none" }}
+                  variant="subtitle1"
+               >
+                  {params.packageName}
+               </Typography>
             )}
             {modelPath && (
-               <>
-                  <Typography
-                     color="primary.main"
-                     component={NavLink}
-                     to={`/${params.projectName}/${params.packageName}/${modelPath}`}
-                     sx={{ textDecoration: "none" }}
-                     variant="subtitle1"
-                  >
-                     {modelPath}
-                  </Typography>
-               </>
+               <Typography
+                  color="primary.main"
+                  component={NavLink}
+                  to={`/${params.projectName}/${params.packageName}/${modelPath}`}
+                  sx={{ textDecoration: "none" }}
+                  variant="subtitle1"
+               >
+                  {modelPath}
+               </Typography>
             )}
          </Breadcrumbs>
       </Box>

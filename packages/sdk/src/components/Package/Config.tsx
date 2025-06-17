@@ -51,9 +51,9 @@ export default function Config() {
                      <ListItemText primary="Name" secondary={packageName} />
                   </ListItem>
                   {!isSuccess && !isError && (
-                     <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
+                     <ListItem>
                         <Loading text="Fetching Package Metadata..." />
-                     </Typography>
+                     </ListItem>
                   )}
                   {isSuccess &&
                      ((data.data && (
