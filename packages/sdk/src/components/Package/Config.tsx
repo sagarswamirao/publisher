@@ -12,25 +12,23 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
-import { useServer } from "../ServerProvider";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const packagesApi = new PackagesApi(new Configuration());
 
 export default function Config() {
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["package", server, projectName, packageName, versionId],
-      queryFn: () =>
-         packagesApi.getPackage(projectName, packageName, versionId, false, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["package", projectName, packageName, versionId],
+      queryFn: (config) =>
+         packagesApi.getPackage(
+            projectName,
+            packageName,
+            versionId,
+            false,
+            config,
+         ),
    });
 
    return (

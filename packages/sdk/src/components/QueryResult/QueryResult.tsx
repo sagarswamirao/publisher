@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { usePackage } from "../Package/PackageProvider";
-import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -24,12 +23,10 @@ export default function QueryResult({
    queryName,
 }: QueryResultProps) {
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: [
          "queryResult",
-         server,
          projectName,
          packageName,
          modelPath,
@@ -38,7 +35,7 @@ export default function QueryResult({
          sourceName,
          queryName,
       ],
-      queryFn: () =>
+      queryFn: (config) =>
          queryResultsApi.executeQuery(
             projectName,
             packageName,
@@ -47,13 +44,7 @@ export default function QueryResult({
             sourceName,
             queryName,
             versionId,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
+            config,
          ),
    });
 

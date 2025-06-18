@@ -24,7 +24,6 @@ import { usePackage } from "../Package/PackageProvider";
 import { SourceExplorerComponent } from "./SourcesExplorer";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
-import { useServer } from "../ServerProvider";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -55,8 +54,7 @@ export default function Model({
    const [selectedTab, setSelectedTab] = React.useState(0);
 
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
-   const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
+   const modelCodeSnippet = getModelCodeSnippet(modelPath);
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
          setHighlightedEmbedCode(code);
@@ -65,27 +63,14 @@ export default function Model({
 
    const { data, isError, isLoading, error } =
       useQueryWithApiError<CompiledModel>({
-         queryKey: [
-            "package",
-            server,
-            projectName,
-            packageName,
-            modelPath,
-            versionId,
-         ],
-         queryFn: async () => {
+         queryKey: ["package", projectName, packageName, modelPath, versionId],
+         queryFn: async (config) => {
             const response = await modelsApi.getModel(
                projectName,
                packageName,
                modelPath,
                versionId,
-               {
-                  baseURL: server,
-                  withCredentials: !accessToken,
-                  headers: {
-                     Authorization: accessToken && `Bearer ${accessToken}`,
-                  },
-               },
+               config,
             );
             return response.data;
          },
@@ -255,14 +240,8 @@ export default function Model({
    );
 }
 
-function getModelCodeSnippet(
-   server: string,
-   packageName: string,
-   modelPath: string,
-): string {
+function getModelCodeSnippet(modelPath: string): string {
    return `<Model
-   server="${server}"
-   packageName="${packageName}"
    modelPath="${modelPath}"
    accessToken={accessToken}
 />`;

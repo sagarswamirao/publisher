@@ -11,7 +11,6 @@ import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
-import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
@@ -33,18 +32,10 @@ function Connection({ connection }: { connection: ApiConnection }) {
 
 export default function Connections() {
    const { projectName } = usePackage();
-   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["connections", server, projectName],
-      queryFn: () =>
-         connectionsApi.listConnections(projectName, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["connections", projectName],
+      queryFn: (config) => connectionsApi.listConnections(projectName, config),
    });
 
    return (

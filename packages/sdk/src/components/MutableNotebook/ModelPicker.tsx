@@ -14,7 +14,6 @@ import React from "react";
 import { Configuration, ModelsApi } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { usePackage } from "../Package/PackageProvider";
-import { useServer } from "../ServerProvider";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const modelsApi = new ModelsApi(new Configuration());
@@ -33,17 +32,10 @@ export function ModelPicker({
    onModelChange,
 }: ModelPickerProps) {
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
    const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["models", server, projectName, packageName, versionId],
-      queryFn: () =>
-         modelsApi.listModels(projectName, packageName, versionId, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["models", projectName, packageName, versionId],
+      queryFn: (config) =>
+         modelsApi.listModels(projectName, packageName, versionId, config),
    });
    const [selectedModels, setSelectedModels] = React.useState<string[]>(
       initialSelectedModels || [],

@@ -2,7 +2,6 @@ import { Box, Divider, Grid, Typography } from "@mui/material";
 import { Configuration, PackagesApi } from "../../client";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { useProject } from "./Project";
-import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -15,18 +14,10 @@ interface PackagesProps {
 
 export default function Packages({ navigate }: PackagesProps) {
    const { projectName } = useProject();
-   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["packages", server, projectName],
-      queryFn: () =>
-         packagesApi.listPackages(projectName, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["packages", projectName],
+      queryFn: (config) => packagesApi.listPackages(projectName, config),
    });
 
    return (

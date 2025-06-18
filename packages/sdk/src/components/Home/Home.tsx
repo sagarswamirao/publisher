@@ -7,22 +7,13 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const projectsApi = new ProjectsApi(new Configuration());
 
 interface HomeProps {
-   server?: string;
-   accessToken?: string;
    navigate?: (to: string, event?: React.MouseEvent) => void;
 }
 
-export default function Home({ server, accessToken, navigate }: HomeProps) {
+export default function Home({ navigate }: HomeProps) {
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["projects", server],
-      queryFn: () =>
-         projectsApi.listProjects({
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["projects"],
+      queryFn: (config) => projectsApi.listProjects(config),
    });
 
    if (isError) {

@@ -16,7 +16,6 @@ import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
-import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -25,7 +24,6 @@ const databasesApi = new DatabasesApi(new Configuration());
 
 export default function Databases() {
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
 
    const [open, setOpen] = React.useState(false);
    const [selectedDatabase, setSelectedDatabase] =
@@ -42,15 +40,14 @@ export default function Databases() {
    };
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
-      queryKey: ["databases", server, projectName, packageName, versionId],
-      queryFn: () =>
-         databasesApi.listDatabases(projectName, packageName, versionId, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["databases", projectName, packageName, versionId],
+      queryFn: (config) =>
+         databasesApi.listDatabases(
+            projectName,
+            packageName,
+            versionId,
+            config,
+         ),
    });
    const formatRowSize = (size: number) => {
       if (size >= 1024 * 1024 * 1024 * 1024) {

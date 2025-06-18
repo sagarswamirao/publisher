@@ -19,7 +19,6 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import "@malloydata/malloy-explorer/styles.css";
 import { usePackage } from "../Package/PackageProvider";
-import { useServer } from "../ServerProvider";
 import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
@@ -46,13 +45,7 @@ export default function Notebook({
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
-   const notebookCodeSnippet = getNotebookCodeSnippet(
-      server,
-      packageName,
-      notebookPath,
-      true,
-   );
+   const notebookCodeSnippet = getNotebookCodeSnippet(notebookPath, true);
 
    useEffect(() => {
       highlight(notebookCodeSnippet, "typescript").then((code) => {
@@ -66,27 +59,14 @@ export default function Notebook({
       isError,
       error,
    } = useQueryWithApiError<CompiledNotebook>({
-      queryKey: [
-         "notebook",
-         server,
-         projectName,
-         packageName,
-         notebookPath,
-         versionId,
-      ],
-      queryFn: async () => {
+      queryKey: ["notebook", projectName, packageName, notebookPath, versionId],
+      queryFn: async (config) => {
          const response = await notebooksApi.getNotebook(
             projectName,
             packageName,
             notebookPath,
             versionId,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
+            config,
          );
          return response.data;
       },
@@ -178,9 +158,6 @@ export default function Notebook({
                         cell={cell}
                         notebookPath={notebookPath}
                         queryResultCodeSnippet={getQueryResultCodeSnippet(
-                           server,
-                           projectName,
-                           packageName,
                            notebookPath,
                            cell.text,
                         )}
@@ -210,18 +187,8 @@ export default function Notebook({
    );
 }
 
-function getQueryResultCodeSnippet(
-   server: string,
-   projectName: string,
-   packageName: string,
-   modelPath: string,
-   query: string,
-): string {
+function getQueryResultCodeSnippet(modelPath: string, query: string): string {
    return `<QueryResult
-   server="${server}"
-   accessToken={accessToken}
-   projectName="${projectName}"
-   packageName="${packageName}"
    modelPath="${modelPath}"
    query="
       ${query}
@@ -230,17 +197,11 @@ function getQueryResultCodeSnippet(
 }
 
 function getNotebookCodeSnippet(
-   server: string,
-   packageName: string,
    notebookPath: string,
    expandedCodeCells: boolean,
 ): string {
    return `<Notebook
-   server="${server}"
-   packageName="${packageName}"
    notebookPath="${notebookPath}"
-   versionId={versionId}
-   accessToken={accessToken}
    expandCodeCells={${expandedCodeCells}}
 />`;
 }
