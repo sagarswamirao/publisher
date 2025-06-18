@@ -12,9 +12,6 @@ import { useServer } from "../components";
 import { RawAxiosRequestConfig } from "axios";
 
 // Global QueryClient instance
-// This should actually be a per-server instance.
-// If we ever used this code in a multi-endpoint situation, it's possible
-// there'd be cache collisions in QueryClient.
 const globalQueryClient = new QueryClient({
    defaultOptions: {
       queries: {
@@ -43,6 +40,8 @@ export function useQueryWithApiError<TData = unknown, TError = ApiError>(
    } as RawAxiosRequestConfig;
    const enhancedOptions: UseQueryOptions<TData, TError> = {
       ...options,
+      // Add in the server to the query key so that we can have a per-server caches.
+      queryKey: [...options.queryKey, server],
       queryFn: async () => {
          try {
             return await options.queryFn(config);
