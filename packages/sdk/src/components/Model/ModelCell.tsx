@@ -17,8 +17,6 @@ import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useEffect } from "react";
 import { highlight } from "../highlighter";
-import { usePackage } from "../Package/PackageProvider";
-import { useServer } from "../ServerProvider";
 
 const StyledCard = styled(Card)({
    display: "flex",
@@ -57,14 +55,7 @@ export function ModelCell({
    const [highlightedAnnotations, setHighlightedAnnotations] =
       React.useState<string>();
 
-   const { projectName, packageName, versionId } = usePackage();
-   const { server } = useServer();
-
    const queryResultCodeSnippet = getQueryResultCodeSnippet(
-      server,
-      projectName,
-      packageName,
-      versionId,
       sourceName,
       queryName,
    );
@@ -221,19 +212,10 @@ export function ModelCell({
 }
 
 function getQueryResultCodeSnippet(
-   server: string,
-   projectName: string,
-   packageName: string,
-   versionId: string,
    sourceName: string,
    queryName: string,
 ): string {
    return `<QueryResult
-server="${server}"
-accessToken={accessToken}
-projectName="${projectName}"
-packageName="${packageName}"
-versionId="${versionId}"
 sourceName="${sourceName}"
 queryName="${queryName}"
 />`;

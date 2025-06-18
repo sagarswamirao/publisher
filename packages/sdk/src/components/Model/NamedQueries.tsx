@@ -11,7 +11,6 @@ import { StyledCard, StyledCardContent } from "../styles";
 import React from "react";
 import { Configuration } from "../../client";
 import { usePackage } from "../Package";
-import { useServer } from "../ServerProvider";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 
@@ -27,7 +26,6 @@ export default function NamedQueries({
    modelPath,
 }: NamedQueryProps) {
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
    const [namedQueryResults, setNamedQueryResults] = React.useState<
       Record<string, string>
    >({});
@@ -36,7 +34,7 @@ export default function NamedQueries({
    >({});
 
    const mutation = useMutationWithApiError({
-      mutationFn: ({ query }: { query: Query }) => {
+      mutationFn: ({ query }: { query: Query }, config) => {
          const val = queryResultsApi.executeQuery(
             projectName,
             packageName,
@@ -45,13 +43,7 @@ export default function NamedQueries({
             undefined,
             query.name,
             versionId,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
+            config,
          );
          return val;
       },
