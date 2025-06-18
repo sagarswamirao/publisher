@@ -1,14 +1,9 @@
 import { Model, Notebook, PackageProvider } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
-interface ModelPageProps {
-   server?: string;
-}
-
-export function ModelPage({ server }: ModelPageProps) {
+export function ModelPage() {
    const params = useParams();
    const modelPath = params["*"];
-
    if (!params.projectName) {
       return (
          <div>
@@ -26,7 +21,6 @@ export function ModelPage({ server }: ModelPageProps) {
          <PackageProvider
             projectName={params.projectName}
             packageName={params.packageName}
-            server={server}
          >
             <Model modelPath={modelPath} hideEmbeddingIcons={true} />
          </PackageProvider>
@@ -36,12 +30,11 @@ export function ModelPage({ server }: ModelPageProps) {
          <PackageProvider
             projectName={params.projectName}
             packageName={params.packageName}
-            server={server}
          >
             <Notebook
                notebookPath={modelPath}
                hideEmbeddingIcons={true}
-               expandCodeCells={false}
+               expandResults={false}
             />
          </PackageProvider>
       );

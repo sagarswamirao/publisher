@@ -3,6 +3,7 @@ import { Configuration, ProjectsApi } from "../../client";
 import Markdown from "markdown-to-jsx";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { useProject } from "./Project";
+import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -10,7 +11,8 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const projectsApi = new ProjectsApi(new Configuration());
 
 export default function About() {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
+   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["about", server, projectName],

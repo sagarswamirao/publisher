@@ -1,10 +1,10 @@
-import { Home } from "@malloy-publisher/sdk";
+import { Home, useServer } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
-interface HomePageProps {
-   server?: string;
-}
 
-export function HomePage({ server }: HomePageProps) {
+export function HomePage() {
    const navigate = useRouterClickHandler();
-   return <Home server={server} navigate={navigate} />;
+   const { accessToken, server } = useServer();
+   return (
+      <Home server={server} accessToken={accessToken} navigate={navigate} />
+   );
 }

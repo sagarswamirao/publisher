@@ -16,6 +16,7 @@ import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
+import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -23,8 +24,8 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const databasesApi = new DatabasesApi(new Configuration());
 
 export default function Databases() {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
 
    const [open, setOpen] = React.useState(false);
    const [selectedDatabase, setSelectedDatabase] =

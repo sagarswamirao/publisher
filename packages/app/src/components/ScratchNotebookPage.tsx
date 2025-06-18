@@ -5,11 +5,8 @@ import {
    PackageProvider,
 } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
-interface ScratchNotebookPageProps {
-   server?: string;
-}
 
-export function ScratchNotebookPage({ server }: ScratchNotebookPageProps) {
+export function ScratchNotebookPage() {
    const { projectName, packageName, notebookPath } = useParams();
    if (!projectName) {
       return (
@@ -25,11 +22,7 @@ export function ScratchNotebookPage({ server }: ScratchNotebookPageProps) {
       );
    } else {
       return (
-         <PackageProvider
-            server={server}
-            projectName={projectName}
-            packageName={packageName}
-         >
+         <PackageProvider projectName={projectName} packageName={packageName}>
             <NotebookStorageProvider
                notebookStorage={new BrowserNotebookStorage()}
                userContext={{ project: projectName, package: packageName }}

@@ -6,6 +6,7 @@ import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { useServer } from "../ServerProvider";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -16,9 +17,9 @@ interface ModelsProps {
 }
 
 export default function Models({ navigate }: ModelsProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
 
+   const { server, accessToken } = useServer();
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["models", server, projectName, packageName, versionId],
       queryFn: () =>

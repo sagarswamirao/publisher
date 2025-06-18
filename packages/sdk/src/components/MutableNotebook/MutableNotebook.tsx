@@ -22,6 +22,7 @@ import { useRouterClickHandler } from "../click_helper";
 import { SourceAndPath } from "../Model/SourcesExplorer";
 import { NotebookManager } from "../NotebookManager";
 import { usePackage } from "../Package";
+import { useServer } from "../ServerProvider";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { MutableCell } from "./MutableCell";
 import { useNotebookStorage } from "./NotebookStorageProvider";
@@ -50,14 +51,14 @@ export default function MutableNotebook({
    hideEmbeddingIcons,
 }: MutableNotebookProps) {
    const navigate = useRouterClickHandler();
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
+   const { notebookStorage, userContext } = useNotebookStorage();
    if (!projectName || !packageName) {
       throw new Error(
          "Project and package must be provided via PubliserPackageProvider",
       );
    }
-   const { notebookStorage, userContext } = useNotebookStorage();
    if (!notebookStorage || !userContext) {
       throw new Error(
          "Notebook storage and user context must be provided via NotebookStorageProvider",

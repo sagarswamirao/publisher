@@ -21,6 +21,7 @@ import { styled } from "@mui/material/styles";
 import React from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { usePackage } from "../Package/PackageProvider";
+import { useServer } from "../ServerProvider";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
@@ -171,8 +172,8 @@ export function SourceExplorerComponent({
          onChange(query);
       }
    }, [onChange, query]);
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
    const mutation = useMutationWithApiError({
       mutationFn: () => {
          const malloy = new QueryBuilder.ASTQuery({

@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { usePackage } from "../Package/PackageProvider";
+import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -22,8 +23,8 @@ export default function QueryResult({
    sourceName,
    queryName,
 }: QueryResultProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: [

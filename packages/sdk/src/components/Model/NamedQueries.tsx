@@ -11,6 +11,7 @@ import { StyledCard, StyledCardContent } from "../styles";
 import React from "react";
 import { Configuration } from "../../client";
 import { usePackage } from "../Package";
+import { useServer } from "../ServerProvider";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 
@@ -25,8 +26,8 @@ export default function NamedQueries({
    namedQueries,
    modelPath,
 }: NamedQueryProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
    const [namedQueryResults, setNamedQueryResults] = React.useState<
       Record<string, string>
    >({});

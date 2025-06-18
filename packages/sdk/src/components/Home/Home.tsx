@@ -8,20 +8,22 @@ const projectsApi = new ProjectsApi(new Configuration());
 
 interface HomeProps {
    server?: string;
+   accessToken?: string;
    navigate?: (to: string, event?: React.MouseEvent) => void;
 }
 
-export default function Home({ server, navigate }: HomeProps) {
+export default function Home({ server, accessToken, navigate }: HomeProps) {
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["projects", server],
       queryFn: () =>
          projectsApi.listProjects({
             baseURL: server,
-            withCredentials: true,
+            withCredentials: !accessToken,
+            headers: {
+               Authorization: accessToken && `Bearer ${accessToken}`,
+            },
          }),
    });
-
-   console.log(JSON.stringify(data?.data, null, 2));
 
    if (isError) {
       return <ApiErrorDisplay error={error} context="Projects List" />;

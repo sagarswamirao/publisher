@@ -18,6 +18,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useEffect } from "react";
 import { highlight } from "../highlighter";
 import { usePackage } from "../Package/PackageProvider";
+import { useServer } from "../ServerProvider";
 
 const StyledCard = styled(Card)({
    display: "flex",
@@ -56,7 +57,8 @@ export function ModelCell({
    const [highlightedAnnotations, setHighlightedAnnotations] =
       React.useState<string>();
 
-   const { server, projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server } = useServer();
 
    const queryResultCodeSnippet = getQueryResultCodeSnippet(
       server,

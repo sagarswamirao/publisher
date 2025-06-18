@@ -1,56 +1,16 @@
-import { CssBaseline } from "@mui/material";
-import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { HomePage } from "./components/HomePage";
-import MainPage from "./components/MainPage";
-import { ModelPage } from "./components/ModelPage";
-import { PackagePage } from "./components/PackagePage";
-import { ProjectPage } from "./components/ProjectPage";
-import { RouteError } from "./components/RouteError";
-import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
-import theme from "./theme";
+import { RouterProvider } from "react-router-dom";
+import { ServerProvider } from "@malloy-publisher/sdk";
+import { createMalloyRouter } from "./App";
 
 const server = `${window.location.protocol}//${window.location.host}/api/v0`;
-const router = createBrowserRouter([
-   {
-      path: "/",
-      element: (
-         <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <MainPage />
-         </ThemeProvider>
-      ),
-      errorElement: <RouteError />,
-
-      children: [
-         {
-            path: "",
-            element: <HomePage server={server} />,
-         },
-         {
-            path: ":projectName",
-            element: <ProjectPage server={server} />,
-         },
-         {
-            path: ":projectName/:packageName",
-            element: <PackagePage server={server} />,
-         },
-         {
-            path: ":projectName/:packageName/*",
-            element: <ModelPage server={server} />,
-         },
-         {
-            path: ":projectName/:packageName/scratchNotebook/:notebookPath",
-            element: <ScratchNotebookPage server={server} />,
-         },
-      ],
-   },
-]);
+const router = createMalloyRouter("/");
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
    <React.StrictMode>
-      <RouterProvider router={router} />
+      <ServerProvider server={server}>
+         <RouterProvider router={router} />
+      </ServerProvider>
    </React.StrictMode>,
 );

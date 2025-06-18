@@ -12,13 +12,14 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
+import { useServer } from "../ServerProvider";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const packagesApi = new PackagesApi(new Configuration());
 
 export default function Config() {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["package", server, projectName, packageName, versionId],

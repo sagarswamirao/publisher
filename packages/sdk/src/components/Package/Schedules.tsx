@@ -13,6 +13,7 @@ import {
 import { Configuration, SchedulesApi } from "../../client";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
+import { useServer } from "../ServerProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -20,8 +21,8 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const schedulesApi = new SchedulesApi(new Configuration());
 
 export default function Schedules() {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
 
    const { data, isError, isLoading, error } = useQueryWithApiError({
       queryKey: ["schedules", server, projectName, packageName, versionId],

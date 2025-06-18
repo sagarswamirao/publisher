@@ -27,6 +27,7 @@ import { useProject } from "./Project";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { useServer } from "../ServerProvider";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
@@ -37,7 +38,8 @@ interface ConnectionExplorerProps {
 export default function ConnectionExplorer({
    connectionName,
 }: ConnectionExplorerProps) {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
+   const { server, accessToken } = useServer();
 
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
@@ -166,7 +168,8 @@ function TableViewer({
    tableName,
    onClose,
 }: TableViewerProps) {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
+   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
@@ -276,7 +279,8 @@ function TablesInSchema({
    schemaName,
    onTableClick,
 }: TablesInSchemaProps) {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
+   const { server, accessToken } = useServer();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [

@@ -48,7 +48,6 @@ export default function Package({ navigate }: PackageProps) {
          <Grid size={{ xs: 12, md: 12 }}>
             <Notebook
                notebookPath={README_NOTEBOOK}
-               expandCodeCells={false}
                hideEmbeddingIcons={true}
             />
          </Grid>

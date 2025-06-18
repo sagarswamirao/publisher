@@ -19,6 +19,7 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import "@malloydata/malloy-explorer/styles.css";
 import { usePackage } from "../Package/PackageProvider";
+import { useServer } from "../ServerProvider";
 import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
@@ -44,8 +45,8 @@ export default function Notebook({
       React.useState<boolean>(false);
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
-   const { server, projectName, packageName, accessToken, versionId } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
    const notebookCodeSnippet = getNotebookCodeSnippet(
       server,
       packageName,

@@ -7,10 +7,10 @@
       "useDefineForClassFields": true, // Enables the use of 'define' for class fields.
 
       "moduleResolution": "Node", // Specifies how modules are resolved when bundling.
-      "allowImportingTsExtensions": true, // Allows importing TypeScript files with extensions.
+      "allowImportingTsExtensions": false,
       "resolveJsonModule": true, // Enables importing JSON modules.
       "isolatedModules": true, // Ensures each file is treated as a separate module.
-      "noEmit": true, // Prevents TypeScript from emitting output files.
+      "noEmit": false,
       "jsx": "react-jsx", // Configures JSX support for React.
       "esModuleInterop": false,
       "experimentalDecorators": true,

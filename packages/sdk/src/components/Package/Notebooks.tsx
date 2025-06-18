@@ -6,6 +6,7 @@ import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { useServer } from "../ServerProvider";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 
@@ -16,9 +17,9 @@ interface NotebooksProps {
 }
 
 export default function Notebooks({ navigate }: NotebooksProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
 
+   const { server, accessToken } = useServer();
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["notebooks", server, projectName, packageName, versionId],
       queryFn: async () => {

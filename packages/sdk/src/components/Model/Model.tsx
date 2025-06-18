@@ -24,6 +24,7 @@ import { usePackage } from "../Package/PackageProvider";
 import { SourceExplorerComponent } from "./SourcesExplorer";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { useServer } from "../ServerProvider";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -53,8 +54,8 @@ export default function Model({
       React.useState<string>();
    const [selectedTab, setSelectedTab] = React.useState(0);
 
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
+   const { server, accessToken } = useServer();
    const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
