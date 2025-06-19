@@ -1,4 +1,4 @@
-name: Publish SDK to NPM
+name: Publish SDK/APP to NPM
 
 on:
   workflow_dispatch:
@@ -40,6 +40,7 @@ jobs:
       - name: Update package version
         run: |
           npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/sdk
+          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/app
 
       - name: Create version update branch
         run: |
@@ -52,7 +53,7 @@ jobs:
           
           # Stage and commit the changes
           git add packages/sdk/package.json
-          git commit -s -m "Update SDK version to ${{ inputs.version }}"
+          git commit -s -m "Update SDK/App version to ${{ inputs.version }}"
           
           # Push the branch
           git push origin $BRANCH_NAME
@@ -60,14 +61,21 @@ jobs:
           echo "::notice title=Branch Created::Created branch $BRANCH_NAME with version update"
           echo "::notice title=Next Step::Please create a pull request from branch $BRANCH_NAME to main"
 
-      - name: Build package
+      - name: Build SDK package
         run: |
           cd packages/sdk
+          NODE_ENV=production bun run build
+
+      - name: Build App package
+        run: |
+          cd packages/app
           NODE_ENV=production bun run build
 
       - name: Publish to NPM
         run: |
           cd packages/sdk
+          npm publish --access public
+          cd ../app
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
