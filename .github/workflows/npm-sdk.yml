@@ -34,6 +34,7 @@ jobs:
         run: |
           echo "Safe to ignore npm workspace errors"
           NEW_VERSION=$(npm version patch --workspaces | tail -1)
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "::notice title=New Version::Will update to version $NEW_VERSION"
 
       - name: Create version update branch
