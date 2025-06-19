@@ -55,6 +55,15 @@ jobs:
           
           echo "::notice title=Branch Created::Created branch $BRANCH_NAME with version update"
           echo "::notice title=Next Step::Please create a pull request from branch $BRANCH_NAME to main"
+          
+          # Add to job summary
+          echo "## 🚀 SDK/App Version Update" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Updated to version:** \`${NEW_VERSION}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📝 **Branch created:** \`$BRANCH_NAME\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Next step:** [Create Pull Request](https://github.com/${{ github.repository }}/compare/$BRANCH_NAME)" >> $GITHUB_STEP_SUMMARY
 
       - name: Build SDK package
         run: |
