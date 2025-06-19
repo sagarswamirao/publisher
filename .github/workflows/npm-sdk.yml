@@ -2,12 +2,6 @@ name: Publish SDK/APP to NPM
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number (e.g., 1.0.0)'
-        required: true
-        type: string
-        default: '0.0.XX'
 
 jobs:
   publish:
@@ -39,21 +33,21 @@ jobs:
 
       - name: Update package version
         run: |
-          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/sdk
-          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/app
+          NEW_VERSION=$(npm version path --workspaces || tail -1)
+          echo "::notice title=New Version::Will update to version $NEW_VERSION"
 
       - name: Create version update branch
-        run: |
+        run: | 
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "${{ github.actor }}"
           
           # Create and switch to a new branch
-          BRANCH_NAME="update-sdk-version-${{ inputs.version }}"
+          BRANCH_NAME="update-sdk-version-${NEW_VERSION}"
           git checkout -b $BRANCH_NAME
           
           # Stage and commit the changes
           git add packages/sdk/package.json
-          git commit -s -m "Update SDK/App version to ${{ inputs.version }}"
+          git commit -s -m "Update SDK/App version to ${NEW_VERSION}"
           
           # Push the branch
           git push origin $BRANCH_NAME
