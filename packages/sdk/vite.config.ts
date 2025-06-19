@@ -8,7 +8,7 @@ export default ({ mode }) => {
    return defineConfig({
       define: {
          "process.env.NODE_ENV": JSON.stringify(mode),
-         "process.env.NODE_DEBUG": mode === "development",
+         "process.env.NODE_DEBUG": false,
          "process.env.VSCODE_TEXTMATE_DEBUG": false,
       },
       build: {
