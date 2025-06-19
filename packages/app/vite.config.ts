@@ -22,7 +22,9 @@ export default ({ mode }) => {
       return defineConfig({
          plugins: [react(), dts()],
          define: {
-            "process.env": JSON.stringify(mode),
+            "process.env.NODE_ENV": JSON.stringify(mode),
+            "process.env.NODE_DEBUG": false,
+            "process.env.VSCODE_TEXTMATE_DEBUG": false,
          },
          resolve,
          build: {
@@ -50,7 +52,9 @@ export default ({ mode }) => {
       plugins: [react()],
       define: {
          "process.env.NODE_ENV": JSON.stringify(mode),
-         "process.env.NODE_DEBUG": mode === "development",
+         "process.env.NODE_DEBUG": JSON.stringify(
+            process.env.NODE_DEBUG || (mode === "development" ? "1" : ""),
+         ),
          "process.env.VSCODE_TEXTMATE_DEBUG": false,
       },
       resolve,
