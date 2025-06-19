@@ -33,7 +33,7 @@ jobs:
 
       - name: Update package version
         run: |
-          NEW_VERSION=$(npm version --workspaces || tail -1)
+          NEW_VERSION=$(npm version patch --workspaces || grep @malloy-publisher/sdk)
           echo "::notice title=New Version::Will update to version $NEW_VERSION"
 
       - name: Create version update branch
