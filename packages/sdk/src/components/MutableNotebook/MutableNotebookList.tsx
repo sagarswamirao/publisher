@@ -1,6 +1,6 @@
-import { useNotebookStorage } from "@malloy-publisher/sdk";
 import { Box, Divider, List, ListItem, ListItemText } from "@mui/material";
 import React from "react";
+import { useNotebookStorage } from "./NotebookStorageProvider";
 
 interface MutableNotebookListProps {
    onNotebookClick: (notebook: string, event: React.MouseEvent) => void;

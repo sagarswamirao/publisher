@@ -9,3 +9,4 @@ export * from "./Loading";
 export { useRouterClickHandler } from "./click_helper";
 export { ServerProvider, useServer } from "./ServerProvider";
 export type { ServerContextValue, ServerProviderProps } from "./ServerProvider";
+export { AnalyzePackageButton } from "./AnalyzePackageButton";

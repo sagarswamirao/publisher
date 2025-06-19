@@ -13,6 +13,5 @@ export { PackagePage } from "./components/PackagePage";
 export { ProjectPage } from "./components/ProjectPage";
 export { RouteError } from "./components/RouteError";
 export { ScratchNotebookPage } from "./components/ScratchNotebookPage";
-export { MutableNotebookList } from "./components/MutableNotebookList";
 export { default as BreadcrumbNav } from "./components/BreadcrumbNav";
 export { default as ToggleColorMode } from "./components/ToggleColorMode";
