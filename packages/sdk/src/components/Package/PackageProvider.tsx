@@ -1,11 +1,9 @@
 import React, { createContext, useContext, ReactNode } from "react";
 
 export interface PackageContextProps {
-   server?: string;
    projectName: string;
    packageName: string;
    versionId?: string;
-   accessToken?: string;
 }
 
 const PackageContext = createContext<PackageContextProps | undefined>(
@@ -21,17 +19,13 @@ interface PackageProviderProps extends PackageContextProps {
 // that need it.
 // The package information is passed to the components via the usePackage hook.
 export const PackageProvider = ({
-   server,
    projectName,
    packageName,
    versionId,
-   accessToken,
    children,
 }: PackageProviderProps) => {
    return (
-      <PackageContext.Provider
-         value={{ server, projectName, packageName, versionId, accessToken }}
-      >
+      <PackageContext.Provider value={{ projectName, packageName, versionId }}>
          {children}
       </PackageContext.Provider>
    );

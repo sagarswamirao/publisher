@@ -20,19 +20,17 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const schedulesApi = new SchedulesApi(new Configuration());
 
 export default function Schedules() {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
 
    const { data, isError, isLoading, error } = useQueryWithApiError({
-      queryKey: ["schedules", server, projectName, packageName, versionId],
-      queryFn: () =>
-         schedulesApi.listSchedules(projectName, packageName, versionId, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["schedules", projectName, packageName, versionId],
+      queryFn: (config) =>
+         schedulesApi.listSchedules(
+            projectName,
+            packageName,
+            versionId,
+            config,
+         ),
    });
 
    if (isLoading) {

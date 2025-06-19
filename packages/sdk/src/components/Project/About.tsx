@@ -10,18 +10,11 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const projectsApi = new ProjectsApi(new Configuration());
 
 export default function About() {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["about", server, projectName],
-      queryFn: () =>
-         projectsApi.getProject(projectName, false, {
-            baseURL: server,
-            withCredentials: true,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["about", projectName],
+      queryFn: (config) => projectsApi.getProject(projectName, false, config),
    });
 
    return (

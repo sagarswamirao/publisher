@@ -4,9 +4,7 @@ import Packages from "./Packages";
 import { createContext, useContext, ReactNode } from "react";
 
 export interface ProjectContextProps {
-   server?: string;
    projectName: string;
-   accessToken?: string;
 }
 
 const ProjectContext = createContext<ProjectContextProps | undefined>(
@@ -18,13 +16,11 @@ interface ProjectProviderProps extends ProjectContextProps {
 }
 
 export const ProjectProvider = ({
-   server,
    projectName,
-   accessToken,
    children,
 }: ProjectProviderProps) => {
    return (
-      <ProjectContext.Provider value={{ server, projectName, accessToken }}>
+      <ProjectContext.Provider value={{ projectName }}>
          {children}
       </ProjectContext.Provider>
    );

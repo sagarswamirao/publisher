@@ -2,11 +2,7 @@ import { useParams } from "react-router-dom";
 import { Package, PackageProvider } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
-interface PackagePageProps {
-   server?: string;
-}
-
-export function PackagePage({ server }: PackagePageProps) {
+export function PackagePage() {
    const { projectName, packageName } = useParams();
    const navigate = useRouterClickHandler();
    if (!projectName) {
@@ -23,11 +19,7 @@ export function PackagePage({ server }: PackagePageProps) {
       );
    } else {
       return (
-         <PackageProvider
-            server={server}
-            projectName={projectName}
-            packageName={packageName}
-         >
+         <PackageProvider projectName={projectName} packageName={packageName}>
             <Package navigate={navigate} />
          </PackageProvider>
       );

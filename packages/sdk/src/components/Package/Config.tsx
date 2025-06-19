@@ -17,19 +17,18 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const packagesApi = new PackagesApi(new Configuration());
 
 export default function Config() {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["package", server, projectName, packageName, versionId],
-      queryFn: () =>
-         packagesApi.getPackage(projectName, packageName, versionId, false, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["package", projectName, packageName, versionId],
+      queryFn: (config) =>
+         packagesApi.getPackage(
+            projectName,
+            packageName,
+            versionId,
+            false,
+            config,
+         ),
    });
 
    return (

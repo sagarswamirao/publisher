@@ -31,18 +31,11 @@ function Connection({ connection }: { connection: ApiConnection }) {
 }
 
 export default function Connections() {
-   const { server, projectName, accessToken } = usePackage();
+   const { projectName } = usePackage();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["connections", server, projectName],
-      queryFn: () =>
-         connectionsApi.listConnections(projectName, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["connections", projectName],
+      queryFn: (config) => connectionsApi.listConnections(projectName, config),
    });
 
    return (

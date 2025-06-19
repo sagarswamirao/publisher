@@ -22,13 +22,11 @@ export default function QueryResult({
    sourceName,
    queryName,
 }: QueryResultProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: [
          "queryResult",
-         server,
          projectName,
          packageName,
          modelPath,
@@ -37,7 +35,7 @@ export default function QueryResult({
          sourceName,
          queryName,
       ],
-      queryFn: () =>
+      queryFn: (config) =>
          queryResultsApi.executeQuery(
             projectName,
             packageName,
@@ -46,13 +44,7 @@ export default function QueryResult({
             sourceName,
             queryName,
             versionId,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
+            config,
          ),
    });
 

@@ -25,8 +25,7 @@ export default function NamedQueries({
    namedQueries,
    modelPath,
 }: NamedQueryProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
    const [namedQueryResults, setNamedQueryResults] = React.useState<
       Record<string, string>
    >({});
@@ -35,7 +34,7 @@ export default function NamedQueries({
    >({});
 
    const mutation = useMutationWithApiError({
-      mutationFn: ({ query }: { query: Query }) => {
+      mutationFn: ({ query }: { query: Query }, config) => {
          const val = queryResultsApi.executeQuery(
             projectName,
             packageName,
@@ -44,13 +43,7 @@ export default function NamedQueries({
             undefined,
             query.name,
             versionId,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
+            config,
          );
          return val;
       },

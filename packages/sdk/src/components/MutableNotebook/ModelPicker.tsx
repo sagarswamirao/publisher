@@ -31,18 +31,11 @@ export function ModelPicker({
    initialSelectedModels,
    onModelChange,
 }: ModelPickerProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
    const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["models", server, projectName, packageName, versionId],
-      queryFn: () =>
-         modelsApi.listModels(projectName, packageName, versionId, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["models", projectName, packageName, versionId],
+      queryFn: (config) =>
+         modelsApi.listModels(projectName, packageName, versionId, config),
    });
    const [selectedModels, setSelectedModels] = React.useState<string[]>(
       initialSelectedModels || [],

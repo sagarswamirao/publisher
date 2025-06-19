@@ -8,8 +8,13 @@ import {
    UseMutationResult,
 } from "@tanstack/react-query";
 import { ApiError } from "../components/ApiErrorDisplay";
+import { useServer } from "../components";
+import { RawAxiosRequestConfig } from "axios";
 
 // Global QueryClient instance
+// This should actually be a per-server instance.
+// If we ever used this code in a multi-endpoint situation, it's possible
+// there'd be cache collisions in QueryClient.
 const globalQueryClient = new QueryClient({
    defaultOptions: {
       queries: {
@@ -25,14 +30,22 @@ const globalQueryClient = new QueryClient({
 
 export function useQueryWithApiError<TData = unknown, TError = ApiError>(
    options: Omit<UseQueryOptions<TData, TError>, "throwOnError" | "retry"> & {
-      queryFn: () => Promise<TData>;
+      queryFn: (config: RawAxiosRequestConfig) => Promise<TData>;
    },
 ): UseQueryResult<TData, TError> {
+   const { server, accessToken } = useServer();
+   const config = {
+      baseURL: server,
+      withCredentials: !accessToken,
+      headers: {
+         Authorization: accessToken && `Bearer ${accessToken}`,
+      },
+   } as RawAxiosRequestConfig;
    const enhancedOptions: UseQueryOptions<TData, TError> = {
       ...options,
       queryFn: async () => {
          try {
-            return await options.queryFn();
+            return await options.queryFn(config);
          } catch (err) {
             // Standardized error handling for axios errors
             if (err && typeof err === "object" && "response" in err) {
@@ -70,16 +83,27 @@ export function useMutationWithApiError<
 >(
    options: Omit<
       UseMutationOptions<TData, TError, TVariables>,
-      "throwOnError" | "retry"
+      "throwOnError" | "retry" | "mutationFn"
    > & {
-      mutationFn: (variables: TVariables) => Promise<TData>;
+      mutationFn: (
+         variables: TVariables,
+         config: RawAxiosRequestConfig,
+      ) => Promise<TData>;
    },
 ): UseMutationResult<TData, TError, TVariables> {
+   const { server, accessToken } = useServer();
+   const config = {
+      baseURL: server,
+      withCredentials: !accessToken,
+      headers: {
+         Authorization: accessToken && `Bearer ${accessToken}`,
+      },
+   } as RawAxiosRequestConfig;
    const enhancedOptions: UseMutationOptions<TData, TError, TVariables> = {
       ...options,
       mutationFn: async (variables: TVariables) => {
          try {
-            return await options.mutationFn(variables);
+            return await options.mutationFn(variables, config);
          } catch (err) {
             // Standardized error handling for axios errors
             if (err && typeof err === "object" && "response" in err) {

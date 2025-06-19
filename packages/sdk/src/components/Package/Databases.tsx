@@ -23,8 +23,7 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const databasesApi = new DatabasesApi(new Configuration());
 
 export default function Databases() {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
 
    const [open, setOpen] = React.useState(false);
    const [selectedDatabase, setSelectedDatabase] =
@@ -41,15 +40,14 @@ export default function Databases() {
    };
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
-      queryKey: ["databases", server, projectName, packageName, versionId],
-      queryFn: () =>
-         databasesApi.listDatabases(projectName, packageName, versionId, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["databases", projectName, packageName, versionId],
+      queryFn: (config) =>
+         databasesApi.listDatabases(
+            projectName,
+            packageName,
+            versionId,
+            config,
+         ),
    });
    const formatRowSize = (size: number) => {
       if (size >= 1024 * 1024 * 1024 * 1024) {

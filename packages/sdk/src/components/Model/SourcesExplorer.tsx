@@ -171,10 +171,9 @@ export function SourceExplorerComponent({
          onChange(query);
       }
    }, [onChange, query]);
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
    const mutation = useMutationWithApiError({
-      mutationFn: () => {
+      mutationFn: (_, config) => {
          const malloy = new QueryBuilder.ASTQuery({
             source: sourceAndPath.sourceInfo,
             query: query?.malloyQuery,
@@ -192,13 +191,7 @@ export function SourceExplorerComponent({
             // sourceInfo.name,
             undefined,
             versionId,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
+            config,
          );
       },
       onSuccess: (data) => {

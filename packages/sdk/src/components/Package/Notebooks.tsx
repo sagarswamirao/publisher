@@ -16,26 +16,17 @@ interface NotebooksProps {
 }
 
 export default function Notebooks({ navigate }: NotebooksProps) {
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
+   const { projectName, packageName, versionId } = usePackage();
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
-      queryKey: ["notebooks", server, projectName, packageName, versionId],
-      queryFn: async () => {
-         const response = await notebooksApi.listNotebooks(
+      queryKey: ["notebooks", projectName, packageName, versionId],
+      queryFn: (config) =>
+         notebooksApi.listNotebooks(
             projectName,
             packageName,
             versionId,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
-         );
-         return response;
-      },
+            config,
+         ),
    });
 
    return (

@@ -37,7 +37,7 @@ interface ConnectionExplorerProps {
 export default function ConnectionExplorer({
    connectionName,
 }: ConnectionExplorerProps) {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
 
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
@@ -47,15 +47,9 @@ export default function ConnectionExplorer({
    );
    const [showHiddenSchemas, setShowHiddenSchemas] = React.useState(false);
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
-      queryKey: ["tablePath", server, projectName, connectionName],
-      queryFn: () =>
-         connectionsApi.listSchemas(projectName, connectionName, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["tablePath", projectName, connectionName],
+      queryFn: (config) =>
+         connectionsApi.listSchemas(projectName, connectionName, config),
    });
 
    return (
@@ -166,30 +160,23 @@ function TableViewer({
    tableName,
    onClose,
 }: TableViewerProps) {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
          "tablePathSchema",
-         server,
          projectName,
          connectionName,
          schemaName,
          tableName,
       ],
-      queryFn: () =>
+      queryFn: (config) =>
          connectionsApi.getTablesource(
             projectName,
             connectionName,
             tableName,
             `${schemaName}.${tableName}`,
-            {
-               baseURL: server,
-               withCredentials: !accessToken,
-               headers: {
-                  Authorization: accessToken && `Bearer ${accessToken}`,
-               },
-            },
+            config,
          ),
    });
 
@@ -276,24 +263,17 @@ function TablesInSchema({
    schemaName,
    onTableClick,
 }: TablesInSchemaProps) {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
-      queryKey: [
-         "tablesInSchema",
-         server,
-         projectName,
-         connectionName,
-         schemaName,
-      ],
-      queryFn: () =>
-         connectionsApi.listTables(projectName, connectionName, schemaName, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["tablesInSchema", projectName, connectionName, schemaName],
+      queryFn: (config) =>
+         connectionsApi.listTables(
+            projectName,
+            connectionName,
+            schemaName,
+            config,
+         ),
    });
 
    return (

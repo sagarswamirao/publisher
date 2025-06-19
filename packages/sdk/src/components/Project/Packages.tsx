@@ -13,18 +13,11 @@ interface PackagesProps {
 }
 
 export default function Packages({ navigate }: PackagesProps) {
-   const { server, projectName, accessToken } = useProject();
+   const { projectName } = useProject();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: ["packages", server, projectName],
-      queryFn: () =>
-         packagesApi.listPackages(projectName, {
-            baseURL: server,
-            withCredentials: !accessToken,
-            headers: {
-               Authorization: accessToken && `Bearer ${accessToken}`,
-            },
-         }),
+      queryKey: ["packages", projectName],
+      queryFn: (config) => packagesApi.listPackages(projectName, config),
    });
 
    return (

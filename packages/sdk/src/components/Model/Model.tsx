@@ -53,9 +53,8 @@ export default function Model({
       React.useState<string>();
    const [selectedTab, setSelectedTab] = React.useState(0);
 
-   const { server, projectName, packageName, versionId, accessToken } =
-      usePackage();
-   const modelCodeSnippet = getModelCodeSnippet(server, packageName, modelPath);
+   const { projectName, packageName, versionId } = usePackage();
+   const modelCodeSnippet = getModelCodeSnippet(modelPath);
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
          setHighlightedEmbedCode(code);
@@ -64,27 +63,14 @@ export default function Model({
 
    const { data, isError, isLoading, error } =
       useQueryWithApiError<CompiledModel>({
-         queryKey: [
-            "package",
-            server,
-            projectName,
-            packageName,
-            modelPath,
-            versionId,
-         ],
-         queryFn: async () => {
+         queryKey: ["package", projectName, packageName, modelPath, versionId],
+         queryFn: async (config) => {
             const response = await modelsApi.getModel(
                projectName,
                packageName,
                modelPath,
                versionId,
-               {
-                  baseURL: server,
-                  withCredentials: !accessToken,
-                  headers: {
-                     Authorization: accessToken && `Bearer ${accessToken}`,
-                  },
-               },
+               config,
             );
             return response.data;
          },
@@ -254,14 +240,8 @@ export default function Model({
    );
 }
 
-function getModelCodeSnippet(
-   server: string,
-   packageName: string,
-   modelPath: string,
-): string {
+function getModelCodeSnippet(modelPath: string): string {
    return `<Model
-   server="${server}"
-   packageName="${packageName}"
    modelPath="${modelPath}"
    accessToken={accessToken}
 />`;
