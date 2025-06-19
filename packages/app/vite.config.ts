@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
 import path from "path";
+import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default ({ mode }) => {
@@ -49,7 +49,7 @@ export default ({ mode }) => {
    return defineConfig({
       plugins: [react()],
       define: {
-         "process.env": JSON.stringify(mode),
+         "process.env.NODE_ENV": JSON.stringify(mode),
       },
       resolve,
    });

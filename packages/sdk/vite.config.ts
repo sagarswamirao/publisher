@@ -7,7 +7,7 @@ import { peerDependencies } from "./package.json";
 export default ({ mode }) => {
    return defineConfig({
       define: {
-         "process.env": JSON.stringify(mode),
+         "process.env.NODE_ENV": JSON.stringify(mode),
       },
       build: {
          minify: mode === "production",
