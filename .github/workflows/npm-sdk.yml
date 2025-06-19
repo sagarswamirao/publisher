@@ -14,8 +14,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
@@ -38,24 +38,24 @@ jobs:
           echo "::notice title=New Version::Will update to version $NEW_VERSION"
 
       - name: Create version update branch
-        run: | 
+        run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "${{ github.actor }}"
-          
+
           # Create and switch to a new branch
           BRANCH_NAME="update-sdk-version-${NEW_VERSION}"
           git checkout -b $BRANCH_NAME
-          
+
           # Stage and commit the changes
           git add packages/sdk/package.json
           git commit -s -m "Update SDK/App version to ${NEW_VERSION}"
-          
+
           # Push the branch
           git push origin $BRANCH_NAME
-          
+
           echo "::notice title=Branch Created::Created branch $BRANCH_NAME with version update"
           echo "::notice title=Next Step::Please create a pull request from branch $BRANCH_NAME to main"
-          
+
           # Add to job summary
           echo "## 🚀 SDK/App Version Update" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
