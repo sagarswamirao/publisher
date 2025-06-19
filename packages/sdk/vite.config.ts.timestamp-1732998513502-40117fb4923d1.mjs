@@ -1,6 +1,6 @@
 // vite.config.ts
-import { defineConfig } from "file:///home/kjnesbit/publisher/node_modules/vite/dist/node/index.js";
 import dts from "file:///home/kjnesbit/publisher/node_modules/vite-plugin-dts/dist/index.mjs";
+import { defineConfig } from "file:///home/kjnesbit/publisher/node_modules/vite/dist/node/index.js";
 
 // package.json
 var peerDependencies = {
@@ -11,12 +11,12 @@ var peerDependencies = {
 };
 
 // vite.config.ts
-import svgr from "file:///home/kjnesbit/publisher/node_modules/vite-plugin-svgr/dist/index.js";
 import react from "file:///home/kjnesbit/publisher/node_modules/@vitejs/plugin-react/dist/index.mjs";
+import svgr from "file:///home/kjnesbit/publisher/node_modules/vite-plugin-svgr/dist/index.js";
 var vite_config_default = ({ mode }) => {
    return defineConfig({
       define: {
-         "process.env": JSON.stringify(mode),
+         "process.env.NODE_ENV": JSON.stringify(mode),
       },
       build: {
          minify: mode === "production",
