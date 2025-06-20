@@ -48,7 +48,7 @@ jobs:
 
           # Stage and commit the changes
           git add packages/sdk/package.json
-          git add packages/app/package.jßson
+          git add packages/app/package.json
           git add packages/server/package.json
           git commit -s -m "Update SDK/App version to ${NEW_VERSION}"
 
