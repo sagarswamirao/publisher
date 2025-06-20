@@ -157,7 +157,7 @@ bun install
 Compile the TypeScript code for all packages (server, SDK, app) into JavaScript:
 
 ```bash
-bun run build
+bun run build:server-deploy
 ```
 
 **4. Start the Publisher Server:**
