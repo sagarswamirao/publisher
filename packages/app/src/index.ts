@@ -4,9 +4,6 @@ export type { MalloyPublisherAppProps } from "./App";
 
 // Theme exports
 export { default as theme } from "./theme";
-export { default as getBlogTheme } from "./theme/getBlogTheme";
-export * from "./theme/themePrimitives";
-export * from "./theme/customizations";
 
 // Additional component exports for advanced usage
 export { default as MainPage } from "./components/MainPage";
