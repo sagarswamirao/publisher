@@ -37,6 +37,35 @@ jobs:
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "::notice title=New Version::Will update to version $NEW_VERSION"
 
+      - name: Replace workspace dependencies for publishing
+        run: |
+          # Replace workspace:* with actual version in app package.json for publishing
+          sed -i "s/\"@malloy-publisher\/sdk\": \"workspace:\*\"/\"@malloy-publisher\/sdk\": \"^${NEW_VERSION}\"/" packages/app/package.json
+
+      - name: Build SDK package
+        run: |
+          cd packages/sdk
+          NODE_ENV=production bun run build
+
+      - name: Build App package
+        run: |
+          cd packages/app
+          NODE_ENV=production bun run build
+
+      - name: Publish to NPM
+        run: |
+          cd packages/sdk
+          npm publish --access public
+          cd ../app
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Revert workspace dependencies
+        run: |
+          # Revert the workspace dependency back to workspace:* for git commit
+          sed -i "s/\"@malloy-publisher\/sdk\": \"\\^${NEW_VERSION}\"/\"@malloy-publisher\/sdk\": \"workspace:*\"/" packages/app/package.json
+
       - name: Create version update branch
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
@@ -66,22 +95,3 @@ jobs:
           echo "📝 **Branch created:** \`$BRANCH_NAME\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🔗 **Next step:** [Create Pull Request](https://github.com/${{ github.repository }}/compare/$BRANCH_NAME)" >> $GITHUB_STEP_SUMMARY
-
-      - name: Build SDK package
-        run: |
-          cd packages/sdk
-          NODE_ENV=production bun run build
-
-      - name: Build App package
-        run: |
-          cd packages/app
-          NODE_ENV=production bun run build
-
-      - name: Publish to NPM
-        run: |
-          cd packages/sdk
-          npm publish --access public
-          cd ../app
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
