@@ -69,7 +69,7 @@ export function NotebookCell({
 
    return (
       (cell.type === "markdown" && (
-         <StyledCard variant="outlined" sx={{ border: 0 }}>
+         <StyledCard variant="outlined">
             <StyledCardContent>
                <Markdown>{cell.text}</Markdown>
             </StyledCardContent>
@@ -86,7 +86,7 @@ export function NotebookCell({
                >
                   <CardActions
                      sx={{
-                        padding: "0px 10px 0px 10px",
+                        padding: "0px 8px 0px 8px",
                         mb: "auto",
                         mt: "auto",
                      }}
@@ -154,7 +154,7 @@ export function NotebookCell({
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
                <Stack
                   sx={{
-                     p: "10px",
+                     p: "8px",
                      borderRadius: 0,
                      flexDirection: "row",
                      justifyContent: "space-between",
@@ -188,8 +188,7 @@ export function NotebookCell({
                <style>{codeStyle}</style>
                <Stack
                   sx={{
-                     mx: "15px",
-                     mb: "10px",
+                     mx: "8px",
                      borderRadius: 0,
                      flexDirection: "row",
                      justifyContent: "space-between",

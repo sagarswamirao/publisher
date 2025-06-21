@@ -1,11 +1,11 @@
 import { Box, Divider, Typography } from "@mui/material";
 import { Configuration, NotebooksApi } from "../../client";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 
@@ -30,7 +30,7 @@ export default function Notebooks({ navigate }: NotebooksProps) {
    });
 
    return (
-      <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
+      <StyledCard variant="outlined" sx={{ width: "100%" }}>
          <StyledCardContent>
             <Typography variant="overline" fontWeight="bold">
                Notebooks
@@ -38,7 +38,6 @@ export default function Notebooks({ navigate }: NotebooksProps) {
             <Divider />
             <Box
                sx={{
-                  mt: "10px",
                   maxHeight: "200px",
                   overflowY: "auto",
                }}

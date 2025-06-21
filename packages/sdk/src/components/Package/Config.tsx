@@ -8,11 +8,11 @@ import {
    Typography,
 } from "@mui/material";
 import { Configuration, PackagesApi } from "../../client";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const packagesApi = new PackagesApi(new Configuration());
 
@@ -32,7 +32,7 @@ export default function Config() {
    });
 
    return (
-      <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
+      <StyledCard variant="outlined" sx={{ width: "100%" }}>
          <StyledCardContent>
             <Typography variant="overline" fontWeight="bold">
                Package Config
@@ -40,14 +40,17 @@ export default function Config() {
             <Divider />
             <Box
                sx={{
-                  mt: "10px",
                   maxHeight: "200px",
                   overflowY: "auto",
                }}
             >
                <List dense={true} disablePadding={true}>
                   <ListItem dense={true} disablePadding={true}>
-                     <ListItemText primary="Name" secondary={packageName} />
+                     <ListItemText
+                        primary="Name"
+                        primaryTypographyProps={{ fontWeight: "500" }}
+                        secondary={packageName}
+                     />
                   </ListItem>
                   {!isSuccess && !isError && (
                      <ListItem>
@@ -59,24 +62,27 @@ export default function Config() {
                         <ListItem dense={true} disablePadding={true}>
                            <ListItemText
                               primary="Description"
+                              primaryTypographyProps={{
+                                 fontWeight: "500",
+                              }}
                               secondary={data.data.description}
                            />
                         </ListItem>
                      )) || (
-                        <ListItem
-                           disablePadding={true}
-                           dense={true}
-                           sx={{ mt: "20px" }}
-                        >
-                           <ErrorIcon
-                              sx={{
-                                 color: "grey.600",
-                                 mr: "10px",
-                              }}
-                           />
-                           <ListItemText primary={"No package manifest"} />
-                        </ListItem>
-                     ))}
+                           <ListItem
+                              disablePadding={true}
+                              dense={true}
+                              sx={{ mt: "20px" }}
+                           >
+                              <ErrorIcon
+                                 sx={{
+                                    color: "grey.600",
+                                    mr: "10px",
+                                 }}
+                              />
+                              <ListItemText primary={"No package manifest"} />
+                           </ListItem>
+                        ))}
                   {isError && (
                      <ApiErrorDisplay
                         error={error}

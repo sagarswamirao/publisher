@@ -1,11 +1,11 @@
-import { Divider, Typography } from "@mui/material";
-import { Configuration, ProjectsApi } from "../../client";
+import { Typography } from "@mui/material";
 import Markdown from "markdown-to-jsx";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
-import { useProject } from "./Project";
+import { Configuration, ProjectsApi } from "../../client";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { StyledCard } from "../styles";
+import { useProject } from "./Project";
 
 const projectsApi = new ProjectsApi(new Configuration());
 
@@ -21,16 +21,13 @@ export default function About() {
       <>
          {!isSuccess && !isError && <Loading text="Fetching About..." />}
          {isSuccess && (
-            <StyledCard variant="outlined">
-               <StyledCardContent>
-                  <Typography variant="overline" fontWeight="bold">
-                     Readme
-                  </Typography>
-                  <Divider />
-               </StyledCardContent>
-               <StyledCardMedia>
+            <StyledCard variant="outlined" sx={{ p: 2 }}>
+               <Typography variant="overline" fontWeight="bold" sx={{ mb: 1 }}>
+                  Readme
+               </Typography>
+               <StyledCard sx={{ p: 1 }}>
                   <Markdown>{data.data.readme}</Markdown>
-               </StyledCardMedia>
+               </StyledCard>
             </StyledCard>
          )}
          {isError && (

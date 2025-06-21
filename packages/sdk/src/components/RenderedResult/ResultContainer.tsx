@@ -79,7 +79,7 @@ export default function ResultContainer({
    if (!result) {
       return null;
    }
-   const loading = <Loading text="Loading..." centered={false} size={32} />;
+   const loading = <Loading text="Loading..." centered={true} size={32} />;
    const renderedHeight = isFillElement
       ? isExpanded
          ? maxHeight - 40
@@ -87,9 +87,9 @@ export default function ResultContainer({
       : undefined;
    const height = explicitHeight
       ? {
-           minHeight: `${explicitHeight}px`,
-           height: `100%`,
-        }
+         minHeight: `${explicitHeight}px`,
+         height: `100%`,
+      }
       : { height: `100%` };
    return (
       <>

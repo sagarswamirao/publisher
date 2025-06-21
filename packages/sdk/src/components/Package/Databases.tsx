@@ -14,11 +14,11 @@ import {
 } from "@mui/material";
 import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
-import { StyledCard, StyledCardContent } from "../styles";
-import { usePackage } from "./PackageProvider";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { StyledCard, StyledCardContent } from "../styles";
+import { usePackage } from "./PackageProvider";
 
 const databasesApi = new DatabasesApi(new Configuration());
 
@@ -62,15 +62,14 @@ export default function Databases() {
    };
    return (
       <>
-         <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
+         <StyledCard variant="outlined" sx={{ width: "100%" }}>
             <StyledCardContent>
                <Typography variant="overline" fontWeight="bold">
-                  Databases
+                  Embedded Databases
                </Typography>
                <Divider />
                <Box
                   sx={{
-                     mt: "10px",
                      maxHeight: "200px",
                      overflowY: "auto",
                   }}
@@ -111,7 +110,7 @@ export default function Databases() {
                      </Table>
                   )}
                   {isSuccess && data.data.length === 0 && (
-                     <Typography variant="body2" sx={{ p: "10px", m: "auto" }}>
+                     <Typography variant="body2" sx={{ m: "auto" }}>
                         No databases found
                      </Typography>
                   )}

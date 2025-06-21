@@ -1,25 +1,23 @@
+import "@malloydata/malloy-explorer/styles.css";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
-   Box,
    CardActions,
    Collapse,
-   Divider,
    IconButton,
    Stack,
    Tooltip,
    Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
-import { Configuration, NotebooksApi, CompiledNotebook } from "../../client";
+import { CompiledNotebook, Configuration, NotebooksApi } from "../../client";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { highlight } from "../highlighter";
+import { Loading } from "../Loading";
+import { usePackage } from "../Package/PackageProvider";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { NotebookCell } from "./NotebookCell";
-import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
-import "@malloydata/malloy-explorer/styles.css";
-import { usePackage } from "../Package/PackageProvider";
-import { Loading } from "../Loading";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 
@@ -112,10 +110,8 @@ export default function Notebook({
                )}
             </Stack>
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
-               <Divider />
                <Stack
                   sx={{
-                     p: "10px",
                      borderRadius: 0,
                      flexDirection: "row",
                      justifyContent: "space-between",
@@ -145,10 +141,9 @@ export default function Notebook({
                   </Tooltip>
                </Stack>
             </Collapse>
-            <Divider />
          </StyledCardContent>
          <StyledCardMedia>
-            <Stack spacing={1} component="section">
+            <Stack spacing={2} component="section">
                {!isSuccess && !isError && (
                   <Loading text="Fetching Notebook..." />
                )}

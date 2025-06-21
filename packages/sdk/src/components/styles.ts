@@ -1,4 +1,4 @@
-import { styled, Card, CardContent, CardMedia } from "@mui/material";
+import { Card, CardContent, CardMedia, styled } from "@mui/material";
 
 export const StyledCard = styled(Card)({
    display: "flex",
@@ -9,15 +9,12 @@ export const StyledCard = styled(Card)({
 export const StyledCardContent = styled(CardContent)({
    display: "flex",
    flexDirection: "column",
-   padding: "0px 4px 4px 4px",
+   padding: "10px",
    flexGrow: 1,
-   "&:last-child": {
-      paddingBottom: 0,
-   },
 });
 
 export const StyledCardMedia = styled(CardMedia)({
-   padding: "0px 4px 0px 4px",
+   padding: "10px",
 });
 
 export const StyledExplorerPage = styled("div")({
@@ -30,7 +27,7 @@ export const StyledExplorerBanner = styled("div")({
    height: "30px",
    backgroundColor: "rgba(225, 240, 255, 1)",
    display: "flex",
-   padding: "2px 10px",
+   padding: "4px",
    alignItems: "center",
 });
 

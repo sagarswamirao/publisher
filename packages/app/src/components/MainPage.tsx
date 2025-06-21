@@ -3,8 +3,10 @@ import {
    NotebookStorageProvider,
    useRouterClickHandler,
 } from "@malloy-publisher/sdk";
-import { Add, Launch } from "@mui/icons-material";
+import { Add, Analytics, Launch } from "@mui/icons-material";
 import {
+   AppBar,
+   Box,
    Button,
    Dialog,
    DialogContent,
@@ -16,9 +18,10 @@ import {
    MenuItem,
    Stack,
    TextField,
+   Toolbar,
+   Typography,
 } from "@mui/material";
 import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
 import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
@@ -33,6 +36,7 @@ export default function MainPage() {
    const [newDialogOpen, setNewDialogOpen] = React.useState(false);
    const [openDialogOpen, setOpenDialogOpen] = React.useState(false);
    const open = Boolean(anchorEl);
+
    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget);
    };
@@ -48,7 +52,6 @@ export default function MainPage() {
 
    const handleNotebookClick = (notebook: string, event: React.MouseEvent) => {
       setOpenDialogOpen(false);
-      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
          `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
          event,
@@ -57,7 +60,6 @@ export default function MainPage() {
 
    const createNotebookClick = (event?: React.MouseEvent) => {
       setNewDialogOpen(false);
-      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
          `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(workbookName)}`,
          event,
@@ -66,187 +68,229 @@ export default function MainPage() {
    };
 
    return (
-      <Container
-         maxWidth="xl"
-         component="main"
-         sx={{ display: "flex", flexDirection: "column", my: 2, gap: 0 }}
+      <Box
+         sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
-         <Stack
+         {/* Modern Header */}
+         <AppBar
+            position="sticky"
+            elevation={0}
             sx={{
-               display: "flex",
-               flexDirection: "row",
-               gap: 0,
-               justifyContent: "space-between",
-               alignItems: "center",
+               backgroundColor: "background.paper",
+               borderBottom: "1px solid",
+               borderColor: "divider",
             }}
          >
-            <div>
-               <Typography variant="h4" sx={{ color: "text.primary" }}>
-                  Malloy Publisher
-               </Typography>
-            </div>
-            <Stack
-               sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-               }}
-            >
-               {!(projectName && packageName) ? (
-                  <>
-                     <Button href="https://github.com/malloydata/publisher/blob/main/README.md">
-                        Getting Started
-                     </Button>
-                     <Button href="/api-doc.html">API</Button>
-                     <Button href="https://malloydata.dev/">Malloy</Button>
-                  </>
-               ) : (
-                  <>
-                     <Button
-                        aria-controls={open ? "basic-menu" : undefined}
-                        aria-haspopup="true"
-                        aria-expanded={open ? "true" : undefined}
-                        onClick={handleClick}
-                        sx={{ height: "40px" }}
+            <Toolbar sx={{ justifyContent: "space-between" }}>
+               <Stack direction="row" spacing={2} alignItems="center">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                     <Box
+                        component="img"
+                        src="/logo.svg"
+                        alt="Malloy"
+                        sx={{
+                           width: 28,
+                           height: 28,
+                        }}
+                     />
+                     <Typography
+                        variant="h5"
+                        sx={{
+                           color: "text.primary",
+                           fontWeight: 700,
+                           letterSpacing: "-0.025em",
+                        }}
                      >
-                        Analyze Package
-                     </Button>
-                     <Menu
-                        id="basic-menu"
-                        anchorEl={anchorEl}
-                        open={open}
-                        onClose={handleMenuClose}
-                        slotProps={{
-                           list: {
+                        Malloy Publisher
+                     </Typography>
+                  </Box>
+                  <BreadcrumbNav />
+               </Stack>
+
+               <Stack direction="row" spacing={2} alignItems="center">
+                  {!projectName || !packageName ? (
+                     <>
+                        <Button href="https://malloydata.dev/">
+                           Malloy Docs
+                        </Button>
+                        <Button href="https://github.com/malloydata/publisher/blob/main/README.md">
+                           Publisher Docs
+                        </Button>
+                     </>
+                  ) : (
+                     <>
+                        <Button
+                           aria-controls={open ? "basic-menu" : undefined}
+                           aria-haspopup="true"
+                           aria-expanded={open ? "true" : undefined}
+                           onClick={handleClick}
+                           variant="contained"
+                           startIcon={<Analytics />}
+                           size="small"
+                           sx={{
+                              height: "40px",
+                              px: 2,
+                              backgroundColor: "#fbbb04",
+                              "&:hover": {
+                                 backgroundColor: "#eab308",
+                              },
+                           }}
+                        >
+                           Analyze Package
+                        </Button>
+                        <Menu
+                           id="basic-menu"
+                           anchorEl={anchorEl}
+                           open={open}
+                           onClose={handleMenuClose}
+                           MenuListProps={{
                               "aria-labelledby": "basic-button",
-                           },
-                        }}
-                     >
-                        <MenuItem
-                           onClick={() => {
-                              setNewDialogOpen(true);
-                              handleMenuClose();
+                              sx: { py: 0.5 },
                            }}
                         >
-                           <ListItemIcon>
-                              <Add fontSize="small" />
-                           </ListItemIcon>
-                           <ListItemText>
-                              <Typography variant="body2">
-                                 New Workbook
-                              </Typography>
-                           </ListItemText>
-                        </MenuItem>
-                        <MenuItem
-                           onClick={() => {
-                              setOpenDialogOpen(true);
-                              handleMenuClose();
-                           }}
-                        >
-                           <ListItemIcon>
-                              <Launch fontSize="small" />
-                           </ListItemIcon>
-                           <ListItemText>
-                              <Typography variant="body2">
-                                 Open Workbook
-                              </Typography>
-                           </ListItemText>
-                        </MenuItem>
-                     </Menu>
-                     <Dialog
-                        open={newDialogOpen}
-                        onClose={handleNewDialogClose}
-                        sx={{
-                           "& .MuiDialog-paper": {
-                              width: "100%",
-                              maxWidth: "300px",
-                           },
-                        }}
-                     >
-                        <DialogTitle
-                           variant="subtitle1"
-                           sx={{ fontWeight: "medium" }}
-                        >
-                           Create Workbook
-                        </DialogTitle>
-                        <DialogContent>
-                           <FormControl
-                              sx={{
-                                 width: "100%",
-                                 display: "flex",
-                                 alignItems: "center",
-                                 gap: 2,
+                           <MenuItem
+                              onClick={() => {
+                                 setNewDialogOpen(true);
+                                 handleMenuClose();
+                              }}
+                              sx={{ py: 1, px: 2 }}
+                           >
+                              <ListItemIcon>
+                                 <Add fontSize="small" />
+                              </ListItemIcon>
+                              <ListItemText>
+                                 <Typography variant="body2" fontWeight={500}>
+                                    New Workbook
+                                 </Typography>
+                                 <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                 >
+                                    Create a new analysis workbook
+                                 </Typography>
+                              </ListItemText>
+                           </MenuItem>
+                           <MenuItem
+                              onClick={() => {
+                                 setOpenDialogOpen(true);
+                                 handleMenuClose();
                               }}
                            >
-                              <TextField
-                                 label="Workbook Name"
-                                 value={workbookName}
-                                 onChange={(e) =>
-                                    setWorkbookName(e.target.value)
-                                 }
-                                 sx={{
-                                    width: "100%",
-                                    maxWidth: "400px",
-                                    mt: 1,
-                                 }}
-                              />
-                              <Button
-                                 onClick={(event) => createNotebookClick(event)}
-                              >
-                                 Create
-                              </Button>
-                           </FormControl>
-                        </DialogContent>
-                     </Dialog>
-                     <Dialog
-                        open={openDialogOpen}
-                        onClose={handleOpenDialogClose}
-                        sx={{
-                           "& .MuiDialog-paper": {
-                              width: "100%",
-                              maxWidth: "300px",
-                           },
-                        }}
-                     >
-                        <DialogTitle
-                           variant="subtitle1"
-                           sx={{ fontWeight: "medium" }}
-                        >
-                           Open Workbook
-                        </DialogTitle>
-                        <DialogContent>
-                           <NotebookStorageProvider
-                              notebookStorage={new BrowserNotebookStorage()}
-                              userContext={{
-                                 project: projectName,
-                                 package: packageName,
-                              }}
-                           >
-                              <MutableNotebookList
-                                 onNotebookClick={handleNotebookClick}
-                              />
-                           </NotebookStorageProvider>
-                        </DialogContent>
-                     </Dialog>
-                  </>
-               )}
-            </Stack>
-         </Stack>
-         <Stack
+                              <ListItemIcon>
+                                 <Launch fontSize="small" />
+                              </ListItemIcon>
+                              <ListItemText>
+                                 <Typography variant="body2" fontWeight={500}>
+                                    Open Workbook
+                                 </Typography>
+                                 <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                 >
+                                    Open an existing workbook
+                                 </Typography>
+                              </ListItemText>
+                           </MenuItem>
+                        </Menu>
+                     </>
+                  )}
+               </Stack>
+            </Toolbar>
+         </AppBar>
+
+         {/* Main Content */}
+         <Container
+            maxWidth="xl"
+            component="main"
             sx={{
+               flex: 1,
                display: "flex",
-               flexDirection: { xs: "column-reverse", md: "row" },
-               width: "100%",
-               justifyContent: "space-between",
-               alignItems: { xs: "start", md: "center" },
-               gap: 4,
-               overflow: "auto",
-               marginBottom: "15px",
+               flexDirection: "column",
+               py: 2,
+               gap: 2,
             }}
          >
-            <BreadcrumbNav />
-         </Stack>
-         <Outlet />
-      </Container>
+            {/* Page Content */}
+            <Box sx={{ flex: 1 }}>
+               <Outlet />
+            </Box>
+         </Container>
+
+         {/* Dialogs */}
+         <Dialog
+            open={newDialogOpen}
+            onClose={handleNewDialogClose}
+            maxWidth="sm"
+            fullWidth
+         >
+            <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
+               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Create New Workbook
+               </Typography>
+               <Typography variant="body2" color="text.secondary">
+                  Start a new analysis workbook to explore your data
+               </Typography>
+            </DialogTitle>
+            <DialogContent sx={{ px: 2, pb: 2 }}>
+               <Stack spacing={2} sx={{ mt: 1 }}>
+                  <FormControl fullWidth>
+                     <TextField
+                        label="Workbook Name"
+                        value={workbookName}
+                        onChange={(e) => setWorkbookName(e.target.value)}
+                        placeholder="Enter workbook name..."
+                        fullWidth
+                        autoFocus
+                        size="small"
+                     />
+                  </FormControl>
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                     <Button
+                        onClick={handleNewDialogClose}
+                        variant="outlined"
+                        size="small"
+                     >
+                        Cancel
+                     </Button>
+                     <Button
+                        onClick={(event) => createNotebookClick(event)}
+                        variant="contained"
+                        disabled={!workbookName.trim()}
+                        size="small"
+                     >
+                        Create Workbook
+                     </Button>
+                  </Stack>
+               </Stack>
+            </DialogContent>
+         </Dialog>
+
+         <Dialog
+            open={openDialogOpen}
+            onClose={handleOpenDialogClose}
+            maxWidth="md"
+            fullWidth
+         >
+            <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
+               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Open Workbook
+               </Typography>
+               <Typography variant="body2" color="text.secondary">
+                  Select an existing workbook to continue your analysis
+               </Typography>
+            </DialogTitle>
+            <DialogContent sx={{ px: 2, pb: 2 }}>
+               <NotebookStorageProvider
+                  notebookStorage={new BrowserNotebookStorage()}
+                  userContext={{
+                     project: projectName || "",
+                     package: packageName || "",
+                  }}
+               >
+                  <MutableNotebookList onNotebookClick={handleNotebookClick} />
+               </NotebookStorageProvider>
+            </DialogContent>
+         </Dialog>
+      </Box>
    );
 }

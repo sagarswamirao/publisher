@@ -1,22 +1,21 @@
-import React from "react";
-import {
-   styled,
-   Collapse,
-   CardActions,
-   Card,
-   CardContent,
-   Divider,
-   Stack,
-   Typography,
-   Tooltip,
-   IconButton,
-} from "@mui/material";
-import { QueryResult } from "../QueryResult";
 import AnalyticsOutlinedIcon from "@mui/icons-material/AnalyticsOutlined";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { useEffect } from "react";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
+import {
+   Card,
+   CardActions,
+   CardContent,
+   Collapse,
+   Divider,
+   IconButton,
+   Stack,
+   styled,
+   Tooltip,
+   Typography,
+} from "@mui/material";
+import React, { useEffect } from "react";
 import { highlight } from "../highlighter";
+import { QueryResult } from "../QueryResult";
 
 const StyledCard = styled(Card)({
    display: "flex",
@@ -170,7 +169,7 @@ export function ModelCell({
                </Stack>
             </Collapse>
             <Collapse in={resultsExpanded} timeout="auto" unmountOnExit>
-               <Divider sx={{ mb: "10px" }} />
+               <Divider sx={{ mb: "4px" }} />
                {highlightedAnnotations && (
                   <>
                      <Stack
@@ -195,7 +194,7 @@ export function ModelCell({
                            />
                         </Typography>
                      </Stack>
-                     <Divider sx={{ mb: "10px" }} />
+                     <Divider sx={{ mb: "4px" }} />
                   </>
                )}
                <CardContent>

@@ -9,10 +9,10 @@ import {
 } from "@mui/material";
 import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
+import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { StyledCard, StyledCardContent } from "../styles";
 import { usePackage } from "./PackageProvider";
-import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
@@ -39,7 +39,7 @@ export default function Connections() {
    });
 
    return (
-      <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
+      <StyledCard variant="outlined" sx={{ width: "100%" }}>
          <StyledCardContent>
             <Typography variant="overline" fontWeight="bold">
                Database Connections
@@ -47,13 +47,12 @@ export default function Connections() {
             <Divider />
             <Box
                sx={{
-                  mt: "10px",
                   maxHeight: "200px",
                   overflowY: "auto",
                }}
             >
                {!isSuccess && !isError && (
-                  <Typography variant="body2" sx={{ p: "20px", m: "auto" }}>
+                  <Typography variant="body2" sx={{ m: "auto" }}>
                      Fetching Connections...
                   </Typography>
                )}
