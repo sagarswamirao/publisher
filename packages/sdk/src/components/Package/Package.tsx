@@ -21,12 +21,7 @@ export default function Package({ navigate }: PackageProps) {
    }
 
    return (
-      <Grid
-         container
-         spacing={2}
-         columns={12}
-         sx={{ mb: (theme) => theme.spacing(2) }}
-      >
+      <Grid container spacing={2} columns={12}>
          <Grid size={{ xs: 12, md: 4 }}>
             <Config />
          </Grid>

@@ -1,9 +1,10 @@
+import { ServerProvider } from "@malloy-publisher/sdk";
+import "@malloydata/malloy-explorer/styles.css";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ServerProvider } from "@malloy-publisher/sdk";
-import { HomePage } from "./components/HomePage";
+import HomePage from "./components/HomePage";
 import MainPage from "./components/MainPage";
 import { ModelPage } from "./components/ModelPage";
 import { PackagePage } from "./components/PackagePage";
@@ -11,7 +12,6 @@ import { ProjectPage } from "./components/ProjectPage";
 import { RouteError } from "./components/RouteError";
 import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
 import theme from "./theme";
-import "@malloydata/malloy-explorer/styles.css";
 
 // Create router configuration function
 export const createMalloyRouter = (

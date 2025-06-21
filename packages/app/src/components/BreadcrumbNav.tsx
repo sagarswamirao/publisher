@@ -1,51 +1,91 @@
-import { Box } from "@mui/material";
+import { useRouterClickHandler } from "@malloy-publisher/sdk";
+import { ChevronRight } from "@mui/icons-material";
+import { Box, Chip } from "@mui/material";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
-import Typography from "@mui/material/Typography";
-import { NavLink, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function BreadcrumbNav() {
    const params = useParams();
    const modelPath = params["*"];
+   const navigate = useRouterClickHandler();
+
    return (
-      <Box
-         sx={{
-            display: "inline-flex",
-            flexDirection: "row",
-            gap: 3,
-            overflow: "auto",
-         }}
-      >
-         <Breadcrumbs aria-label="breadcrumb">
-            <Typography
-               color="primary.main"
-               component={NavLink}
-               to={`/${params.projectName}/`}
-               sx={{ textDecoration: "none" }}
-               variant="subtitle1"
-            >
-               {params.projectName}
-            </Typography>
-            {params.packageName && (
-               <Typography
-                  color="primary.main"
-                  component={NavLink}
-                  to={`/${params.projectName}/${params.packageName}/`}
-                  sx={{ textDecoration: "none" }}
-                  variant="subtitle1"
-               >
-                  {params.packageName}
-               </Typography>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+         <Breadcrumbs
+            aria-label="breadcrumb"
+            separator={
+               <ChevronRight sx={{ fontSize: 14, color: "text.secondary" }} />
+            }
+            sx={{
+               "& .MuiBreadcrumbs-separator": {
+                  margin: "0 6px",
+               },
+            }}
+         >
+            {params.projectName && (
+               <Chip
+                  onClick={(event) =>
+                     navigate(`/${params.projectName}/`, event)
+                  }
+                  label={params.projectName}
+                  size="small"
+                  sx={{
+                     backgroundColor: "white",
+                     color: "primary.main",
+                     fontWeight: 500,
+                     height: "24px",
+                     cursor: "pointer",
+                     "&:hover": {
+                        backgroundColor: "primary.100",
+                     },
+                  }}
+               />
             )}
+
+            {params.packageName && (
+               <Chip
+                  onClick={(event) =>
+                     navigate(
+                        `/${params.projectName}/${params.packageName}/`,
+                        event,
+                     )
+                  }
+                  label={params.packageName}
+                  size="small"
+                  sx={{
+                     backgroundColor: "white",
+                     color: "primary.main",
+                     fontWeight: 500,
+                     height: "24px",
+                     cursor: "pointer",
+                     "&:hover": {
+                        backgroundColor: "secondary.100",
+                     },
+                  }}
+               />
+            )}
+
             {modelPath && (
-               <Typography
-                  color="primary.main"
-                  component={NavLink}
-                  to={`/${params.projectName}/${params.packageName}/${modelPath}`}
-                  sx={{ textDecoration: "none" }}
-                  variant="subtitle1"
-               >
-                  {modelPath}
-               </Typography>
+               <Chip
+                  onClick={(event) =>
+                     navigate(
+                        `/${params.projectName}/${params.packageName}/${modelPath}`,
+                        event,
+                     )
+                  }
+                  label={modelPath}
+                  size="small"
+                  sx={{
+                     backgroundColor: "white",
+                     color: "primary.main",
+                     fontWeight: 500,
+                     height: "24px",
+                     cursor: "pointer",
+                     "&:hover": {
+                        backgroundColor: "grey.200",
+                     },
+                  }}
+               />
             )}
          </Breadcrumbs>
       </Box>

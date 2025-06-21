@@ -69,6 +69,13 @@ export function MutableCell({
       emptyQueryExplorerResult(),
    );
    const [isHovered, setIsHovered] = React.useState<boolean>(false);
+   const [selectedSourceIndex, setSelectedSourceIndex] = React.useState<number>(
+      cell.sourceName
+         ? sourceAndPaths.findIndex(
+            (entry) => entry.sourceInfo.name === cell.sourceName,
+         )
+         : 0,
+   );
 
    useEffect(() => {
       if (!cell.isMarkdown)
@@ -91,7 +98,13 @@ export function MutableCell({
    };
    const noSources = sourceAndPaths.length === 0;
 
-   const saveResult = (modelPath: string, sourceName: string) => {
+   const saveResult = () => {
+      // Get the current modelPath and sourceName from the selected source
+      const currentSource = sourceAndPaths[selectedSourceIndex];
+      const modelPath = currentSource?.modelPath || cell.modelPath || "";
+      const sourceName =
+         currentSource?.sourceInfo.name || cell.sourceName || "";
+
       // Convert the results of the Query Explorer into
       // the stringified JSON objects that are stored in the cell.
       onCellChange({
@@ -197,7 +210,7 @@ export function MutableCell({
                <IconButton
                   size="small"
                   onClick={() => {
-                     saveResult(cell.modelPath, cell.sourceName);
+                     saveResult();
                      onClose();
                   }}
                >
@@ -229,7 +242,7 @@ export function MutableCell({
          <IconButton
             size="small"
             onClick={() => {
-               saveResult(cell.modelPath, cell.sourceName);
+               saveResult();
                onClose();
             }}
          >
@@ -295,7 +308,7 @@ export function MutableCell({
                         updateMarkdown(newValue);
                      }}
                      onBlur={() => {
-                        saveResult(cell.modelPath, cell.sourceName);
+                        saveResult();
                         if (!isHovered) {
                            onClose();
                         }
@@ -415,10 +428,11 @@ export function MutableCell({
                   ) : (
                      <EditableMalloyCell
                         sourceAndPaths={sourceAndPaths}
-                        onChange={(query) => {
+                        onQueryChange={(query) => {
                            setQuery(query);
                         }}
                         cell={cell}
+                        onSourceChange={setSelectedSourceIndex}
                      />
                   ))}
                {!editingMalloy && cell.result && (
