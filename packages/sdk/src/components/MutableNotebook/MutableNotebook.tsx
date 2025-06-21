@@ -131,51 +131,51 @@ export default function MutableNotebook({
       if (!notebookData) {
          return;
       }
-      const modelPathToSourceInfo = new Map(
-         sourceAndPaths.map(({ modelPath, sourceInfos }) => [
-            modelPath,
-            sourceInfos,
-         ]),
-      );
-      const newSourceAndPaths = [];
-      const promises = [];
-      for (const model of notebookData.getModels()) {
-         if (!modelPathToSourceInfo.has(model)) {
-            console.log("Fetching model from Publisher", model);
-            promises.push(
-               modelsApi
-                  .getModel(projectName, packageName, model, versionId, {
-                     baseURL: server,
-                     withCredentials: !accessToken,
-                  })
-                  .then((data) => ({
-                     modelPath: model,
-                     sourceInfos: data.data.sourceInfos.map((source) =>
-                        JSON.parse(source),
-                     ),
-                  })),
-            );
-         } else {
-            newSourceAndPaths.push({
-               modelPath: model,
-               sourceInfos: modelPathToSourceInfo.get(model),
-            });
+
+      const fetchModels = async () => {
+         const modelPathToSourceInfo = new Map(
+            sourceAndPaths.map(({ modelPath, sourceInfos }) => [
+               modelPath,
+               sourceInfos,
+            ]),
+         );
+         const newSourceAndPaths = [];
+         const promises = [];
+
+         for (const model of notebookData.getModels()) {
+            if (!modelPathToSourceInfo.has(model)) {
+               console.log("Fetching model from Publisher", model);
+               promises.push(
+                  modelsApi
+                     .getModel(projectName, packageName, model, versionId, {
+                        baseURL: server,
+                        withCredentials: !accessToken,
+                     })
+                     .then((data) => ({
+                        modelPath: model,
+                        sourceInfos: data.data.sourceInfos.map((source) =>
+                           JSON.parse(source),
+                        ),
+                     })),
+               );
+            } else {
+               newSourceAndPaths.push({
+                  modelPath: model,
+                  sourceInfos: modelPathToSourceInfo.get(model),
+               });
+            }
          }
-      }
-      if (promises.length > 0) {
-         Promise.all(promises).then((loadedSourceAndPaths) => {
+
+         if (promises.length > 0) {
+            const loadedSourceAndPaths = await Promise.all(promises);
             setSourceAndPaths([...newSourceAndPaths, ...loadedSourceAndPaths]);
-         });
-      }
-   }, [
-      accessToken,
-      notebookData,
-      packageName,
-      projectName,
-      server,
-      sourceAndPaths,
-      versionId,
-   ]);
+         } else {
+            setSourceAndPaths(newSourceAndPaths);
+         }
+      };
+
+      fetchModels();
+   }, [accessToken, notebookData, packageName, projectName, server, versionId]);
 
    React.useEffect(() => {
       if (!notebookPath) {
