@@ -1,24 +1,25 @@
 import { Add, Launch } from "@mui/icons-material";
 import {
    Button,
-   Menu,
-   MenuItem,
+   Dialog,
+   DialogContent,
+   DialogTitle,
+   FormControl,
    ListItemIcon,
    ListItemText,
-   Typography,
-   Dialog,
-   DialogTitle,
-   DialogContent,
-   FormControl,
+   Menu,
+   MenuItem,
+   Stack,
    TextField,
+   Typography,
 } from "@mui/material";
-import {
-   NotebookStorageProvider,
-   BrowserNotebookStorage,
-   MutableNotebookList,
-} from "./MutableNotebook";
 import React from "react";
 import { useRouterClickHandler } from "./click_helper";
+import {
+   BrowserNotebookStorage,
+   MutableNotebookList,
+   NotebookStorageProvider,
+} from "./MutableNotebook";
 
 export interface AnalyzePackageButtonProps {
    projectName: string;
@@ -75,7 +76,15 @@ export function AnalyzePackageButton({
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
             onClick={handleClick}
-            sx={{ height: "40px" }}
+            variant="contained"
+            sx={{
+               height: "40px",
+               px: 2,
+               backgroundColor: "#fbbb04",
+               "&:hover": {
+                  backgroundColor: "#eab308",
+               },
+            }}
          >
             Analyze Package
          </Button>
@@ -84,10 +93,9 @@ export function AnalyzePackageButton({
             anchorEl={anchorEl}
             open={open}
             onClose={handleMenuClose}
-            slotProps={{
-               list: {
-                  "aria-labelledby": "basic-button",
-               },
+            MenuListProps={{
+               "aria-labelledby": "basic-button",
+               sx: { py: 0.5 },
             }}
          >
             <MenuItem
@@ -95,12 +103,18 @@ export function AnalyzePackageButton({
                   setNewDialogOpen(true);
                   handleMenuClose();
                }}
+               sx={{ py: 1, px: 2 }}
             >
                <ListItemIcon>
                   <Add fontSize="small" />
                </ListItemIcon>
                <ListItemText>
-                  <Typography variant="body2">New Workbook</Typography>
+                  <Typography variant="body2" fontWeight={500}>
+                     New Workbook
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                     Create a new analysis workbook
+                  </Typography>
                </ListItemText>
             </MenuItem>
             <MenuItem
@@ -108,67 +122,87 @@ export function AnalyzePackageButton({
                   setOpenDialogOpen(true);
                   handleMenuClose();
                }}
+               sx={{ py: 1, px: 2 }}
             >
                <ListItemIcon>
                   <Launch fontSize="small" />
                </ListItemIcon>
                <ListItemText>
-                  <Typography variant="body2">Open Workbook</Typography>
+                  <Typography variant="body2" fontWeight={500}>
+                     Open Workbook
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                     Open an existing workbook
+                  </Typography>
                </ListItemText>
             </MenuItem>
          </Menu>
+
+         {/* Create New Workbook Dialog */}
          <Dialog
             open={newDialogOpen}
             onClose={handleNewDialogClose}
-            sx={{
-               "& .MuiDialog-paper": {
-                  width: "100%",
-                  maxWidth: "300px",
-               },
-            }}
+            maxWidth="sm"
+            fullWidth
          >
-            <DialogTitle variant="subtitle1" sx={{ fontWeight: "medium" }}>
-               Create Workbook
+            <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
+               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Create New Workbook
+               </Typography>
+               <Typography variant="body2" color="text.secondary">
+                  Start a new analysis workbook to explore your data
+               </Typography>
             </DialogTitle>
-            <DialogContent>
-               <FormControl
-                  sx={{
-                     width: "100%",
-                     display: "flex",
-                     alignItems: "center",
-                     gap: 2,
-                  }}
-               >
-                  <TextField
-                     label="Workbook Name"
-                     value={workbookName}
-                     onChange={(e) => setWorkbookName(e.target.value)}
-                     sx={{
-                        width: "100%",
-                        maxWidth: "400px",
-                        mt: 1,
-                     }}
-                  />
-                  <Button onClick={(event) => createNotebookClick(event)}>
-                     Create
-                  </Button>
-               </FormControl>
+            <DialogContent sx={{ px: 2, pb: 2 }}>
+               <Stack spacing={2} sx={{ mt: 1 }}>
+                  <FormControl fullWidth>
+                     <TextField
+                        label="Workbook Name"
+                        value={workbookName}
+                        onChange={(e) => setWorkbookName(e.target.value)}
+                        placeholder="Enter workbook name..."
+                        fullWidth
+                        autoFocus
+                        size="small"
+                     />
+                  </FormControl>
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                     <Button
+                        onClick={handleNewDialogClose}
+                        variant="outlined"
+                        size="small"
+                     >
+                        Cancel
+                     </Button>
+                     <Button
+                        onClick={(event) => createNotebookClick(event)}
+                        variant="contained"
+                        disabled={!workbookName.trim()}
+                        size="small"
+                     >
+                        Create Workbook
+                     </Button>
+                  </Stack>
+               </Stack>
             </DialogContent>
          </Dialog>
+
+         {/* Open Workbook Dialog */}
          <Dialog
             open={openDialogOpen}
             onClose={handleOpenDialogClose}
-            sx={{
-               "& .MuiDialog-paper": {
-                  width: "100%",
-                  maxWidth: "300px",
-               },
-            }}
+            maxWidth="md"
+            fullWidth
          >
-            <DialogTitle variant="subtitle1" sx={{ fontWeight: "medium" }}>
-               Open Workbook
+            <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
+               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Open Workbook
+               </Typography>
+               <Typography variant="body2" color="text.secondary">
+                  Select an existing workbook to continue your analysis
+               </Typography>
             </DialogTitle>
-            <DialogContent>
+            <DialogContent sx={{ px: 2, pb: 2 }}>
                <NotebookStorageProvider
                   notebookStorage={new BrowserNotebookStorage()}
                   userContext={{

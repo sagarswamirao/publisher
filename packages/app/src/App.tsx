@@ -14,14 +14,17 @@ import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
 import theme from "./theme";
 
 // Create router configuration function
-export const createMalloyRouter = (basePath: string = "/") => {
+export const createMalloyRouter = (
+   basePath: string = "/",
+   showHeader: boolean = true,
+) => {
    return createBrowserRouter([
       {
          path: basePath,
          element: (
             <ThemeProvider theme={theme}>
                <CssBaseline />
-               <MainPage />
+               <MainPage showHeader={showHeader} />
             </ThemeProvider>
          ),
          errorElement: <RouteError />,
@@ -55,14 +58,16 @@ export interface MalloyPublisherAppProps {
    server?: string;
    accessToken?: string;
    basePath?: string;
+   showHeader?: boolean;
 }
 
 export const MalloyPublisherApp: React.FC<MalloyPublisherAppProps> = ({
    server,
    accessToken,
    basePath = "/",
+   showHeader = true,
 }) => {
-   const router = createMalloyRouter(basePath);
+   const router = createMalloyRouter(basePath, showHeader);
    return (
       <ServerProvider server={server} accessToken={accessToken}>
          <RouterProvider router={router} />
