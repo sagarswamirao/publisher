@@ -1,9 +1,10 @@
 import {
    BrowserNotebookStorage,
    NotebookStorageProvider,
+   useNotebookStorage,
    useRouterClickHandler,
 } from "@malloy-publisher/sdk";
-import { Add, Analytics, Launch } from "@mui/icons-material";
+import { Add, Launch } from "@mui/icons-material";
 import {
    AppBar,
    Box,
@@ -11,7 +12,10 @@ import {
    Dialog,
    DialogContent,
    DialogTitle,
+   Divider,
    FormControl,
+   List,
+   ListItem,
    ListItemIcon,
    ListItemText,
    Menu,
@@ -25,7 +29,71 @@ import Container from "@mui/material/Container";
 import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
-import { MutableNotebookList } from "./MutableNotebookList";
+
+// Simple notebook list component
+function SimpleNotebookList({
+   onNotebookClick,
+}: {
+   onNotebookClick: (notebook: string, event: React.MouseEvent) => void;
+}) {
+   const { notebookStorage, userContext } = useNotebookStorage();
+   const [notebooks, setNotebooks] = React.useState<string[]>([]);
+
+   React.useEffect(() => {
+      if (notebookStorage && userContext) {
+         setNotebooks(notebookStorage.listNotebooks(userContext));
+      }
+   }, [notebookStorage, userContext]);
+
+   return (
+      <>
+         <Divider />
+         <Box
+            sx={{
+               maxHeight: "300px",
+               overflow: "auto",
+               "&::-webkit-scrollbar": {
+                  width: "8px",
+               },
+               "&::-webkit-scrollbar-track": {
+                  background: "transparent",
+               },
+               "&::-webkit-scrollbar-thumb": {
+                  background: "rgba(0,0,0,0.2)",
+                  borderRadius: "4px",
+               },
+            }}
+         >
+            <List dense>
+               {notebooks.length === 0 && (
+                  <ListItem>
+                     <ListItemText
+                        primary="No notebooks found."
+                        sx={{ textAlign: "center" }}
+                     />
+                  </ListItem>
+               )}
+               {notebooks.map((notebook) => (
+                  <ListItem
+                     key={notebook}
+                     onClick={(event: React.MouseEvent) =>
+                        onNotebookClick(notebook, event)
+                     }
+                     sx={{
+                        cursor: "pointer",
+                        "&:hover": {
+                           backgroundColor: "action.hover",
+                        },
+                     }}
+                  >
+                     <ListItemText primary={notebook} />
+                  </ListItem>
+               ))}
+            </List>
+         </Box>
+      </>
+   );
+}
 
 export default function MainPage() {
    const { projectName, packageName } = useParams();
@@ -36,7 +104,6 @@ export default function MainPage() {
    const [newDialogOpen, setNewDialogOpen] = React.useState(false);
    const [openDialogOpen, setOpenDialogOpen] = React.useState(false);
    const open = Boolean(anchorEl);
-
    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget);
    };
@@ -52,6 +119,7 @@ export default function MainPage() {
 
    const handleNotebookClick = (notebook: string, event: React.MouseEvent) => {
       setOpenDialogOpen(false);
+      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
          `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
          event,
@@ -60,6 +128,7 @@ export default function MainPage() {
 
    const createNotebookClick = (event?: React.MouseEvent) => {
       setNewDialogOpen(false);
+      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
       navigate(
          `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(workbookName)}`,
          event,
@@ -110,11 +179,20 @@ export default function MainPage() {
                <Stack direction="row" spacing={2} alignItems="center">
                   {!projectName || !packageName ? (
                      <>
-                        <Button href="https://malloydata.dev/">
+                        <Button
+                           href="https://docs.malloydata.dev/documentation/"
+                           size="small"
+                        >
                            Malloy Docs
                         </Button>
-                        <Button href="https://github.com/malloydata/publisher/blob/main/README.md">
+                        <Button
+                           href="https://github.com/malloydata/publisher/blob/main/README.md"
+                           size="small"
+                        >
                            Publisher Docs
+                        </Button>
+                        <Button href="/api-doc.html" size="small">
+                           Publisher API
                         </Button>
                      </>
                   ) : (
@@ -125,8 +203,6 @@ export default function MainPage() {
                            aria-expanded={open ? "true" : undefined}
                            onClick={handleClick}
                            variant="contained"
-                           startIcon={<Analytics />}
-                           size="small"
                            sx={{
                               height: "40px",
                               px: 2,
@@ -175,6 +251,7 @@ export default function MainPage() {
                                  setOpenDialogOpen(true);
                                  handleMenuClose();
                               }}
+                              sx={{ py: 1, px: 2 }}
                            >
                               <ListItemIcon>
                                  <Launch fontSize="small" />
@@ -287,7 +364,7 @@ export default function MainPage() {
                      package: packageName || "",
                   }}
                >
-                  <MutableNotebookList onNotebookClick={handleNotebookClick} />
+                  <SimpleNotebookList onNotebookClick={handleNotebookClick} />
                </NotebookStorageProvider>
             </DialogContent>
          </Dialog>

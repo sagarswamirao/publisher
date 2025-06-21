@@ -1,13 +1,7 @@
-name: Publish SDK to NPM
+name: Publish SDK/APP to NPM
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number (e.g., 1.0.0)'
-        required: true
-        type: string
-        default: '0.0.XX'
 
 jobs:
   publish:
@@ -20,8 +14,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
@@ -32,42 +26,72 @@ jobs:
         run: |
           CURRENT_VERSION=$(cat packages/sdk/package.json | grep '"version"' | sed 's/.*"version": "\(.*\)".*/\1/')
           echo "::notice title=Current Version::Current SDK version is $CURRENT_VERSION"
-          echo "::notice title=New Version::Will update to version ${{ inputs.version }}"
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
       - name: Update package version
         run: |
-          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version --prefix packages/sdk
+          echo "Safe to ignore npm workspace errors"
+          NEW_VERSION=$(npm version patch --workspaces | tail -1)
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "::notice title=New Version::Will update to version $NEW_VERSION"
 
-      - name: Create version update branch
+      - name: Replace workspace dependencies for publishing
         run: |
-          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --local user.name "${{ github.actor }}"
-          
-          # Create and switch to a new branch
-          BRANCH_NAME="update-sdk-version-${{ inputs.version }}"
-          git checkout -b $BRANCH_NAME
-          
-          # Stage and commit the changes
-          git add packages/sdk/package.json
-          git commit -s -m "Update SDK version to ${{ inputs.version }}"
-          
-          # Push the branch
-          git push origin $BRANCH_NAME
-          
-          echo "::notice title=Branch Created::Created branch $BRANCH_NAME with version update"
-          echo "::notice title=Next Step::Please create a pull request from branch $BRANCH_NAME to main"
+          # Replace workspace:* with actual version in app package.json for publishing
+          sed -i "s/\"@malloy-publisher\/sdk\": \"workspace:\*\"/\"@malloy-publisher\/sdk\": \"^${NEW_VERSION}\"/" packages/app/package.json
 
-      - name: Build package
+      - name: Build SDK package
         run: |
           cd packages/sdk
+          NODE_ENV=production bun run build
+
+      - name: Build App package
+        run: |
+          cd packages/app
           NODE_ENV=production bun run build
 
       - name: Publish to NPM
         run: |
           cd packages/sdk
           npm publish --access public
+          cd ../app
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Revert workspace dependencies
+        run: |
+          # Revert the workspace dependency back to workspace:* for git commit
+          sed -i "s/\"@malloy-publisher\/sdk\": \"\\^${NEW_VERSION}\"/\"@malloy-publisher\/sdk\": \"workspace:*\"/" packages/app/package.json
+
+      - name: Create version update branch
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+
+          # Create and switch to a new branch
+          BRANCH_NAME="update-sdk-version-${NEW_VERSION}"
+          git checkout -b $BRANCH_NAME
+
+          # Stage and commit the changes
+          git add packages/sdk/package.json
+          git add packages/app/package.json
+          git add packages/server/package.json
+          git commit -s -m "Update SDK/App version to ${NEW_VERSION}"
+
+          # Push the branch
+          git push origin $BRANCH_NAME
+
+          echo "::notice title=Branch Created::Created branch $BRANCH_NAME with version update"
+          echo "::notice title=Next Step::Please create a pull request from branch $BRANCH_NAME to main"
+
+          # Add to job summary
+          echo "## 🚀 SDK/App Version Update" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Updated to version:** \`${NEW_VERSION}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📝 **Branch created:** \`$BRANCH_NAME\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Next step:** [Create Pull Request](https://github.com/${{ github.repository }}/compare/$BRANCH_NAME)" >> $GITHUB_STEP_SUMMARY
