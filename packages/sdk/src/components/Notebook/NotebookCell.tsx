@@ -81,74 +81,89 @@ export function NotebookCell({
                <Stack
                   sx={{
                      flexDirection: "row",
-                     justifyContent: "right",
+                     justifyContent: "space-between",
+                     ml: "8px",
                   }}
                >
-                  <CardActions
-                     sx={{
-                        padding: "0px 8px 0px 8px",
-                        mb: "auto",
-                        mt: "auto",
-                     }}
-                  >
+                  <Stack sx={{ flexDirection: "row" }}>
                      {cell.newSources && cell.newSources.length > 0 && (
-                        <Tooltip title="Explore Data Sources">
-                           <IconButton
-                              size="small"
-                              onClick={() => {
-                                 setSourcesExpanded(!sourcesExpanded);
-                                 setEmbeddingExpanded(false);
-                                 setCodeExpanded(false);
-                              }}
-                           >
-                              <svg
-                                 width="24"
-                                 height="24"
-                                 viewBox="0 0 24 24"
-                                 fill="none"
-                                 xmlns="http://www.w3.org/2000/svg"
+                        <Typography variant="overline">
+                           <b>Data source</b>
+                        </Typography>
+                     )}
+                     {cell.result && (
+                        <Typography variant="overline" fontWeight="bold">
+                           Results
+                        </Typography>
+                     )}
+                  </Stack>
+                  <Stack sx={{ flexDirection: "row" }}>
+                     <CardActions
+                        sx={{
+                           padding: "0px 8px 0px 8px",
+                           mb: "auto",
+                           mt: "auto",
+                        }}
+                     >
+                        {cell.newSources && cell.newSources.length > 0 && (
+                           <Tooltip title="Explore Data Sources">
+                              <IconButton
+                                 size="small"
+                                 onClick={() => {
+                                    setSourcesExpanded(!sourcesExpanded);
+                                    setEmbeddingExpanded(false);
+                                    setCodeExpanded(false);
+                                 }}
                               >
-                                 <path
-                                    d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h10v2H7v-2z"
-                                    fill="currentColor"
-                                 />
-                              </svg>
-                           </IconButton>
-                        </Tooltip>
-                     )}
-                     {!hideCodeCellIcon && (
-                        <Tooltip
-                           title={codeExpanded ? "Hide Code" : "View Code"}
-                        >
-                           <IconButton
-                              size="small"
-                              onClick={() => {
-                                 setCodeExpanded(!codeExpanded);
-                              }}
+                                 <svg
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                 >
+                                    <path
+                                       d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h10v2H7v-2z"
+                                       fill="currentColor"
+                                    />
+                                 </svg>
+                              </IconButton>
+                           </Tooltip>
+                        )}
+                        {!hideCodeCellIcon && (
+                           <Tooltip
+                              title={codeExpanded ? "Hide Code" : "View Code"}
                            >
-                              <CodeIcon />
-                           </IconButton>
-                        </Tooltip>
-                     )}
-                     {!hideEmbeddingIcon && cell.result && (
-                        <Tooltip
-                           title={
-                              embeddingExpanded
-                                 ? "Hide Embedding"
-                                 : "View Embedding"
-                           }
-                        >
-                           <IconButton
-                              size="small"
-                              onClick={() => {
-                                 setEmbeddingExpanded(!embeddingExpanded);
-                              }}
+                              <IconButton
+                                 size="small"
+                                 onClick={() => {
+                                    setCodeExpanded(!codeExpanded);
+                                 }}
+                              >
+                                 <CodeIcon />
+                              </IconButton>
+                           </Tooltip>
+                        )}
+                        {!hideEmbeddingIcon && cell.result && (
+                           <Tooltip
+                              title={
+                                 embeddingExpanded
+                                    ? "Hide Embedding"
+                                    : "View Embedding"
+                              }
                            >
-                              <LinkOutlinedIcon />
-                           </IconButton>
-                        </Tooltip>
-                     )}
-                  </CardActions>
+                              <IconButton
+                                 size="small"
+                                 onClick={() => {
+                                    setEmbeddingExpanded(!embeddingExpanded);
+                                 }}
+                              >
+                                 <LinkOutlinedIcon />
+                              </IconButton>
+                           </Tooltip>
+                        )}
+                     </CardActions>
+                  </Stack>
                </Stack>
             )}
             <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
