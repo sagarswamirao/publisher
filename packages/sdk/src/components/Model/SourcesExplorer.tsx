@@ -20,8 +20,8 @@ import {
 import { styled } from "@mui/material/styles";
 import React from "react";
 import { Configuration, QueryresultsApi } from "../../client";
-import { usePackage } from "../Package/PackageProvider";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
+import { usePackage } from "../Package/PackageProvider";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
 
@@ -63,7 +63,8 @@ export interface SourceExplorerProps {
    sourceAndPaths: SourceAndPath[];
    existingQuery?: QueryExplorerResult;
    existingSourceName?: string;
-   onChange?: (query: QueryExplorerResult) => void;
+   onQueryChange?: (query: QueryExplorerResult) => void;
+   onSourceChange?: (index: number) => void;
 }
 
 /**
@@ -77,19 +78,27 @@ export function SourcesExplorer({
    sourceAndPaths,
    existingQuery,
    existingSourceName,
-   onChange,
+   onQueryChange,
+   onSourceChange,
 }: SourceExplorerProps) {
    const [selectedTab, setSelectedTab] = React.useState(
       existingSourceName
          ? sourceAndPaths.findIndex(
-              (entry) => entry.sourceInfo.name === existingSourceName,
-           )
+            (entry) => entry.sourceInfo.name === existingSourceName,
+         )
          : 0,
    );
 
    const [query, setQuery] = React.useState<QueryExplorerResult | undefined>(
       existingQuery || emptyQueryExplorerResult(),
    );
+
+   // Notify parent component when selected source changes
+   React.useEffect(() => {
+      if (onSourceChange) {
+         onSourceChange(selectedTab);
+      }
+   }, [selectedTab, onSourceChange]);
 
    return (
       <StyledCard variant="outlined">
@@ -123,8 +132,8 @@ export function SourcesExplorer({
                   existingQuery={query}
                   onChange={(query) => {
                      setQuery(query);
-                     if (onChange) {
-                        onChange(query);
+                     if (onQueryChange) {
+                        onQueryChange(query);
                      }
                   }}
                />
@@ -292,16 +301,16 @@ export function SourceExplorerComponent({
                         submittedQuery={
                            query?.malloyQuery
                               ? {
-                                   executionState: mutation.isPending
-                                      ? "running"
-                                      : "finished",
-                                   response: {
-                                      result: query.malloyResult,
-                                   },
-                                   query: query.malloyQuery,
-                                   queryResolutionStartMillis: Date.now(),
-                                   onCancel: mutation.reset,
-                                }
+                                 executionState: mutation.isPending
+                                    ? "running"
+                                    : "finished",
+                                 response: {
+                                    result: query.malloyResult,
+                                 },
+                                 query: query.malloyQuery,
+                                 queryResolutionStartMillis: Date.now(),
+                                 onCancel: mutation.reset,
+                              }
                               : undefined
                         }
                         options={{ showRawQuery: true }}
