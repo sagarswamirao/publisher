@@ -1,6 +1,7 @@
-import { AnalyzePackageButton, BreadcrumbNav } from "@malloy-publisher/sdk";
+import { AnalyzePackageButton } from "@malloy-publisher/sdk";
 import { AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
+import BreadcrumbNav from "./BreadcrumbNav";
 
 export default function Header() {
     const { projectName, packageName } = useParams();
