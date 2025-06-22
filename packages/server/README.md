@@ -13,7 +13,7 @@ Below is a list of the available test presets:
 Basic functionality test with minimal load.
 
 - **File:**
-   `./k6-tests/smoke-test.ts`
+  `./k6-tests/smoke-test.ts`
 - **Virtual Users:** 1
 - **Duration:** 1 minute
 - **95th Percentile Response Time:** < 500ms
@@ -24,7 +24,7 @@ Basic functionality test with minimal load.
 Testing system under normal load.
 
 - **File:**
-   `./k6-tests/load-test.ts`
+  `./k6-tests/load-test.ts`
 - **Virtual Users:** 50
 - **Duration:** 5 minutes
 - **95th Percentile Response Time:** < 1s
@@ -48,7 +48,7 @@ Testing system under extreme load.
 Testing system under sudden spikes of load.
 
 - **File:**
-   `./k6-tests/spike-test.ts`
+  `./k6-tests/spike-test.ts`
 - **Stages:**
    - 2 minutes ramp-up to 100 users
    - 1 minute at 100 users
@@ -61,7 +61,7 @@ Testing system under sudden spikes of load.
 Testing system to find its breaking point.
 
 - **File:**
-   `./k6-tests/breakpoint-test.ts`
+  `./k6-tests/breakpoint-test.ts`
 - **Stages:**
    - 2 minutes at 50 users
    - 2 minutes at 100 users
@@ -76,7 +76,7 @@ Testing system to find its breaking point.
 Testing system under sustained load.
 
 - **File:**
-   `./k6-tests/soak-test.ts`
+  `./k6-tests/soak-test.ts`
 - **Virtual Users:** 10
 - **Duration:** 1 hour
 - **95th Percentile Response Time:** < 1s
@@ -109,11 +109,27 @@ For more information on how to configure OpenTelemetry collectors, please refer 
 
 ## MCP Prompt Capability
 
-The server registers Malloy-specific **prompts** with its MCP interface.  These prompts deliver ready-to-send LLM messages so agents can:
+Publisher's MCP interface exposes **LLM-ready prompts** for explaining, generating, translating and summarising Malloy code.
 
-* explain a Malloy query
-* generate a query from a natural-language goal
-* translate SQL into Malloy
-* summarise a model
+| Prompt ID                                      | Purpose                                                           |
+| ---------------------------------------------- | ----------------------------------------------------------------- |
+| `explain-malloy-query@1.0.0`                   | Explain a Malloy query (sources, transformations, output).        |
+| `generate-malloy-query-from-description@1.0.0` | Create Malloy based on a natural-language goal and model context. |
+| `translate-sql-to-malloy@1.0.0`                | Convert SQL into Malloy using a model for schema reference.       |
+| `summarize-malloy-model@1.0.0`                 | Summarise a Malloy model (purpose, entities, joins).              |
 
-Use `mcp-client prompts/list` to discover them or see the root `README.md` for full details.
+List prompts:
+
+```bash
+mcp-client prompts/list
+```
+
+Get a prompt:
+
+```bash
+mcp-client prompts/get \
+  --name explain-malloy-query@1.0.0 \
+  --arguments '{"query_code":"from flights"}'
+```
+
+These calls return `messages` ready for your LLM chat completion.
