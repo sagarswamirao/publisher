@@ -70,10 +70,30 @@ export class ProjectStore {
          if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
             // eslint-disable-next-line no-console
             console.error(
-               `Error reading publisher.config.json: ${error.message}`,
+               `Error reading publisher.config.json: ${error.message}. Generating from directory`,
             );
+            return { projects: {} };
+         } else {
+            // If publisher.config.json is missing, generate the manifest from directories
+            try {
+               const entries = await fs.readdir(serverRootPath, {
+                  withFileTypes: true,
+               });
+               const projects: { [key: string]: string } = {};
+               for (const entry of entries) {
+                  if (entry.isDirectory()) {
+                     projects[entry.name] = entry.name;
+                  }
+               }
+               return { projects };
+            } catch (lsError) {
+               // eslint-disable-next-line no-console
+               console.error(
+                  `Error listing directories in ${serverRootPath}: ${lsError.message}`,
+               );
+               return { projects: {} };
+            }
          }
-         return { projects: {} };
       }
    }
 }

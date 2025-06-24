@@ -1,7 +1,7 @@
 {
    "name": "@malloy-publisher/sdk",
    "description": "Malloy Publisher SDK",
-   "version": "0.0.55",
+   "version": "0.0.57",
    "type": "module",
    "main": "dist/index.cjs.js",
    "module": "dist/index.es.js",
@@ -17,6 +17,9 @@
       }
    },
    "style": "./dist/malloy-explorer.css",
+   "publishConfig": {
+      "access": "public"
+   },
    "scripts": {
       "build": "bun generate-api-types && bunx vite build",
       "postbuild": "cp ../../node_modules/@malloydata/malloy-explorer/dist/malloy-explorer.css ./dist/malloy-explorer.css",

@@ -17,6 +17,50 @@ import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { initializeMcpServer } from "./mcp/server";
 import { ProjectStore } from "./service/project_store";
 
+// Parse command line arguments
+function parseArgs() {
+   const args = process.argv.slice(2);
+   for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      if (arg === "--port" && args[i + 1]) {
+         process.env.PUBLISHER_PORT = args[i + 1];
+         i++;
+      } else if (arg === "--host" && args[i + 1]) {
+         process.env.PUBLISHER_HOST = args[i + 1];
+         i++;
+      } else if (arg === "--server_root" && args[i + 1]) {
+         process.env.SERVER_ROOT = args[i + 1];
+         i++;
+      } else if (arg === "--mcp_port" && args[i + 1]) {
+         process.env.MCP_PORT = args[i + 1];
+         i++;
+      } else if (arg === "--help" || arg === "-h") {
+         console.log("Malloy Publisher Server");
+         console.log("");
+         console.log("Usage: malloy-publisher [options]");
+         console.log("");
+         console.log("Options:");
+         console.log(
+            "  --port <number>        Port to run the server on (default: 4000)",
+         );
+         console.log(
+            "  --host <string>        Host to bind the server to (default: localhost)",
+         );
+         console.log(
+            "  --server_root <path>   Root directory to serve files from (default: .)",
+         );
+         console.log(
+            "  --mcp_port <number>    Port for MCP server (default: 4040)",
+         );
+         console.log("  --help, -h             Show this help message");
+         process.exit(0);
+      }
+   }
+}
+
+// Parse CLI arguments before setting up constants
+parseArgs();
+
 const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const MCP_PORT = Number(process.env.MCP_PORT || 4040);
