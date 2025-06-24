@@ -21,7 +21,7 @@ const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const MCP_PORT = Number(process.env.MCP_PORT || 4040);
 const MCP_ENDPOINT = "/mcp";
-const ROOT = path.join(__dirname, "../../app/dist/");
+const ROOT = path.join(__dirname, "../../app/dist/app");
 const SERVER_ROOT = path.resolve(process.cwd(), process.env.SERVER_ROOT || ".");
 const API_PREFIX = "/api/v0";
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -114,8 +114,8 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
             error: { code: -32603, message: "Internal server error" },
             id:
                typeof req.body === "object" &&
-                  req.body !== null &&
-                  "id" in req.body
+               req.body !== null &&
+               "id" in req.body
                   ? req.body.id
                   : null,
          });

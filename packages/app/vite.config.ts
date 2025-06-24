@@ -113,11 +113,24 @@ export default ({ mode }) => {
          __PROD__: JSON.stringify(mode === "production"),
       },
       build: {
+         outDir: "dist/app",
          minify: mode === "production",
          sourcemap: mode !== "production",
          emptyOutDir: true,
          chunkSizeWarningLimit: 1000,
          target: "esnext",
+         // Ensure proper base for standalone app
+         ...(mode === "production" && {
+            rollupOptions: {
+               output: {
+                  manualChunks: {
+                     vendor: ["react", "react-dom"],
+                     router: ["react-router-dom"],
+                     mui: ["@mui/material", "@mui/icons-material"],
+                  },
+               },
+            },
+         }),
       },
       resolve,
    });
