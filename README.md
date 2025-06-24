@@ -165,6 +165,18 @@ The image below illustrates the composition of the Publisher's components and th
 
 # Build and Run Instructions
 
+### No Code
+If you just want to run the Publisher without modify the code, you can do so directly from `bunx` or `npx`:
+```sh
+npx @malloy-publisher/app --port 4000 --server_root /path/to/malloy_packages
+```
+To run the server pointed to the Malloy samples:
+```sh
+git clone git@github.com:malloydata/malloy-samples.git
+npx @malloy-publisher/app --port 4000 --server_root .
+```
+
+### Code Approach
 Follow these steps to build the Publisher components and run the server locally. This project uses [`bun`](https://bun.sh/) as the JavaScript runtime and package manager.
 
 **1. Initialize and Update Git Submodules:**
