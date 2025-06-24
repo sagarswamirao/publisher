@@ -6,9 +6,6 @@
    "main": "dist/index.cjs.js",
    "module": "dist/index.es.js",
    "types": "dist/index.d.ts",
-   "bin": {
-      "malloy-publisher-app": "dist/cli.js"
-   },
    "exports": {
       ".": {
          "types": "./dist/index.d.ts",
@@ -27,12 +24,8 @@
       "dist"
    ],
    "scripts": {
-      "build:lib": "BUILD_MODE=library bunx vite build --mode production",
-      "build:lib:dev": "BUILD_MODE=library bunx vite build --mode development",
-      "build:app": "bunx vite build --mode production",
-      "build:app:dev": "bunx vite build --mode development",
-      "build:cli": "bun build src/cli.ts --outdir dist --target node --format esm",
-      "build": "npm run build:lib && npm run build:app && npm run build:cli",
+      "build": "BUILD_MODE=library bunx vite build --mode development",
+      "build:server": "bunx vite build --mode production",
       "dev": "bunx vite --host",
       "preview": "bunx vite preview",
       "lint": "bunx eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
@@ -41,7 +34,6 @@
    },
    "dependencies": {
       "@malloy-publisher/sdk": "workspace:*",
-      "@malloy-publisher/server": "workspace:*",
       "@mui/icons-material": "^7.0.2",
       "@mui/material": "^7.0.2",
       "@vitejs/plugin-react": "^4.3.1",
