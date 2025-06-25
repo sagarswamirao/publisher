@@ -52,6 +52,11 @@ jobs:
           cd packages/app
           NODE_ENV=production bun run build
 
+      - name: Build Server package
+        run: |
+          cd packages/server
+          NODE_ENV=production bun run build
+
       - name: Publish to NPM
         run: |
           cd packages/sdk
