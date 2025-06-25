@@ -400,8 +400,20 @@ export default function Home({ navigate }: HomeProps) {
             >
                <Typography variant="body2" color="text.secondary">
                   Publisher is built on fully open infrastructure and designed
-                  for the AI era. Join the Malloy community to ask questions,
-                  share ideas, and contribute to the future of data modeling.
+                  for the AI era. Join the{" "}
+                  <a
+                     href="https://join.slack.com/t/malloy-community/shared_invite/zt-1kgfwgi5g-CrsdaRqs81QY67QW0~t_uw"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     style={{
+                        color: "primary.main",
+                        textDecoration: "underline",
+                     }}
+                  >
+                     Malloy Slack community
+                  </a>{" "}
+                  to ask questions, share ideas, and contribute to the future of
+                  data modeling.
                </Typography>
             </Box>
          </Container>
