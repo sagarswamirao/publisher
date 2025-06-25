@@ -65,7 +65,16 @@ const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const MCP_PORT = Number(process.env.MCP_PORT || 4040);
 const MCP_ENDPOINT = "/mcp";
-const ROOT = path.join(path.dirname(process.argv[1] || __filename), "app");
+// Find the app directory - in NPX it's in the package, not relative to the bin
+let ROOT: string;
+try {
+   // Try to find @malloy-publisher/server package directory
+   const packagePath = require.resolve("@malloy-publisher/server/package.json");
+   ROOT = path.join(path.dirname(packagePath), "dist", "app");
+} catch {
+   // Fallback to relative path (for local development)
+   ROOT = path.join(path.dirname(process.argv[1] || __filename), "app");
+}
 const SERVER_ROOT = path.resolve(process.cwd(), process.env.SERVER_ROOT || ".");
 const API_PREFIX = "/api/v0";
 const isDevelopment = process.env["NODE_ENV"] === "development";
