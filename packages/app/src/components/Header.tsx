@@ -1,6 +1,6 @@
 import { AnalyzePackageButton } from "@malloy-publisher/sdk";
 import { AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
 
 export interface HeaderProps {
@@ -9,6 +9,7 @@ export interface HeaderProps {
 }
 
 export default function Header({ logoHeader, endCap }: HeaderProps) {
+   const navigate = useNavigate();
    const { projectName, packageName } = useParams();
 
    return (
@@ -42,6 +43,10 @@ export default function Header({ logoHeader, endCap }: HeaderProps) {
                            color: "text.primary",
                            fontWeight: 700,
                            letterSpacing: "-0.025em",
+                           cursor: "pointer",
+                        }}
+                        onClick={() => {
+                           navigate("/");
                         }}
                      >
                         Malloy Publisher
