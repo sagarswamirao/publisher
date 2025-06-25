@@ -1,19 +1,18 @@
 import { Box } from "@mui/material";
 import Container from "@mui/material/Container";
 import { Outlet } from "react-router-dom";
-import Header from "./Header";
+import Header, { HeaderProps } from "./Header";
 
 interface PublisherConfigProps {
-   showHeader?: boolean;
+   headerProps?: HeaderProps;
 }
 
-export default function MainPage({ showHeader = true }: PublisherConfigProps) {
+export default function MainPage({ headerProps }: PublisherConfigProps) {
    return (
       <Box
          sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
-         {showHeader && <Header />}
-
+         <Header {...headerProps} />
          <Container
             maxWidth="xl"
             component="main"

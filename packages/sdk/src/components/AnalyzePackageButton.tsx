@@ -20,16 +20,10 @@ import {
    MutableNotebookList,
    NotebookStorageProvider,
 } from "./MutableNotebook";
+import { useParams } from "react-router-dom";
 
-export interface AnalyzePackageButtonProps {
-   projectName: string;
-   packageName: string;
-}
-
-export function AnalyzePackageButton({
-   projectName,
-   packageName,
-}: AnalyzePackageButtonProps) {
+export function AnalyzePackageButton() {
+   const { projectName, packageName } = useParams();
    const [workbookName, setWorkbookName] = React.useState("");
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
    const [newDialogOpen, setNewDialogOpen] = React.useState(false);
@@ -69,6 +63,9 @@ export function AnalyzePackageButton({
       setWorkbookName("");
    };
 
+   if (!projectName || !packageName) {
+      return null;
+   }
    return (
       <>
          <Button
