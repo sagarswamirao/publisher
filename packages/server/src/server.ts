@@ -65,10 +65,10 @@ const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
 const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
 const MCP_PORT = Number(process.env.MCP_PORT || 4040);
 const MCP_ENDPOINT = "/mcp";
-const ROOT = path.join(__dirname, "../dist/app");
+const ROOT = path.join(path.dirname(process.argv[1] || __filename), "app");
 const SERVER_ROOT = path.resolve(process.cwd(), process.env.SERVER_ROOT || ".");
 const API_PREFIX = "/api/v0";
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = process.env["NODE_ENV"] === "development";
 
 const app = express();
 app.use(morgan("tiny"));
