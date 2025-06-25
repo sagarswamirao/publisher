@@ -1093,7 +1093,7 @@ components:
           type: string
         type:
           type: string
-          enum: [postgres, bigquery, snowflake, trino]
+          enum: [postgres, bigquery, snowflake, trino, mysql]
         attributes:
           $ref: "#/components/schemas/ConnectionAttributes"
         postgresConnection:
@@ -1104,6 +1104,8 @@ components:
           $ref: "#/components/schemas/SnowflakeConnection"
         trinoConnection:
           $ref: "#/components/schemas/TrinoConnection"
+        mysqlConnection:
+          $ref: "#/components/schemas/MysqlConnection"
 
     ConnectionAttributes:
       type: object
@@ -1131,6 +1133,20 @@ components:
         password:
           type: string
         connectionString:
+          type: string
+
+    MysqlConnection:
+      type: object
+      properties:
+        host:
+          type: string
+        port:
+          type: integer
+        database:
+          type: string
+        user:
+          type: string
+        password:
           type: string
 
     BigqueryConnection:
