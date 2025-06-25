@@ -17,7 +17,7 @@
       "start:instrumented": "node --require ./dist/instrumentation.js ./dist/server.js",
       "lint": "bunx eslint \"./src/**/*.ts\"",
       "format": "bunx prettier --write '**/*.{ts,tsx}'",
-      "build:app": "cd ../app && bun run build:server && rm -rf ../server/dist/app && mkdir -p ../server/dist && mv dist ../server/dist/app",
+      "build:app": "cd ../app && bun run build:server && rm -rf ../server/dist/app && mkdir -p ../server/dist && cp -r dist ../server/dist/app",
       "generate-api-types": "bunx openapi-typescript ../../api-doc.yaml --output src/api.ts"
    },
    "dependencies": {
