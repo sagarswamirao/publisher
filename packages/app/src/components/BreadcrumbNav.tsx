@@ -28,12 +28,13 @@ export default function BreadcrumbNav() {
                      navigate(`/${params.projectName}/`, event)
                   }
                   label={params.projectName}
-                  size="small"
+                  size="medium"
                   sx={{
                      backgroundColor: "white",
                      color: "primary.main",
                      fontWeight: 500,
-                     height: "24px",
+                     height: "32px",
+                     fontSize: "0.875rem",
                      cursor: "pointer",
                      "&:hover": {
                         backgroundColor: "primary.100",
@@ -51,12 +52,13 @@ export default function BreadcrumbNav() {
                      )
                   }
                   label={params.packageName}
-                  size="small"
+                  size="medium"
                   sx={{
                      backgroundColor: "white",
                      color: "primary.main",
                      fontWeight: 500,
-                     height: "24px",
+                     height: "32px",
+                     fontSize: "0.875rem",
                      cursor: "pointer",
                      "&:hover": {
                         backgroundColor: "secondary.100",
@@ -74,12 +76,13 @@ export default function BreadcrumbNav() {
                      )
                   }
                   label={modelPath}
-                  size="small"
+                  size="medium"
                   sx={{
                      backgroundColor: "white",
                      color: "primary.main",
                      fontWeight: 500,
-                     height: "24px",
+                     height: "32px",
+                     fontSize: "0.875rem",
                      cursor: "pointer",
                      "&:hover": {
                         backgroundColor: "grey.200",

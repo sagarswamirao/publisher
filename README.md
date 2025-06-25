@@ -68,7 +68,7 @@ Once a model is published, analysts can open it in **Explorer**, a visual query 
 🎥 **Demo Video:** [Watch Explorer in action →](docs/coming-soon.md)  
 📖 **Docs:** [Explorer Documentation →](docs/explorer.md)
 
-## Notebook-based Dashboards & Data Stories
+## Notebook-based Dashboards
 
 Use Malloy notebooks (`.malloynb` files) to create shareable, code-first dashboards directly from your semantic models. These dashboards are versioned alongside your models and can include text, charts, and reusable views — all rendered via Publisher.
 
@@ -166,17 +166,22 @@ The image below illustrates the composition of the Publisher's components and th
 # Build and Run Instructions
 
 ### No Code
+
 If you just want to run the Publisher without modify the code, you can do so directly from `bunx` or `npx`:
+
 ```sh
 npx @malloy-publisher/server --port 4000 --server_root /path/to/malloy_packages
 ```
+
 To run the server pointed to the Malloy samples:
+
 ```sh
 git clone git@github.com:pathwaysdata/malloy-samples
 npx @malloy-publisher/server --port 4000 --server_root .
 ```
 
 ### Code Approach
+
 Follow these steps to build the Publisher components and run the server locally. This project uses [`bun`](https://bun.sh/) as the JavaScript runtime and package manager.
 
 **1. Initialize and Update Git Submodules:**
@@ -303,7 +308,6 @@ We are actively developing Publisher and plan to introduce several exciting feat
 
 - **Enhanced Developer Mode:** A streamlined local development experience where changes to your `.malloy` or `.malloynb` files automatically trigger recompilation of models and hot-reloading of the Publisher App/SDK, enabling faster iteration and testing.
 - **Scheduled Transform Pipelines:** Extend Publisher to orchestrate the execution of Malloy transformations on a schedule. Define pipelines within your Malloy packages to update materialized views, create summary tables, or perform other routine data preparation tasks directly managed by Publisher.
-- **Containerization Support (Dockerfile & Images):** Provide official Dockerfiles and pre-built container images to easily package the Publisher server along with specific Malloy packages. This simplifies deployment, promotes consistency across environments, and aligns with standard DevOps practices.
 - **DBT Integration:** Bridge the gap with the popular dbt ecosystem. Potential integration points include referencing Malloy models within dbt and triggering Malloy transformations as part of dbt workflows.
 - **Airflow Integration:** Enable seamless integration with Apache Airflow. This could involve custom Airflow operators to trigger Publisher actions like model refreshes or scheduled pipeline runs, allowing Malloy/Publisher tasks to be incorporated into larger, complex data orchestration DAGs.
 - **SQL API:** Connect your existing BI & data tools to Malloy semantic models via a Postgres SQL API.

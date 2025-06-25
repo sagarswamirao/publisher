@@ -4,6 +4,7 @@ import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { HeaderProps } from "./components/Header";
 import HomePage from "./components/HomePage";
 import MainPage from "./components/MainPage";
 import { ModelPage } from "./components/ModelPage";
@@ -12,21 +13,24 @@ import { ProjectPage } from "./components/ProjectPage";
 import { RouteError } from "./components/RouteError";
 import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
 import theme from "./theme";
-import { HeaderProps } from "./components/Header";
 
 // Create router configuration function
 export const createMalloyRouter = (
    basePath: string = "/",
    headerProps?: HeaderProps,
+   server?: string,
+   getAccessToken?: () => Promise<string>,
 ) => {
    return createBrowserRouter([
       {
          path: basePath,
          element: (
-            <ThemeProvider theme={theme}>
-               <CssBaseline />
-               <MainPage headerProps={headerProps} />
-            </ThemeProvider>
+            <ServerProvider server={server} getAccessToken={getAccessToken}>
+               <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <MainPage headerProps={headerProps} />
+               </ThemeProvider>
+            </ServerProvider>
          ),
          errorElement: <RouteError />,
          children: [
@@ -68,10 +72,11 @@ export const MalloyPublisherApp: React.FC<MalloyPublisherAppProps> = ({
    basePath = "/",
    headerProps,
 }) => {
-   const router = createMalloyRouter(basePath, headerProps);
-   return (
-      <ServerProvider server={server} getAccessToken={getAccessToken}>
-         <RouterProvider router={router} />
-      </ServerProvider>
+   const router = createMalloyRouter(
+      basePath,
+      headerProps,
+      server,
+      getAccessToken,
    );
+   return <RouterProvider router={router} />;
 };

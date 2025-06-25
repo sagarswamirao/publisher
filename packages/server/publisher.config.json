@@ -1,5 +1,5 @@
 {
    "projects": {
-      "home": "./malloy-samples"
+      "malloy-samples": "./malloy-samples"
    }
 }
