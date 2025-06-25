@@ -28,6 +28,36 @@ interface HomeProps {
    navigate?: (to: string, event?: React.MouseEvent) => void;
 }
 
+// Helper function to extract a brief description from README content
+const getProjectDescription = (readme: string | undefined): string => {
+   if (!readme) {
+      return "Explore semantic models, run queries, and build dashboards";
+   }
+
+   // Remove markdown formatting and get first paragraph
+   const cleanText = readme
+      .replace(/^#+\s+/gm, "") // Remove headers
+      .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold
+      .replace(/\*(.*?)\*/g, "$1") // Remove italic
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Remove links
+      .replace(/`([^`]+)`/g, "$1") // Remove code
+      .trim();
+
+   // Get first paragraph (split by double newlines)
+   const paragraphs = cleanText.split(/\n\s*\n/);
+   const firstParagraph = paragraphs[0] || cleanText;
+
+   // Limit to ~120 characters
+   if (firstParagraph.length <= 120) {
+      return firstParagraph;
+   }
+
+   // Truncate at word boundary
+   const truncated = firstParagraph.substring(0, 120).split(" ");
+   truncated.pop(); // Remove last partial word
+   return truncated.join(" ") + "...";
+};
+
 export default function Home({ navigate }: HomeProps) {
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["projects"],
@@ -303,8 +333,7 @@ export default function Home({ navigate }: HomeProps) {
                                     color="text.secondary"
                                     sx={{ mb: 2 }}
                                  >
-                                    Explore semantic models, run queries, and
-                                    build dashboards
+                                    {getProjectDescription(project.readme)}
                                  </Typography>
                                  <Button
                                     variant="contained"

@@ -229,11 +229,7 @@ export class Package {
       const packageConfigPath = path.join(packagePath, PACKAGE_MANIFEST_NAME);
       try {
          await fs.stat(packageConfigPath);
-      } catch (error) {
-         console.error(
-            `Package manifest check failed for ${packageConfigPath}:`,
-            error,
-         );
+      } catch {
          throw new PackageNotFoundError(
             `Package manifest for ${packagePath} does not exist.`,
          );

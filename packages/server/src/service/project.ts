@@ -69,8 +69,8 @@ export class Project {
          readme = (
             await fs.readFile(path.join(this.projectPath, README_NAME))
          ).toString();
-      } catch (error) {
-         console.error("Error reading readme: " + error);
+      } catch {
+         // Readme not found, so we'll just return an empty string
       }
       return {
          resource: `${API_PREFIX}/projects/${this.projectName}`,
@@ -147,7 +147,6 @@ export class Project {
          ) as ApiPackage[];
          return filteredMetadata;
       } catch (error) {
-         console.error("Error listing packages: " + error);
          throw new Error("Error listing packages: " + error);
       }
    }
@@ -167,7 +166,6 @@ export class Project {
             );
             this.packages.set(packageName, _package);
          } catch (error) {
-            console.error("Error creating package: " + error);
             this.packages.delete(packageName);
             throw error;
          }
