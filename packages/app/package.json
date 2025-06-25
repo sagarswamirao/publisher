@@ -1,7 +1,7 @@
 {
    "name": "@malloy-publisher/app",
    "description": "Malloy Publisher App",
-   "version": "0.0.55",
+   "version": "0.0.58",
    "type": "module",
    "main": "dist/index.cjs.js",
    "module": "dist/index.es.js",
@@ -24,7 +24,7 @@
       "dist"
    ],
    "scripts": {
-      "build": "BUILD_MODE=library bunx vite build --mode development",
+      "build": "BUILD_MODE=library bunx vite build",
       "build:server": "bunx vite build --mode production",
       "dev": "bunx vite --host",
       "preview": "bunx vite preview",

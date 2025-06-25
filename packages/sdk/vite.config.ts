@@ -9,6 +9,7 @@ export default ({ mode }) => {
       define: {
          // This is REQUIRED for React and other libraries to eliminate debug code
          "process.env.NODE_ENV": JSON.stringify(mode),
+         "process.env.NODE_DEBUG": "false",
          // Custom defines for your own code (optional)
          __DEV__: JSON.stringify(mode !== "production"),
          __PROD__: JSON.stringify(mode === "production"),

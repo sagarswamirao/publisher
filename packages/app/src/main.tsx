@@ -7,7 +7,7 @@ import { createMalloyRouter } from "./App";
 // Main.tsx is used to run the app locally. This is not used when the app is
 // embedded in another project.
 const server = `${window.location.protocol}//${window.location.host}/api/v0`;
-const router = createMalloyRouter("/");
+const router = createMalloyRouter("/", undefined);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
    <React.StrictMode>

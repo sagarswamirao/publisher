@@ -4,7 +4,7 @@ export type { MalloyPublisherAppProps } from "./App";
 
 // Theme exports
 export { default as theme } from "./theme";
-
+export * from "./components";
 // Additional component exports for advanced usage
 export { default as BreadcrumbNav } from "./components/BreadcrumbNav";
 export { default as HomePage } from "./components/HomePage";
@@ -15,4 +15,3 @@ export { ProjectPage } from "./components/ProjectPage";
 export { RouteError } from "./components/RouteError";
 export { ScratchNotebookPage } from "./components/ScratchNotebookPage";
 export { default as ToggleColorMode } from "./components/ToggleColorMode";
-

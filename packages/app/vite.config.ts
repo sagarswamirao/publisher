@@ -24,6 +24,7 @@ export default ({ mode }) => {
          define: {
             // This is REQUIRED for React and other libraries to eliminate debug code
             "process.env.NODE_ENV": JSON.stringify(mode),
+            "process.env.NODE_DEBUG": "false",
          },
          build: {
             minify: mode === "production",
