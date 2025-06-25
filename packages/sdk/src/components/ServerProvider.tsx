@@ -2,25 +2,25 @@ import React, { createContext, useContext, ReactNode } from "react";
 
 export interface ServerContextValue {
    server: string;
-   accessToken?: string;
+   getAccessToken?: () => Promise<string>;
 }
 
 const ServerContext = createContext<ServerContextValue | undefined>(undefined);
 
 export interface ServerProviderProps {
    server?: string;
-   accessToken?: string;
+   getAccessToken?: () => Promise<string>;
    children: ReactNode;
 }
 
 export const ServerProvider: React.FC<ServerProviderProps> = ({
    server = `${window.location.protocol}//${window.location.host}/api/v0`,
-   accessToken,
+   getAccessToken,
    children,
 }) => {
    const value: ServerContextValue = {
       server,
-      accessToken,
+      getAccessToken,
    };
 
    return (

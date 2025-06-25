@@ -29,6 +29,7 @@ import { useNotebookStorage } from "./NotebookStorageProvider";
 
 import * as Malloy from "@malloydata/malloy-interfaces";
 import { ModelPicker } from "./ModelPicker";
+import { getAxiosConfig } from "../../hooks";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -52,7 +53,7 @@ export default function MutableNotebook({
 }: MutableNotebookProps) {
    const navigate = useRouterClickHandler();
    const { projectName, packageName, versionId } = usePackage();
-   const { server, accessToken } = useServer();
+   const { server, getAccessToken } = useServer();
    const { notebookStorage, userContext } = useNotebookStorage();
    if (!projectName || !packageName) {
       throw new Error(
@@ -81,13 +82,6 @@ export default function MutableNotebook({
    );
    const [menuIndex, setMenuIndex] = React.useState<number | null>(null);
    const menuOpen = Boolean(menuAnchorEl);
-   const handleMenuClick = (
-      event: React.MouseEvent<HTMLButtonElement>,
-      index: number,
-   ) => {
-      setMenuAnchorEl(event.currentTarget);
-      setMenuIndex(index);
-   };
    const handleMenuClose = () => {
       setMenuAnchorEl(null);
       setMenuIndex(null);
@@ -147,10 +141,13 @@ export default function MutableNotebook({
                console.log("Fetching model from Publisher", model);
                promises.push(
                   modelsApi
-                     .getModel(projectName, packageName, model, versionId, {
-                        baseURL: server,
-                        withCredentials: !accessToken,
-                     })
+                     .getModel(
+                        projectName,
+                        packageName,
+                        model,
+                        versionId,
+                        await getAxiosConfig(server, getAccessToken),
+                     )
                      .then((data) => ({
                         modelPath: model,
                         sourceInfos: data.data.sourceInfos.map((source) =>
@@ -175,7 +172,15 @@ export default function MutableNotebook({
       };
 
       fetchModels();
-   }, [accessToken, notebookData, packageName, projectName, server, versionId]);
+   }, [
+      // Note this cannot depend on sourceAndPaths because it will cause an infinite loop.
+      getAccessToken,
+      notebookData,
+      packageName,
+      projectName,
+      server,
+      versionId,
+   ]);
 
    React.useEffect(() => {
       if (!notebookPath) {

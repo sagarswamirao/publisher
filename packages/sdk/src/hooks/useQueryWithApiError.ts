@@ -25,25 +25,32 @@ const globalQueryClient = new QueryClient({
    },
 });
 
-export function useQueryWithApiError<TData = unknown, TError = ApiError>(
-   options: Omit<UseQueryOptions<TData, TError>, "throwOnError" | "retry"> & {
-      queryFn: (config: RawAxiosRequestConfig) => Promise<TData>;
-   },
-): UseQueryResult<TData, TError> {
-   const { server, accessToken } = useServer();
-   const config = {
+export const getAxiosConfig = async (
+   server: string,
+   getAccessToken: () => Promise<string>,
+): Promise<RawAxiosRequestConfig> => {
+   const accessToken = getAccessToken ? await getAccessToken() : undefined;
+   return {
       baseURL: server,
       withCredentials: !accessToken,
       headers: {
          Authorization: accessToken && `Bearer ${accessToken}`,
       },
    } as RawAxiosRequestConfig;
+};
+export function useQueryWithApiError<TData = unknown, TError = ApiError>(
+   options: Omit<UseQueryOptions<TData, TError>, "throwOnError" | "retry"> & {
+      queryFn: (config: RawAxiosRequestConfig) => Promise<TData>;
+   },
+): UseQueryResult<TData, TError> {
+   const { server, getAccessToken } = useServer();
    const enhancedOptions: UseQueryOptions<TData, TError> = {
       ...options,
       // Add in the server to the query key so that we can have a per-server caches.
       queryKey: [...options.queryKey, server],
       queryFn: async () => {
          try {
+            const config = await getAxiosConfig(server, getAccessToken);
             return await options.queryFn(config);
          } catch (err) {
             // Standardized error handling for axios errors
@@ -90,18 +97,12 @@ export function useMutationWithApiError<
       ) => Promise<TData>;
    },
 ): UseMutationResult<TData, TError, TVariables> {
-   const { server, accessToken } = useServer();
-   const config = {
-      baseURL: server,
-      withCredentials: !accessToken,
-      headers: {
-         Authorization: accessToken && `Bearer ${accessToken}`,
-      },
-   } as RawAxiosRequestConfig;
+   const { server, getAccessToken } = useServer();
    const enhancedOptions: UseMutationOptions<TData, TError, TVariables> = {
       ...options,
       mutationFn: async (variables: TVariables) => {
          try {
+            const config = await getAxiosConfig(server, getAccessToken);
             return await options.mutationFn(variables, config);
          } catch (err) {
             // Standardized error handling for axios errors
