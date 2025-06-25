@@ -57,20 +57,20 @@ export const createMalloyRouter = (
 
 export interface MalloyPublisherAppProps {
    server?: string;
-   accessToken?: string;
+   getAccessToken?: () => Promise<string>;
    basePath?: string;
    headerProps: HeaderProps;
 }
 
 export const MalloyPublisherApp: React.FC<MalloyPublisherAppProps> = ({
    server,
-   accessToken,
+   getAccessToken,
    basePath = "/",
    headerProps,
 }) => {
    const router = createMalloyRouter(basePath, headerProps);
    return (
-      <ServerProvider server={server} accessToken={accessToken}>
+      <ServerProvider server={server} getAccessToken={getAccessToken}>
          <RouterProvider router={router} />
       </ServerProvider>
    );
