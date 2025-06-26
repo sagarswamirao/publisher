@@ -28,6 +28,7 @@ export function ScratchNotebookPage() {
                userContext={{ project: projectName, package: packageName }}
             >
                <MutableNotebook
+                  key={`${notebookPath}-${projectName}-${packageName}`}
                   notebookPath={notebookPath}
                   hideEmbeddingIcons={true}
                />
