@@ -392,6 +392,7 @@ export default function MutableNotebook({
                      key={`${index}-${notebookData.getCells().length}`}
                   >
                      <MutableCell
+                        key={`${index}-${cell.isMarkdown}-${notebookPath}-${projectName}-${packageName}`}
                         cell={cell}
                         addButtonCallback={(isMarkdown) =>
                            plusButton(isMarkdown, index)
