@@ -52,18 +52,19 @@ jobs:
           cd packages/app
           NODE_ENV=production bun run build
 
-      - name: Build Server package
-        run: |
-          cd packages/server
-          NODE_ENV=production bun run build
-
       - name: Publish to NPM
         run: |
           cd packages/sdk
           npm publish --access public
           cd ../app
           npm publish --access public
-          cd ../server
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build & publih Server package
+        run: |
+          cd packages/server
+          NODE_ENV=production bun run build
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
