@@ -19,17 +19,17 @@ You can develop Malloy models using the [VS Code extension](https://marketplace.
 Publisher is designed around a familiar, proven workflow:
 
 - A **data modeler** defines trusted business logic in Malloy using the VS Code extension and serves their models using the Publisher server.
-- A **data consumer** explores and extends that logic using Malloy’s no-code **Explorer**, notebooks, custom data appications, or AI agents.
+- A **data consumer** explores and extends that logic using Malloy's no-code **Explorer**, notebooks, custom data appications, or AI agents.
 
 This mirrors the modeler → analyst flow popularized by tools like DBT and Looker — now reimagined for the AI era, and built on fully open infrastructure.
 
 ## Why It Matters
 
-You can’t trust answers if the meaning behind the data isn’t clear.
+You can't trust answers if the meaning behind the data isn't clear.
 
-Whether you're building dashboards, deploying AI agents, or enabling ad hoc analysis, every experience relies on a shared understanding of terms like “MRR,” “LTV,” or “active user.” Without that foundation, insights are inconsistent — or dangerously wrong.
+Whether you're building dashboards, deploying AI agents, or enabling ad hoc analysis, every experience relies on a shared understanding of terms like "MRR," "LTV," or "active user." Without that foundation, insights are inconsistent — or dangerously wrong.
 
-Publisher solves this by turning semantic models into reusable data APIs. By combining Malloy’s expressive modeling language with an open-source server and no-code data analysis UI, Publisher makes the semantic layer accessible, governable, and extensible — for everyone.
+Publisher solves this by turning semantic models into reusable data APIs. By combining Malloy's expressive modeling language with an open-source server and no-code data analysis UI, Publisher makes the semantic layer accessible, governable, and extensible — for everyone.
 
 # From Semantic Models to Data Experiences
 
@@ -49,9 +49,12 @@ The Publisher's default server configuraiton serves the [`malloy-samples`](https
 - **Publisher App (REST API + UI):** [http://localhost:4000](http://localhost:4000)
 
 <center>
-  <a href="https://www.loom.com/embed/4c1b3313f3624b41be9e16044bebfc38?sid=6dd7879e-19e5-4ee5-8bf1-960cbc46b5eb">
-      <img src="docs/malloy-publisher-demo.png" width=600 alt="Publisher App Demo">
+  <a href="https://www.loom.com/share/f4e7adbe72f040a889a36bc820578447?sid=839ea1eb-b0dd-46a7-aaf5-585cc8ec066b">
+      <img src="docs/malloy-publisher-demo.png" width=600 alt="Publisher App Demo - Click to watch video" style="border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
   </a>
+  <em>📹 Click the image above to watch the demo video</em>
+  <br>
+  <br>
 </center>
 
 Once your model is served, it becomes the foundation for a wide variety of data experiences — no-code analysis, notebooks, AI agents, and more. The sections below showcase how those experiences work in practice:
@@ -65,7 +68,7 @@ Once a model is published, analysts can open it in **Explorer**, a visual query 
 - Inspect and understand the underlying Malloy and SQL
 - Save and share reusable views — all without writing code
 
-🎥 **Demo Video:** [Watch Explorer in action →](docs/coming-soon.md)  
+🎥 **Demo Video:** [Watch Explorer in action →](https://www.loom.com/share/8a1438201da64f1b867a8a6a4a10e66b?sid=29dd7f2a-218e-4f94-95e5-a97456447621)  
 📖 **Docs:** [Explorer Documentation →](docs/explorer.md)
 
 ## Notebook-based Dashboards
@@ -76,19 +79,8 @@ Use Malloy notebooks (`.malloynb` files) to create shareable, code-first dashboa
 - Supports live queries and chart rendering
 - Notebooks are readable, inspectable, and easy to iterate on
 
-🎥 **Demo Video:** [Notebook walkthrough →](docs/coming-soon.md)  
+🎥 **Demo Video:** [Notebook walkthrough →](https://www.loom.com/share/efb54cf6c7444fdc8eaa7da509059a78?sid=a925eafb-76e0-476b-8237-c6375ad5679d)  
 📖 **Docs:** [Malloy Notebooks →](https://docs.malloydata.dev/blog/2023-03-10-malloy-data-notebooks)
-
-## Embedded Data Applications
-
-Using the [Publisher SDK](packages/sdk/), you can build rich data applications — without rebuilding your query engine or rewriting business logic. The Publisher App itself is built from this SDK, and you can remix it to:
-
-- Create internal tools or customer-facing dashboards
-- Build custom UI with governed data access
-- Embed charts or explorers into any React app
-
-🎥 **Demo Video:** [Building an app with the SDK →](docs/coming-soon.md)  
-📖 **Docs:** [Embedded Data Apps Guide →](docs/embedded-data-apps.md)
 
 ## MCP-based AI Data Agents
 
@@ -100,8 +92,19 @@ Publisher exposes your semantic models via the **Model Context Protocol (MCP)**,
 
 This enables tools like Claude, Cursor, or custom agents to generate accurate, interpretable queries using your definitions — not guesses.
 
-🎥 **Demo Video:** [MCP + AI Agent walkthrough →](docs/coming-soon.md)  
+🎥 **Demo Video:** [MCP + AI Agent walkthrough →](https://www.loom.com/share/cc4837e21fd84f53a2520209cb4b6003?sid=f5844651-45c6-4836-b322-37d8992c7ecf)  
 📖 **Docs:** [AI Agents & MCP Guide →](docs/ai-agents.md)
+
+## Embedded Data Applications
+
+Using the [Publisher SDK](packages/sdk/), you can build rich data applications — without rebuilding your query engine or rewriting business logic. The Publisher App itself is built from this SDK, and you can remix it to:
+
+- Create internal tools or customer-facing dashboards
+- Build custom UI with governed data access
+- Embed charts or explorers into any React app
+
+🎥 **Demo Video:** [Building an app with the SDK →](docs/coming-soon.md)  
+📖 **Docs:** [Embedded Data Apps Guide →](docs/embedded-data-apps.md)
 
 ## Legacy BI Tools (Coming Soon)
 
