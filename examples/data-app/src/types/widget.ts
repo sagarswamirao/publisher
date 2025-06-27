@@ -1,6 +1,5 @@
 export type Widget = {
   id: string;
-  server: string;
   projectName: string;
   packageName: string;
   modelPath: string;

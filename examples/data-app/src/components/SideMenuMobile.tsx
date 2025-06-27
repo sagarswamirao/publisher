@@ -11,7 +11,6 @@ import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import MenuButton from "./MenuButton";
 import MenuContent from "./MenuContent";
 import CardAlert from "./CardAlert";
-import { useAuth } from "../hooks/useAuth";
 
 interface SideMenuMobileProps {
   open: boolean | undefined;
@@ -22,7 +21,9 @@ export default function SideMenuMobile({
   open,
   toggleDrawer,
 }: SideMenuMobileProps) {
-  const { user } = useAuth();
+  const { user } = {
+    user: { name: "John Doe", email: "john.doe@example.com" },
+  };
 
   return (
     <Drawer
