@@ -180,7 +180,7 @@ npx @malloy-publisher/server --port 4000 --server_root /path/to/malloy_packages
 To run the server pointed to the Malloy samples:
 
 ```sh
-git clone git@github.com:pathwaysdata/malloy-samples
+git clone git@github.com:ms2data/malloy-samples
 npx @malloy-publisher/server --port 4000 --server_root .
 ```
 
