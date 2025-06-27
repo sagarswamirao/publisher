@@ -5,7 +5,7 @@ The Publisher makes it easy to embed governed analytics into your web applicatio
 ## Try the Sample App
 
 1. Make sure the Publisher server is running locally on port `4000` (follow instructions in the [Main README](../../README.md)).
-2. Open the `examples/data-app` directory in the publisher repo.
+2. Open the `examples/data-app` directory in the Publisher repo.
 3. Copy `.env.example` to `.env`. You should not need to change the `VITE_PUBLISHER_API` variable there unless your Publisher server is running elsewhere. NOTE: even though the Publisher is running on port `4000`, the API request is proxied through port `5173` (this web app) to avoid CORS issues.
 4. Run the following commands to start the app:
 
