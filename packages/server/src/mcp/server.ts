@@ -9,7 +9,7 @@ import { registerQueryResource } from "./resources/query_resource";
 import { registerViewResource } from "./resources/view_resource";
 import { registerNotebookResource } from "./resources/notebook_resource";
 import { registerExecuteQueryTool } from "./tools/execute_query_tool";
-import { registerTools } from "./tools";
+import { registerTools } from "./tools/discovery_tools";
 import { registerPromptCapability } from "./prompts/prompt_service.js";
 
 export const testServerInfo = {
