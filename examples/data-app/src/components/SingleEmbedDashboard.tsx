@@ -1,14 +1,12 @@
 import { Stack, Typography, Box } from "@mui/material";
 import Header from "./Header";
 import { QueryResult } from "@malloy-publisher/sdk";
-import { useAuth } from "../hooks/useAuth";
 
 export default function SingleEmbedDashboard({
   selectedView,
 }: {
   selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
 }) {
-  const { accessToken } = useAuth();
   return (
     <Stack spacing={2} sx={{ mt: { xs: 8, md: 0 }, mb: 8 }}>
       <Header selectedView={selectedView} />

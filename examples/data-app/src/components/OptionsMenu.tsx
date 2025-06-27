@@ -10,14 +10,15 @@ import ListItemIcon, { listItemIconClasses } from "@mui/material/ListItemIcon";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import MenuButton from "./MenuButton";
-import { useAuth } from "../hooks/useAuth";
 
 const MenuItem = styled(MuiMenuItem)({
   margin: "2px 0",
 });
 
 export default function OptionsMenu() {
-  const { logout } = useAuth();
+  const { logout } = {
+    logout: () => {},
+  };
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -28,11 +29,7 @@ export default function OptionsMenu() {
   };
 
   const handleLogout = () => {
-    logout({
-      logoutParams: {
-        returnTo: window.location.origin,
-      },
-    });
+    logout();
   };
 
   return (

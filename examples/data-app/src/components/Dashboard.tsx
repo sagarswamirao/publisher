@@ -23,9 +23,8 @@ import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
-import { QueryResult } from "@malloy-publisher/sdk";
+import { QueryResult, PackageProvider } from "@malloy-publisher/sdk";
 import Header from "./Header";
-import { useAuth } from "../hooks/useAuth";
 import { parseQueryResultString } from "../utils/parseQueryResultString";
 import { Widget } from "../types/widget";
 import { getNextWidgetPosition } from "../utils/getNextWidgetPosition";
@@ -42,8 +41,6 @@ export default function Dashboard({
   defaultWidgets?: Widget[];
   customizeWidgetsEffect?: (widgets: Widget[]) => void;
 }) {
-  const { accessToken } = useAuth();
-
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [newQuery, setNewQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -67,7 +64,6 @@ export default function Dashboard({
 
     const newWidget: Widget = {
       id,
-      server: parsed.server,
       projectName: parsed.projectName,
       packageName: parsed.packageName,
       modelPath: parsed.modelPath,
@@ -227,14 +223,15 @@ export default function Dashboard({
                 overflow: "visible",
               }}
             >
-              <QueryResult
-                server={widget.server}
-                accessToken={accessToken}
+              <PackageProvider
                 projectName={widget.projectName}
                 packageName={widget.packageName}
-                modelPath={widget.modelPath}
-                query={widget.query}
-              />
+              >
+                <QueryResult
+                  modelPath={widget.modelPath}
+                  query={widget.query}
+                />
+              </PackageProvider>
             </Box>
           </div>
         ))}
