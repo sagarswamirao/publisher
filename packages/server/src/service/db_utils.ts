@@ -9,6 +9,7 @@ import {
    ApiConnection,
    PostgresConnection,
    SnowflakeConnection,
+   MysqlConnection,
 } from "./model";
 import { components } from "../api";
 
@@ -25,6 +26,21 @@ async function getPostgresConnection(
       port: apiPostgresConnection.port,
       max: 10,
       idleTimeoutMillis: 30000,
+   });
+}
+
+async function getMysqlConnection(apiMysqlConnection: MysqlConnection) {
+   // Dynamically import mysql2/promise to avoid import issues if not needed
+   const mysql = await import("mysql2/promise");
+   return mysql.createPool({
+      host: apiMysqlConnection.host,
+      port: apiMysqlConnection.port,
+      user: apiMysqlConnection.user,
+      password: apiMysqlConnection.password,
+      database: apiMysqlConnection.database,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
    });
 }
 
@@ -74,22 +90,32 @@ export async function getSchemasForConnection(
       if (!connection.bigqueryConnection) {
          throw new Error("BigQuery connection is required");
       }
-      const bigquery = getBigqueryConnection(connection);
-      // Set the projectId if it's provided in the bigqueryConnection
-      const [datasets] = await bigquery.getDatasets({
-         ...(connection.bigqueryConnection.defaultProjectId
-            ? { projectId: connection.bigqueryConnection.defaultProjectId }
-            : {}),
-      });
-      return datasets
-         .filter((dataset) => dataset.id)
-         .map((dataset) => {
-            return {
-               name: dataset.id,
-               isHidden: false,
-               isDefault: false,
-            };
+      try {
+         const bigquery = getBigqueryConnection(connection);
+         // Set the projectId if it's provided in the bigqueryConnection
+         const [datasets] = await bigquery.getDatasets({
+            ...(connection.bigqueryConnection.defaultProjectId
+               ? { projectId: connection.bigqueryConnection.defaultProjectId }
+               : {}),
          });
+         return datasets
+            .filter((dataset) => dataset.id)
+            .map((dataset) => {
+               return {
+                  name: dataset.id,
+                  isHidden: false,
+                  isDefault: false,
+               };
+            });
+      } catch (error) {
+         console.error(
+            `Error getting schemas for BigQuery connection ${connection.name}:`,
+            error,
+         );
+         throw new Error(
+            `Failed to get schemas for BigQuery connection ${connection.name}: ${(error as Error).message}`,
+         );
+      }
    } else if (connection.type === "postgres") {
       if (!connection.postgresConnection) {
          throw new Error("Postgres connection is required");
@@ -107,6 +133,17 @@ export async function getSchemasForConnection(
             isDefault: row.schema_name === "public",
          };
       });
+   } else if (connection.type === "mysql") {
+      if (!connection.mysqlConnection) {
+         throw new Error("Mysql connection is required");
+      }
+      return [
+         {
+            name: connection.mysqlConnection.database || "mysql",
+            isHidden: false,
+            isDefault: true,
+         },
+      ];
    } else if (connection.type === "snowflake") {
       if (!connection.snowflakeConnection) {
          throw new Error("Snowflake connection is required");
@@ -133,8 +170,8 @@ export async function getTablesForSchema(
    schemaName: string,
 ): Promise<string[]> {
    if (connection.type === "bigquery") {
-      const bigquery = getBigqueryConnection(connection);
       try {
+         const bigquery = getBigqueryConnection(connection);
          const options = connection.bigqueryConnection?.defaultProjectId
             ? {
                  projectId: connection.bigqueryConnection?.defaultProjectId,
@@ -151,11 +188,24 @@ export async function getTablesForSchema(
          const [tables] = await dataset.getTables();
          return tables.map((table) => table.id).filter((id) => id) as string[];
       } catch (error) {
-         console.error(`Error getting tables for schema ${schemaName}`, error);
-         throw new Error(`Error getting tables for schema ${schemaName}`, {
-            cause: error,
-         });
+         console.error(
+            `Error getting tables for BigQuery schema ${schemaName} in connection ${connection.name}:`,
+            error,
+         );
+         throw new Error(
+            `Failed to get tables for BigQuery schema ${schemaName} in connection ${connection.name}: ${(error as Error).message}`,
+         );
       }
+   } else if (connection.type === "mysql") {
+      if (!connection.mysqlConnection) {
+         throw new Error("Mysql connection is required");
+      }
+      const pool = await getMysqlConnection(connection.mysqlConnection);
+      const [rows] = await pool.query(
+         "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = ? AND table_type = 'BASE TABLE'",
+         [schemaName],
+      );
+      return (rows as { TABLE_NAME: string }[]).map((row) => row.TABLE_NAME);
    } else if (connection.type === "postgres") {
       if (!connection.postgresConnection) {
          throw new Error("Postgres connection is required");

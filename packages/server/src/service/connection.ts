@@ -2,6 +2,7 @@ import { PostgresConnection } from "@malloydata/db-postgres";
 import { BigQueryConnection } from "@malloydata/db-bigquery";
 import { SnowflakeConnection } from "@malloydata/db-snowflake";
 import { TrinoConnection } from "@malloydata/db-trino";
+import { MySQLConnection } from "@malloydata/db-mysql";
 import { v4 as uuidv4 } from "uuid";
 import { Connection } from "@malloydata/malloy";
 import { components } from "../api";
@@ -20,6 +21,7 @@ export type InternalConnection = ApiConnection & {
    bigqueryConnection?: components["schemas"]["BigqueryConnection"];
    snowflakeConnection?: components["schemas"]["SnowflakeConnection"];
    trinoConnection?: components["schemas"]["TrinoConnection"];
+   mysqlConnection?: components["schemas"]["MysqlConnection"];
 };
 
 export async function readConnectionConfig(
@@ -79,6 +81,26 @@ export async function createConnections(basePath: string): Promise<{
                connectionMap.set(connection.name, postgresConnection);
                connection.attributes =
                   getConnectionAttributes(postgresConnection);
+               break;
+            }
+
+            case "mysql": {
+               if (!connection.mysqlConnection) {
+                  throw "Invalid connection configuration.  No mysql connection.";
+               }
+               const config = {
+                  host: connection.mysqlConnection.host,
+                  port: connection.mysqlConnection.port,
+                  username: connection.mysqlConnection.user,
+                  password: connection.mysqlConnection.password,
+                  database: connection.mysqlConnection.database,
+               };
+               const mysqlConnection = new MySQLConnection(
+                  connection.name,
+                  config,
+               );
+               connectionMap.set(connection.name, mysqlConnection);
+               connection.attributes = getConnectionAttributes(mysqlConnection);
                break;
             }
 
@@ -209,10 +231,16 @@ export async function createConnections(basePath: string): Promise<{
 function getConnectionAttributes(
    connection: Connection,
 ): ApiConnectionAttributes {
+   let canStream = false;
+   try {
+      canStream = connection.canStream();
+   } catch {
+      // pass
+   }
    return {
       dialectName: connection.dialectName,
       isPool: connection.isPool(),
       canPersist: connection.canPersist(),
-      canStream: connection.canStream(),
+      canStream: canStream,
    };
 }

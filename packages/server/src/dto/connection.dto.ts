@@ -35,6 +35,28 @@ export class PostgresConnectionDto {
    connectionString?: string;
 }
 
+export class MysqlConnectionDto {
+   @IsOptional()
+   @IsString()
+   host?: string;
+
+   @IsOptional()
+   @IsNumber()
+   port?: number;
+
+   @IsOptional()
+   @IsString()
+   database?: string;
+
+   @IsOptional()
+   @IsString()
+   user?: string;
+
+   @IsOptional()
+   @IsString()
+   password?: string;
+}
+
 export class BigqueryConnectionDto {
    @IsOptional()
    @IsString()
