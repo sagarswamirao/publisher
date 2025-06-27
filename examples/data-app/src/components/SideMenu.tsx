@@ -6,7 +6,6 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import MenuContent from "./MenuContent";
-import { useAuth } from "../hooks/useAuth";
 import { Tooltip } from "@mui/material";
 import OptionsMenu from "./OptionsMenu";
 
@@ -32,7 +31,9 @@ export default function SideMenu({
     view: "malloySamples" | "singleEmbed" | "dynamicDashboard"
   ) => void;
 }) {
-  const { user } = useAuth();
+  const { user } = {
+    user: { name: "John Doe", email: "john.doe@example.com" },
+  };
 
   return (
     <Drawer

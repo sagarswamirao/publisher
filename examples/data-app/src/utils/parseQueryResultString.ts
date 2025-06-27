@@ -1,12 +1,10 @@
 export function parseQueryResultString(str: string): {
-  server: string;
   projectName: string;
   packageName: string;
   modelPath: string;
   query: string;
 } | null {
   try {
-    const server = str.match(/server="([^"]+)"/)?.[1];
     const projectName = str.match(/projectName="([^"]+)"/)?.[1];
     const packageName = str.match(/packageName="([^"]+)"/)?.[1];
     const modelPath = str.match(/modelPath="([^"]+)"/)?.[1];
@@ -26,11 +24,11 @@ export function parseQueryResultString(str: string): {
       query = query.slice(0, -1);
     }
 
-    if (!server || !projectName || !packageName || !modelPath || !query) {
+    if (!projectName || !packageName || !modelPath || !query) {
       return null;
     }
 
-    return { server, projectName, packageName, modelPath, query };
+    return { projectName, packageName, modelPath, query };
   } catch {
     return null;
   }

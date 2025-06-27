@@ -9,7 +9,6 @@ import {
 import { useState, useMemo } from "react";
 import AppNavbar from "./components/AppNavbar";
 import SideMenu from "./components/SideMenu";
-import { useAuth } from "./hooks/useAuth";
 import { Loader } from "./components/Loader";
 import { ErrorScreen } from "./components/ErrorScreen";
 import MalloySamplesDashboard from "./components/MalloySamplesDashboard";
@@ -25,16 +24,6 @@ export default function AppShell() {
   const [selectedView, setSelectedView] = useState<
     "malloySamples" | "singleEmbed" | "dynamicDashboard"
   >("malloySamples");
-
-  const { isLoading, accessToken, error } = useAuth();
-
-  if (error) {
-    return <ErrorScreen error={error} />;
-  }
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -56,7 +45,7 @@ export default function AppShell() {
             position: "relative",
           }}
         >
-          {accessToken && (
+          {
             <>
               {selectedView === "malloySamples" && (
                 <MalloySamplesDashboard selectedView={selectedView} />
@@ -68,7 +57,7 @@ export default function AppShell() {
                 <DynamicDashboard selectedView={selectedView} />
               )}
             </>
-          )}
+          }
         </Box>
       </Box>
     </ThemeProvider>
