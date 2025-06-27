@@ -18,9 +18,6 @@ logging.basicConfig(
 class ImprovedMalloyMCPBridge:
     def __init__(self):
         self.mcp_url = "http://localhost:4040/mcp"
-        # Mapping of Claude-compatible names to original names
-        # Reverse mapping for responses
-        self.reverse_tool_mapping = {v: k for k, v in self.tool_name_mapping.items()}
         
         # Set stdin/stdout to line buffered mode for better responsiveness
         sys.stdin.reconfigure(line_buffering=True)
