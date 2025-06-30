@@ -45,7 +45,7 @@ const useRawQueryData = ({ modelPath, query }: { modelPath: string; query: strin
       setIsError(false);
       try {
         const encodedQuery = encodeURIComponent(query);
-        const response = await fetch(`http://localhost:4000/api/v0/projects/home/packages/faa/queryResults/${modelPath}?query=${encodedQuery}`);
+        const response = await fetch(`http://localhost:4000/api/v0/projects/malloy-samples/packages/faa/queryResults/${modelPath}?query=${encodedQuery}`);
         
         if (!response.ok) throw new Error('Failed to fetch');
         
