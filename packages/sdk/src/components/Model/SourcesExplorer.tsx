@@ -1,5 +1,4 @@
 import * as Malloy from "@malloydata/malloy-interfaces";
-import * as QueryBuilder from "@malloydata/malloy-query-builder";
 import { Button } from "@mui/material";
 import { Box, Stack } from "@mui/system";
 import {
@@ -10,15 +9,8 @@ import {
    StyledExplorerPage,
 } from "../styles";
 
-import {
-   MalloyExplorerProvider,
-   QueryPanel,
-   ResizableCollapsiblePanel,
-   ResultPanel,
-   SourcePanel,
-} from "@malloydata/malloy-explorer";
 import { styled } from "@mui/material/styles";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 import { usePackage } from "../Package/PackageProvider";
@@ -84,8 +76,8 @@ export function SourcesExplorer({
    const [selectedTab, setSelectedTab] = React.useState(
       existingSourceName
          ? sourceAndPaths.findIndex(
-            (entry) => entry.sourceInfo.name === existingSourceName,
-         )
+              (entry) => entry.sourceInfo.name === existingSourceName,
+           )
          : 0,
    );
 
@@ -163,17 +155,30 @@ export function emptyQueryExplorerResult(): QueryExplorerResult {
       malloyResult: undefined,
    };
 }
-export function SourceExplorerComponent({
+function SourceExplorerComponentInner({
    sourceAndPath,
    onChange,
    existingQuery,
-}: SourceExplorerComponentProps) {
+   explorerComponents,
+   QueryBuilder,
+}: SourceExplorerComponentProps & {
+   explorerComponents: any;
+   QueryBuilder: any;
+}) {
    const [query, setQuery] = React.useState<QueryExplorerResult>(
       existingQuery || emptyQueryExplorerResult(),
    );
    const [focusedNestViewPath, setFocusedNestViewPath] = React.useState<
       string[]
    >([]);
+
+   const {
+      MalloyExplorerProvider,
+      QueryPanel,
+      ResizableCollapsiblePanel,
+      ResultPanel,
+      SourcePanel,
+   } = explorerComponents;
 
    React.useEffect(() => {
       if (onChange) {
@@ -301,16 +306,16 @@ export function SourceExplorerComponent({
                         submittedQuery={
                            query?.malloyQuery
                               ? {
-                                 executionState: mutation.isPending
-                                    ? "running"
-                                    : "finished",
-                                 response: {
-                                    result: query.malloyResult,
-                                 },
-                                 query: query.malloyQuery,
-                                 queryResolutionStartMillis: Date.now(),
-                                 onCancel: mutation.reset,
-                              }
+                                   executionState: mutation.isPending
+                                      ? "running"
+                                      : "finished",
+                                   response: {
+                                      result: query.malloyResult,
+                                   },
+                                   query: query.malloyQuery,
+                                   queryResolutionStartMillis: Date.now(),
+                                   onCancel: mutation.reset,
+                                }
                               : undefined
                         }
                         options={{ showRawQuery: true }}
@@ -320,5 +325,66 @@ export function SourceExplorerComponent({
             </MalloyExplorerProvider>
          </StyledExplorerContent>
       </StyledExplorerPage>
+   );
+}
+
+// Lazy-loaded wrapper component
+export function SourceExplorerComponent(props: SourceExplorerComponentProps) {
+   const [explorerComponents, setExplorerComponents] = useState<any>(null);
+   const [QueryBuilder, setQueryBuilder] = useState<any>(null);
+   const [loading, setLoading] = useState(true);
+
+   useEffect(() => {
+      let isMounted = true;
+
+      Promise.all([
+         import("@malloydata/malloy-explorer"),
+         import("@malloydata/malloy-query-builder"),
+      ])
+         .then(([explorerComponents, queryBuilder]) => {
+            if (isMounted) {
+               setExplorerComponents(explorerComponents);
+               setQueryBuilder(queryBuilder);
+               setLoading(false);
+            }
+         })
+         .catch((error) => {
+            console.error("Failed to load Malloy components:", error);
+            if (isMounted) {
+               setLoading(false);
+            }
+         });
+
+      return () => {
+         isMounted = false;
+      };
+   }, []);
+
+   if (loading || !explorerComponents || !QueryBuilder) {
+      return (
+         <StyledExplorerPage>
+            <StyledExplorerContent>
+               <div
+                  style={{
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     height: "200px",
+                     color: "#666",
+                  }}
+               >
+                  Loading explorer...
+               </div>
+            </StyledExplorerContent>
+         </StyledExplorerPage>
+      );
+   }
+
+   return (
+      <SourceExplorerComponentInner
+         {...props}
+         explorerComponents={explorerComponents}
+         QueryBuilder={QueryBuilder}
+      />
    );
 }
