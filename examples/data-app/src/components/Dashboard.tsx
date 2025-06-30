@@ -36,7 +36,7 @@ export default function Dashboard({
   defaultWidgets = [],
   customizeWidgetsEffect,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
   storageKey: string;
   defaultWidgets?: Widget[];
   customizeWidgetsEffect?: (widgets: Widget[]) => void;

@@ -27,7 +27,12 @@ const Toolbar = styled(MuiToolbar)({
   },
 });
 
-export default function AppNavbar() {
+interface AppNavbarProps {
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
+  setSelectedView: (view: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive") => void;
+}
+
+export default function AppNavbar({ selectedView, setSelectedView }: AppNavbarProps) {
   const [open, setOpen] = React.useState(false);
 
   const toggleDrawer = (newOpen: boolean) => () => {
@@ -66,7 +71,12 @@ export default function AppNavbar() {
           <MenuButton aria-label="menu" onClick={toggleDrawer(true)}>
             <MenuRoundedIcon />
           </MenuButton>
-          <SideMenuMobile open={open} toggleDrawer={toggleDrawer} />
+          <SideMenuMobile 
+            open={open} 
+            toggleDrawer={toggleDrawer} 
+            selectedView={selectedView} 
+            setSelectedView={setSelectedView} 
+          />
         </Stack>
       </Toolbar>
     </AppBar>

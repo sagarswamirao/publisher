@@ -18,13 +18,14 @@ const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
 export default function NavbarBreadcrumbs({
   selectedView,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
 }) {
   // Map key to display name
   const viewLabels: Record<typeof selectedView, string> = {
     malloySamples: "Malloy Samples",
     singleEmbed: "Single Embed",
     dynamicDashboard: "Dynamic Dashboard",
+    interactive: "Interactive",
   };
 
   return (
