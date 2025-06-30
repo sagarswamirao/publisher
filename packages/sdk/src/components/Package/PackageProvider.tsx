@@ -31,9 +31,9 @@ export const PackageProvider = ({
    );
 };
 
-export function usePackage() {
+export function usePackage(throwOnMissing: boolean = true) {
    const context = useContext(PackageContext);
-   if (!context) {
+   if (!context && throwOnMissing) {
       throw new Error("usePackage must be used within a PackageProvider");
    }
    return context;
