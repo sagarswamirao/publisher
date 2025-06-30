@@ -23,12 +23,11 @@ import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
-import { QueryResult, PackageProvider } from "@malloy-publisher/sdk";
 import Header from "./Header";
-import { parseQueryResultString } from "../utils/parseQueryResultString";
 import { Widget } from "../types/widget";
 import { getNextWidgetPosition } from "../utils/getNextWidgetPosition";
 import { v4 as uuidv4 } from "uuid";
+import { EmbeddedQueryResult } from "@malloy-publisher/sdk";
 
 export default function Dashboard({
   selectedView,
@@ -49,12 +48,6 @@ export default function Dashboard({
   const [loaded, setLoaded] = useState(false);
 
   const handleAddWidget = () => {
-    const parsed = parseQueryResultString(newQuery);
-    if (!parsed) {
-      setErrorMessage("Invalid QueryResult JSX snippet.");
-      return;
-    }
-
     const id = uuidv4();
     const widgetWidth = 12;
     const widgetHeight = 10;
@@ -64,10 +57,7 @@ export default function Dashboard({
 
     const newWidget: Widget = {
       id,
-      projectName: parsed.projectName,
-      packageName: parsed.packageName,
-      modelPath: parsed.modelPath,
-      query: parsed.query,
+      queryResultString: newQuery,
       title: newTitle.trim() !== "" ? newTitle.trim() : undefined,
       layout: {
         i: id,
@@ -181,7 +171,7 @@ export default function Dashboard({
                 className="drag-handle"
                 sx={{ cursor: "move" }}
               >
-                {widget.title ? widget.title : widget.packageName}
+                {widget.title}
               </Typography>
 
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -223,15 +213,9 @@ export default function Dashboard({
                 overflow: "visible",
               }}
             >
-              <PackageProvider
-                projectName={widget.projectName}
-                packageName={widget.packageName}
-              >
-                <QueryResult
-                  modelPath={widget.modelPath}
-                  query={widget.query}
-                />
-              </PackageProvider>
+              <EmbeddedQueryResult
+                embeddedQueryResult={widget.queryResultString}
+              />
             </Box>
           </div>
         ))}
