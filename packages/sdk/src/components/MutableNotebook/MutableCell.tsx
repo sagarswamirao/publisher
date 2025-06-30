@@ -15,7 +15,7 @@ import {
    Tooltip,
    Typography,
 } from "@mui/material";
-import MDEditor from "@uiw/react-md-editor";
+import MDEditor from "@uiw/react-md-editor/nohighlight";
 import Markdown from "markdown-to-jsx";
 import React, { useEffect, useState } from "react";
 import { highlight } from "../highlighter";
@@ -72,8 +72,8 @@ export function MutableCell({
    const [selectedSourceIndex, setSelectedSourceIndex] = React.useState<number>(
       cell.sourceName
          ? sourceAndPaths.findIndex(
-            (entry) => entry.sourceInfo.name === cell.sourceName,
-         )
+              (entry) => entry.sourceInfo.name === cell.sourceName,
+           )
          : 0,
    );
 
