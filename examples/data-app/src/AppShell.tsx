@@ -4,6 +4,7 @@ import {
   createTheme,
   CssBaseline,
   Box,
+  Typography,
   alpha,
 } from "@mui/material";
 import { useState, useMemo } from "react";
@@ -14,6 +15,7 @@ import { ErrorScreen } from "./components/ErrorScreen";
 import MalloySamplesDashboard from "./components/MalloySamplesDashboard";
 import SingleEmbedDashboard from "./components/SingleEmbedDashboard";
 import DynamicDashboard from "./components/DynamicDashboard";
+import InteractiveDashboard from "./components/InteractiveDashboard";
 
 export default function AppShell() {
   const [mode, setMode] = useState<PaletteMode>("light");
@@ -22,7 +24,7 @@ export default function AppShell() {
     [mode]
   );
   const [selectedView, setSelectedView] = useState<
-    "malloySamples" | "singleEmbed" | "dynamicDashboard"
+    "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive"
   >("malloySamples");
 
   return (
@@ -33,7 +35,7 @@ export default function AppShell() {
           selectedView={selectedView}
           setSelectedView={setSelectedView}
         />
-        <AppNavbar />
+        <AppNavbar selectedView={selectedView} setSelectedView={setSelectedView} />
         <Box
           component="main"
           sx={{
@@ -55,6 +57,9 @@ export default function AppShell() {
               )}
               {selectedView === "dynamicDashboard" && (
                 <DynamicDashboard selectedView={selectedView} />
+              )}
+              {selectedView === "interactive" && (
+                <InteractiveDashboard selectedView={selectedView} />
               )}
             </>
           }

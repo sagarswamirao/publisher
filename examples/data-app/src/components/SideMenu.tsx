@@ -26,9 +26,9 @@ export default function SideMenu({
   selectedView,
   setSelectedView,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
   setSelectedView: (
-    view: "malloySamples" | "singleEmbed" | "dynamicDashboard"
+    view: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive"
   ) => void;
 }) {
   const { user } = {

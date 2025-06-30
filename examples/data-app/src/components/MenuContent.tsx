@@ -8,6 +8,7 @@ import Stack from "@mui/material/Stack";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
 import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
+import TuneIcon from "@mui/icons-material/Tune";
 
 const mainListItems = [
   { key: "malloySamples", text: "Malloy Samples", icon: <HomeRoundedIcon /> },
@@ -17,15 +18,20 @@ const mainListItems = [
     text: "Dynamic Dashboard",
     icon: <AssignmentRoundedIcon />,
   },
+  {
+    key: "interactive",
+    text: "Interactive",
+    icon: <TuneIcon />,
+  },
 ];
 
 export default function MenuContent({
   selectedView,
   setSelectedView,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
   setSelectedView: (
-    view: "malloySamples" | "singleEmbed" | "dynamicDashboard"
+    view: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive"
   ) => void;
 }) {
   return (

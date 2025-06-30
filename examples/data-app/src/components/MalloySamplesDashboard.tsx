@@ -4,7 +4,7 @@ import defaultWidgets from "../constants/defaultMalloySamplesDashboardWidgets.js
 export default function MalloySamplesDashboard({
   selectedView,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
 }) {
   const customizeWidgetsEffect = (widgets: any[]) => {
     const baseUrl = import.meta.env.VITE_DEFAULT_MS2_URL || "";
@@ -25,7 +25,7 @@ export default function MalloySamplesDashboard({
   return (
     <Dashboard
       selectedView={selectedView}
-      storageKey="my-dashboard-widgets-malloy-samples"
+      storageKey="my-dashboard-widgets-home-names"
       defaultWidgets={defaultWidgets}
       customizeWidgetsEffect={customizeWidgetsEffect}
     />
