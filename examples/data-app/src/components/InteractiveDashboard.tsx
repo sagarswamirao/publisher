@@ -241,10 +241,17 @@ export default function InteractiveDashboard({
     query: mekkoQuery,
   });
 
+  const { data: monthlyData, isLoading: monthlyLoading, isError: monthlyError } = useRawQueryData({
+    modelPath: 'flights.malloy',
+    query: buildFilteredQuery(`run: flights -> by_month`),
+  });
+
+
+
   // Process data for charts
   const processedCarriersData = carriersData?.map((item: any, index: number) => ({
     name: item.nickname || 'Unknown',
-    count: item.flight_count || 0,
+    count: Number(item.flight_count) || 0,
     fill: COLORS.facilityTypes[index % COLORS.facilityTypes.length]
   })) || [];
 
@@ -296,11 +303,34 @@ export default function InteractiveDashboard({
     return result.slice(0, 50); // Limit for performance
   }, [mekkoData]);
 
+  // Process monthly data for line chart
+  const processedMonthlyData = React.useMemo(() => {
+    if (!monthlyData || monthlyData.length === 0) return [];
+    
+    console.log('Raw monthly data:', monthlyData);
+    
+    // The by_month query returns total flights per month
+    return monthlyData.map((item: any) => {
+      const month = item.dep_month || item.month || 'Unknown';
+      const count = item.flight_count || 0;
+      
+      // Format month for display (e.g., "2005-12" -> "Dec 2005")
+      const date = new Date(month);
+      const monthName = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      
+      return {
+        month: monthName,
+        'Total Flights': count
+      };
+    }).sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
+  }, [monthlyData]);
+
   const tabs = [
     { id: 0, label: 'Top Carriers' },
     { id: 1, label: 'Aircraft Manufacturers' },
     { id: 2, label: 'Top Origins' },
-    { id: 3, label: 'Mekko Chart' }
+    { id: 3, label: 'Mekko Chart' },
+    { id: 4, label: 'Carriers Over Time' }
   ];
 
   // Calculate scale to fit content in viewport
@@ -464,8 +494,15 @@ export default function InteractiveDashboard({
           <Tabs 
             value={tabValue} 
             onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
+            sx={{
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#1976d2',
+              },
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 500,
+              },
+            }}
           >
             {tabs.map((tab) => (
               <Tab key={tab.id} label={tab.label} />
@@ -486,15 +523,24 @@ export default function InteractiveDashboard({
             ) : carriersError ? (
               <Alert severity="error">Failed to load carriers data</Alert>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={processedCarriersData}>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart 
+                  data={processedCarriersData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" stroke="#666" />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#666" 
+                    angle={-90}
+                    textAnchor="end"
+                    height={120}
+                  />
                   <YAxis stroke="#666" />
                   <Tooltip 
                     formatter={(value) => [value.toLocaleString(), 'Flights']}
                   />
-                  <Bar dataKey="count" />
+                  <Bar dataKey="count" fill="#3B82F6" />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -540,14 +586,14 @@ export default function InteractiveDashboard({
             ) : originsError ? (
               <Alert severity="error">Failed to load origins data</Alert>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
+              <ResponsiveContainer width="100%" height={400}>
+                <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                   <Pie
                     data={processedOriginsData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
-                    outerRadius={150}
+                    outerRadius={140}
                     dataKey="count"
                     label={({ name, count }) => `${name}: ${count}`}
                   >
@@ -577,8 +623,8 @@ export default function InteractiveDashboard({
             ) : mekkoError ? (
               <Alert severity="error">Failed to load mekko data</Alert>
             ) : (
-              <Box sx={{ width: '100%', height: 400, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
-                <svg viewBox="0 0 1200 600" style={{ width: '100%', height: '100%' }}>
+              <Box sx={{ width: '100%', height: 480, border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden' }}>
+                <svg viewBox="0 0 800 500" style={{ width: '100%', height: '100%' }}>
                   {(() => {
                     if (!processedMekkoData.length) return null;
                     
@@ -592,7 +638,7 @@ export default function InteractiveDashboard({
                     });
 
                     const carriers = Object.keys(carrierGroups).slice(0, 8); // Top 8 carriers
-                    const totalWidth = 1100;
+                    const totalWidth = 1320; // Increased by 20% from 1100
                     const totalHeight = 500;
                     let xOffset = 50;
 
@@ -632,6 +678,19 @@ export default function InteractiveDashboard({
                                 {aircraft.aircraft_model}
                               </text>
                             )}
+                            {segmentHeight > 35 && carrierWidth > 60 && (
+                              <text
+                                x={xOffset + carrierWidth / 2}
+                                y={yOffset + segmentHeight / 2 + 15}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                fill="white"
+                                fontSize="8"
+                                fontWeight="bold"
+                              >
+                                {aircraft.count.toLocaleString()}
+                              </text>
+                            )}
                           </g>
                         );
                         
@@ -639,29 +698,85 @@ export default function InteractiveDashboard({
                         return segment;
                       });
                       
-                      // Carrier label
+                      // Carrier label with total count on separate line
                       const carrierLabel = (
-                        <text
-                          key={`carrier-label-${carrierIndex}`}
-                          x={xOffset + carrierWidth / 2}
-                          y={30}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fill="#374151"
-                          fontSize="12"
-                          fontWeight="bold"
-                        >
-                          {carrier}
-                        </text>
+                        <g key={`carrier-label-${carrierIndex}`}>
+                          <text
+                            x={xOffset + carrierWidth / 2}
+                            y={25}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fill="#374151"
+                            fontSize="12"
+                            fontWeight="bold"
+                          >
+                            {carrier}
+                          </text>
+                          <text
+                            x={xOffset + carrierWidth / 2}
+                            y={40}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fill="#6b7280"
+                            fontSize="10"
+                          >
+                            ({carrierTotal.toLocaleString()})
+                          </text>
+                        </g>
                       );
                       
-                      xOffset += carrierWidth + 20;
+                      xOffset += carrierWidth + 1;
                       
                       return [carrierLabel, ...segments];
                     });
                   })()}
                 </svg>
               </Box>
+            )}
+          </Card>
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={4}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
+              Flight Count Over Time
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 3, color: '#6b7280' }}>
+              Total flight count trends over time. Use filters above to see specific states or manufacturers.
+            </Typography>
+            {monthlyLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : monthlyError ? (
+              <Alert severity="error">Failed to load monthly data</Alert>
+            ) : (
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={processedMonthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="#666"
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis stroke="#666" />
+                  <Tooltip 
+                    formatter={(value) => [value.toLocaleString(), 'Flights']}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="Total Flights"
+                    name="Total Flights"
+                    stroke={COLORS.primary}
+                    strokeWidth={3}
+                    dot={{ fill: COLORS.primary, strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             )}
           </Card>
         </TabPanel>
