@@ -152,10 +152,6 @@ export default function Notebook({
                      <NotebookCell
                         cell={cell}
                         notebookPath={notebookPath}
-                        queryResultCodeSnippet={getQueryResultCodeSnippet(
-                           notebookPath,
-                           cell.text,
-                        )}
                         expandCodeCell={expandResults}
                         hideCodeCellIcon={hideResultIcons}
                         expandEmbedding={expandEmbeddings}
@@ -180,15 +176,6 @@ export default function Notebook({
          </StyledCardMedia>
       </StyledCard>
    );
-}
-
-function getQueryResultCodeSnippet(modelPath: string, query: string): string {
-   return `<QueryResult
-   modelPath="${modelPath}"
-   query="
-      ${query}
-   "
-/>`;
 }
 
 function getNotebookCodeSnippet(

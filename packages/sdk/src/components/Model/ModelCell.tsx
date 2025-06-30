@@ -16,6 +16,8 @@ import {
 import React, { useEffect } from "react";
 import { highlight } from "../highlighter";
 import { QueryResult } from "../QueryResult";
+import { usePackage } from "../Package";
+import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
 
 const StyledCard = styled(Card)({
    display: "flex",
@@ -54,10 +56,15 @@ export function ModelCell({
    const [highlightedAnnotations, setHighlightedAnnotations] =
       React.useState<string>();
 
-   const queryResultCodeSnippet = getQueryResultCodeSnippet(
+   const { packageName, projectName } = usePackage();
+
+   const queryResultCodeSnippet = createEmbeddedQueryResult({
+      modelPath,
       sourceName,
       queryName,
-   );
+      optionalPackageName: packageName,
+      optionalProjectName: projectName,
+   });
 
    useEffect(() => {
       highlight(queryResultCodeSnippet, "typescript").then((code) => {
@@ -208,14 +215,4 @@ export function ModelCell({
          </StyledCard>
       </>
    );
-}
-
-function getQueryResultCodeSnippet(
-   sourceName: string,
-   queryName: string,
-): string {
-   return `<QueryResult
-sourceName="${sourceName}"
-queryName="${queryName}"
-/>`;
 }

@@ -17,6 +17,8 @@ import { highlight } from "../highlighter";
 import { SourcesExplorer } from "../Model";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { StyledCard, StyledCardContent } from "../styles";
+import { usePackage } from "../Package";
+import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
 
 // Add global style for code display
 const codeStyle = `
@@ -29,7 +31,6 @@ const codeStyle = `
 interface NotebookCellProps {
    cell: ClientNotebookCell;
    notebookPath: string;
-   queryResultCodeSnippet: string;
    expandCodeCell?: boolean;
    hideCodeCellIcon?: boolean;
    expandEmbedding?: boolean;
@@ -39,7 +40,6 @@ interface NotebookCellProps {
 export function NotebookCell({
    cell,
    notebookPath,
-   queryResultCodeSnippet,
    expandCodeCell,
    hideCodeCellIcon,
    expandEmbedding,
@@ -54,6 +54,13 @@ export function NotebookCell({
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
    const [sourcesExpanded, setSourcesExpanded] = React.useState<boolean>(false);
+   const { packageName, projectName } = usePackage();
+   const queryResultCodeSnippet = createEmbeddedQueryResult({
+      modelPath: notebookPath,
+      query: cell.text,
+      optionalPackageName: packageName,
+      optionalProjectName: projectName,
+   });
    useEffect(() => {
       if (cell.type === "code")
          highlight(cell.text, "malloy").then((code) => {
