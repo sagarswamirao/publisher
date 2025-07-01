@@ -32,7 +32,7 @@ The primary way clients interact with the server is through tool calls. These ar
 
 The MCP server can also provide clients with **prompts** (e.g., suggested questions to start a conversation) and **resources** (e.g., links to documentation or data dictionaries). However, these are nascent capabilities of the MCP standard, and many current MCP clients do not yet utilize them.
 
-Specialized developer tools like the **MCP Inspector** can allow you to engage more deeply with these features. For the demonstration below, we will focus on **tool calls**, which are the primary interaction method used by the Claude app.
+Developer tools like the **MCP Inspector** can allow you to explore these features. For the demonstration below, we will focus on **tool calls**, which are the primary interaction method used by the Claude app.
 
 ---
 
@@ -107,7 +107,7 @@ Next, you need to tell Claude to use your Python bridge script as its tool serve
 
 Once the server is running and Claude is configured, the setup is complete. You can now start a new conversation and ask questions about your data directly. Thanks to the MCP discovery tools, Claude will automatically find your models, understand their structure, and execute queries to answer your questions.
 
-[Watch the demo video here.](https://www.loom.com/share/cc4837e21fd84f53a2520209cb4b6003)
+[Watch the demo video here.](https://www.loom.com/share/fcc5112ac1ca4bf78bee0985f1cd31be)
 
 #### Example Prompts
 
