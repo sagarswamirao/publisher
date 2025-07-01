@@ -80,6 +80,7 @@ const isDevelopment = process.env["NODE_ENV"] === "development";
 
 const app = express();
 app.use(morgan("tiny"));
+app.use(cors());
 
 const projectStore = new ProjectStore(SERVER_ROOT);
 const connectionController = new ConnectionController(projectStore);
