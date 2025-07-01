@@ -1,80 +1,94 @@
-# AI Agents (Model Context Protocol)
+# AI Agents with the Model Context Protocol (MCP) Server
 
-## 1. Introduction
+## 1. Overview
 
-This guide demonstrates how you can have a natural language, AI-powered conversation with your data. We will use the open-source Malloy ecosystem, specifically a Malloy MCP server, to provide Anthropic's Claude with governed access to a semantic model defined in the Malloy language.
+The Malloy Publisher includes a server implementing the **Model Context Protocol (MCP)**, a standardized interface designed to connect Large Language Models (LLMs) and AI agents directly to governed, semantic data models.
 
-The goal is to move beyond dashboards and reports to a state where you can ask complex questions of your data in plain English and receive trustworthy, accurate, and context-aware answers. This workflow showcases the future of data interaction, where a powerful Large Language Model (LLM) can perform sophisticated analysis by leveraging a well-defined semantic layer.
+At its core, the MCP server acts as a **gateway**, allowing you to have a natural language conversation with your data. Instead of writing complex queries, you can ask questions in plain English. The server leverages a Malloy model—your single source of truth for business logic and data relationships—to interpret these questions and generate trustworthy, accurate answers.
 
-### Key Components
+The key benefit is that any MCP-compatible client can connect to your data. The ecosystem of clients is evolving quickly, and you could connect the server to various AI chat applications, custom scripts, or other tools.
 
-1.  **The Malloy Model:** A governed foundation of business meaning, defining key dimensions, measures, and relationships in your data.
-2.  **Malloy Publisher (MCP Server):** An implementation of the Model Context Protocol (MCP) that exposes the semantic model to LLMs and AI agents.
-3.  **The Python Bridge Script:** An intermediary script to translate communication between Claude's tool-use format and the MCP server.
-4.  **Claude:** The AI assistant that will use the provided tools and context to have a conversation with your data.
+For more comprehensive details on the Malloy Publisher, please visit the [Malloy Publisher GitHub repository](https://github.com/malloydata/publisher).
 
 ---
 
-## 2. Prerequisites
+## 2. MCP Server Capabilities
+
+When running, the Malloy Publisher exposes its capabilities via an **MCP endpoint** at `http://localhost:4040/mcp`. An MCP-compatible client can interact with this endpoint to access several features of your semantic model.
+
+#### Tool Calls
+
+The primary way clients interact with the server is through tool calls. These are functions the AI can use to discover and query your data models.
+
+* **Discovery Tools**: Used by the AI to understand what data is available.
+    * `malloy_projectList`: Lists all available Malloy projects.
+    * `malloy_packageList`: Lists all the packages contained within a specific project.
+    * `malloy_packageGet`: Lists all the models contained within a specific package.
+    * `malloy_modelGetText`: Gets the raw text content of a specific model file.
+* **Query Execution Tool**: Used by the AI to get data.
+    * `malloy_executeQuery`: Executes a Malloy query and returns the results in JSON format.
+
+#### Prompts & Resources
+
+The MCP server can also provide clients with **prompts** (e.g., suggested questions to start a conversation) and **resources** (e.g., links to documentation or data dictionaries). However, these are nascent capabilities of the MCP standard, and many current MCP clients do not yet utilize them.
+
+Specialized developer tools like the **MCP Inspector** can allow you to engage more deeply with these features. For the demonstration below, we will focus on **tool calls**, which are the primary interaction method used by the Claude app.
+
+---
+
+## 3. Demonstration: Connecting Claude Desktop to a Local MCP Server
+
+This walkthrough will guide you through running the MCP server locally and configuring the Claude Desktop App to use its tool-calling capabilities.
+
+### Prerequisites
 
 Before you begin, ensure you have the following set up:
 
-* **A Malloy Model:** You should have a `.malloy` file that defines a semantic model. For this guide, we will reference the `hackernews.malloy` model available in the [Malloy Samples Data Repository](https://github.com/malloydata/malloy-samples).
-* **Malloy Publisher:** You need to have cloned the open-source [Malloy Publisher repository](https://github.com/malloydata/malloy-publisher) and built the project by running `npm install` or `bun install`.
-* **Node.js & Bun:** The Publisher server is run using Bun, a fast JavaScript runtime.
-* **Python 3:** Required to run the bridge script that connects Claude to the local MCP server.
-* **Claude Desktop App:** This guide uses the Claude desktop application, which allows for configuration with local development servers.
-
----
-
-## 3. Setting Up the Environment
-
-This process involves running the MCP server locally, setting up the Python bridge, and configuring Claude to communicate with it.
+* **An Existing Malloy Model**: This demo will use the `hackernews.malloy` model from the [Malloy Samples Data Repository](https://github.com/malloydata/malloy-samples).
+* **Node.js & Bun**: The Publisher server runs on Bun, a fast JavaScript runtime.
+* **Python 3**: Required to run the intermediary bridge script.
+* **Claude Desktop App**: The specific AI client we are using for this demonstration. A subscription may be required to access the necessary developer settings. **[TODO: Confirm if a Claude Pro subscription is required for this feature.]**
 
 ### Step 1: Start the Malloy Publisher MCP Server
 
-The Publisher is the component that makes your semantic model available to Claude. It runs a local server that implements MCP (Model Context Protocol), an interface designed specifically for LLMs.
+The easiest way to get started is to run the server directly using `npx`, pointing it to a local copy of the Malloy samples.
 
-1.  Navigate to your cloned `malloy-publisher` directory in your terminal.
-2.  Start the server by running the command:
+1.  First, clone the `malloy-samples` repository:
     ```bash
-    bun run start
+    git clone [https://github.com/malloydata/malloy-samples.git](https://github.com/malloydata/malloy-samples.git)
     ```
-> **[DELETE THIS BLOCK AND INSERT SCREENSHOT]**
-> **Instructions for Screenshot:**
-> 1. Run the `bun run start` command in your terminal.
-> 2. Take a screenshot of the terminal window.
-> 3. Ensure the output text "MCP server is now listening locally" is clearly visible.
+2.  Navigate into the newly created directory:
+    ```bash
+    cd malloy-samples
+    ```
+3.  Run the publisher server, telling it to use the current directory as its root:
+    ```bash
+    npx @malloy-publisher/server --server_root .
+    ```
 
-3.  Once running, you should see a message indicating that the MCP server is listening locally, typically on port 4040. This server automatically makes the models in your project available.
+After running the command, you should see output confirming the server is active:
 
-### Step 2: Download and Understand the Python Bridge Script
+```bash
+MCP server listening at http://localhost:4040
+```
 
-To connect the Claude desktop app to the Malloy MCP server, a small intermediary script is needed.
+This is the recommended approach for a quick start. For more details and alternative methods, such as building from the source, see the official **[Build and Run Instructions](https://github.com/malloydata/publisher?tab=readme-ov-file#build-and-run-instructions)**.
 
-* **Download the script here:** [malloy_bridge.py](https://raw.githubusercontent.com/malloydata/malloy-publisher/main/clients/claude/malloy_bridge.py)
+### Step 2: Download the Python Bridge Script
 
-**Why is this bridge script needed?**
+A small intermediary script is needed to connect the current version of the Claude desktop app (version 0.11.4) to the local Malloy MCP server.
 
-This script acts as a "translator" between the Claude desktop app and the Malloy MCP server. The Claude client has specific expectations for how it communicates with external tools—for example, it expects tool names in the format `malloy_executeQuery`. The MCP server, however, uses a different naming convention, `malloy/executeQuery`. The bridge script handles this and other minor formatting differences, remapping requests and responses on the fly to ensure seamless communication.
+* **Download the script here**: [malloy_bridge.py](https://raw.githubusercontent.com/malloydata/malloy-publisher/main/packages/server/dxt/malloy_bridge.py)
 
-It's important to note that this script is a specific compatibility layer for the current Claude desktop client. Other MCP clients or future versions of the Claude app may not require this bridge if they align directly with the MCP specification.
+**Why is this bridge script needed?** This script acts as a "translator." The Claude client has specific expectations for how it communicates with external tools, and this script handles minor formatting differences on the fly to ensure seamless communication with the MCP server.
 
 ### Step 3: Configure the Claude Desktop App
 
-Now, you need to tell Claude to use your downloaded Python bridge script as a local MCP server.
+Next, you need to tell Claude to use your Python bridge script as its tool server.
 
 1.  In the Claude desktop app, navigate to **Settings > Developer > Edit Config**.
-
-> **[DELETE THIS BLOCK AND INSERT SCREENSHOT]**
-> **Instructions for Screenshot:**
-> 1. Open the Claude desktop app and navigate to the Developer Settings page.
-> 2. Take a screenshot of the window.
-> 3. Use an arrow or a highlighted box to point specifically to the "Edit Config" button.
-
 2.  This will open a JSON configuration file.
-3.  Add or edit the `mcpServers` section to look like this, replacing the placeholder path with the **actual path** to where you saved the `malloy_bridge.py` script.
-
+3.  Add or edit the `mcpServers` section to point to the `malloy_bridge.py` script you downloaded. Replace `/path/to/your/` with the **actual file path** on your system.
     ```json
     {
       "mcpServers": {
@@ -87,89 +101,48 @@ Now, you need to tell Claude to use your downloaded Python bridge script as a lo
       }
     }
     ```
+4.  Save the configuration file. Claude will now route any requests for the "malloy" toolset through your local Python script to the MCP server.
 
-4.  Save the configuration file. Claude will now route requests for the "malloy" tool through your Python script.
+### Starting a Conversation
 
----
+Once the server is running and Claude is configured, the setup is complete. You can now start a new conversation and ask questions about your data directly. Thanks to the MCP discovery tools, Claude will automatically find your models, understand their structure, and execute queries to answer your questions.
 
-## 4. Initiating the Conversation
+[Watch the demo video here.](https://www.loom.com/share/cc4837e21fd84f53a2520209cb4b6003)
 
-With the server running and Claude configured, you can start the conversation. Because current versions of the MCP client don't fully support automatic discovery, you begin by providing the model definition as context.
+#### Example Prompts
 
-1.  Open your `.malloy` model file (e.g., `hackernews.malloy`) in a text editor.
-2.  Copy the entire contents of the file.
-3.  In a new conversation in Claude, paste the model code as your first message. You can preface it with a prompt like the one in the next section.
+Here are a few examples of questions you could ask, based on the models found in the `malloy-samples` repository:
 
-Once context is provided, Claude will parse the model to understand the available dimensions, measures, and predefined views and use them to answer your questions.
-
-> **[DELETE THIS BLOCK AND INSERT GIF]**
-> **Instructions for GIF:**
-> 1. Start the GIF showing the Malloy model code being copied from a text editor (like VS Code).
-> 2. Switch to the Claude app interface.
-> 3. Show the model code being pasted into a new chat.
-> 4. As Claude processes, capture and highlight the "Using tool: malloy_executeQuery" indicator badge.
-> 5. End the GIF showing the final, text-based EDA summary appearing in the chat.
+* *"Use malloy to run an exploratory data analysis on the FAA dataset."*
+* *"Use malloy to help me understand the ecommerce data. Create charts to visualize the data."*
+* *"Use malloy to check how many movies Tom Hanks has been in."*
 
 ---
 
-## 5. Example Prompts and Conversation Flow
+## 4. Troubleshooting and Debugging
 
-Here are some examples of how a conversation with Claude and the Hacker News model might unfold, from broad questions to more specific, follow-up inquiries.
+### Common Issues
 
-### Example 1: The Initial Prompt & EDA
+1.  **Connection Errors**:
+    * Ensure the Malloy Publisher server is running and listening on port 4040.
+    * Double-check that the file path in Claude's JSON configuration is correct.
+    * Verify that Python 3 is installed and available in your system's PATH.
+2.  **Model or Query Errors**:
+    * Confirm that your Malloy model files are located within the directory you pointed the server to.
+    * Check the Malloy model syntax for errors.
 
-This is the crucial first step where you provide the model context. Claude will use this to understand the schema and then run several queries to build an initial summary.
+### Debugging
 
-> **You:** "Please perform an exploratory data analysis of the Hacker News dataset. Use the tools available to you. Here is the Malloy model that defines the data structure:"
->
-> *\[paste your entire `hackernews.malloy` model code here]*
->
-> **Claude:** *(After several tool calls to run queries like `by_post_type`, `top_posters`, etc.)*
->
-> "The Hacker News dataset contains X stories and Y comments. The posts cover a wide range of topics, with the highest scores often going to technical articles and launch announcements. The most active user is 'tptacek'..."
+To diagnose issues, you can inspect the logs from both the Claude app and the Python bridge script.
 
-### Example 2: Exploring High-Level Aggregates
+* **Claude App MCP Logs**: See requests from Claude's perspective. In the Claude desktop app, click the **Developer** menu and select **Open MCP Log file**.
+* **Python Bridge Script Logs**: The `malloy_bridge.py` script writes a detailed log of all activity. This is the best place to find specific error messages. You can find this log file at:
+    ```
+    /tmp/malloy_bridge.log
+    ```
 
-Ask for simple counts and totals. Claude will use the measures defined in the model, like `count` or `total_score`.
+---
 
-> **You:** "How many posts are there of each type?"
->
-> **Claude:** *(Runs a query grouping by `post_type` and aggregating `count`.)*
->
-> "There are:
-> * Stories: X
-> * Comments: Y
-> * Jobs: Z"
+## 5. Further Information
 
-### Example 3: Using Predefined Views
-
-Your Malloy model can contain predefined queries called "views." You can ask questions that directly reference them.
-
-> **You:** "What are the top submitted websites?"
->
-> **Claude:** *(Recognizes this maps to the `top_sites` view and executes it.)*
->
-> "The most frequently submitted domains are:
-> 1.  github.com
-> 2.  youtube.com
-> 3.  ..."
-
-### Example 4: Follow-up Questions
-
-The true power of this interface is its conversational nature. You can ask follow-up questions based on previous results.
-
-> **You:** "You mentioned 'tptacek' is a top poster. Can you show me their 5 most recent posts?"
->
-> **Claude:** *(Constructs a new query, filtering `by user_id = 'tptacek'`, ordering by `timestamp` descending, and adding `limit: 5`.)*
->
-> "Here are the 5 most recent posts by tptacek: ..."
-
-These examples illustrate how Claude leverages the semantic model to deconstruct natural language questions into executable, trustworthy queries, allowing for a fluid and powerful data exploration experience.
-
-> **[DELETE THIS BLOCK AND INSERT SCREENSHOT]**
-> **Instructions for Screenshot:**
-> 1. Take a screenshot of the Claude chat interface.
-> 2. The screenshot should show a complete interaction, including:
->    - A user prompt (e.g., "What are the top submitted websites?").
->    - The "Used malloy_executeQuery" badge.
->    - Claude's final, formatted answer.
+The Malloy Publisher and the Model Context Protocol are under active development. For the latest updates, advanced usage patterns, and information on future enhancements, please refer to the official **[Malloy Publisher repository](https://github.com/malloydata/publisher)**.
