@@ -47,7 +47,7 @@ Before you begin, ensure you have the following set up:
 * **An Existing Malloy Model**: This demo will use the `hackernews.malloy` model from the [Malloy Samples Data Repository](https://github.com/malloydata/malloy-samples).
 * **Node.js & Bun**: The Publisher server runs on Bun, a fast JavaScript runtime.
 * **Python 3**: Required to run the intermediary bridge script.
-* **Claude Desktop App**: The specific AI client we are using for this demonstration. A subscription may be required to access the necessary developer settings. **[TODO: Confirm if a Claude Pro subscription is required for this feature.]**
+* **Claude Desktop App**: The specific AI client we are using for this demonstration. 
 
 ### Step 1: Start the Malloy Publisher MCP Server
 
