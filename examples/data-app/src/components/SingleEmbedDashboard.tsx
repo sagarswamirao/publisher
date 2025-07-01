@@ -22,8 +22,8 @@ export default function SingleEmbedDashboard({
       >
         <Typography variant="h6" color="text.secondary">
           Open 'src/components/SingleEmbedDashboard.tsx' and replace this text
-          with a '&lt;QueryResult&gt;' embedding tag obtained from a notebook
-          cell in VS Code or in the MS2 admin app.
+          with a embedding json obtained from a notebook cell in the MS2 admin
+          app.
         </Typography>
       </Box>
     </Stack>
