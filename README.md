@@ -93,7 +93,7 @@ Publisher exposes your semantic models via the **Model Context Protocol (MCP)**,
 
 This enables tools like Claude, Cursor, or custom agents to generate accurate, interpretable queries using your definitions — not guesses.
 
-🎥 **Demo Video:** <a href="https://www.loom.com/share/cc4837e21fd84f53a2520209cb4b6003?sid=f5844651-45c6-4836-b322-37d8992c7ecf" target="_blank" rel="noopener noreferrer">MCP + AI Agent walkthrough →</a>  
+🎥 **Demo Video:** <a href="https://www.loom.com/share/fcc5112ac1ca4bf78bee0985f1cd31be" target="_blank" rel="noopener noreferrer">MCP + AI Agent walkthrough →</a>  
 📖 **Docs:** <a href="docs/ai-agents.md" target="_blank" rel="noopener noreferrer">AI Agents & MCP Guide →</a>
 
 ## Embedded Data Applications
