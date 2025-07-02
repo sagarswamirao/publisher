@@ -55,7 +55,7 @@ The easiest way to get started is to run the server directly using `npx`, pointi
 
 1.  First, clone the `malloy-samples` repository:
     ```bash
-    git clone [https://github.com/malloydata/malloy-samples.git](https://github.com/malloydata/malloy-samples.git)
+    git clone https://github.com/ms2data/malloy-samples.git
     ```
 2.  Navigate into the newly created directory:
     ```bash
@@ -78,7 +78,7 @@ This is the recommended approach for a quick start. For more details and alterna
 
 A small intermediary script is needed to connect the current version of the Claude desktop app (version 0.11.4) to the local Malloy MCP server.
 
-* **Download the script here**: [malloy_bridge.py](https://raw.githubusercontent.com/malloydata/malloy-publisher/main/packages/server/dxt/malloy_bridge.py)
+* **Download the script here**: [malloy_bridge.py](https://raw.githubusercontent.com/malloydata/publisher/main/packages/server/dxt/malloy_bridge.py)
 
 **Why is this bridge script needed?** This script acts as a "translator." The Claude client has specific expectations for how it communicates with external tools, and this script handles minor formatting differences on the fly to ensure seamless communication with the MCP server.
 
@@ -86,7 +86,7 @@ A small intermediary script is needed to connect the current version of the Clau
 
 Next, you need to tell Claude to use your Python bridge script as its tool server.
 
-1.  In the Claude desktop app, navigate to **Settings > Developer > Edit Config**.
+1.  In the Claude desktop app, navigate to **Settings > Developer > Edit Config**. 
 2.  This will open a JSON configuration file.
 3.  Add or edit the `mcpServers` section to point to the `malloy_bridge.py` script you downloaded. Replace `/path/to/your/` with the **actual file path** on your system.
     ```json
