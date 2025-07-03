@@ -20,12 +20,12 @@ import React from "react";
 import { Configuration, ModelsApi } from "../../client";
 import { useRouterClickHandler } from "../click_helper";
 import { SourceAndPath } from "../Model/SourcesExplorer";
-import { NotebookManager } from "../NotebookManager";
+import { WorkbookManager } from "./WorkbookManager";
 import { usePackage } from "../Package";
 import { useServer } from "../ServerProvider";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { MutableCell } from "./MutableCell";
-import { useNotebookStorage } from "./NotebookStorageProvider";
+import { useWorkbookStorage } from "./WorkbookStorageProvider";
 
 import * as Malloy from "@malloydata/malloy-interfaces";
 import { ModelPicker } from "./ModelPicker";
@@ -33,8 +33,8 @@ import { getAxiosConfig } from "../../hooks";
 
 const modelsApi = new ModelsApi(new Configuration());
 
-interface MutableNotebookProps {
-   notebookPath?: string;
+interface WorkbookProps {
+   workbookPath?: string;
    expandCodeCells?: boolean;
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
@@ -45,28 +45,28 @@ interface PathToSources {
    sourceInfos: Malloy.SourceInfo[];
 }
 
-export default function MutableNotebook({
-   notebookPath,
+export default function Workbook({
+   workbookPath,
    expandCodeCells,
    expandEmbeddings,
    hideEmbeddingIcons,
-}: MutableNotebookProps) {
+}: WorkbookProps) {
    const navigate = useRouterClickHandler();
    const { projectName, packageName, versionId } = usePackage();
    const { server, getAccessToken } = useServer();
-   const { notebookStorage, userContext } = useNotebookStorage();
+   const { workbookStorage, userContext } = useWorkbookStorage();
    if (!projectName || !packageName) {
       throw new Error(
          "Project and package must be provided via PubliserPackageProvider",
       );
    }
-   if (!notebookStorage || !userContext) {
+   if (!workbookStorage || !userContext) {
       throw new Error(
-         "Notebook storage and user context must be provided via NotebookStorageProvider",
+         "Workbook storage and user context must be provided via WorkbookStorageProvider",
       );
    }
-   const [notebookData, setNotebookData] = React.useState<
-      NotebookManager | undefined
+   const [workbookData, setWorkbookData] = React.useState<
+      WorkbookManager | undefined
    >();
    const [editingMalloyIndex, setEditingMalloyIndex] = React.useState<
       number | undefined
@@ -87,11 +87,11 @@ export default function MutableNotebook({
       setMenuIndex(null);
    };
    const handleAddCell = (isMarkdown: boolean, index: number) => {
-      notebookData.insertCell(index, {
+      workbookData.insertCell(index, {
          isMarkdown,
          value: "",
       });
-      saveNotebook();
+      saveWorkbook();
       if (isMarkdown) {
          setEditingMarkdownIndex(index);
       } else {
@@ -106,8 +106,8 @@ export default function MutableNotebook({
    };
 
    const handleDeleteConfirm = (event?: React.MouseEvent) => {
-      if (notebookPath && notebookStorage && userContext) {
-         notebookStorage.deleteNotebook(userContext, notebookPath);
+      if (workbookPath && workbookStorage && userContext) {
+         workbookStorage.deleteWorkbook(userContext, workbookPath);
       }
       setDeleteDialogOpen(false);
       navigate(`/${projectName}/${packageName}`, event);
@@ -117,12 +117,12 @@ export default function MutableNotebook({
       setDeleteDialogOpen(false);
    };
 
-   const saveNotebook = React.useCallback(() => {
-      setNotebookData(notebookData.saveNotebook());
-   }, [notebookData]);
+   const saveWorkbook = React.useCallback(() => {
+      setWorkbookData(workbookData.saveWorkbook());
+   }, [workbookData]);
    React.useEffect(() => {
       // Load SourceInfos from selected models and sync PathsToSources
-      if (!notebookData) {
+      if (!workbookData) {
          return;
       }
 
@@ -136,7 +136,7 @@ export default function MutableNotebook({
          const newSourceAndPaths = [];
          const promises = [];
 
-         for (const model of notebookData.getModels()) {
+         for (const model of workbookData.getModels()) {
             if (!modelPathToSourceInfo.has(model)) {
                console.log("Fetching model from Publisher", model);
                promises.push(
@@ -173,9 +173,9 @@ export default function MutableNotebook({
 
       fetchModels();
    }, [
-      // Note this cannot depend on sourceAndPaths because it will cause an infinite loop.
+      // Work this cannot depend on sourceAndPaths because it will cause an infinite loop.
       getAccessToken,
-      notebookData,
+      workbookData,
       packageName,
       projectName,
       server,
@@ -183,19 +183,19 @@ export default function MutableNotebook({
    ]);
 
    React.useEffect(() => {
-      if (!notebookPath) {
+      if (!workbookPath) {
          return;
       }
-      setNotebookData(
-         NotebookManager.loadNotebook(
-            notebookStorage,
+      setWorkbookData(
+         WorkbookManager.loadWorkbook(
+            workbookStorage,
             userContext,
-            notebookPath,
+            workbookPath,
          ),
       );
-   }, [notebookPath, notebookStorage, userContext]);
+   }, [workbookPath, workbookStorage, userContext]);
 
-   if (!notebookData) {
+   if (!workbookData) {
       return <div>Loading...</div>;
    }
    const getSourceList = (sourceAndPaths: PathToSources[]): SourceAndPath[] => {
@@ -246,8 +246,8 @@ export default function MutableNotebook({
             flex: 2,
          }}
       >
-         {plusButton(false, notebookData.getCells().length)}
-         {plusButton(true, notebookData.getCells().length)}
+         {plusButton(false, workbookData.getCells().length)}
+         {plusButton(true, workbookData.getCells().length)}
       </Box>
    );
 
@@ -281,7 +281,7 @@ export default function MutableNotebook({
                         ml: 1,
                      }}
                   >
-                     {`${projectName} > ${packageName} > ${notebookPath}`}
+                     {`${projectName} > ${packageName} > ${workbookPath}`}
                   </Typography>
                </Stack>
                <Stack sx={{ display: "flex", flexDirection: "row", gap: 1 }}>
@@ -293,7 +293,7 @@ export default function MutableNotebook({
                         mb: 1,
                      }}
                   >
-                     <ExportMalloyButton notebookData={notebookData} />
+                     <ExportMalloyButton workbookData={workbookData} />
                   </Box>
                   <Box
                      sx={{
@@ -314,12 +314,12 @@ export default function MutableNotebook({
                         open={deleteDialogOpen}
                         onClose={handleDeleteCancel}
                      >
-                        <DialogTitle>Delete Notebook</DialogTitle>
+                        <DialogTitle>Delete Workbook</DialogTitle>
                         <DialogContent>
                            <DialogContentText>
-                              Are you sure you want to delete the notebook
+                              Are you sure you want to delete the workbook
                               &quot;
-                              {notebookPath}&quot;? This action cannot be
+                              {workbookPath}&quot;? This action cannot be
                               undone.
                            </DialogContentText>
                         </DialogContent>
@@ -355,10 +355,10 @@ export default function MutableNotebook({
             >
                <Box sx={{ flex: 1 }}>
                   <ModelPicker
-                     initialSelectedModels={notebookData.getModels()}
+                     initialSelectedModels={workbookData.getModels()}
                      onModelChange={(models) => {
-                        setNotebookData(notebookData.setModels(models));
-                        saveNotebook();
+                        setWorkbookData(workbookData.setModels(models));
+                        saveWorkbook();
                      }}
                   />
                </Box>
@@ -367,7 +367,7 @@ export default function MutableNotebook({
          </StyledCardContent>
          <StyledCardMedia>
             <Stack>
-               {notebookData.getCells().length === 0 && (
+               {workbookData.getCells().length === 0 && (
                   <>
                      <Typography
                         sx={{
@@ -387,12 +387,12 @@ export default function MutableNotebook({
                      </Typography>
                   </>
                )}
-               {notebookData.getCells().map((cell, index) => (
+               {workbookData.getCells().map((cell, index) => (
                   <React.Fragment
-                     key={`${index}-${notebookData.getCells().length}`}
+                     key={`${index}-${workbookData.getCells().length}`}
                   >
                      <MutableCell
-                        key={`${index}-${cell.isMarkdown}-${notebookPath}-${projectName}-${packageName}`}
+                        key={`${index}-${cell.isMarkdown}-${workbookPath}-${projectName}-${packageName}`}
                         cell={cell}
                         addButtonCallback={(isMarkdown) =>
                            plusButton(isMarkdown, index)
@@ -404,12 +404,12 @@ export default function MutableNotebook({
                         editingMarkdown={editingMarkdownIndex === index}
                         editingMalloy={editingMalloyIndex === index}
                         onDelete={() => {
-                           setNotebookData(notebookData.deleteCell(index));
-                           saveNotebook();
+                           setWorkbookData(workbookData.deleteCell(index));
+                           saveWorkbook();
                         }}
                         onCellChange={(cell) => {
-                           setNotebookData(notebookData.setCell(index, cell));
-                           saveNotebook();
+                           setWorkbookData(workbookData.setCell(index, cell));
+                           saveWorkbook();
                         }}
                         onEdit={() => {
                            if (cell.isMarkdown) {
@@ -459,14 +459,14 @@ export default function MutableNotebook({
 }
 
 function ExportMalloyButton({
-   notebookData,
+   workbookData,
 }: {
-   notebookData: NotebookManager;
+   workbookData: WorkbookManager;
 }) {
    const [copied, setCopied] = React.useState(false);
    const handleExport = async () => {
-      if (!notebookData) return;
-      const malloy = notebookData.toMalloyNotebook();
+      if (!workbookData) return;
+      const malloy = workbookData.toMalloyWorkbook();
       try {
          await navigator.clipboard.writeText(malloy);
          setCopied(true);

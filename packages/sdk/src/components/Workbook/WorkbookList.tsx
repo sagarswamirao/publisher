@@ -1,22 +1,20 @@
 import { Box, Divider, List, ListItem, ListItemText } from "@mui/material";
 import React from "react";
-import { useNotebookStorage } from "./NotebookStorageProvider";
+import { useWorkbookStorage } from "./WorkbookStorageProvider";
 
-interface MutableNotebookListProps {
-   onNotebookClick: (notebook: string, event: React.MouseEvent) => void;
+interface WorkbookListProps {
+   onWorkbookClick: (workbook: string, event: React.MouseEvent) => void;
 }
 
-export function MutableNotebookList({
-   onNotebookClick,
-}: MutableNotebookListProps) {
-   const { notebookStorage, userContext } = useNotebookStorage();
-   const [notebooks, setNotebooks] = React.useState<string[]>([]);
+export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
+   const { workbookStorage, userContext } = useWorkbookStorage();
+   const [workbooks, setWorkbooks] = React.useState<string[]>([]);
 
    React.useEffect(() => {
-      if (notebookStorage && userContext) {
-         setNotebooks(notebookStorage.listNotebooks(userContext));
+      if (workbookStorage && userContext) {
+         setWorkbooks(workbookStorage.listWorkbooks(userContext));
       }
-   }, [notebookStorage, userContext]);
+   }, [workbookStorage, userContext]);
 
    return (
       <>
@@ -38,19 +36,19 @@ export function MutableNotebookList({
             }}
          >
             <List dense>
-               {notebooks.length === 0 && (
+               {workbooks.length === 0 && (
                   <ListItem>
                      <ListItemText
-                        primary="No notebooks found."
+                        primary="No workbooks found."
                         sx={{ textAlign: "center" }}
                      />
                   </ListItem>
                )}
-               {notebooks.map((notebook) => (
+               {workbooks.map((workbook) => (
                   <ListItem
-                     key={notebook}
+                     key={workbook}
                      onClick={(event: React.MouseEvent) =>
-                        onNotebookClick(notebook, event)
+                        onWorkbookClick(workbook, event)
                      }
                      sx={{
                         cursor: "pointer",
@@ -59,7 +57,7 @@ export function MutableNotebookList({
                         },
                      }}
                   >
-                     <ListItemText primary={notebook} />
+                     <ListItemText primary={workbook} />
                   </ListItem>
                ))}
             </List>

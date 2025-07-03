@@ -13,5 +13,5 @@ export { ModelPage } from "./components/ModelPage";
 export { PackagePage } from "./components/PackagePage";
 export { ProjectPage } from "./components/ProjectPage";
 export { RouteError } from "./components/RouteError";
-export { ScratchNotebookPage } from "./components/ScratchNotebookPage";
+export { WorkbookPage } from "./components/WorkbookPage";
 export { default as ToggleColorMode } from "./components/ToggleColorMode";

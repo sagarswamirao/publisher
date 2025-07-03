@@ -24,7 +24,7 @@ import {
    QueryExplorerResult,
    SourceAndPath,
 } from "../Model/SourcesExplorer";
-import { NotebookCellValue } from "../NotebookManager";
+import { NotebookCellValue } from "./WorkbookManager";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { StyledCard } from "../styles";
 import { EditableMalloyCell } from "./EditableMalloyCell";
