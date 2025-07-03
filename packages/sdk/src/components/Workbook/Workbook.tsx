@@ -52,17 +52,18 @@ export default function Workbook({
    hideEmbeddingIcons,
 }: WorkbookProps) {
    const navigate = useRouterClickHandler();
-   const { projectName, packageName, versionId } = usePackage();
+   const packageContext = usePackage();
+   const { projectName, packageName, versionId } = packageContext;
    const { server, getAccessToken } = useServer();
-   const { workbookStorage, userContext } = useWorkbookStorage();
+   const { workbookStorage } = useWorkbookStorage();
    if (!projectName || !packageName) {
       throw new Error(
          "Project and package must be provided via PubliserPackageProvider",
       );
    }
-   if (!workbookStorage || !userContext) {
+   if (!workbookStorage) {
       throw new Error(
-         "Workbook storage and user context must be provided via WorkbookStorageProvider",
+         "Workbook storage be provided via WorkbookStorageProvider",
       );
    }
    const [workbookData, setWorkbookData] = React.useState<
@@ -106,8 +107,8 @@ export default function Workbook({
    };
 
    const handleDeleteConfirm = (event?: React.MouseEvent) => {
-      if (workbookPath && workbookStorage && userContext) {
-         workbookStorage.deleteWorkbook(userContext, workbookPath);
+      if (workbookPath && workbookStorage && packageContext) {
+         workbookStorage.deleteWorkbook(packageContext, workbookPath);
       }
       setDeleteDialogOpen(false);
       navigate(`/${projectName}/${packageName}`, event);
@@ -189,11 +190,11 @@ export default function Workbook({
       setWorkbookData(
          WorkbookManager.loadWorkbook(
             workbookStorage,
-            userContext,
+            packageContext,
             workbookPath,
          ),
       );
-   }, [workbookPath, workbookStorage, userContext]);
+   }, [workbookPath, workbookStorage, packageContext]);
 
    if (!workbookData) {
       return <div>Loading...</div>;

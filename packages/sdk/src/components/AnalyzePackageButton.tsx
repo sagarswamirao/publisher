@@ -15,12 +15,9 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useRouterClickHandler } from "./click_helper";
-import {
-   BrowserWorkbookStorage,
-   WorkbookList,
-   WorkbookStorageProvider,
-} from "./Workbook";
+import { WorkbookList } from "./Workbook";
 import { useParams } from "react-router-dom";
+import { PackageProvider } from "./Package";
 
 export function AnalyzePackageButton() {
    const { projectName, packageName } = useParams();
@@ -143,7 +140,10 @@ export function AnalyzePackageButton() {
             fullWidth
          >
             <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
-               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+               <Typography
+                  fontWeight={600}
+                  sx={{ fontSize: "1.5rem", mb: 0.5 }}
+               >
                   Create New Workbook
                </Typography>
                <Typography variant="body2" color="text.secondary">
@@ -192,7 +192,10 @@ export function AnalyzePackageButton() {
             fullWidth
          >
             <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
-               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+               <Typography
+                  fontWeight={600}
+                  sx={{ mb: 0.5, fontSize: "1.5rem" }}
+               >
                   Open Workbook
                </Typography>
                <Typography variant="body2" color="text.secondary">
@@ -200,15 +203,12 @@ export function AnalyzePackageButton() {
                </Typography>
             </DialogTitle>
             <DialogContent sx={{ px: 2, pb: 2 }}>
-               <WorkbookStorageProvider
-                  workbookStorage={new BrowserWorkbookStorage()}
-                  userContext={{
-                     project: projectName,
-                     package: packageName,
-                  }}
+               <PackageProvider
+                  projectName={projectName}
+                  packageName={packageName}
                >
                   <WorkbookList onWorkbookClick={handleWorkbookClick} />
-               </WorkbookStorageProvider>
+               </PackageProvider>
             </DialogContent>
          </Dialog>
       </>

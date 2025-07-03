@@ -1,20 +1,22 @@
 import { Box, Divider, List, ListItem, ListItemText } from "@mui/material";
 import React from "react";
 import { useWorkbookStorage } from "./WorkbookStorageProvider";
+import { usePackage } from "../Package";
 
 interface WorkbookListProps {
    onWorkbookClick: (workbook: string, event: React.MouseEvent) => void;
 }
 
 export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
-   const { workbookStorage, userContext } = useWorkbookStorage();
+   const { workbookStorage } = useWorkbookStorage();
+   const packageContext = usePackage();
    const [workbooks, setWorkbooks] = React.useState<string[]>([]);
 
    React.useEffect(() => {
-      if (workbookStorage && userContext) {
-         setWorkbooks(workbookStorage.listWorkbooks(userContext));
+      if (workbookStorage) {
+         setWorkbooks(workbookStorage.listWorkbooks(packageContext));
       }
-   }, [workbookStorage, userContext]);
+   }, [workbookStorage, packageContext]);
 
    return (
       <>

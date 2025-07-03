@@ -1,4 +1,4 @@
-export type { WorkbookStorage, UserContext } from "./WorkbookStorage";
+export type { WorkbookStorage } from "./WorkbookStorage";
 export { default as Workbook } from "./Workbook";
 export { WorkbookList } from "./WorkbookList";
 export { default as WorkbookStorageProvider } from "./WorkbookStorageProvider";
