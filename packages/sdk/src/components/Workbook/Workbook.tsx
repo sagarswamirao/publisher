@@ -118,8 +118,8 @@ export default function Workbook({
       setDeleteDialogOpen(false);
    };
 
-   const saveWorkbook = React.useCallback(() => {
-      setWorkbookData(workbookData.saveWorkbook());
+   const saveWorkbook = React.useCallback(async () => {
+      setWorkbookData(await workbookData.saveWorkbook());
    }, [workbookData]);
    React.useEffect(() => {
       // Load SourceInfos from selected models and sync PathsToSources
@@ -187,13 +187,13 @@ export default function Workbook({
       if (!workbookPath) {
          return;
       }
-      setWorkbookData(
-         WorkbookManager.loadWorkbook(
-            workbookStorage,
-            packageContext,
-            workbookPath,
-         ),
-      );
+      WorkbookManager.loadWorkbook(
+         workbookStorage,
+         packageContext,
+         workbookPath,
+      ).then((workbookData) => {
+         setWorkbookData(workbookData);
+      });
    }, [workbookPath, workbookStorage, packageContext]);
 
    if (!workbookData) {
