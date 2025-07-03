@@ -1,9 +1,9 @@
 import { SourceAndPath, SourcesExplorer } from "../Model";
 import { QueryExplorerResult } from "../Model/SourcesExplorer";
-import { NotebookCellValue } from "../NotebookManager";
+import { WorkbookCellValue } from "./WorkbookManager";
 
 interface EditableMalloyCellProps {
-   cell: NotebookCellValue;
+   cell: WorkbookCellValue;
    sourceAndPaths: SourceAndPath[];
    onQueryChange: (query: QueryExplorerResult) => void;
    onSourceChange?: (index: number) => void;

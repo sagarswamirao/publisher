@@ -16,10 +16,10 @@ import {
 import React from "react";
 import { useRouterClickHandler } from "./click_helper";
 import {
-   BrowserNotebookStorage,
-   MutableNotebookList,
-   NotebookStorageProvider,
-} from "./MutableNotebook";
+   BrowserWorkbookStorage,
+   WorkbookList,
+   WorkbookStorageProvider,
+} from "./Workbook";
 import { useParams } from "react-router-dom";
 
 export function AnalyzePackageButton() {
@@ -44,20 +44,20 @@ export function AnalyzePackageButton() {
       setNewDialogOpen(false);
    };
 
-   const handleNotebookClick = (notebook: string, event: React.MouseEvent) => {
+   const handleWorkbookClick = (workbook: string, event: React.MouseEvent) => {
       setOpenDialogOpen(false);
-      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
+      // Navigate to the WorkbookPage with anchor text for notebookPath
       navigate(
-         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
+         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbook)}`,
          event,
       );
    };
 
-   const createNotebookClick = (event?: React.MouseEvent) => {
+   const createWorkbookClick = (event?: React.MouseEvent) => {
       setNewDialogOpen(false);
-      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
+      // Navigate to the WorkbookPage with anchor text for notebookPath
       navigate(
-         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(workbookName)}`,
+         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbookName)}`,
          event,
       );
       setWorkbookName("");
@@ -172,7 +172,7 @@ export function AnalyzePackageButton() {
                         Cancel
                      </Button>
                      <Button
-                        onClick={(event) => createNotebookClick(event)}
+                        onClick={(event) => createWorkbookClick(event)}
                         variant="contained"
                         disabled={!workbookName.trim()}
                         size="small"
@@ -200,15 +200,15 @@ export function AnalyzePackageButton() {
                </Typography>
             </DialogTitle>
             <DialogContent sx={{ px: 2, pb: 2 }}>
-               <NotebookStorageProvider
-                  notebookStorage={new BrowserNotebookStorage()}
+               <WorkbookStorageProvider
+                  workbookStorage={new BrowserWorkbookStorage()}
                   userContext={{
                      project: projectName,
                      package: packageName,
                   }}
                >
-                  <MutableNotebookList onNotebookClick={handleNotebookClick} />
-               </NotebookStorageProvider>
+                  <WorkbookList onWorkbookClick={handleWorkbookClick} />
+               </WorkbookStorageProvider>
             </DialogContent>
          </Dialog>
       </>

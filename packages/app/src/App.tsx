@@ -11,7 +11,7 @@ import { ModelPage } from "./components/ModelPage";
 import { PackagePage } from "./components/PackagePage";
 import { ProjectPage } from "./components/ProjectPage";
 import { RouteError } from "./components/RouteError";
-import { ScratchNotebookPage } from "./components/ScratchNotebookPage";
+import { WorkbookPage } from "./components/WorkbookPage";
 import theme from "./theme";
 
 // Create router configuration function
@@ -51,8 +51,8 @@ export const createMalloyRouter = (
                element: <ModelPage />,
             },
             {
-               path: ":projectName/:packageName/scratchNotebook/:notebookPath",
-               element: <ScratchNotebookPage />,
+               path: ":projectName/:packageName/workbook/:workbookPath",
+               element: <WorkbookPage />,
             },
          ],
       },

@@ -1,6 +1,6 @@
-import type { NotebookStorage, UserContext } from "./NotebookStorage";
+import type { WorkbookStorage, UserContext } from "./WorkbookStorage";
 
-export class BrowserNotebookStorage implements NotebookStorage {
+export class BrowserWorkbookStorage implements WorkbookStorage {
    private makeKey(context: UserContext, path?: string): string {
       let key = `BROWSER_NOTEBOOK_STORAGE__${context.project}/${context.package}`;
       if (path) {
@@ -9,7 +9,7 @@ export class BrowserNotebookStorage implements NotebookStorage {
       return key;
    }
 
-   listNotebooks(context: UserContext): string[] {
+   listWorkbooks(context: UserContext): string[] {
       const prefix = this.makeKey(context);
       const keys: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -23,7 +23,7 @@ export class BrowserNotebookStorage implements NotebookStorage {
       return keys;
    }
 
-   getNotebook(context: UserContext, path: string): string {
+   getWorkbook(context: UserContext, path: string): string {
       const key = this.makeKey(context, path);
       const notebook = localStorage.getItem(key);
       if (notebook === null) {
@@ -32,7 +32,7 @@ export class BrowserNotebookStorage implements NotebookStorage {
       return notebook;
    }
 
-   deleteNotebook(context: UserContext, path: string): void {
+   deleteWorkbook(context: UserContext, path: string): void {
       const key = this.makeKey(context, path);
       if (localStorage.getItem(key) === null) {
          throw new Error(`Notebook not found at path: ${path}`);
@@ -40,12 +40,12 @@ export class BrowserNotebookStorage implements NotebookStorage {
       localStorage.removeItem(key);
    }
 
-   saveNotebook(context: UserContext, path: string, notebook: string): void {
+   saveWorkbook(context: UserContext, path: string, notebook: string): void {
       const key = this.makeKey(context, path);
       localStorage.setItem(key, notebook);
    }
 
-   moveNotebook(context: UserContext, from: string, to: string): void {
+   moveWorkbook(context: UserContext, from: string, to: string): void {
       const fromKey = this.makeKey(context, from);
       const toKey = this.makeKey(context, to);
       const notebook = localStorage.getItem(fromKey);
