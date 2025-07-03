@@ -24,20 +24,20 @@ import {
    QueryExplorerResult,
    SourceAndPath,
 } from "../Model/SourcesExplorer";
-import { NotebookCellValue } from "./WorkbookManager";
+import { WorkbookCellValue } from "./WorkbookManager";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { StyledCard } from "../styles";
 import { EditableMalloyCell } from "./EditableMalloyCell";
 
 interface NotebookCellProps {
-   cell: NotebookCellValue;
+   cell: WorkbookCellValue;
    expandCodeCell?: boolean;
    expandEmbedding?: boolean;
    hideEmbeddingIcons?: boolean;
    editingMalloy?: boolean;
    editingMarkdown?: boolean;
    sourceAndPaths: SourceAndPath[];
-   onCellChange: (cell: NotebookCellValue) => void;
+   onCellChange: (cell: WorkbookCellValue) => void;
    onClose: () => void;
    onEdit: () => void;
    onDelete: () => void;

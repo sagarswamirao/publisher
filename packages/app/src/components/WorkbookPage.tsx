@@ -1,9 +1,4 @@
-import {
-   PackageProvider,
-   BrowserWorkbookStorage,
-   WorkbookStorageProvider,
-   Workbook,
-} from "@malloy-publisher/sdk";
+import { PackageProvider, Workbook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function WorkbookPage() {
@@ -23,21 +18,11 @@ export function WorkbookPage() {
    } else {
       return (
          <PackageProvider projectName={projectName} packageName={packageName}>
-            <WorkbookStorageProvider
-               workbookStorage={new BrowserWorkbookStorage()}
-               userContext={{ project: projectName, package: packageName }}
-            >
-               <WorkbookStorageProvider
-                  workbookStorage={new BrowserWorkbookStorage()}
-                  userContext={{ project: projectName, package: packageName }}
-               >
-                  <Workbook
-                     key={`${workbookPath}-${projectName}-${packageName}`}
-                     workbookPath={workbookPath}
-                     hideEmbeddingIcons={true}
-                  />
-               </WorkbookStorageProvider>
-            </WorkbookStorageProvider>
+            <Workbook
+               key={`${workbookPath}-${projectName}-${packageName}`}
+               workbookPath={workbookPath}
+               hideEmbeddingIcons={true}
+            />
          </PackageProvider>
       );
    }

@@ -1,4 +1,5 @@
-import type { WorkbookStorage, UserContext } from "./WorkbookStorage";
+import { PackageContextProps } from "../Package";
+import type { WorkbookStorage } from "./WorkbookStorage";
 
 /**
  * Interface representing the data structure of a Mutable Workbook
@@ -39,21 +40,21 @@ export interface WorkbookCellValue {
 export class WorkbookManager {
    private isSaved: boolean;
    private workbookStorage: WorkbookStorage;
-   private userContext: UserContext;
+   private packageContext: PackageContextProps;
 
    /**
     * Creates a new WorkbookManager instance
     * @param {WorkbookStorage} workbookStorage - Storage implementation
-    * @param {UserContext} userContext - User context for storage
+    * @param {PackageContextProps} packageContext - Package context for storage
     * @param {WorkbookData} workbookData - Initial workbook data
     */
    constructor(
       workbookStorage: WorkbookStorage,
-      userContext: UserContext,
+      packageContext: PackageContextProps,
       private workbookData: WorkbookData,
    ) {
       this.workbookStorage = workbookStorage;
-      this.userContext = userContext;
+      this.packageContext = packageContext;
       if (this.workbookData) {
          this.isSaved = true;
       } else {
@@ -91,7 +92,7 @@ export class WorkbookManager {
       if (this.workbookData.workbookPath !== workbookPath) {
          try {
             this.workbookStorage.deleteWorkbook(
-               this.userContext,
+               this.packageContext,
                this.workbookData.workbookPath,
             );
          } catch {
@@ -150,7 +151,7 @@ export class WorkbookManager {
             throw new Error("Workbook path is not set");
          }
          this.workbookStorage.saveWorkbook(
-            this.userContext,
+            this.packageContext,
             this.workbookData.workbookPath,
             JSON.stringify(this.workbookData),
          );
@@ -158,7 +159,7 @@ export class WorkbookManager {
       }
       return new WorkbookManager(
          this.workbookStorage,
-         this.userContext,
+         this.packageContext,
          this.workbookData,
       );
    }
@@ -186,9 +187,9 @@ export class WorkbookManager {
 
    static newWorkbook(
       workbookStorage: WorkbookStorage,
-      userContext: UserContext,
+      packageContext: PackageContextProps,
    ): WorkbookManager {
-      return new WorkbookManager(workbookStorage, userContext, undefined);
+      return new WorkbookManager(workbookStorage, packageContext, undefined);
    }
 
    /**
@@ -200,12 +201,15 @@ export class WorkbookManager {
     */
    static loadWorkbook(
       workbookStorage: WorkbookStorage,
-      userContext: UserContext,
+      packageContext: PackageContextProps,
       workbookPath: string,
    ): WorkbookManager {
       let workbookData: WorkbookData | undefined = undefined;
       try {
-         const saved = workbookStorage.getWorkbook(userContext, workbookPath);
+         const saved = workbookStorage.getWorkbook(
+            packageContext,
+            workbookPath,
+         );
          if (saved) {
             workbookData = JSON.parse(saved);
          }
@@ -217,6 +221,6 @@ export class WorkbookManager {
             workbookPath: workbookPath,
          };
       }
-      return new WorkbookManager(workbookStorage, userContext, workbookData);
+      return new WorkbookManager(workbookStorage, packageContext, workbookData);
    }
 }

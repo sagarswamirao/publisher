@@ -1,15 +1,13 @@
 import React, { createContext, useContext, useMemo } from "react";
-import type { WorkbookStorage, UserContext } from "./WorkbookStorage";
+import type { WorkbookStorage } from "./WorkbookStorage";
 
 export interface WorkbookStorageProviderProps {
    children: React.ReactNode;
-   userContext: UserContext;
    workbookStorage: WorkbookStorage;
 }
 
 interface WorkbookStorageContextValue {
    workbookStorage: WorkbookStorage;
-   userContext: UserContext;
 }
 
 const WorkbookStorageContext = createContext<
@@ -18,13 +16,9 @@ const WorkbookStorageContext = createContext<
 
 export default function WorkbookStorageProvider({
    children,
-   userContext,
    workbookStorage,
 }: WorkbookStorageProviderProps) {
-   const value = useMemo(
-      () => ({ workbookStorage, userContext }),
-      [workbookStorage, userContext],
-   );
+   const value = useMemo(() => ({ workbookStorage }), [workbookStorage]);
    return (
       <WorkbookStorageContext.Provider value={value}>
          {children}
