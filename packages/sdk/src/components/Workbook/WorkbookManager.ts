@@ -88,10 +88,10 @@ export class WorkbookManager {
     * @param {string} workbookPath - New path for the workbook
     * @returns {WorkbookManager} The updated WorkbookManager instance
     */
-   renameWorkbook(workbookPath: string): WorkbookManager {
+   async renameWorkbook(workbookPath: string): Promise<WorkbookManager> {
       if (this.workbookData.workbookPath !== workbookPath) {
          try {
-            this.workbookStorage.deleteWorkbook(
+            await this.workbookStorage.deleteWorkbook(
                this.packageContext,
                this.workbookData.workbookPath,
             );
@@ -101,8 +101,7 @@ export class WorkbookManager {
       }
       this.workbookData.workbookPath = workbookPath;
       this.isSaved = false;
-      this.saveWorkbook();
-      return this;
+      return await this.saveWorkbook();
    }
 
    getCells(): WorkbookCellValue[] {
@@ -145,12 +144,12 @@ export class WorkbookManager {
       return this;
    }
 
-   saveWorkbook(): WorkbookManager {
+   async saveWorkbook(): Promise<WorkbookManager> {
       if (!this.isSaved) {
          if (!this.workbookData.workbookPath) {
             throw new Error("Workbook path is not set");
          }
-         this.workbookStorage.saveWorkbook(
+         await this.workbookStorage.saveWorkbook(
             this.packageContext,
             this.workbookData.workbookPath,
             JSON.stringify(this.workbookData),
@@ -199,14 +198,14 @@ export class WorkbookManager {
     * @param userContext - The user context for storage
     * @param workbookPath - The path to the workbook file (relative to project/package)
     */
-   static loadWorkbook(
+   static async loadWorkbook(
       workbookStorage: WorkbookStorage,
       packageContext: PackageContextProps,
       workbookPath: string,
-   ): WorkbookManager {
+   ): Promise<WorkbookManager> {
       let workbookData: WorkbookData | undefined = undefined;
       try {
-         const saved = workbookStorage.getWorkbook(
+         const saved = await workbookStorage.getWorkbook(
             packageContext,
             workbookPath,
          );

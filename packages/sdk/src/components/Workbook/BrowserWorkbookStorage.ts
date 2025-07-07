@@ -10,7 +10,7 @@ export class BrowserWorkbookStorage implements WorkbookStorage {
       return key;
    }
 
-   listWorkbooks(context: PackageContextProps): string[] {
+   async listWorkbooks(context: PackageContextProps): Promise<string[]> {
       const prefix = this.makeKey(context);
       const keys: string[] = [];
       console.log("prefix", prefix);
@@ -25,7 +25,10 @@ export class BrowserWorkbookStorage implements WorkbookStorage {
       return keys;
    }
 
-   getWorkbook(context: PackageContextProps, path: string): string {
+   async getWorkbook(
+      context: PackageContextProps,
+      path: string,
+   ): Promise<string> {
       const key = this.makeKey(context, path);
       const notebook = localStorage.getItem(key);
       if (notebook === null) {
@@ -34,7 +37,10 @@ export class BrowserWorkbookStorage implements WorkbookStorage {
       return notebook;
    }
 
-   deleteWorkbook(context: PackageContextProps, path: string): void {
+   async deleteWorkbook(
+      context: PackageContextProps,
+      path: string,
+   ): Promise<void> {
       const key = this.makeKey(context, path);
       if (localStorage.getItem(key) === null) {
          throw new Error(`Notebook not found at path: ${path}`);
@@ -42,16 +48,20 @@ export class BrowserWorkbookStorage implements WorkbookStorage {
       localStorage.removeItem(key);
    }
 
-   saveWorkbook(
+   async saveWorkbook(
       context: PackageContextProps,
       path: string,
       notebook: string,
-   ): void {
+   ): Promise<void> {
       const key = this.makeKey(context, path);
       localStorage.setItem(key, notebook);
    }
 
-   moveWorkbook(context: PackageContextProps, from: string, to: string): void {
+   async moveWorkbook(
+      context: PackageContextProps,
+      from: string,
+      to: string,
+   ): Promise<void> {
       const fromKey = this.makeKey(context, from);
       const toKey = this.makeKey(context, to);
       const notebook = localStorage.getItem(fromKey);

@@ -56,6 +56,9 @@ export default function Workbook({
    const { projectName, packageName, versionId } = packageContext;
    const { server, getAccessToken } = useServer();
    const { workbookStorage } = useWorkbookStorage();
+   const [lastError, setLastError] = React.useState<string | undefined>(
+      undefined,
+   );
    if (!projectName || !packageName) {
       throw new Error(
          "Project and package must be provided via PubliserPackageProvider",
@@ -106,9 +109,16 @@ export default function Workbook({
       setDeleteDialogOpen(true);
    };
 
-   const handleDeleteConfirm = (event?: React.MouseEvent) => {
+   const handleDeleteConfirm = async (event?: React.MouseEvent) => {
       if (workbookPath && workbookStorage && packageContext) {
-         workbookStorage.deleteWorkbook(packageContext, workbookPath);
+         await workbookStorage
+            .deleteWorkbook(packageContext, workbookPath)
+            .then(() => {
+               setLastError(undefined);
+            })
+            .catch((error) => {
+               setLastError(`Error deleting workbook: ${error.message}`);
+            });
       }
       setDeleteDialogOpen(false);
       navigate(`/${projectName}/${packageName}`, event);
@@ -118,8 +128,13 @@ export default function Workbook({
       setDeleteDialogOpen(false);
    };
 
-   const saveWorkbook = React.useCallback(() => {
-      setWorkbookData(workbookData.saveWorkbook());
+   const saveWorkbook = React.useCallback(async () => {
+      try {
+         setWorkbookData(await workbookData.saveWorkbook());
+         setLastError(undefined);
+      } catch (error) {
+         setLastError(`Error saving workbook: ${error.message}`);
+      }
    }, [workbookData]);
    React.useEffect(() => {
       // Load SourceInfos from selected models and sync PathsToSources
@@ -187,13 +202,13 @@ export default function Workbook({
       if (!workbookPath) {
          return;
       }
-      setWorkbookData(
-         WorkbookManager.loadWorkbook(
-            workbookStorage,
-            packageContext,
-            workbookPath,
-         ),
-      );
+      WorkbookManager.loadWorkbook(
+         workbookStorage,
+         packageContext,
+         workbookPath,
+      ).then((workbookData) => {
+         setWorkbookData(workbookData);
+      });
    }, [workbookPath, workbookStorage, packageContext]);
 
    if (!workbookData) {
@@ -255,6 +270,13 @@ export default function Workbook({
    return (
       <StyledCard variant="outlined">
          <StyledCardContent>
+            {lastError && (
+               <Box sx={{ mb: 2 }}>
+                  <Typography color="error" variant="body2">
+                     {lastError}
+                  </Typography>
+               </Box>
+            )}
             <Stack
                sx={{
                   flexDirection: "row",
