@@ -1,4 +1,11 @@
-import { Box, Divider, List, ListItem, ListItemText } from "@mui/material";
+import {
+   Box,
+   Divider,
+   List,
+   ListItem,
+   ListItemText,
+   Typography,
+} from "@mui/material";
 import React from "react";
 import { useWorkbookStorage } from "./WorkbookStorageProvider";
 import { usePackage } from "../Package";
@@ -11,15 +18,33 @@ export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
    const { workbookStorage } = useWorkbookStorage();
    const packageContext = usePackage();
    const [workbooks, setWorkbooks] = React.useState<string[]>([]);
+   const [lastError, setLastError] = React.useState<string | undefined>(
+      undefined,
+   );
 
    React.useEffect(() => {
       if (workbookStorage) {
-         setWorkbooks(workbookStorage.listWorkbooks(packageContext));
+         workbookStorage
+            .listWorkbooks(packageContext)
+            .then((workbooks) => {
+               setWorkbooks(workbooks);
+               setLastError(undefined);
+            })
+            .catch((error) => {
+               setLastError(`Error listing workbooks: ${error.message}`);
+            });
       }
    }, [workbookStorage, packageContext]);
 
    return (
       <>
+         {lastError && (
+            <Box sx={{ mb: 2 }}>
+               <Typography color="error" variant="body2">
+                  {lastError}
+               </Typography>
+            </Box>
+         )}
          <Divider />
          <Box
             sx={{
