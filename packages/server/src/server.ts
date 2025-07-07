@@ -4,7 +4,6 @@ import cors from "cors";
 import express from "express";
 import * as http from "http";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import morgan from "morgan";
 import { AddressInfo } from "net";
 import * as path from "path";
 import { ConnectionController } from "./controller/connection.controller";
@@ -14,6 +13,7 @@ import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
+import { logger, loggerMiddleware } from "./logger";
 import { initializeMcpServer } from "./mcp/server";
 import { ProjectStore } from "./service/project_store";
 
@@ -79,7 +79,7 @@ const API_PREFIX = "/api/v0";
 const isDevelopment = process.env["NODE_ENV"] === "development";
 
 const app = express();
-app.use(morgan("tiny"));
+app.use(loggerMiddleware);
 
 const projectStore = new ProjectStore(SERVER_ROOT);
 const connectionController = new ConnectionController(projectStore);
@@ -95,7 +95,7 @@ mcpApp.use(MCP_ENDPOINT, express.json());
 mcpApp.use(MCP_ENDPOINT, cors());
 
 mcpApp.all(MCP_ENDPOINT, async (req, res) => {
-   console.log(`[MCP Debug] Handling ${req.method} (Stateless)`);
+   logger.info(`[MCP Debug] Handling ${req.method} (Stateless)`);
 
    try {
       if (req.method === "POST") {
@@ -104,35 +104,34 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
          });
 
          transport.onclose = () => {
-            console.log(
+            logger.info(
                `[MCP Transport Info] Stateless transport closed for a request.`,
             );
          };
          transport.onerror = (err: Error) => {
-            console.error(
-               `[MCP Transport Error] Stateless transport error:`,
-               err,
-            );
+            logger.error(`[MCP Transport Error] Stateless transport error:`, {
+               error: err,
+            });
          };
 
          const requestMcpServer = initializeMcpServer(projectStore);
          await requestMcpServer.connect(transport);
 
          res.on("close", () => {
-            console.log(
+            logger.info(
                "[MCP Transport Info] Response closed, cleaning up stateless transport.",
             );
             transport.close().catch((err) => {
-               console.error(
+               logger.error(
                   "[MCP Transport Error] Error closing stateless transport on response close:",
-                  err,
+                  { error: err },
                );
             });
          });
 
          await transport.handleRequest(req, res, req.body);
       } else if (req.method === "GET" || req.method === "DELETE") {
-         console.warn(
+         logger.warn(
             `[MCP Transport Warn] Method Not Allowed in Stateless Mode: ${req.method}`,
          );
          res.setHeader("Allow", "POST");
@@ -146,7 +145,7 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
          });
          return;
       } else {
-         console.warn(`[MCP Transport Warn] Method Not Allowed: ${req.method}`);
+         logger.warn(`[MCP Transport Warn] Method Not Allowed: ${req.method}`);
          res.setHeader("Allow", "POST");
          res.status(405).json({
             jsonrpc: "2.0",
@@ -156,9 +155,9 @@ mcpApp.all(MCP_ENDPOINT, async (req, res) => {
          return;
       }
    } catch (error) {
-      console.error(
+      logger.error(
          `[MCP Transport Error] Unhandled error in ${req.method} handler (Stateless):`,
-         error,
+         { error },
       );
       if (!res.headersSent) {
          res.status(500).json({
@@ -183,10 +182,7 @@ if (!isDevelopment) {
 } else {
    // In development mode, proxy requests to React dev server
    // Handle API routes first
-   app.use(`${API_PREFIX}`, (req, res, next) => {
-      console.log(`[Express] Handling API request: ${req.method} ${req.url}`);
-      next();
-   });
+   app.use(`${API_PREFIX}`, loggerMiddleware);
 
    // Proxy everything else to Vite
    app.use(
@@ -213,7 +209,7 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    try {
       res.status(200).json(await projectStore.listProjects());
    } catch (error) {
-      console.error(error);
+      logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -227,7 +223,7 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
       );
       res.status(200).json(await project.getProjectMetadata());
    } catch (error) {
-      console.error(error);
+      logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -239,7 +235,7 @@ app.get(`${API_PREFIX}/projects/:projectName/connections`, async (req, res) => {
          await connectionController.listConnections(req.params.projectName),
       );
    } catch (error) {
-      console.error(error);
+      logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -256,7 +252,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -274,7 +270,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -292,7 +288,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -302,17 +298,17 @@ app.get(
 app.get(
    `${API_PREFIX}/projects/:projectName/connections/:connectionName/schemas/:schemaName/tables`,
    async (req, res) => {
-      console.log("req.params", req.params);
+      logger.info("req.params", { params: req.params });
       try {
          const results = await connectionController.listTables(
             req.params.projectName,
             req.params.connectionName,
             req.params.schemaName,
          );
-         console.log("results", results);
+         logger.info("results", { results });
          res.status(200).json(results);
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -331,7 +327,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -351,7 +347,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -371,7 +367,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -390,7 +386,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -408,7 +404,7 @@ app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
          await packageController.listPackages(req.params.projectName),
       );
    } catch (error) {
-      console.error(error);
+      logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
       res.status(status).json(json);
    }
@@ -431,7 +427,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -454,7 +450,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -479,7 +475,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -502,7 +498,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -527,7 +523,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -555,7 +551,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -578,7 +574,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -601,7 +597,7 @@ app.get(
             ),
          );
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
          res.status(status).json(json);
       }
@@ -614,7 +610,7 @@ if (!isDevelopment) {
 }
 
 app.use((err: Error, _req: express.Request, res: express.Response) => {
-   console.error("Unhandled error:", err);
+   logger.error("Unhandled error:", err);
    const { json, status } = internalErrorToHttpError(err);
    res.status(status).json(json);
 });
@@ -622,18 +618,18 @@ app.use((err: Error, _req: express.Request, res: express.Response) => {
 const mainServer = http.createServer(app);
 mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
    const address = mainServer.address() as AddressInfo;
-   console.log(
+   logger.info(
       `Publisher server listening at http://${address.address}:${address.port}`,
    );
    if (isDevelopment) {
-      console.log(
+      logger.info(
          "Running in development mode - proxying to React dev server at http://localhost:5173",
       );
    }
 });
 
 const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
-   console.log(`MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`);
+   logger.info(`MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`);
 });
 
 export { app, mainServer as httpServer, mcpApp, mcpHttpServer };

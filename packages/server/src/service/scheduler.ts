@@ -1,6 +1,7 @@
-import { Model } from "./model";
-import { components } from "../api";
 import cron from "node-cron";
+import { components } from "../api";
+import { logger } from "../logger";
+import { Model } from "./model";
 
 type ApiSource = components["schemas"]["Source"];
 type ApiView = components["schemas"]["View"];
@@ -72,7 +73,7 @@ class Schedule {
       // TODO: Don't split quoted strings.  Use regex instead of split.
       const annotationSplit = annotation.split(/\s+/);
       if (annotationSplit.length != 6) {
-         console.log("Length: " + annotationSplit.length);
+         logger.info("Length: " + annotationSplit.length);
          throw new Error(
             "Invalid annotation string does not have enough parts: " +
                annotation,

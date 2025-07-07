@@ -1,14 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-   McpError,
-   ErrorCode,
-} from "@modelcontextprotocol/sdk/types.js";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import { logger } from "../../logger";
 import { ProjectStore } from "../../service/project_store";
-import { getModelForQuery } from "../handler_utils";
 import { getMalloyErrorDetails, type ErrorDetails } from "../error_messages";
+import { buildMalloyUri, getModelForQuery } from "../handler_utils";
 import { MCP_ERROR_MESSAGES } from "../mcp_constants";
-import { buildMalloyUri } from "../handler_utils";
 
 // Zod shape defining required/optional params for executeQuery
 const executeQueryShape = {
@@ -47,10 +44,7 @@ export function registerExecuteQueryTool(
             queryName,
          } = params;
 
-         console.log(
-            "[MCP Tool executeQuery] Received params:",
-            JSON.stringify(params),
-         );
+         logger.info("[MCP Tool executeQuery] Received params:", { params });
 
          const hasAdhocQuery = !!query;
          const hasNamedQuery = !!queryName;
@@ -70,7 +64,7 @@ export function registerExecuteQueryTool(
          // Zod/SDK handles missing required fields (packageName, modelPath) based on the shape
 
          // --- Get Package and Model ---
-         console.log(
+         logger.info(
             `[MCP Tool executeQuery] Calling getModelForQuery for ${projectName}/${packageName}/${modelPath}`,
          );
          const modelResult = await getModelForQuery(
@@ -109,7 +103,7 @@ export function registerExecuteQueryTool(
 
          // --- Execute Query ---
          const { model } = modelResult;
-         console.log(
+         logger.info(
             `[MCP Tool executeQuery] Model found. Proceeding to execute query.`,
          );
          try {
@@ -188,9 +182,9 @@ export function registerExecuteQueryTool(
             );
          } catch (queryError) {
             // Handle query execution errors (syntax errors, invalid queries, etc.)
-            console.error(
+            logger.error(
                `[MCP Server Error] Error executing query in ${projectName}/${packageName}/${modelPath}:`,
-               queryError,
+               { error: queryError },
             );
             const errorDetails: ErrorDetails = getMalloyErrorDetails(
                "executeQuery",

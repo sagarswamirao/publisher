@@ -1,22 +1,23 @@
-import { URL } from "url"; // Import URL
 import {
    McpServer,
    ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { ProjectStore } from "../../service/project_store";
+import { URL } from "url"; // Import URL
+import type { components } from "../../api"; // Need this for Source definition type
 import { ModelCompilationError } from "../../errors";
+import { logger } from "../../logger";
+import { ProjectStore } from "../../service/project_store";
 import {
+   getInternalError,
+   getMalloyErrorDetails,
+   getNotFoundError,
+} from "../error_messages";
+import {
+   getModelForQuery,
    handleResourceGet,
    McpGetResourceError,
-   getModelForQuery,
 } from "../handler_utils";
 import { RESOURCE_METADATA } from "../resource_metadata";
-import {
-   getNotFoundError,
-   getMalloyErrorDetails,
-   getInternalError,
-} from "../error_messages";
-import type { components } from "../../api"; // Need this for Source definition type
 
 // Define the expected parameter types for this resource
 type SourceParams = {
@@ -119,9 +120,9 @@ export function registerSourceResource(
                      throw new McpGetResourceError(errorDetails);
                   }
                   // Handle other potential errors (e.g., invalid params error from initial check)
-                  console.error(
+                  logger.error(
                      `[MCP Server Error] Error fetching source '${sourceName}' from ${uri.href}:`,
-                     error,
+                     { error },
                   );
                   // Fallback: Use getInternalError for unexpected issues
                   // Or getNotFoundError if it's likely a resource access issue

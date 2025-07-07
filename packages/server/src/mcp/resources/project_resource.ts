@@ -3,10 +3,11 @@ import {
    ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ListResourcesResult } from "@modelcontextprotocol/sdk/types.js"; // Needed for list return type
+import { logger } from "../../logger";
 import { ProjectStore } from "../../service/project_store";
+import { getInternalError, getNotFoundError } from "../error_messages"; // Needed for error handling in list AND get
 import { handleResourceGet, McpGetResourceError } from "../handler_utils";
 import { RESOURCE_METADATA } from "../resource_metadata";
-import { getInternalError, getNotFoundError } from "../error_messages"; // Needed for error handling in list AND get
 
 // Define an interface for the package object augmented with project name
 interface PackageWithProject {
@@ -32,20 +33,20 @@ export function registerProjectResource(
           * If projectName is not specified (general ListResources call), lists packages for the default 'home' project.
           */
          list: async (/* extra: ListProjectExtra - Deleted */): Promise<ListResourcesResult> => {
-            console.log(
+            logger.info(
                "[MCP LOG] Entering ListResources (project) handler (listing ALL packages)...",
             );
             // Ignore parameters from 'extra' as URI path params aren't passed to list handlers.
 
             try {
                const allProjects = await projectStore.listProjects();
-               console.log(
+               logger.info(
                   `[MCP LOG] Found ${allProjects.length} projects defined.`,
                );
 
                const packagePromises = allProjects.map(async (proj) => {
                   try {
-                     console.log(
+                     logger.info(
                         `[MCP LOG] Getting project '${proj.name}' to list its packages...`,
                      );
                      const projectInstance = await projectStore.getProject(
@@ -53,7 +54,7 @@ export function registerProjectResource(
                         false,
                      ); // Use proj.name
                      const packages = await projectInstance.listPackages();
-                     console.log(
+                     logger.info(
                         `[MCP LOG] Found ${packages.length} packages in project '${proj.name}'.`,
                      );
                      // Return packages along with their project name for URI construction
@@ -62,9 +63,9 @@ export function registerProjectResource(
                         projectName: proj.name,
                      }));
                   } catch (projectError) {
-                     console.error(
+                     logger.error(
                         `[MCP Server Error] Error getting/listing packages for project ${proj.name}:`,
-                        projectError,
+                        { error: projectError },
                      );
                      return []; // Return empty array for this project on error
                   }
@@ -80,7 +81,7 @@ export function registerProjectResource(
                            .value,
                   );
 
-               console.log(
+               logger.info(
                   `[MCP LOG] Total packages found across all projects: ${allPackagesWithProjectName.length}`,
                );
 
@@ -100,7 +101,7 @@ export function registerProjectResource(
                   };
                });
 
-               console.log(
+               logger.info(
                   `[MCP LOG] ListResources (project): Returning ${mappedResources.length} package resources.`,
                );
                return {
@@ -108,19 +109,17 @@ export function registerProjectResource(
                };
             } catch (error) {
                // Catch errors from projectStore.listProjects() itself
-               console.error(
-                  `[MCP Server Error] Error listing projects:`,
+               logger.error(`[MCP Server Error] Error listing projects:`, {
                   error,
-               );
+               });
                const errorDetails = getInternalError(
                   `ListResources (project - initial list)`,
                   error,
                );
-               console.error(
-                  "MCP ListResources (project) error:",
-                  errorDetails.message,
-               );
-               console.log(
+               logger.error("MCP ListResources (project) error:", {
+                  error: errorDetails.message,
+               });
+               logger.info(
                   "[MCP LOG] ListResources (project): Returning empty on error listing projects.",
                );
                return { resources: [] };
@@ -134,34 +133,34 @@ export function registerProjectResource(
             params,
             "project",
             async ({ projectName }: { projectName?: unknown }) => {
-               console.log(
+               logger.info(
                   `[MCP LOG] Entering GetResource (project) handler for projectName: ${projectName}`,
                );
                // Validate project name parameter
                if (typeof projectName !== "string") {
-                  console.error(
+                  logger.error(
                      "[MCP LOG] GetResource (project): Invalid project name param.",
                   );
                   throw new Error("Invalid project name parameter.");
                }
 
                try {
-                  console.log(
+                  logger.info(
                      `[MCP LOG] GetResource: Getting project '${projectName}'...`,
                   );
                   // Get the project instance, but we might not need its metadata directly
                   await projectStore.getProject(projectName, false);
                   // Construct the definition object expected by the test
                   const definition = { name: projectName };
-                  console.log(
+                  logger.info(
                      `[MCP LOG] GetResource (project): Returning definition for '${projectName}'.`,
                   );
                   // Return the explicit definition structure
                   return definition;
                } catch (error) {
-                  console.error(
+                  logger.error(
                      `[MCP LOG] GetResource (project): Error caught for '${projectName}':`,
-                     error,
+                     { error },
                   );
                   // Catch expected errors from this specific resource logic
                   if (error instanceof Error) {

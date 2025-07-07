@@ -1,5 +1,6 @@
 import { URLReader } from "@malloydata/malloy";
 import { DataStyles } from "@malloydata/render";
+import { logger } from "./logger";
 
 export function compileDataStyles(styles: string): DataStyles {
    try {
@@ -26,7 +27,7 @@ export async function dataStylesForFile(
          try {
             stylesText = await urlReader.readURL(new URL(fileName, url));
          } catch (error) {
-            console.error(`Error loading data style '${fileName}': ${error}`);
+            logger.error(`Error loading data style '${fileName}': ${error}`);
             stylesText = "{}";
          }
          styles = { ...styles, ...compileDataStyles(stylesText) };

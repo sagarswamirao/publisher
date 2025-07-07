@@ -1,22 +1,23 @@
-import { URL } from "url";
 import {
    McpServer,
    ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
-import { ProjectStore } from "../../service/project_store";
+import { URL } from "url";
 import { PackageNotFoundError } from "../../errors";
+import { logger } from "../../logger";
+import { ProjectStore } from "../../service/project_store";
 import {
-   handleResourceGet,
-   McpGetResourceError,
-   buildMalloyUri,
-} from "../handler_utils";
-import { RESOURCE_METADATA } from "../resource_metadata";
-import {
-   getNotFoundError,
    getInternalError,
+   getNotFoundError,
    type ErrorDetails,
 } from "../error_messages";
+import {
+   buildMalloyUri,
+   handleResourceGet,
+   McpGetResourceError,
+} from "../handler_utils";
+import { RESOURCE_METADATA } from "../resource_metadata";
 
 // *** Define handleGetPackageContents function ***
 async function handleGetPackageContents(
@@ -47,7 +48,7 @@ async function handleGetPackageContents(
          const entryType = entry.type; // 'source' or 'notebook'
 
          if (typeof entryPath !== "string" || entryPath === "") {
-            console.warn(
+            logger.warn(
                `[MCP Server Warning] Skipping entry in package ${packageName} with invalid path:`,
                entry,
             );
@@ -64,7 +65,7 @@ async function handleGetPackageContents(
             case "notebook": {
                const resourceMetadata = RESOURCE_METADATA.notebook;
                if (!resourceMetadata) {
-                  console.warn(
+                  logger.warn(
                      `[MCP Server Warning] No metadata found for entry type 'notebook' path ${entryPath} in package ${packageName}`,
                   );
                   continue;
@@ -84,7 +85,7 @@ async function handleGetPackageContents(
                // 1. Add the source file itself
                const sourceResourceMetadata = RESOURCE_METADATA.source;
                if (!sourceResourceMetadata) {
-                  console.warn(
+                  logger.warn(
                      `[MCP Server Warning] No metadata found for entry type 'source' path ${entryPath} in package ${packageName}`,
                   );
                   // Continue processing views even if source metadata is missing
@@ -114,7 +115,7 @@ async function handleGetPackageContents(
                                  const viewResourceMetadata =
                                     RESOURCE_METADATA.view;
                                  if (!viewResourceMetadata) {
-                                    console.warn(
+                                    logger.warn(
                                        `[MCP Server Warning] No metadata found for entry type 'view' named '${view.name}' in source '${source.name}'`,
                                     );
                                     continue;
@@ -135,25 +136,25 @@ async function handleGetPackageContents(
                            }
                         }
                      } else {
-                        console.warn(
+                        logger.warn(
                            `[MCP Server Warning] Could not retrieve sources or sources is not an array for model ${entryPath}`,
                         );
                      }
                   } else {
-                     console.warn(
+                     logger.warn(
                         `[MCP Server Warning] Could not load model for path ${entryPath} to extract views.`,
                      );
                   }
                } catch (modelLoadError) {
                   // Log error if model loading fails, but continue processing other files
-                  console.warn(
+                  logger.warn(
                      `[MCP Server Warning] Failed to load model ${entryPath} to extract views: ${modelLoadError instanceof Error ? modelLoadError.message : String(modelLoadError)}`,
                   );
                }
                break;
             }
             default:
-               console.warn(
+               logger.warn(
                   `[MCP Server Warning] Unknown entry type '${entryType}' for path ${entryPath} in package ${packageName}`,
                );
                continue; // Skip unknown types
@@ -176,9 +177,9 @@ async function handleGetPackageContents(
             `Invalid project/package identifier in URI '${uri.href}'`,
          );
       } else {
-         console.error(
+         logger.error(
             `[MCP Server Error] Error getting package contents for ${uri.href}:`,
-            error,
+            { error },
          );
          errorDetails = getInternalError(
             `GetResource (package contents: ${uri.href})`,
@@ -305,9 +306,9 @@ export function registerPackageResource(
                ],
             };
          } catch (error) {
-            console.error(
+            logger.error(
                `[MCP Server Error] Error reading package contents ${uri.href}:`,
-               error,
+               { error },
             );
 
             let errorDetails: ErrorDetails;

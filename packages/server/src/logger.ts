@@ -1,0 +1,46 @@
+import { AxiosError } from "axios";
+import { RequestHandler } from "express";
+import winston from "winston";
+
+export const logger = winston.createLogger({
+   format: winston.format.combine(
+      winston.format.uncolorize(),
+      winston.format.timestamp(),
+      winston.format.json(),
+   ),
+   transports: [new winston.transports.Console()],
+});
+
+export const loggerMiddleware: RequestHandler = (req, res, next) => {
+   const startTime = performance.now();
+   res.on("finish", () => {
+      const endTime = performance.now();
+      logger.info(`${req.method} ${req.url}`, {
+         statusCode: res.statusCode,
+         duration: endTime - startTime,
+      });
+   });
+   next();
+};
+
+export const logAxiosError = (error: AxiosError) => {
+   if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      logger.error("Axios error", {
+         data: error.response.data,
+         status: error.response.status,
+         headers: error.response.headers,
+      });
+   } else if (error.request) {
+      // The request was made but no response was received
+      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+      // http.ClientRequest in node.js
+      logger.error("Failed to receive a response from the server", {
+         request: error.request,
+      });
+   } else {
+      // Something happened in setting up the request that triggered an Error
+      logger.error("Error", { error });
+   }
+};

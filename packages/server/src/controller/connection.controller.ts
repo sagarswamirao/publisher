@@ -3,6 +3,7 @@ import { Connection, PersistSQLResults } from "@malloydata/malloy/connection";
 import { TableSourceDef } from "../../../../../malloy/packages/malloy/dist";
 import { components } from "../api";
 import { ConnectionError } from "../errors";
+import { logger } from "../logger";
 import {
    getSchemasForConnection,
    getTablesForSchema,
@@ -115,7 +116,7 @@ export class ConnectionController {
             columns: fields,
          };
       } catch (error) {
-         console.log("error", error);
+         logger.error("error", { error });
          throw new ConnectionError((error as Error).message);
       }
    }
@@ -134,7 +135,7 @@ export class ConnectionController {
       }
       if (runSQLOptions.abortSignal) {
          // Add support for abortSignal in the future
-         console.log("Clearing unsupported abortSignal");
+         logger.info("Clearing unsupported abortSignal");
          runSQLOptions.abortSignal = undefined;
       }
 

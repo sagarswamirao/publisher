@@ -31,6 +31,7 @@ import {
    ModelCompilationError,
    ModelNotFoundError,
 } from "../errors";
+import { logger } from "../logger";
 import {
    MODEL_FILE_SUFFIX,
    NOTEBOOK_FILE_SUFFIX,
@@ -238,7 +239,7 @@ export class Model {
       if (this.compilationError) {
          throw this.compilationError;
       }
-      console.log("queryName", queryName, "query", query);
+      logger.info("queryName", { queryName, query });
       let runnable: QueryMaterializer;
       if (!this.modelMaterializer || !this.modelDef || !this.modelInfo)
          throw new BadRequestError("Model has no queryable entities.");
