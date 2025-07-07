@@ -30,12 +30,15 @@ export const getAxiosConfig = async (
    getAccessToken: () => Promise<string>,
 ): Promise<RawAxiosRequestConfig> => {
    const accessToken = getAccessToken ? await getAccessToken() : undefined;
+   const headers = accessToken
+      ? {
+           Authorization: `Bearer ${accessToken}`,
+        }
+      : {};
    return {
       baseURL: server,
-      withCredentials: !accessToken,
-      headers: {
-         Authorization: accessToken && `Bearer ${accessToken}`,
-      },
+      withCredentials: !!accessToken,
+      headers,
    } as RawAxiosRequestConfig;
 };
 export function useQueryWithApiError<TData = unknown, TError = ApiError>(

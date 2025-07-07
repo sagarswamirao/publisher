@@ -1,9 +1,13 @@
 /* eslint-disable react/prop-types */
-import type { MalloyRenderProps } from "@malloydata/render";
-import { MalloyRenderer } from "@malloydata/render";
-import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
+import React, {
+   useEffect,
+   useRef,
+   useState,
+   useLayoutEffect,
+   Suspense,
+} from "react";
 
-type MalloyRenderElement = HTMLElement & MalloyRenderProps;
+type MalloyRenderElement = HTMLElement & Record<string, unknown>;
 
 declare global {
    // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -22,23 +26,25 @@ interface RenderedResultProps {
    height?: number;
    isFillElement?: (boolean) => void;
    onSizeChange?: (height: number) => void;
-   onDrill?: (element: any) => void;
+   onDrill?: (element: unknown) => void;
 }
 
-// RendererResult does some magic to make it work for both fill and non-fill elements.
-// Generally text results and complicated results are non-fill. That is, they have a natural, fixed height.
-// Simple charts are fill. That is, they scale to fill the available space.
-// We only know what kind of element we're dealing with after the viz is rendered.
-// So we use a callback to notify the parent that we're in a fill element.
-// The parent can then set the height for the element, otherwise it will have size 0.
-//
-// In order to make this work when contained in a "Suspend" component, we need to
-// make sure that the rendering process is started after the DOM element is available.
-// We do this by using a useLayoutEffect to start the rendering process.
-// We also need to make sure that the rendering process is started before the
-// Suspense component is rendered.
-// We do this by using a useEffect to start the rendering process.
-export default function RenderedResult({
+// Simple dynamic import function
+const createRenderer = async (onDrill?: (element: unknown) => void) => {
+   // Only import when we're in a browser environment
+   if (typeof window === "undefined") {
+      throw new Error("MalloyRenderer can only be used in browser environment");
+   }
+
+   const { MalloyRenderer } = await import("@malloydata/render");
+   const renderer = new MalloyRenderer({
+      onClick: onDrill,
+   });
+   return renderer.createViz();
+};
+
+// Inner component that actually renders the visualization
+function RenderedResultInner({
    result,
    height,
    isFillElement,
@@ -47,66 +53,47 @@ export default function RenderedResult({
 }: RenderedResultProps) {
    const ref = useRef<HTMLDivElement>(null);
    const [isRendered, setIsRendered] = useState(false);
-   const [renderingStarted, setRenderingStarted] = useState(false);
-   const [wasMeasured, setWasMeasured] = useState(false);
-   // Each component instance manages its own promise and resolver
-   const renderingPromiseRef = useRef<Promise<void> | null>(null);
-   const renderingResolverRef = useRef<(() => void) | null>(null);
 
-   // Start rendering process after DOM element is available
+   // Render the visualization once the component mounts
    useLayoutEffect(() => {
-      if (ref.current && result && !renderingStarted) {
-         setRenderingStarted(true);
+      if (!ref.current || !result) return;
 
-         // Create the promise now that we're ready to start rendering
-         if (!renderingPromiseRef.current) {
-            renderingPromiseRef.current = new Promise<void>((resolve) => {
-               renderingResolverRef.current = resolve;
-            });
-         }
+      let isMounted = true;
+      const element = ref.current;
 
-         const renderer = new MalloyRenderer({
-            onClick: onDrill,
-         });
-         const viz = renderer.createViz();
+      // Clear previous content
+      while (element.firstChild) {
+         element.removeChild(element.firstChild);
+      }
 
-         // Remove all content from ref.current before rendering new viz
-         while (ref.current.firstChild) {
-            ref.current.removeChild(ref.current.firstChild);
-         }
+      createRenderer(onDrill)
+         .then((viz) => {
+            if (!isMounted) return;
 
-         // Set up a mutation observer to detect when content is added
-         const observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-               if (
-                  mutation.type === "childList" &&
-                  mutation.addedNodes.length > 0
-               ) {
-                  // Check if actual content (not just empty elements) was added
-                  const hasContent = Array.from(mutation.addedNodes).some(
-                     (node) => {
-                        return node.nodeType === Node.ELEMENT_NODE;
-                     },
-                  );
-                  if (hasContent) {
-                     // Content detected, mark as rendered
-                     observer.disconnect();
-                     setTimeout(() => {
-                        setIsRendered(true);
-                        if (renderingResolverRef.current) {
-                           renderingResolverRef.current();
-                           renderingResolverRef.current = null;
-                           renderingPromiseRef.current = null;
-                        }
-                     }, 50); // Small delay to ensure content is fully rendered
-                     break;
+            // Set up a mutation observer to detect when content is added
+            const observer = new MutationObserver((mutations) => {
+               for (const mutation of mutations) {
+                  if (
+                     mutation.type === "childList" &&
+                     mutation.addedNodes.length > 0
+                  ) {
+                     const hasContent = Array.from(mutation.addedNodes).some(
+                        (node) => node.nodeType === Node.ELEMENT_NODE,
+                     );
+                     if (hasContent) {
+                        observer.disconnect();
+                        setTimeout(() => {
+                           if (isMounted) {
+                              setIsRendered(true);
+                           }
+                        }, 50);
+                        break;
+                     }
                   }
                }
-            }
-         });
+            });
 
-         if (ref.current) {
-            observer.observe(ref.current, {
+            observer.observe(element, {
                childList: true,
                subtree: true,
                characterData: true,
@@ -114,33 +101,27 @@ export default function RenderedResult({
 
             try {
                viz.setResult(JSON.parse(result));
-               viz.render(ref.current);
+               viz.render(element);
             } catch (error) {
                console.error("Error rendering visualization:", error);
                observer.disconnect();
-               setIsRendered(true);
-               if (renderingResolverRef.current) {
-                  renderingResolverRef.current();
-                  renderingResolverRef.current = null;
-                  renderingPromiseRef.current = null;
+               if (isMounted) {
+                  setIsRendered(true);
                }
             }
-         }
-      }
-   }, [result, onDrill, renderingStarted]);
+         })
+         .catch((error) => {
+            console.error("Failed to create renderer:", error);
+            if (isMounted) {
+               setIsRendered(true);
+            }
+         });
 
-   // Reset rendering state when result changes
-   useEffect(() => {
-      setIsRendered(false);
-      setRenderingStarted(false);
-      renderingPromiseRef.current = null;
-      renderingResolverRef.current = null;
-   }, [result]);
+      return () => {
+         isMounted = false;
+      };
+   }, [result, onDrill]);
 
-   // If rendering has started but not completed, throw the promise to trigger Suspense
-   if (renderingStarted && !isRendered && renderingPromiseRef.current) {
-      throw renderingPromiseRef.current;
-   }
    // Set up size measurement using scrollHeight instead of ResizeObserver
    useEffect(() => {
       if (!ref.current || !isRendered) return;
@@ -151,7 +132,9 @@ export default function RenderedResult({
          if (element) {
             const measuredHeight = element.offsetHeight;
             if (measuredHeight > 0) {
-               onSizeChange && onSizeChange(measuredHeight);
+               if (onSizeChange) {
+                  onSizeChange(measuredHeight);
+               }
             } else if (isFillElement && element.firstChild) {
                // HACK- we If there's a child and it's height is 0, then we're in a fill element
                // We use the callback `isFillElement` to notify the parent that we're in a fill element
@@ -172,14 +155,12 @@ export default function RenderedResult({
 
       let observer: MutationObserver | null = null;
       // Also measure when the malloy result changes
-      if (!wasMeasured) {
-         observer = new MutationObserver(measureSize);
-         observer.observe(element, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-         });
-      }
+      observer = new MutationObserver(measureSize);
+      observer.observe(element, {
+         childList: true,
+         subtree: true,
+         attributes: true,
+      });
 
       // Cleanup
       return () => {
@@ -196,5 +177,47 @@ export default function RenderedResult({
             height: height ? `${height}px` : "100%",
          }}
       />
+   );
+}
+
+// Main component with error boundary and fallback
+export default function RenderedResult(props: RenderedResultProps) {
+   // Show loading state if we're in server-side rendering
+   if (typeof window === "undefined") {
+      return (
+         <div
+            style={{
+               width: "100%",
+               height: props.height ? `${props.height}px` : "100%",
+               display: "flex",
+               alignItems: "center",
+               justifyContent: "center",
+               color: "#666",
+            }}
+         >
+            Loading...
+         </div>
+      );
+   }
+
+   return (
+      <Suspense
+         fallback={
+            <div
+               style={{
+                  width: "100%",
+                  height: props.height ? `${props.height}px` : "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#666",
+               }}
+            >
+               Loading visualization...
+            </div>
+         }
+      >
+         <RenderedResultInner {...props} />
+      </Suspense>
    );
 }

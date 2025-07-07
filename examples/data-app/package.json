@@ -12,7 +12,7 @@
     "@auth0/auth0-react": "^2.2.4",
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
-    "@malloy-publisher/sdk": "^0.0.16",
+    "@malloy-publisher/sdk": "^0.0.80",
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
     "@mui/x-charts": "latest",
@@ -26,6 +26,7 @@
     "react-dom": "latest",
     "react-grid-layout": "^1.5.1",
     "react-resizable": "^3.0.5",
+    "recharts": "^3.0.2",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

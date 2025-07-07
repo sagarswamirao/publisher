@@ -1,11 +1,7 @@
 [
   {
     "id": "60f7204f-01f0-4f37-a4a4-fff3bb14be8b",
-    "server": "https://demo.staging-data.ms2.co/api/v0",
-    "projectName": "malloy-samples",
-    "packageName": "names",
-    "modelPath": "names2.malloynb",
-    "query": "run: names2 -> top_names +{ \n  # line_chart\n  nest: by_decade\n  # shape_map\n  nest: by_state\n}",
+    "queryResultString": "{\"modelPath\":\"names2.malloynb\",\"query\":\"run: names2 -> top_names +{ \\n  # line_chart\\n  nest: by_decade\\n  # shape_map\\n  nest: by_state\\n}\",\"optionalPackageName\":\"names\",\"optionalProjectName\":\"malloy-samples\"}",
     "title": "Name Popularity Dashboard",
     "layout": {
       "w": 11,
@@ -20,11 +16,7 @@
   },
   {
     "id": "ad105d73-ecca-4847-a53e-f201f4ae2c41",
-    "server": "https://demo.staging-data.ms2.co/api/v0",
-    "projectName": "malloy-samples",
-    "packageName": "names",
-    "modelPath": "names1.malloynb",
-    "query": "run: names-> {\n  aggregate: total_population\n}",
+    "queryResultString": "{\"modelPath\":\"names1.malloynb\",\"query\":\"run: names-> {\\n  aggregate: total_population\\n}\",\"optionalPackageName\":\"names\",\"optionalProjectName\":\"malloy-samples\"}",
     "title": "Dataset Population",
     "layout": {
       "w": 3,
@@ -39,11 +31,10 @@
   },
   {
     "id": "dc1e4c48-260d-44b7-ab59-c1662d5f5779",
-    "server": "https://demo.staging-data.ms2.co/api/v0",
     "projectName": "malloy-samples",
     "packageName": "names",
     "modelPath": "names1.malloynb",
-    "query": "# line_chart\nrun: names -> {\n  group_by: decade\n  aggregate: total_population\n  order_by: decade\n}",
+    "queryResultString": "{\"modelPath\":\"names1.malloynb\",\"query\":\"# line_chart\\nrun: names -> {\\n group_by: decade\\n  aggregate: total_population\\n  order_by: decade\\n}\",\"optionalPackageName\":\"names\",\"optionalProjectName\":\"malloy-samples\"}",
     "title": "Population Over Time",
     "layout": {
       "w": 8,
@@ -58,11 +49,7 @@
   },
   {
     "id": "ebe0fcc1-670e-4685-8a4e-9f6984cc2387",
-    "server": "https://demo.staging-data.ms2.co/api/v0",
-    "projectName": "malloy-samples",
-    "packageName": "names",
-    "modelPath": "names1.malloynb",
-    "query": "run: names-> {\n  where: gender = 'F'\n  group_by: \n    name\n  aggregate: \n    total_population\n  limit: 10\n}",
+    "queryResultString": "{\"modelPath\":\"names1.malloynb\",\"query\":\"run: names-> {\\n  where: gender = 'F'\\n  group_by: \\n    name\\n  aggregate: \\n    total_population\\n  limit: 10\\n}\",\"optionalPackageName\":\"names\",\"optionalProjectName\":\"malloy-samples\"}",
     "title": "Top Female Names",
     "layout": {
       "w": 3,
@@ -77,11 +64,7 @@
   },
   {
     "id": "67e86d49-3566-4972-8c29-a35021590b6e",
-    "server": "https://demo.staging-data.ms2.co/api/v0",
-    "projectName": "malloy-samples",
-    "packageName": "names",
-    "modelPath": "names1.malloynb",
-    "query": "# bar_chart      \nrun: names-> {\n  where: gender = 'M'\n  group_by: \n    name\n  aggregate: \n    total_population\n  limit: 10\n}",
+    "queryResultString": "{\"modelPath\":\"names1.malloynb\",\"query\":\"run: names-> {\\n  where: gender = 'M'\\n  group_by: \\n    name\\n  aggregate: \\n    total_population\\n  limit: 10\\n}\",\"optionalPackageName\":\"names\",\"optionalProjectName\":\"malloy-samples\"}",
     "title": "Top Male Names",
     "layout": {
       "w": 7,
@@ -96,11 +79,7 @@
   },
   {
     "id": "4a637681-8475-4f6c-b290-32c136b04a99",
-    "server": "https://demo.staging-data.ms2.co/api/v0",
-    "projectName": "malloy-samples",
-    "packageName": "names",
-    "modelPath": "names1.malloynb",
-    "query": "# line_chart\nrun: names -> {\n  where: name = 'Elizabeth' | 'Linda' \n  group_by: decade\n  aggregate:\n    total_population\n  group_by: name\n  order_by: decade\n}",
+    "queryResultString": "{\"modelPath\":\"names1.malloynb\",\"query\":\"# line_chart\\nrun: names -> {\\n  where: name = 'Elizabeth' | 'Linda' \\n  group_by: decade\\n  aggregate:\\n    total_population\\n  group_by: name\\n  order_by: decade\\n}\",\"optionalPackageName\":\"names\",\"optionalProjectName\":\"malloy-samples\"}",
     "title": "Linda vs. Elizabeth",
     "layout": {
       "w": 4,

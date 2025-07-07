@@ -1,17 +1,19 @@
-import type { NotebookStorage, UserContext } from "./NotebookStorage";
+import { PackageContextProps } from "../Package";
+import type { WorkbookStorage } from "./WorkbookStorage";
 
-export class BrowserNotebookStorage implements NotebookStorage {
-   private makeKey(context: UserContext, path?: string): string {
-      let key = `BROWSER_NOTEBOOK_STORAGE__${context.project}/${context.package}`;
+export class BrowserWorkbookStorage implements WorkbookStorage {
+   private makeKey(context: PackageContextProps, path?: string): string {
+      let key = `BROWSER_NOTEBOOK_STORAGE__${context.projectName}/${context.packageName}`;
       if (path) {
          key += `/${path}`;
       }
       return key;
    }
 
-   listNotebooks(context: UserContext): string[] {
+   listWorkbooks(context: PackageContextProps): string[] {
       const prefix = this.makeKey(context);
       const keys: string[] = [];
+      console.log("prefix", prefix);
       for (let i = 0; i < localStorage.length; i++) {
          const key = localStorage.key(i);
          if (key && key.startsWith(prefix + "/")) {
@@ -23,7 +25,7 @@ export class BrowserNotebookStorage implements NotebookStorage {
       return keys;
    }
 
-   getNotebook(context: UserContext, path: string): string {
+   getWorkbook(context: PackageContextProps, path: string): string {
       const key = this.makeKey(context, path);
       const notebook = localStorage.getItem(key);
       if (notebook === null) {
@@ -32,7 +34,7 @@ export class BrowserNotebookStorage implements NotebookStorage {
       return notebook;
    }
 
-   deleteNotebook(context: UserContext, path: string): void {
+   deleteWorkbook(context: PackageContextProps, path: string): void {
       const key = this.makeKey(context, path);
       if (localStorage.getItem(key) === null) {
          throw new Error(`Notebook not found at path: ${path}`);
@@ -40,12 +42,16 @@ export class BrowserNotebookStorage implements NotebookStorage {
       localStorage.removeItem(key);
    }
 
-   saveNotebook(context: UserContext, path: string, notebook: string): void {
+   saveWorkbook(
+      context: PackageContextProps,
+      path: string,
+      notebook: string,
+   ): void {
       const key = this.makeKey(context, path);
       localStorage.setItem(key, notebook);
    }
 
-   moveNotebook(context: UserContext, from: string, to: string): void {
+   moveWorkbook(context: PackageContextProps, from: string, to: string): void {
       const fromKey = this.makeKey(context, from);
       const toKey = this.makeKey(context, to);
       const notebook = localStorage.getItem(fromKey);

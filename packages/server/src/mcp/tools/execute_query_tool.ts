@@ -10,16 +10,23 @@ import { MCP_ERROR_MESSAGES } from "../mcp_constants";
 // Zod shape defining required/optional params for executeQuery
 const executeQueryShape = {
    // projectName is required; other fields mirror SDK expectations
-   projectName: z.string().describe("Project name"),
-   packageName: z.string().describe("Package containing the model"),
+   projectName: z
+      .string()
+      .describe(
+         "Project name. Project names are listed in the malloy resource list.",
+      ),
+   packageName: z
+      .string()
+      .describe(
+         "Package containing the model. Package names are listed in the malloy resource list.",
+      ),
    modelPath: z.string().describe("Path to the .malloy model file"),
    query: z.string().optional().describe("Ad-hoc Malloy query code"),
    sourceName: z.string().optional().describe("Source name for a view"),
    queryName: z.string().optional().describe("Named query or view"),
 };
 
-// Infer the type from the Zod shape for use in the handler
-type ExecuteQueryParams = z.infer<z.ZodObject<typeof executeQueryShape>>;
+// Type inference is handled automatically by the MCP server based on the executeQueryShape
 
 /**
  * Registers the malloy/executeQuery tool with the MCP server.
@@ -29,11 +36,11 @@ export function registerExecuteQueryTool(
    projectStore: ProjectStore,
 ): void {
    mcpServer.tool(
-      "malloy/executeQuery",
+      "malloy_executeQuery",
       "Executes a Malloy query (either ad-hoc or a named query/view defined in a model) against the specified model and returns the results as JSON.",
       executeQueryShape,
       /** Handles requests for the malloy/executeQuery tool */
-      async (params: ExecuteQueryParams) => {
+      async (params) => {
          // Destructure projectName as well
          const {
             projectName,

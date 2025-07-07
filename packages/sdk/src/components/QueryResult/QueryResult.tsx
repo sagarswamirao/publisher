@@ -14,6 +14,60 @@ interface QueryResultProps {
    query?: string;
    sourceName?: string;
    queryName?: string;
+   // Optional props to override the value from usePackage hook
+   optionalProjectName?: string;
+   optionalPackageName?: string;
+   optionalVersionId?: string;
+}
+
+export function createEmbeddedQueryResult(props: QueryResultProps): string {
+   const { optionalProjectName, optionalPackageName } = props;
+   if (!optionalProjectName || !optionalPackageName) {
+      throw new Error(
+         "Project and Package name must be provided for query embedding.",
+      );
+   }
+   return JSON.stringify({
+      ...props,
+   });
+}
+
+/**
+ * This is a helper function to render a query result that is embedded as a string.
+ */
+export function EmbeddedQueryResult({
+   embeddedQueryResult,
+}: {
+   embeddedQueryResult: string;
+}): React.ReactElement {
+   const {
+      modelPath,
+      query,
+      sourceName,
+      queryName,
+      optionalProjectName,
+      optionalPackageName,
+      optionalVersionId,
+   } = JSON.parse(embeddedQueryResult) as QueryResultProps;
+
+   if (
+      !modelPath ||
+      (!query && (!queryName || !sourceName)) ||
+      typeof modelPath !== "string"
+   ) {
+      throw new Error("Invalid embedded query result: " + embeddedQueryResult);
+   }
+   return (
+      <QueryResult
+         modelPath={modelPath}
+         query={query}
+         sourceName={sourceName}
+         queryName={queryName}
+         optionalProjectName={optionalProjectName}
+         optionalPackageName={optionalPackageName}
+         optionalVersionId={optionalVersionId}
+      />
+   );
 }
 
 export default function QueryResult({
@@ -21,8 +75,23 @@ export default function QueryResult({
    query,
    sourceName,
    queryName,
+   optionalProjectName,
+   optionalPackageName,
+   optionalVersionId,
 }: QueryResultProps) {
-   const { projectName, packageName, versionId } = usePackage();
+   // Always call usePackage - it should handle missing provider gracefully
+   const packageContext = usePackage(false);
+
+   // Use optional props if provided, otherwise fallback to hook values (with defaults)
+   const projectName = optionalProjectName || packageContext?.projectName;
+   const packageName = optionalPackageName || packageContext?.packageName;
+   const versionId = optionalVersionId || packageContext?.versionId;
+
+   if (!projectName || !packageName) {
+      throw new Error(
+         "No project or package name provided. Must be set in props or via PackageProvider",
+      );
+   }
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: [

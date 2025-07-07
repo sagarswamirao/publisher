@@ -47,7 +47,9 @@ describe("service/package", () => {
    it("should create a package instance", async () => {
       // Using 'as any' for simplified mock Map value in test
       const pkg = new Package(
+         "testProject",
          "testPackage",
+         testPackageDirectory,
          { name: "testPackage", description: "Test package" },
          [],
          new Map([
@@ -133,6 +135,7 @@ describe("service/package", () => {
             const packageInstance = new Package(
                "testProject",
                "testPackage",
+               testPackageDirectory,
                { name: "testPackage", description: "Test package" },
                [],
                new Map([

@@ -7,10 +7,25 @@ import {
    ConnectionDto,
    PostgresConnectionDto,
    SnowflakeConnectionDto,
+   MysqlConnectionDto,
 } from "./connection.dto";
 
 describe("dto/connection", () => {
    describe("Connection Validation", () => {
+      it("should validate a valid MysqlConnection object", async () => {
+         const validData = {
+            host: "localhost",
+            port: 3306,
+            database: "testdb",
+            user: "user",
+            password: "pass",
+         };
+         const mysqlConnection = plainToInstance(MysqlConnectionDto, validData);
+
+         const errors = await validate(mysqlConnection);
+         expect(errors).toHaveLength(0);
+      });
+
       it("should validate a valid PostgresConnection object", async () => {
          const validData = {
             host: "localhost",

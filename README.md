@@ -1,16 +1,16 @@
 # Publisher: The Malloy Semantic Model Server
 
-[![build](https://github.com/malloydata/publisher/actions/workflows/build.yml/badge.svg)](https://github.com/malloydata/publisher/actions/workflows/build.yml)
+<a href="https://github.com/malloydata/publisher/actions/workflows/build.yml" target="_blank" rel="noopener noreferrer">![build](https://github.com/malloydata/publisher/actions/workflows/build.yml/badge.svg)</a>
 
-**Publisher** is the open-source semantic model server for the [Malloy](https://github.com/malloydata/malloy) data language. It lets you define semantic models once — and use them everywhere.
+**Publisher** is the open-source semantic model server for the <a href="https://github.com/malloydata/malloy" target="_blank" rel="noopener noreferrer">Malloy</a> data language. It lets you define semantic models once — and use them everywhere.
 
 ## What is Malloy?
 
-[Malloy](https://malloydata.dev) is an open-source language for modeling data. It allows you to define rich **semantic data models** — specifying the _meaning_, _relationships_, and _context_ behind your data.
+<a href="https://malloydata.dev" target="_blank" rel="noopener noreferrer">Malloy</a> is an open-source language for modeling data. It allows you to define rich **semantic data models** — specifying the _meaning_, _relationships_, and _context_ behind your data.
 
 Malloy models encode trusted business logic (e.g., revenue, active users, churn), and let you query data in terms of your business — not raw SQL. These models are version-controlled, composable, and portable across environments.
 
-You can develop Malloy models using the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=malloydata.malloy-vscode), which provides an ergonomic environment for writing models, running queries, and building dashboards.
+You can develop Malloy models using the <a href="https://marketplace.visualstudio.com/items?itemName=malloydata.malloy-vscode" target="_blank" rel="noopener noreferrer">VS Code extension</a>, which provides an ergonomic environment for writing models, running queries, and building dashboards.
 
 ## What is Publisher?
 
@@ -19,21 +19,21 @@ You can develop Malloy models using the [VS Code extension](https://marketplace.
 Publisher is designed around a familiar, proven workflow:
 
 - A **data modeler** defines trusted business logic in Malloy using the VS Code extension and serves their models using the Publisher server.
-- A **data consumer** explores and extends that logic using Malloy’s no-code **Explorer**, notebooks, custom data appications, or AI agents.
+- A **data consumer** explores and extends that logic using Malloy's no-code **Explorer**, notebooks, custom data appications, or AI agents.
 
 This mirrors the modeler → analyst flow popularized by tools like DBT and Looker — now reimagined for the AI era, and built on fully open infrastructure.
 
 ## Why It Matters
 
-You can’t trust answers if the meaning behind the data isn’t clear.
+You can't trust answers if the meaning behind the data isn't clear.
 
-Whether you're building dashboards, deploying AI agents, or enabling ad hoc analysis, every experience relies on a shared understanding of terms like “MRR,” “LTV,” or “active user.” Without that foundation, insights are inconsistent — or dangerously wrong.
+Whether you're building dashboards, deploying AI agents, or enabling ad hoc analysis, every experience relies on a shared understanding of terms like "MRR," "LTV," or "active user." Without that foundation, insights are inconsistent — or dangerously wrong.
 
-Publisher solves this by turning semantic models into reusable data APIs. By combining Malloy’s expressive modeling language with an open-source server and no-code data analysis UI, Publisher makes the semantic layer accessible, governable, and extensible — for everyone.
+Publisher solves this by turning semantic models into reusable data APIs. By combining Malloy's expressive modeling language with an open-source server and no-code data analysis UI, Publisher makes the semantic layer accessible, governable, and extensible — for everyone.
 
 # From Semantic Models to Data Experiences
 
-Every Publisher experience starts with a semantic model — written in [Malloy](https://malloydata.dev) and served via the Publisher server. You can create your own model using the [Malloy VS Code extension](https://github.com/malloydata/malloy-vscode-extension), or use one of the sample models from the [`malloy-samples`](https://github.com/malloydata/malloy-samples) repository, which is included in this repo as a submodule.
+Every Publisher experience starts with a semantic model — written in <a href="https://malloydata.dev" target="_blank" rel="noopener noreferrer">Malloy</a> and served via the Publisher server. You can create your own model using the <a href="https://github.com/malloydata/malloy-vscode-extension" target="_blank" rel="noopener noreferrer">Malloy VS Code extension</a>, or use one of the sample models from the <a href="https://github.com/malloydata/malloy-samples" target="_blank" rel="noopener noreferrer">`malloy-samples`</a> repository, which is included in this repo as a submodule.
 
 ## Serving Models
 
@@ -44,14 +44,18 @@ For instructions on how to set up, build, and configure the Publisher server, se
 - [Build & Run Instructions](#build-and-run-instructions)
 - [Server Configuration](#server-configuration)
 
-The Publisher's default server configuraiton serves the [`malloy-samples`](https://github.com/malloydata/malloy-samples). Once the server is running, you can access the app at:
+The Publisher's default server configuraiton serves the <a href="https://github.com/malloydata/malloy-samples" target="_blank" rel="noopener noreferrer">`malloy-samples`</a>. Once the server is running, you can access the app at:
 
-- **Publisher App (REST API + UI):** [http://localhost:4000](http://localhost:4000)
+- **Publisher App (REST API + UI):** <a href="http://localhost:4000" target="_blank" rel="noopener noreferrer">http://localhost:4000</a>
 
 <center>
-  <a href="https://www.loom.com/embed/4c1b3313f3624b41be9e16044bebfc38?sid=6dd7879e-19e5-4ee5-8bf1-960cbc46b5eb">
-      <img src="docs/malloy-publisher-demo.png" width=600 alt="Publisher App Demo">
+  <a href="https://www.loom.com/share/f4e7adbe72f040a889a36bc820578447?sid=839ea1eb-b0dd-46a7-aaf5-585cc8ec066b" target="_blank" rel="noopener noreferrer">
+      <img src="docs/malloy-publisher-demo.png" width=600 alt="Publisher App Demo - Click to watch video" style="border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
   </a>
+  <br>
+  <em>📹 Click the image above to watch the demo video</em>
+  <br>
+  <br>
 </center>
 
 Once your model is served, it becomes the foundation for a wide variety of data experiences — no-code analysis, notebooks, AI agents, and more. The sections below showcase how those experiences work in practice:
@@ -65,8 +69,8 @@ Once a model is published, analysts can open it in **Explorer**, a visual query 
 - Inspect and understand the underlying Malloy and SQL
 - Save and share reusable views — all without writing code
 
-🎥 **Demo Video:** [Watch Explorer in action →](docs/coming-soon.md)  
-📖 **Docs:** [Explorer Documentation →](docs/explorer.md)
+🎥 **Demo Video:** <a href="https://www.loom.com/share/8a1438201da64f1b867a8a6a4a10e66b?sid=29dd7f2a-218e-4f94-95e5-a97456447621" target="_blank" rel="noopener noreferrer">Watch Explorer in action →</a>  
+📖 **Docs:** <a href="docs/explorer.md" target="_blank" rel="noopener noreferrer">Explorer Documentation →</a>
 
 ## Notebook-based Dashboards
 
@@ -76,19 +80,8 @@ Use Malloy notebooks (`.malloynb` files) to create shareable, code-first dashboa
 - Supports live queries and chart rendering
 - Notebooks are readable, inspectable, and easy to iterate on
 
-🎥 **Demo Video:** [Notebook walkthrough →](docs/coming-soon.md)  
-📖 **Docs:** [Malloy Notebooks →](https://docs.malloydata.dev/blog/2023-03-10-malloy-data-notebooks)
-
-## Embedded Data Applications
-
-Using the [Publisher SDK](packages/sdk/), you can build rich data applications — without rebuilding your query engine or rewriting business logic. The Publisher App itself is built from this SDK, and you can remix it to:
-
-- Create internal tools or customer-facing dashboards
-- Build custom UI with governed data access
-- Embed charts or explorers into any React app
-
-🎥 **Demo Video:** [Building an app with the SDK →](docs/coming-soon.md)  
-📖 **Docs:** [Embedded Data Apps Guide →](docs/embedded-data-apps.md)
+🎥 **Demo Video:** <a href="https://www.loom.com/share/efb54cf6c7444fdc8eaa7da509059a78?sid=a925eafb-76e0-476b-8237-c6375ad5679d" target="_blank" rel="noopener noreferrer">Notebook walkthrough →</a>  
+📖 **Docs:** <a href="https://docs.malloydata.dev/blog/2023-03-10-malloy-data-notebooks" target="_blank" rel="noopener noreferrer">Malloy Notebooks →</a>
 
 ## MCP-based AI Data Agents
 
@@ -100,8 +93,19 @@ Publisher exposes your semantic models via the **Model Context Protocol (MCP)**,
 
 This enables tools like Claude, Cursor, or custom agents to generate accurate, interpretable queries using your definitions — not guesses.
 
-🎥 **Demo Video:** [MCP + AI Agent walkthrough →](docs/coming-soon.md)  
-📖 **Docs:** [AI Agents & MCP Guide →](docs/ai-agents.md)
+🎥 **Demo Video:** <a href="https://www.loom.com/share/fcc5112ac1ca4bf78bee0985f1cd31be" target="_blank" rel="noopener noreferrer">MCP + AI Agent walkthrough →</a>  
+📖 **Docs:** <a href="docs/ai-agents.md" target="_blank" rel="noopener noreferrer">AI Agents & MCP Guide →</a>
+
+## Embedded Data Applications
+
+Using the <a href="packages/sdk/" target="_blank" rel="noopener noreferrer">Publisher SDK</a>, you can build rich data applications — without rebuilding your query engine or rewriting business logic. The Publisher App itself is built from this SDK, and you can remix it to:
+
+- Create internal tools or customer-facing dashboards
+- Build custom UI with governed data access
+- Embed charts or explorers into any React app
+
+🎥 **Demo Video:** <a href="docs/coming-soon.md" target="_blank" rel="noopener noreferrer">Building an app with the SDK →</a>  
+📖 **Docs:** <a href="docs/embedded-data-apps.md" target="_blank" rel="noopener noreferrer">Embedded Data Apps Guide →</a>
 
 ## Legacy BI Tools (Coming Soon)
 
@@ -114,7 +118,7 @@ Publisher will soon support a SQL-compatible interface (e.g., Postgres wire prot
 
 These tools will be able to query your semantic models directly — gaining consistency and reducing duplicated logic, all without changing how your team works.
 
-📖 **Docs (early draft):** [Traditional BI Dashboards →](docs/legacy-bi.md)
+📖 **Docs (early draft):** <a href="docs/legacy-bi.md" target="_blank" rel="noopener noreferrer">Traditional BI Dashboards →</a>
 
 # Architecture Overview
 
@@ -137,8 +141,8 @@ The image below illustrates the composition of the Publisher's components and th
     - **Purpose:** Used by the web frontend (Publisher App/SDK) for browsing packages, models, and executing queries.
     - **Specification:** Defined in [`api-doc.yaml`](api-doc.yaml).
   - **Model Context Protocol (MCP) API:**
-    - **Purpose:** Allows AI agents and other MCP clients (like the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) or compatible applications) to interact with Malloy resources (projects, packages, models, sources, views, notebooks) and execute queries programmatically.
-    - **Specification:** Adheres to the [MCP `2025-03-26` specification revision](https://modelcontextprotocol.io/specification/2025-03-26/). This includes providing resource metadata and detailed error messages with suggestions.
+    - **Purpose:** Allows AI agents and other MCP clients (like the <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a> or compatible applications) to interact with Malloy resources (projects, packages, models, sources, views, notebooks) and execute queries programmatically.
+    - **Specification:** Adheres to the <a href="https://modelcontextprotocol.io/specification/2025-03-26/" target="_blank" rel="noopener noreferrer">MCP `2025-03-26` specification revision</a>. This includes providing resource metadata and detailed error messages with suggestions.
   - **SQL API (coming soon):**
     - **Purpose:** Connect to you existing tools.
 
@@ -176,13 +180,13 @@ npx @malloy-publisher/server --port 4000 --server_root /path/to/malloy_packages
 To run the server pointed to the Malloy samples:
 
 ```sh
-git clone git@github.com:pathwaysdata/malloy-samples
+git clone https://github.com/ms2data/malloy-samples
 npx @malloy-publisher/server --port 4000 --server_root .
 ```
 
 ### Code Approach
 
-Follow these steps to build the Publisher components and run the server locally. This project uses [`bun`](https://bun.sh/) as the JavaScript runtime and package manager.
+Follow these steps to build the Publisher components and run the server locally. This project uses <a href="https://bun.sh/" target="_blank" rel="noopener noreferrer">`bun`</a> as the JavaScript runtime and package manager.
 
 **1. Initialize and Update Git Submodules:**
 
@@ -224,7 +228,7 @@ Run the compiled server code. By default, this will start the REST API server on
 bun run start
 ```
 
-Once started, you can typically access the Publisher App (if running) at http://localhost:4000 and the MCP endpoint at http://localhost:4040/mcp.
+Once started, you can typically access the Publisher App (if running) at <a href="http://localhost:4000" target="_blank" rel="noopener noreferrer">http://localhost:4000</a> and the MCP endpoint at <a href="http://localhost:4040/mcp" target="_blank" rel="noopener noreferrer">http://localhost:4040/mcp</a>.
 
 See [packages/app/README.md](packages/app/README.md) for information on how to do development on the server.
 
@@ -300,7 +304,7 @@ bun run upgrade-malloy 0.0.XXX #XXX is the new version number
 bun install # This updates node_modules
 ```
 
-> **_NOTE:_** Note that the Publisher repository currently points to a [fork](https://github.com/pathwaysdata/malloy-samples) of the [malloy-samples](https://github.com/malloydata/malloy-samples) repo. The fork contains minor changes to turn each Malloy sample directory into a package. Once the package format solidifies, we intend to merge the changes into the main malloy-samples repo.
+> **_NOTE:_** Note that the Publisher repository currently points to a <a href="https://github.com/pathwaysdata/malloy-samples" target="_blank" rel="noopener noreferrer">fork</a> of the <a href="https://github.com/malloydata/malloy-samples" target="_blank" rel="noopener noreferrer">malloy-samples</a> repo. The fork contains minor changes to turn each Malloy sample directory into a package. Once the package format solidifies, we intend to merge the changes into the main malloy-samples repo.
 
 # Coming Soon
 
@@ -314,5 +318,5 @@ We are actively developing Publisher and plan to introduce several exciting feat
 
 ## Join the Malloy Community
 
-- Join our [**Malloy Slack Community!**](https://join.slack.com/t/malloy-community/shared_invite/zt-1kgfwgi5g-CrsdaRqs81QY67QW0~t_uw) Use this community to ask questions, meet other Malloy users, and share ideas with one another.
-- Use [**GitHub issues**](https://github.com/malloydata/publisher/issues) in this Repo to provide feedback, suggest improvements, report bugs, and start new discussions.
+- Join our <a href="https://join.slack.com/t/malloy-community/shared_invite/zt-1kgfwgi5g-CrsdaRqs81QY67QW0~t_uw" target="_blank" rel="noopener noreferrer">**Malloy Slack Community!**</a> Use this community to ask questions, meet other Malloy users, and share ideas with one another.
+- Use <a href="https://github.com/malloydata/publisher/issues" target="_blank" rel="noopener noreferrer">**GitHub issues**</a> in this Repo to provide feedback, suggest improvements, report bugs, and start new discussions.

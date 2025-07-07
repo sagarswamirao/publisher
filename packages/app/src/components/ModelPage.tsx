@@ -1,4 +1,4 @@
-import { Model, Notebook, PackageProvider } from "@malloy-publisher/sdk";
+import { Model, Workbook, PackageProvider } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function ModelPage() {
@@ -22,7 +22,7 @@ export function ModelPage() {
             projectName={params.projectName}
             packageName={params.packageName}
          >
-            <Model modelPath={modelPath} hideEmbeddingIcons={true} />
+            <Model modelPath={modelPath} hideEmbeddingIcons={false} />
          </PackageProvider>
       );
    } else if (modelPath?.endsWith(".malloynb")) {
@@ -31,9 +31,9 @@ export function ModelPage() {
             projectName={params.projectName}
             packageName={params.packageName}
          >
-            <Notebook
-               notebookPath={modelPath}
-               hideEmbeddingIcons={true}
+            <Workbook
+               workbookPath={modelPath}
+               hideEmbeddingIcons={false}
                expandResults={false}
             />
          </PackageProvider>

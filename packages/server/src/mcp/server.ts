@@ -10,6 +10,7 @@ import { registerProjectResource } from "./resources/project_resource";
 import { registerQueryResource } from "./resources/query_resource";
 import { registerSourceResource } from "./resources/source_resource";
 import { registerViewResource } from "./resources/view_resource";
+import { registerTools } from "./tools/discovery_tools";
 import { registerExecuteQueryTool } from "./tools/execute_query_tool";
 
 export const testServerInfo = {
@@ -46,6 +47,8 @@ export function initializeMcpServer(projectStore: ProjectStore): McpServer {
 
    logger.info("[MCP Init] Registering executeQuery tool...");
    registerExecuteQueryTool(mcpServer, projectStore);
+
+   registerTools(mcpServer, projectStore);
 
    logger.info("[MCP Init] Registering prompt capability...");
    registerPromptCapability(mcpServer, projectStore);

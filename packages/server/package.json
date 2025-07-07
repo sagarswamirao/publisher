@@ -1,7 +1,7 @@
 {
    "name": "@malloy-publisher/server",
    "description": "Malloy Publisher Server",
-   "version": "0.0.70",
+   "version": "0.0.80",
    "main": "dist/server.js",
    "bin": {
       "malloy-publisher": "dist/server.js"
@@ -23,13 +23,14 @@
    "dependencies": {
       "@malloydata/db-bigquery": "^0.0.293",
       "@malloydata/db-duckdb": "^0.0.293",
+      "@malloydata/db-mysql": "^0.0.293",
       "@malloydata/db-postgres": "^0.0.293",
       "@malloydata/db-snowflake": "^0.0.293",
       "@malloydata/db-trino": "^0.0.293",
       "@malloydata/malloy": "^0.0.293",
       "@malloydata/malloy-sql": "^0.0.293",
       "@malloydata/render": "^0.0.293",
-      "@modelcontextprotocol/sdk": "^1.10.2",
+      "@modelcontextprotocol/sdk": "^1.13.2",
       "@opentelemetry/api": "^1.9.0",
       "@opentelemetry/auto-instrumentations-node": "^0.57.0",
       "@opentelemetry/sdk-metrics": "^2.0.0",
@@ -41,14 +42,15 @@
       "cors": "^2.8.5",
       "express": "^4.21.0",
       "globals": "^15.9.0",
+      "handlebars": "^4.7.8",
       "http-proxy-middleware": "^3.0.5",
       "morgan": "^1.10.0",
       "node-cron": "^3.0.3",
       "recursive-readdir": "^2.2.3",
-      "handlebars": "^4.7.8",
       "uuid": "^11.0.3"
    },
    "devDependencies": {
+      "@anthropic-ai/dxt": "^0.1.0",
       "@eslint/compat": "^1.2.7",
       "@eslint/eslintrc": "^3.3.1",
       "@eslint/js": "^9.23.0",

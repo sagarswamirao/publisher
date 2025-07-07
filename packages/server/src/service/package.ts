@@ -38,6 +38,7 @@ export class Package {
    private databases: ApiDatabase[];
    private models: Map<string, Model> = new Map();
    private scheduler: Scheduler | undefined;
+   private packagePath: string;
    private static meter = metrics.getMeter("publisher");
    private static packageLoadHistogram = this.meter.createHistogram(
       "malloy_package_load_duration",
@@ -50,6 +51,7 @@ export class Package {
    constructor(
       projectName: string,
       packageName: string,
+      packagePath: string,
       packageMetadata: ApiPackage,
       databases: ApiDatabase[],
       models: Map<string, Model>,
@@ -57,6 +59,7 @@ export class Package {
    ) {
       this.projectName = projectName;
       this.packageName = packageName;
+      this.packagePath = packagePath;
       this.packageMetadata = packageMetadata;
       this.databases = databases;
       this.models = models;
@@ -107,6 +110,7 @@ export class Package {
          return new Package(
             projectName,
             packageName,
+            packagePath,
             packageConfig,
             databases,
             models,
@@ -142,6 +146,14 @@ export class Package {
 
    public getModel(modelPath: string): Model | undefined {
       return this.models.get(modelPath);
+   }
+
+   public async getModelFileText(modelPath: string): Promise<string> {
+      const model = this.getModel(modelPath);
+      if (!model) {
+         throw new Error(`Model not found: ${modelPath}`);
+      }
+      return await model.getFileText(this.packagePath);
    }
 
    public async listModels(): Promise<ApiModel[]> {

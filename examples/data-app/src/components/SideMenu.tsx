@@ -6,7 +6,6 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import MenuContent from "./MenuContent";
-import { useAuth } from "../hooks/useAuth";
 import { Tooltip } from "@mui/material";
 import OptionsMenu from "./OptionsMenu";
 
@@ -27,12 +26,14 @@ export default function SideMenu({
   selectedView,
   setSelectedView,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
   setSelectedView: (
-    view: "malloySamples" | "singleEmbed" | "dynamicDashboard"
+    view: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive"
   ) => void;
 }) {
-  const { user } = useAuth();
+  const { user } = {
+    user: { name: "John Doe", email: "john.doe@example.com" },
+  };
 
   return (
     <Drawer

@@ -1,7 +1,7 @@
 {
    "name": "@malloy-publisher/app",
    "description": "Malloy Publisher App",
-   "version": "0.0.70",
+   "version": "0.0.80",
    "type": "module",
    "main": "dist/index.cjs.js",
    "module": "dist/index.es.js",
@@ -30,6 +30,7 @@
       "preview": "bunx vite preview",
       "lint": "bunx eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
       "format": "bunx prettier --write --parser typescript '**/*.{ts,tsx}'",
+      "analyze": "bunx vite-bundle-visualizer",
       "generate-api-types": ""
    },
    "dependencies": {

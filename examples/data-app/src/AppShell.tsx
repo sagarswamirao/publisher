@@ -4,17 +4,18 @@ import {
   createTheme,
   CssBaseline,
   Box,
+  Typography,
   alpha,
 } from "@mui/material";
 import { useState, useMemo } from "react";
 import AppNavbar from "./components/AppNavbar";
 import SideMenu from "./components/SideMenu";
-import { useAuth } from "./hooks/useAuth";
 import { Loader } from "./components/Loader";
 import { ErrorScreen } from "./components/ErrorScreen";
 import MalloySamplesDashboard from "./components/MalloySamplesDashboard";
 import SingleEmbedDashboard from "./components/SingleEmbedDashboard";
 import DynamicDashboard from "./components/DynamicDashboard";
+import InteractiveDashboard from "./components/InteractiveDashboard";
 
 export default function AppShell() {
   const [mode, setMode] = useState<PaletteMode>("light");
@@ -23,18 +24,8 @@ export default function AppShell() {
     [mode]
   );
   const [selectedView, setSelectedView] = useState<
-    "malloySamples" | "singleEmbed" | "dynamicDashboard"
+    "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive"
   >("malloySamples");
-
-  const { isLoading, accessToken, error } = useAuth();
-
-  if (error) {
-    return <ErrorScreen error={error} />;
-  }
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -44,7 +35,7 @@ export default function AppShell() {
           selectedView={selectedView}
           setSelectedView={setSelectedView}
         />
-        <AppNavbar />
+        <AppNavbar selectedView={selectedView} setSelectedView={setSelectedView} />
         <Box
           component="main"
           sx={{
@@ -56,7 +47,7 @@ export default function AppShell() {
             position: "relative",
           }}
         >
-          {accessToken && (
+          {
             <>
               {selectedView === "malloySamples" && (
                 <MalloySamplesDashboard selectedView={selectedView} />
@@ -67,8 +58,11 @@ export default function AppShell() {
               {selectedView === "dynamicDashboard" && (
                 <DynamicDashboard selectedView={selectedView} />
               )}
+              {selectedView === "interactive" && (
+                <InteractiveDashboard selectedView={selectedView} />
+              )}
             </>
-          )}
+          }
         </Box>
       </Box>
     </ThemeProvider>

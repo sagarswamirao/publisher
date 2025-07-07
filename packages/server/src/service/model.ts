@@ -634,4 +634,15 @@ export class Model {
    public getModelType(): ModelType {
       return this.modelType;
    }
+
+   public async getFileText(packagePath: string): Promise<string> {
+      const fullPath = path.join(packagePath, this.modelPath);
+      try {
+         return await fs.readFile(fullPath, "utf8");
+      } catch {
+         throw new ModelNotFoundError(
+            `Model file not found: ${this.modelPath}`,
+         );
+      }
+   }
 }

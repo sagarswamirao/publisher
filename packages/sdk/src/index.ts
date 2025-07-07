@@ -1,5 +1,6 @@
 export * from "./components";
 export { default as ConnectionExplorer } from "./components/Project/ConnectionExplorer";
+export { useRawQueryData } from "./hooks/useRawQueryData";
 import axios from "axios";
 
 // There's a bug in the OpenAPI generator that causes it to ignore baseURL in the

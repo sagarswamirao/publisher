@@ -10,7 +10,7 @@ import Search from "./Search";
 export default function Header({
   selectedView,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard";
+  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
 }) {
   return (
     <Stack

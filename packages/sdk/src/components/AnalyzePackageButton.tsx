@@ -15,12 +15,9 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useRouterClickHandler } from "./click_helper";
-import {
-   BrowserNotebookStorage,
-   MutableNotebookList,
-   NotebookStorageProvider,
-} from "./MutableNotebook";
+import { WorkbookList } from "./Workbook";
 import { useParams } from "react-router-dom";
+import { PackageProvider } from "./Package";
 
 export function AnalyzePackageButton() {
    const { projectName, packageName } = useParams();
@@ -44,20 +41,20 @@ export function AnalyzePackageButton() {
       setNewDialogOpen(false);
    };
 
-   const handleNotebookClick = (notebook: string, event: React.MouseEvent) => {
+   const handleWorkbookClick = (workbook: string, event: React.MouseEvent) => {
       setOpenDialogOpen(false);
-      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
+      // Navigate to the WorkbookPage with anchor text for notebookPath
       navigate(
-         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(notebook)}`,
+         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbook)}`,
          event,
       );
    };
 
-   const createNotebookClick = (event?: React.MouseEvent) => {
+   const createWorkbookClick = (event?: React.MouseEvent) => {
       setNewDialogOpen(false);
-      // Navigate to the ScratchNotebookPage with anchor text for notebookPath
+      // Navigate to the WorkbookPage with anchor text for notebookPath
       navigate(
-         `/${projectName}/${packageName}/scratchNotebook/${encodeURIComponent(workbookName)}`,
+         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbookName)}`,
          event,
       );
       setWorkbookName("");
@@ -143,7 +140,10 @@ export function AnalyzePackageButton() {
             fullWidth
          >
             <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
-               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+               <Typography
+                  fontWeight={600}
+                  sx={{ fontSize: "1.5rem", mb: 0.5 }}
+               >
                   Create New Workbook
                </Typography>
                <Typography variant="body2" color="text.secondary">
@@ -172,7 +172,7 @@ export function AnalyzePackageButton() {
                         Cancel
                      </Button>
                      <Button
-                        onClick={(event) => createNotebookClick(event)}
+                        onClick={(event) => createWorkbookClick(event)}
                         variant="contained"
                         disabled={!workbookName.trim()}
                         size="small"
@@ -192,7 +192,10 @@ export function AnalyzePackageButton() {
             fullWidth
          >
             <DialogTitle sx={{ pb: 1, pt: 2, px: 2 }}>
-               <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+               <Typography
+                  fontWeight={600}
+                  sx={{ mb: 0.5, fontSize: "1.5rem" }}
+               >
                   Open Workbook
                </Typography>
                <Typography variant="body2" color="text.secondary">
@@ -200,15 +203,12 @@ export function AnalyzePackageButton() {
                </Typography>
             </DialogTitle>
             <DialogContent sx={{ px: 2, pb: 2 }}>
-               <NotebookStorageProvider
-                  notebookStorage={new BrowserNotebookStorage()}
-                  userContext={{
-                     project: projectName,
-                     package: packageName,
-                  }}
+               <PackageProvider
+                  projectName={projectName}
+                  packageName={packageName}
                >
-                  <MutableNotebookList onNotebookClick={handleNotebookClick} />
-               </NotebookStorageProvider>
+                  <WorkbookList onWorkbookClick={handleWorkbookClick} />
+               </PackageProvider>
             </DialogContent>
          </Dialog>
       </>

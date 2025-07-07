@@ -1,10 +1,6 @@
 export type Widget = {
   id: string;
-  server: string;
-  projectName: string;
-  packageName: string;
-  modelPath: string;
-  query: string;
+  queryResultString: string;
   title?: string;
   layout: {
     i: string;

@@ -3,25 +3,21 @@ import * as ReactDOM from "react-dom/client";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import theme from "./theme";
-import { Auth0Provider } from "@auth0/auth0-react";
 import AppShell from "./AppShell";
+import { ServerProvider } from "@malloy-publisher/sdk";
+
+const apiUrl = import.meta.env.VITE_PUBLISHER_API;
+const getAccessToken = async (): Promise<string> => {
+  return ""; // would replace with real auth logic when needed
+};
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Auth0Provider
-      domain="dev-ohaafogw5p8uyx1m.us.auth0.com"
-      clientId="fMzzNURq1avAeKZGXe7mnSt71TBBQcJy"
-      authorizationParams={{
-        redirect_uri: window.location.origin,
-        audience: "https://dev-ohaafogw5p8uyx1m.us.auth0.com/api/v2/",
-        scope: "openid profile email offline_access",
-      }}
-      cacheLocation="localstorage"
-    >
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <ServerProvider server={apiUrl} getAccessToken={getAccessToken}>
         <AppShell />
-      </ThemeProvider>
-    </Auth0Provider>
+      </ServerProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

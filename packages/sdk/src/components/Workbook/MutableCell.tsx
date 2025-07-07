@@ -15,7 +15,7 @@ import {
    Tooltip,
    Typography,
 } from "@mui/material";
-import MDEditor from "@uiw/react-md-editor";
+import MDEditor from "@uiw/react-md-editor/nohighlight";
 import Markdown from "markdown-to-jsx";
 import React, { useEffect, useState } from "react";
 import { highlight } from "../highlighter";
@@ -24,20 +24,20 @@ import {
    QueryExplorerResult,
    SourceAndPath,
 } from "../Model/SourcesExplorer";
-import { NotebookCellValue } from "../NotebookManager";
+import { WorkbookCellValue } from "./WorkbookManager";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { StyledCard } from "../styles";
 import { EditableMalloyCell } from "./EditableMalloyCell";
 
 interface NotebookCellProps {
-   cell: NotebookCellValue;
+   cell: WorkbookCellValue;
    expandCodeCell?: boolean;
    expandEmbedding?: boolean;
    hideEmbeddingIcons?: boolean;
    editingMalloy?: boolean;
    editingMarkdown?: boolean;
    sourceAndPaths: SourceAndPath[];
-   onCellChange: (cell: NotebookCellValue) => void;
+   onCellChange: (cell: WorkbookCellValue) => void;
    onClose: () => void;
    onEdit: () => void;
    onDelete: () => void;
@@ -72,8 +72,8 @@ export function MutableCell({
    const [selectedSourceIndex, setSelectedSourceIndex] = React.useState<number>(
       cell.sourceName
          ? sourceAndPaths.findIndex(
-            (entry) => entry.sourceInfo.name === cell.sourceName,
-         )
+              (entry) => entry.sourceInfo.name === cell.sourceName,
+           )
          : 0,
    );
 
