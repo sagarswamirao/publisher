@@ -26,7 +26,11 @@ export default function SideMenu({
   selectedView,
   setSelectedView,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
+  selectedView:
+    | "malloySamples"
+    | "singleEmbed"
+    | "dynamicDashboard"
+    | "interactive";
   setSelectedView: (
     view: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive"
   ) => void;
@@ -39,6 +43,7 @@ export default function SideMenu({
     <Drawer
       variant="permanent"
       sx={{
+        zIndex: 10,
         display: { xs: "none", md: "block" },
         [`& .${drawerClasses.paper}`]: {
           backgroundColor: "background.paper",

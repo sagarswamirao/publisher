@@ -21,7 +21,10 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 import "@malloydata/malloy-explorer/styles.css";
 import { usePackage } from "../Package/PackageProvider";
-import { SourceExplorerComponent } from "./SourcesExplorer";
+import {
+   QueryExplorerResult,
+   SourceExplorerComponent,
+} from "./SourcesExplorer";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
@@ -34,6 +37,7 @@ interface ModelProps {
    hideResultIcons?: boolean;
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
+   onChange?: (query: QueryExplorerResult) => void;
 }
 
 // Note: For this to properly render outside of publisher,
@@ -46,6 +50,7 @@ export default function Model({
    hideResultIcons,
    expandEmbeddings,
    hideEmbeddingIcons,
+   onChange,
 }: ModelProps) {
    const [embeddingExpanded, setEmbeddingExpanded] =
       React.useState<boolean>(false);
@@ -203,6 +208,7 @@ export default function Model({
                               data.sourceInfos[selectedTab],
                            ),
                         }}
+                        onChange={onChange}
                      />
                   )}
                {data.queries?.length > 0 && (
