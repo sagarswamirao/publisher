@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -6,12 +5,6 @@ import {
   Typography,
   Tooltip,
   Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
   IconButton,
 } from "@mui/material";
 import GridLayout from "react-grid-layout";
@@ -28,6 +21,7 @@ import { Widget } from "../types/widget";
 import { getNextWidgetPosition } from "../utils/getNextWidgetPosition";
 import { v4 as uuidv4 } from "uuid";
 import { EmbeddedQueryResult } from "@malloy-publisher/sdk";
+import AddChartDialog from "./AddChartDialog";
 
 export default function Dashboard({
   selectedView,
@@ -35,19 +29,20 @@ export default function Dashboard({
   defaultWidgets = [],
   customizeWidgetsEffect,
 }: {
-  selectedView: "malloySamples" | "singleEmbed" | "dynamicDashboard" | "interactive";
+  selectedView:
+    | "malloySamples"
+    | "singleEmbed"
+    | "dynamicDashboard"
+    | "interactive";
   storageKey: string;
   defaultWidgets?: Widget[];
   customizeWidgetsEffect?: (widgets: Widget[]) => void;
 }) {
   const [widgets, setWidgets] = useState<Widget[]>([]);
-  const [newQuery, setNewQuery] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleAddWidget = () => {
+  const handleAddWidget = (newTitle: string, newQuery: string) => {
     const id = uuidv4();
     const widgetWidth = 12;
     const widgetHeight = 10;
@@ -71,9 +66,6 @@ export default function Dashboard({
     };
 
     setWidgets((prev) => [...prev, newWidget]);
-    setNewQuery("");
-    setNewTitle("");
-    setErrorMessage(null);
     setIsDialogOpen(false);
   };
 
@@ -136,146 +128,147 @@ export default function Dashboard({
     <Stack spacing={2} sx={{ mt: { xs: 8, md: 0 }, mb: 8 }}>
       <Header selectedView={selectedView} />
 
-      <GridLayout
-        className="layout"
-        layout={widgets.map((w) => w.layout)}
-        cols={12}
-        rowHeight={40}
-        width={1200}
-        onLayoutChange={onLayoutChange}
-        draggableHandle=".drag-handle"
-      >
-        {widgets.map((widget) => (
-          <div
-            key={widget.id}
-            data-grid={{ ...widget.layout, i: widget.id }}
-            style={{
-              border: "1px solid #ccc",
-              padding: 8,
-              borderRadius: 4,
-              overflow: "hidden",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-            }}
-          >
-            <Box
-              sx={{
-                mb: 1,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography
-                variant="subtitle2"
-                className="drag-handle"
-                sx={{ cursor: "move" }}
+      {widgets.length === 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "400px",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2, color: "text.secondary" }}>
+            Click{" "}
+            <Tooltip title="Add embedded chart" arrow>
+              <IconButton
+                color="primary"
+                onClick={() => setIsDialogOpen(true)}
+                sx={{
+                  mx: 1,
+                  backgroundColor: "primary.main",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                }}
               >
-                {widget.title}
-              </Typography>
-
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Tooltip
-                  title={widget.locked ? "Unlock chart" : "Lock chart"}
-                  arrow
-                >
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleToggleLock(widget.id);
-                    }}
-                  >
-                    {widget.locked ? <LockIcon /> : <LockOpenIcon />}
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title="Remove chart" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleRemove(widget.id);
-                    }}
-                  >
-                    <DeleteOutlineIcon />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                width: "90%",
-                height: "396px",
-                overflow: "visible",
+                <AddIcon />
+              </IconButton>
+            </Tooltip>{" "}
+            to add a new Chart
+          </Typography>
+        </Box>
+      ) : (
+        <GridLayout
+          className="layout"
+          layout={widgets.map((w) => w.layout)}
+          cols={12}
+          rowHeight={40}
+          width={1200}
+          onLayoutChange={onLayoutChange}
+          draggableHandle=".drag-handle"
+        >
+          {widgets.map((widget) => (
+            <div
+              key={widget.id}
+              data-grid={{ ...widget.layout, i: widget.id }}
+              style={{
+                border: "1px solid #ccc",
+                padding: 8,
+                borderRadius: 4,
+                overflow: "hidden",
+                maxWidth: "100%",
+                boxSizing: "border-box",
               }}
             >
-              <EmbeddedQueryResult
-                embeddedQueryResult={widget.queryResultString}
-              />
-            </Box>
-          </div>
-        ))}
-      </GridLayout>
+              <Box
+                sx={{
+                  mb: 1,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  className="drag-handle"
+                  sx={{ cursor: "move" }}
+                >
+                  {widget.title}
+                </Typography>
+
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Tooltip
+                    title={widget.locked ? "Unlock chart" : "Lock chart"}
+                    arrow
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleToggleLock(widget.id);
+                      }}
+                    >
+                      {widget.locked ? <LockIcon /> : <LockOpenIcon />}
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip title="Remove chart" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleRemove(widget.id);
+                      }}
+                    >
+                      <DeleteOutlineIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+
+              <Box
+                sx={{
+                  width: "90%",
+                  height: "396px",
+                  overflow: "visible",
+                }}
+              >
+                <EmbeddedQueryResult
+                  embeddedQueryResult={widget.queryResultString}
+                />
+              </Box>
+            </div>
+          ))}
+        </GridLayout>
+      )}
 
       <Tooltip title="Add embedded chart" arrow>
         <Fab
           color="primary"
           aria-label="add"
           onClick={() => setIsDialogOpen(true)}
+          disabled={isDialogOpen}
           sx={{
             position: "fixed",
             bottom: 24,
             right: 24,
-            zIndex: 10,
+            zIndex: isDialogOpen ? 1 : 200,
           }}
         >
           <AddIcon />
         </Fab>
       </Tooltip>
-
-      <Dialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Add Embedded Chart</DialogTitle>
-
-        <DialogContent>
-          <TextField
-            label="Chart title (optional)"
-            fullWidth
-            value={newTitle}
-            sx={{ mt: 1 }}
-            onChange={(e) => setNewTitle(e.target.value)}
-          />
-
-          <TextField
-            label="Paste embedded QueryResult"
-            multiline
-            fullWidth
-            rows={6}
-            value={newQuery}
-            sx={{ mt: 1 }}
-            onChange={(e) => setNewQuery(e.target.value)}
-          />
-          {errorMessage && (
-            <Typography color="error" sx={{ mt: 1 }}>
-              {errorMessage}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleAddWidget}>
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {isDialogOpen && (
+        <AddChartDialog
+          onClose={() => setIsDialogOpen(false)}
+          handleAddWidget={handleAddWidget}
+        />
+      )}
     </Stack>
   );
 }

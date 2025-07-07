@@ -19,6 +19,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     // The dev mode render seems to fail when loading the lazy load malloydata/render
-    include: ["@malloydata/render"],
+    include: ["@malloydata/render", "@malloydata/malloy-explorer"],
   },
 });

@@ -5,3 +5,4 @@ export {
    PackageProvider as PublisherPackageProvider,
    usePackage as usePublisherPackage,
 } from "./PackageProvider";
+export { default as Models } from "./Models";
