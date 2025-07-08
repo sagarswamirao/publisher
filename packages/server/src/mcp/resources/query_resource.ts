@@ -2,21 +2,22 @@ import {
    McpServer,
    ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { ProjectStore } from "../../service/project_store";
+import { URL } from "url";
+import type { components } from "../../api"; // Need this for Query definition type
 import { ModelCompilationError } from "../../errors";
+import { logger } from "../../logger";
+import { ProjectStore } from "../../service/project_store";
 import {
+   getInternalError,
+   getMalloyErrorDetails,
+   getNotFoundError,
+} from "../error_messages";
+import {
+   getModelForQuery,
    handleResourceGet,
    McpGetResourceError,
-   getModelForQuery,
 } from "../handler_utils";
 import { RESOURCE_METADATA } from "../resource_metadata";
-import {
-   getNotFoundError,
-   getMalloyErrorDetails,
-   getInternalError,
-} from "../error_messages";
-import type { components } from "../../api"; // Need this for Query definition type
-import { URL } from "url";
 
 // Define the expected parameter types
 type QueryParams = {
@@ -99,9 +100,9 @@ export function registerQueryResource(
                      );
                      throw new McpGetResourceError(errorDetails);
                   }
-                  console.error(
+                  logger.error(
                      `[MCP Server Error] Error fetching query '${queryName}' from ${uri.href}:`,
-                     error,
+                     { error },
                   );
                   const fallbackErrorDetails = getInternalError(
                      `GetResource (query: ${uri.href})`,

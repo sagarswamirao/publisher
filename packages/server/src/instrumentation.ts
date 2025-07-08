@@ -11,17 +11,17 @@ import {
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
+import { logger } from "./logger";
 
 function instrument() {
    const otelCollectorUrl = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
    if (!otelCollectorUrl) {
-      console.log("No OTLP collector URL found, skipping instrumentation");
+      logger.info("No OTLP collector URL found, skipping instrumentation");
       return;
    }
 
-   console.log(
-      "Initializing OpenTelemetry SDK with OTLP collector at",
-      otelCollectorUrl,
+   logger.info(
+      `Initializing OpenTelemetry SDK with OTLP collector at ${otelCollectorUrl}`,
    );
    const traceExporter = new OTLPTraceExporter({
       url: `${otelCollectorUrl}/v1/traces`,
@@ -53,7 +53,7 @@ function instrument() {
    });
 
    sdk.start();
-   console.log("Initialized OpenTelemetry SDK");
+   logger.info("Initialized OpenTelemetry SDK");
 }
 
 instrument();

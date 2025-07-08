@@ -3,6 +3,7 @@ import * as path from "path";
 import { components } from "../api";
 import { API_PREFIX } from "../constants";
 import { ProjectNotFoundError } from "../errors";
+import { logger } from "../logger";
 import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
@@ -68,9 +69,9 @@ export class ProjectStore {
          return JSON.parse(projectManifestContent);
       } catch (error) {
          if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-            // eslint-disable-next-line no-console
-            console.error(
-               `Error reading publisher.config.json: ${error.message}. Generating from directory`,
+            logger.error(
+               `Error reading publisher.config.json. Generating from directory`,
+               { error },
             );
             return { projects: {} };
          } else {
@@ -87,10 +88,9 @@ export class ProjectStore {
                }
                return { projects };
             } catch (lsError) {
-               // eslint-disable-next-line no-console
-               console.error(
-                  `Error listing directories in ${serverRootPath}: ${lsError.message}`,
-               );
+               logger.error(`Error listing directories in ${serverRootPath}`, {
+                  error: lsError,
+               });
                return { projects: {} };
             }
          }

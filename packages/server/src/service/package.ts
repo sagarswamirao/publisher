@@ -13,6 +13,7 @@ import recursive from "recursive-readdir";
 import { components } from "../api";
 import { API_PREFIX } from "../constants";
 import { PackageNotFoundError } from "../errors";
+import { logger } from "../logger";
 import {
    MODEL_FILE_SUFFIX,
    NOTEBOOK_FILE_SUFFIX,
@@ -116,7 +117,7 @@ export class Package {
             scheduler,
          );
       } catch (error) {
-         console.error(error);
+         logger.error("Error loading package", { error });
          const endTime = performance.now();
          const executionTime = endTime - startTime;
          this.packageLoadHistogram.record(executionTime, {
@@ -219,7 +220,7 @@ export class Package {
       try {
          files = await recursive(packagePath);
       } catch (error) {
-         console.error(error);
+         logger.error(error);
          throw new PackageNotFoundError(
             `Package config for ${packagePath} does not exist.`,
          );

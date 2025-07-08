@@ -1,17 +1,18 @@
-import fs from "fs";
-import path from "path";
-import os from "os";
-import { v4 as uuidv4 } from "uuid";
-import { Pool } from "pg";
 import { BigQuery } from "@google-cloud/bigquery";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { Pool } from "pg";
 import * as snowflake from "snowflake-sdk";
+import { v4 as uuidv4 } from "uuid";
+import { components } from "../api";
+import { logger } from "../logger";
 import {
    ApiConnection,
+   MysqlConnection,
    PostgresConnection,
    SnowflakeConnection,
-   MysqlConnection,
 } from "./model";
-import { components } from "../api";
 
 type ApiSchemaName = components["schemas"]["SchemaName"];
 
@@ -156,7 +157,7 @@ export async function getSchemasForConnection(
       } finally {
          snowflakeConn.destroy((error) => {
             if (error) {
-               console.error(`Error closing SnowflakeConnection: ${error}`);
+               logger.error(`Error closing SnowflakeConnection: ${error}`);
             }
          });
       }
@@ -188,9 +189,9 @@ export async function getTablesForSchema(
          const [tables] = await dataset.getTables();
          return tables.map((table) => table.id).filter((id) => id) as string[];
       } catch (error) {
-         console.error(
-            `Error getting tables for BigQuery schema ${schemaName} in connection ${connection.name}:`,
-            error,
+         logger.error(
+            `Error getting tables for BigQuery schema ${schemaName} in connection ${connection.name}`,
+            { error },
          );
          throw new Error(
             `Failed to get tables for BigQuery schema ${schemaName} in connection ${connection.name}: ${(error as Error).message}`,
@@ -232,7 +233,7 @@ export async function getTablesForSchema(
       } finally {
          snowflakeConn.destroy((error) => {
             if (error) {
-               console.error(`Error closing SnowflakeConnection: ${error}`);
+               logger.error(`Error closing SnowflakeConnection`, { error });
             }
          });
       }
@@ -274,10 +275,9 @@ async function getSnowflakeTables(
          sqlText: `USE DATABASE ${connInfo?.database} `,
          complete: (err) => {
             if (err) {
-               console.error(
-                  `Error setting database ${connInfo.database}:`,
-                  err,
-               );
+               logger.error(`Error setting database ${connInfo.database}:`, {
+                  error: err,
+               });
                reject([]);
                return;
             }
@@ -293,9 +293,9 @@ async function getSnowflakeTables(
                binds: [schemaName],
                complete: (err, _, rows) => {
                   if (err) {
-                     console.error(
+                     logger.error(
                         `Error fetching tables from ${connInfo.database}:`,
-                        err,
+                        { error: err },
                      );
                      reject([]);
                   } else {
@@ -320,7 +320,7 @@ async function getSnowflakeSchemas(
             } else {
                resolve(
                   rows?.map((row) => {
-                     console.log("row", JSON.stringify(row));
+                     logger.info("row", { row });
                      return {
                         name: row.name,
                         isDefault: row.isDefault === "Y",

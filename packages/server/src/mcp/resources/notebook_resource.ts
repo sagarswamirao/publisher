@@ -2,21 +2,22 @@ import {
    McpServer,
    ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { ProjectStore } from "../../service/project_store";
+import { URL } from "url";
+import type { components } from "../../api"; // Need this for CompiledModel type
 import {
+   ModelCompilationError,
    ModelNotFoundError,
    PackageNotFoundError,
-   ModelCompilationError,
 } from "../../errors";
+import { logger } from "../../logger";
+import { ProjectStore } from "../../service/project_store";
+import {
+   getInternalError,
+   getMalloyErrorDetails,
+   getNotFoundError,
+} from "../error_messages";
 import { handleResourceGet, McpGetResourceError } from "../handler_utils";
 import { RESOURCE_METADATA } from "../resource_metadata";
-import {
-   getNotFoundError,
-   getMalloyErrorDetails,
-   getInternalError,
-} from "../error_messages";
-import type { components } from "../../api"; // Need this for CompiledModel type
-import { URL } from "url";
 
 // Define the expected parameter types
 type NotebookParams = {
@@ -119,9 +120,9 @@ export function registerNotebookResource(
                   }
 
                   // Handle other unexpected errors
-                  console.error(
+                  logger.error(
                      `[MCP Server Error] Error fetching notebook '${notebookName}' from ${uri.href}:`,
-                     error,
+                     { error },
                   );
                   const fallbackErrorDetails = getInternalError(
                      `GetResource (notebook: ${uri.href})`,

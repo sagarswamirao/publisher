@@ -15,6 +15,7 @@ import {
    type ErrorDetails,
 } from "./error_messages";
 import type { Model } from "../service/model";
+import { logger } from "../logger";
 
 // Custom error to wrap specific GetResource application errors
 export class McpGetResourceError extends Error {
@@ -71,9 +72,9 @@ export async function handleResourceGet<
          ],
       };
    } catch (error) {
-      console.error(
+      logger.error(
          `[MCP Server Error] Error reading ${resourceType} ${uri.href}:`,
-         error,
+         { error },
       );
 
       let errorDetails: ErrorDetails;
@@ -84,9 +85,9 @@ export async function handleResourceGet<
          errorDetails = error.details;
       } else {
          // Catch-all for truly unexpected errors not handled by the specific getData logic
-         console.error(
+         logger.error(
             "[MCP Server Error] Unexpected error type caught in handleResourceGet:",
-            error,
+            { error },
          );
          errorDetails = getInternalError(
             `GetResource (${resourceType})`,
@@ -163,9 +164,9 @@ export async function getModelForQuery(
          // Unexpected error during setup
          errorDetails = getInternalError("executeQuery (Setup)", error);
       }
-      console.error(
+      logger.error(
          `[MCP Server Error] Error accessing package/model for query: ${projectName}/${packageName}/${modelPath}`,
-         error,
+         { error },
       );
       return { error: errorDetails };
    }
