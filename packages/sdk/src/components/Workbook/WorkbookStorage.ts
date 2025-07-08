@@ -21,7 +21,10 @@ export interface WorkbookStorage {
    // Lists all available workbooks for the context.
    // Workbooks names are like S3 paths- / denote hierarchical
    // folders, but otherwise folders are not "real" objects
-   listWorkbooks(context: PackageContextProps): Promise<WorkbookLocator[]>;
+   listWorkbooks(
+      workspace: Workspace,
+      context: PackageContextProps,
+   ): Promise<WorkbookLocator[]>;
 
    // Returns the workbook at the specific path, throws an exception if no such workbook exists (or cannot be accessed)
    getWorkbook(

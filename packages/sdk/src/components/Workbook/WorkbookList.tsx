@@ -29,13 +29,26 @@ export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
    React.useEffect(() => {
       if (workbookStorage) {
          workbookStorage
-            .listWorkbooks(packageContext)
-            .then((workbooks) => {
-               setWorkbooks(workbooks);
-               setLastError(undefined);
-            })
-            .catch((error) => {
-               setLastError(`Error listing workbooks: ${error.message}`);
+            .listWorkspaces(packageContext, false)
+            .then((workspaces) => {
+               const allWorkbooks: WorkbookLocator[] = [];
+               Promise.all(
+                  workspaces.map(async (workspace) => {
+                     await workbookStorage
+                        .listWorkbooks(workspace, packageContext)
+                        .then((newWorkbooks) => {
+                           allWorkbooks.push(...newWorkbooks);
+                        })
+                        .catch((error) => {
+                           setLastError(
+                              `Error listing workbooks: ${error.message}`,
+                           );
+                        });
+                  }),
+               ).then(() => {
+                  setWorkbooks(allWorkbooks);
+                  setLastError(undefined);
+               });
             });
       }
    }, [workbookStorage, packageContext]);

@@ -33,6 +33,7 @@ export class BrowserWorkbookStorage implements WorkbookStorage {
    }
 
    async listWorkbooks(
+      workspace: Workspace,
       context: PackageContextProps,
    ): Promise<WorkbookLocator[]> {
       const prefix = this.makeKey(context);
