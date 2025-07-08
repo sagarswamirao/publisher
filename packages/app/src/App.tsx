@@ -51,7 +51,7 @@ export const createMalloyRouter = (
                element: <ModelPage />,
             },
             {
-               path: ":projectName/:packageName/workbook/:workbookPath",
+               path: ":projectName/:packageName/workbook/:workspace/:workbookPath",
                element: <WorkbookPage />,
             },
          ],

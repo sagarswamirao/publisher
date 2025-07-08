@@ -30,11 +30,12 @@ import { useWorkbookStorage } from "./WorkbookStorageProvider";
 import * as Malloy from "@malloydata/malloy-interfaces";
 import { ModelPicker } from "./ModelPicker";
 import { getAxiosConfig } from "../../hooks";
+import { WorkbookLocator } from "./WorkbookStorage";
 
 const modelsApi = new ModelsApi(new Configuration());
 
 interface WorkbookProps {
-   workbookPath?: string;
+   workbookPath?: WorkbookLocator;
    expandCodeCells?: boolean;
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
@@ -304,7 +305,7 @@ export default function Workbook({
                         ml: 1,
                      }}
                   >
-                     {`${projectName} > ${packageName} > ${workbookPath}`}
+                     {`${projectName} > ${packageName} > ${workbookPath.path}`}
                   </Typography>
                </Stack>
                <Stack sx={{ display: "flex", flexDirection: "row", gap: 1 }}>
@@ -342,7 +343,7 @@ export default function Workbook({
                            <DialogContentText>
                               Are you sure you want to delete the workbook
                               &quot;
-                              {workbookPath}&quot;? This action cannot be
+                              {workbookPath.path}&quot;? This action cannot be
                               undone.
                            </DialogContentText>
                         </DialogContent>

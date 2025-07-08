@@ -1,4 +1,4 @@
-import { Model, Workbook, PackageProvider } from "@malloy-publisher/sdk";
+import { Model, PackageProvider, Notebook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function ModelPage() {
@@ -31,8 +31,8 @@ export function ModelPage() {
             projectName={params.projectName}
             packageName={params.packageName}
          >
-            <Workbook
-               workbookPath={modelPath}
+            <Notebook
+               notebookPath={modelPath}
                hideEmbeddingIcons={false}
                expandResults={false}
             />

@@ -1,14 +1,17 @@
 import { Add, Launch } from "@mui/icons-material";
 import {
+   Box,
    Button,
    Dialog,
    DialogContent,
    DialogTitle,
    FormControl,
+   InputLabel,
    ListItemIcon,
    ListItemText,
    Menu,
    MenuItem,
+   Select,
    Stack,
    TextField,
    Typography,
@@ -16,12 +19,20 @@ import {
 import React from "react";
 import { useRouterClickHandler } from "./click_helper";
 import { WorkbookList } from "./Workbook";
+import { useWorkbookStorage } from "./Workbook/WorkbookStorageProvider";
+import type { WorkbookLocator, Workspace } from "./Workbook/WorkbookStorage";
 import { useParams } from "react-router-dom";
-import { PackageProvider } from "./Package";
+import { PackageContextProps, PackageProvider } from "./Package";
 
 export function AnalyzePackageButton() {
-   const { projectName, packageName } = useParams();
+   const packageContext = useParams() as unknown as PackageContextProps;
+   const { packageName, projectName } = packageContext;
+   const { workbookStorage } = useWorkbookStorage();
    const [workbookName, setWorkbookName] = React.useState("");
+   const [selectedWorkspace, setSelectedWorkspace] = React.useState("");
+   const [availableWorkspaces, setAvailableWorkspaces] = React.useState<
+      Workspace[]
+   >([]);
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
    const [newDialogOpen, setNewDialogOpen] = React.useState(false);
    const [openDialogOpen, setOpenDialogOpen] = React.useState(false);
@@ -39,25 +50,52 @@ export function AnalyzePackageButton() {
    };
    const handleNewDialogClose = () => {
       setNewDialogOpen(false);
+      setWorkbookName("");
+      setSelectedWorkspace("");
    };
 
-   const handleWorkbookClick = (workbook: string, event: React.MouseEvent) => {
+   // Fetch available workspaces when the new dialog opens
+   React.useEffect(() => {
+      if (newDialogOpen && workbookStorage && packageContext) {
+         workbookStorage
+            .listWorkspaces(packageContext, true) // Only show writeable workspaces
+            .then((workspaces) => {
+               setAvailableWorkspaces(workspaces);
+               // If only one workspace, select it by default
+               if (workspaces.length === 1) {
+                  setSelectedWorkspace(workspaces[0].name);
+               }
+            })
+            .catch((error) => {
+               console.error("Error fetching workspaces:", error);
+               setAvailableWorkspaces([]);
+            });
+      }
+   }, [newDialogOpen, workbookStorage, packageContext]);
+
+   const handleWorkbookClick = (
+      workbook: WorkbookLocator,
+      event: React.MouseEvent,
+   ) => {
       setOpenDialogOpen(false);
       // Navigate to the WorkbookPage with anchor text for notebookPath
       navigate(
-         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbook)}`,
+         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbook.workspace)}/${encodeURIComponent(workbook.path)}`,
          event,
       );
    };
 
    const createWorkbookClick = (event?: React.MouseEvent) => {
       setNewDialogOpen(false);
+      // Include workspace in the workbook path if selected
+      const workbookPath = `${encodeURIComponent(selectedWorkspace)}/${encodeURIComponent(workbookName)}`;
       // Navigate to the WorkbookPage with anchor text for notebookPath
       navigate(
-         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbookName)}`,
+         `/${projectName}/${packageName}/workbook/${workbookPath}`,
          event,
       );
       setWorkbookName("");
+      setSelectedWorkspace("");
    };
 
    if (!projectName || !packageName) {
@@ -152,6 +190,61 @@ export function AnalyzePackageButton() {
             </DialogTitle>
             <DialogContent sx={{ px: 2, pb: 2 }}>
                <Stack spacing={2} sx={{ mt: 1 }}>
+                  {availableWorkspaces.length > 1 ? (
+                     <FormControl fullWidth size="small">
+                        <InputLabel>Workspace</InputLabel>
+                        <Select
+                           value={selectedWorkspace}
+                           label="Workspace"
+                           onChange={(e) =>
+                              setSelectedWorkspace(e.target.value)
+                           }
+                        >
+                           {availableWorkspaces.map((workspace) => (
+                              <MenuItem
+                                 key={workspace.name}
+                                 value={workspace.name}
+                              >
+                                 <Box>
+                                    <Typography
+                                       variant="body2"
+                                       fontWeight={500}
+                                    >
+                                       {workspace.name}
+                                    </Typography>
+                                    <Typography
+                                       variant="caption"
+                                       color="text.secondary"
+                                    >
+                                       {workspace.description}
+                                    </Typography>
+                                 </Box>
+                              </MenuItem>
+                           ))}
+                        </Select>
+                     </FormControl>
+                  ) : availableWorkspaces.length === 1 ? (
+                     <Box
+                        sx={{
+                           p: 2,
+                           border: 1,
+                           borderColor: "divider",
+                           borderRadius: 1,
+                           backgroundColor: "grey.50",
+                        }}
+                     >
+                        <Typography
+                           variant="body2"
+                           fontWeight={500}
+                           gutterBottom
+                        >
+                           Workspace: {availableWorkspaces[0].name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                           {availableWorkspaces[0].description}
+                        </Typography>
+                     </Box>
+                  ) : null}
                   <FormControl fullWidth>
                      <TextField
                         label="Workbook Name"
@@ -174,7 +267,11 @@ export function AnalyzePackageButton() {
                      <Button
                         onClick={(event) => createWorkbookClick(event)}
                         variant="contained"
-                        disabled={!workbookName.trim()}
+                        disabled={
+                           !workbookName.trim() ||
+                           (availableWorkspaces.length > 1 &&
+                              !selectedWorkspace)
+                        }
                         size="small"
                      >
                         Create Workbook
