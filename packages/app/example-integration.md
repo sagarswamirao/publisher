@@ -65,6 +65,7 @@ const AuthenticatedMalloyAppComponent: React.FC<AuthenticatedMalloyAppProps> = (
   return (
     <MalloyPublisherApp 
       server={authenticatedServer}
+      workspaceStorage={new BrowserWorkspaceStorage()}
       {...props}
     />
   );

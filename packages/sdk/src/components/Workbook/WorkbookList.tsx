@@ -9,15 +9,19 @@ import {
 import React from "react";
 import { useWorkbookStorage } from "./WorkbookStorageProvider";
 import { usePackage } from "../Package";
+import { WorkbookLocator } from "./WorkbookStorage";
 
 interface WorkbookListProps {
-   onWorkbookClick: (workbook: string, event: React.MouseEvent) => void;
+   onWorkbookClick: (
+      workbook: WorkbookLocator,
+      event: React.MouseEvent,
+   ) => void;
 }
 
 export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
    const { workbookStorage } = useWorkbookStorage();
    const packageContext = usePackage();
-   const [workbooks, setWorkbooks] = React.useState<string[]>([]);
+   const [workbooks, setWorkbooks] = React.useState<WorkbookLocator[]>([]);
    const [lastError, setLastError] = React.useState<string | undefined>(
       undefined,
    );
@@ -25,13 +29,26 @@ export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
    React.useEffect(() => {
       if (workbookStorage) {
          workbookStorage
-            .listWorkbooks(packageContext)
-            .then((workbooks) => {
-               setWorkbooks(workbooks);
-               setLastError(undefined);
-            })
-            .catch((error) => {
-               setLastError(`Error listing workbooks: ${error.message}`);
+            .listWorkspaces(packageContext, false)
+            .then((workspaces) => {
+               const allWorkbooks: WorkbookLocator[] = [];
+               Promise.all(
+                  workspaces.map(async (workspace) => {
+                     await workbookStorage
+                        .listWorkbooks(workspace, packageContext)
+                        .then((newWorkbooks) => {
+                           allWorkbooks.push(...newWorkbooks);
+                        })
+                        .catch((error) => {
+                           setLastError(
+                              `Error listing workbooks: ${error.message}`,
+                           );
+                        });
+                  }),
+               ).then(() => {
+                  setWorkbooks(allWorkbooks);
+                  setLastError(undefined);
+               });
             });
       }
    }, [workbookStorage, packageContext]);
@@ -73,7 +90,7 @@ export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
                )}
                {workbooks.map((workbook) => (
                   <ListItem
-                     key={workbook}
+                     key={workbook.path}
                      onClick={(event: React.MouseEvent) =>
                         onWorkbookClick(workbook, event)
                      }
@@ -84,7 +101,7 @@ export function WorkbookList({ onWorkbookClick }: WorkbookListProps) {
                         },
                      }}
                   >
-                     <ListItemText primary={workbook} />
+                     <ListItemText primary={workbook.path} />
                   </ListItem>
                ))}
             </List>

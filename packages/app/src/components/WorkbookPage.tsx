@@ -2,7 +2,7 @@ import { PackageProvider, Workbook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function WorkbookPage() {
-   const { projectName, packageName, workbookPath } = useParams();
+   const { projectName, packageName, workspace, workbookPath } = useParams();
    if (!projectName) {
       return (
          <div>
@@ -15,12 +15,24 @@ export function WorkbookPage() {
             <h2>Missing package name</h2>
          </div>
       );
+   } else if (!workspace) {
+      return (
+         <div>
+            <h2>Missing workspace</h2>
+         </div>
+      );
+   } else if (!workbookPath) {
+      return (
+         <div>
+            <h2>Missing workbook path</h2>
+         </div>
+      );
    } else {
       return (
          <PackageProvider projectName={projectName} packageName={packageName}>
             <Workbook
                key={`${workbookPath}-${projectName}-${packageName}`}
-               workbookPath={workbookPath}
+               workbookPath={{ path: workbookPath, workspace: workspace }}
                hideEmbeddingIcons={true}
             />
          </PackageProvider>

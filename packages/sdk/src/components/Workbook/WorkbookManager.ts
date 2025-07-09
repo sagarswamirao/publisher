@@ -1,17 +1,17 @@
 import { PackageContextProps } from "../Package";
-import type { WorkbookStorage } from "./WorkbookStorage";
+import type { WorkbookLocator, WorkbookStorage } from "./WorkbookStorage";
 
 /**
  * Interface representing the data structure of a Mutable Workbook
  * @interface WorkbookData
  * @property {string[]} models - Array of model paths used in the workbook
  * @property {WorkbookCellValue[]} cells - Array of cells in the workbook
- * @property {string} workbookPath - Path to the workbook file (relative to project/package)
+ * @property {WorkbookLocator} workbookPath - Path to the workbook file (relative to project/package)
  */
 export interface WorkbookData {
    models: string[];
    cells: WorkbookCellValue[];
-   workbookPath: string;
+   workbookPath: WorkbookLocator;
 }
 
 /**
@@ -79,7 +79,7 @@ export class WorkbookManager {
     * Gets the current workbook path
     * @returns {string} The path to the workbook
     */
-   getWorkbookPath(): string {
+   getWorkbookPath(): WorkbookLocator {
       return this.workbookData.workbookPath;
    }
 
@@ -89,17 +89,21 @@ export class WorkbookManager {
     * @returns {WorkbookManager} The updated WorkbookManager instance
     */
    async renameWorkbook(workbookPath: string): Promise<WorkbookManager> {
-      if (this.workbookData.workbookPath !== workbookPath) {
+      if (this.workbookData.workbookPath.path !== workbookPath) {
          try {
-            await this.workbookStorage.deleteWorkbook(
+            await this.workbookStorage.moveWorkbook(
                this.packageContext,
                this.workbookData.workbookPath,
+               {
+                  path: workbookPath,
+                  workspace: this.workbookData.workbookPath.workspace,
+               },
             );
          } catch {
             // ignore if not found
          }
       }
-      this.workbookData.workbookPath = workbookPath;
+      this.workbookData.workbookPath.path = workbookPath;
       this.isSaved = false;
       return await this.saveWorkbook();
    }
@@ -201,9 +205,10 @@ export class WorkbookManager {
    static async loadWorkbook(
       workbookStorage: WorkbookStorage,
       packageContext: PackageContextProps,
-      workbookPath: string,
+      workbookPath: WorkbookLocator,
    ): Promise<WorkbookManager> {
       let workbookData: WorkbookData | undefined = undefined;
+      console.log("loadWorkbook", workbookPath);
       try {
          const saved = await workbookStorage.getWorkbook(
             packageContext,
