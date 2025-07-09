@@ -1,4 +1,8 @@
-import { ServerProvider } from "@malloy-publisher/sdk";
+import {
+   ServerProvider,
+   WorkbookStorage,
+   WorkbookStorageProvider,
+} from "@malloy-publisher/sdk";
 import "@malloydata/malloy-explorer/styles.css";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
@@ -17,6 +21,7 @@ import theme from "./theme";
 // Create router configuration function
 export const createMalloyRouter = (
    basePath: string = "/",
+   workbookStorage: WorkbookStorage,
    headerProps?: HeaderProps,
    server?: string,
    getAccessToken?: () => Promise<string>,
@@ -26,10 +31,12 @@ export const createMalloyRouter = (
          path: basePath,
          element: (
             <ServerProvider server={server} getAccessToken={getAccessToken}>
-               <ThemeProvider theme={theme}>
-                  <CssBaseline />
-                  <MainPage headerProps={headerProps} />
-               </ThemeProvider>
+               <WorkbookStorageProvider workbookStorage={workbookStorage}>
+                  <ThemeProvider theme={theme}>
+                     <CssBaseline />
+                     <MainPage headerProps={headerProps} />
+                  </ThemeProvider>
+               </WorkbookStorageProvider>
             </ServerProvider>
          ),
          errorElement: <RouteError />,
@@ -64,16 +71,19 @@ export interface MalloyPublisherAppProps {
    getAccessToken?: () => Promise<string>;
    basePath?: string;
    headerProps: HeaderProps;
+   workbookStorage: WorkbookStorage;
 }
 
 export const MalloyPublisherApp: React.FC<MalloyPublisherAppProps> = ({
    server,
    getAccessToken,
+   workbookStorage,
    basePath = "/",
    headerProps,
 }) => {
    const router = createMalloyRouter(
       basePath,
+      workbookStorage,
       headerProps,
       server,
       getAccessToken,

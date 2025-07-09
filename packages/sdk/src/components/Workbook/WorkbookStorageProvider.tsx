@@ -14,7 +14,7 @@ const WorkbookStorageContext = createContext<
    WorkbookStorageContextValue | undefined
 >(undefined);
 
-export default function WorkbookStorageProvider({
+export function WorkbookStorageProvider({
    children,
    workbookStorage,
 }: WorkbookStorageProviderProps) {
