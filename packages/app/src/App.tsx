@@ -17,6 +17,7 @@ import { ProjectPage } from "./components/ProjectPage";
 import { RouteError } from "./components/RouteError";
 import { WorkbookPage } from "./components/WorkbookPage";
 import theme from "./theme";
+import "@malloy-publisher/sdk/styles.css";
 
 // Create router configuration function
 export const createMalloyRouter = (
