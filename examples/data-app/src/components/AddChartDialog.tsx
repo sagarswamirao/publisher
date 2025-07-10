@@ -104,7 +104,6 @@ export default function AddChartDialog({
       optionalProjectName: projectName,
       optionalPackageName: selectedPackage,
     });
-    console.log("queryResultString", queryResultString);
     setModelQuery(queryResultString);
   };
 
