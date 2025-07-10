@@ -235,7 +235,7 @@ function SourceExplorerComponentInner({
 
    const onQueryChange = React.useCallback(
       (malloyQuery: Malloy.Query) => {
-         setQuery({ ...query, malloyQuery });
+         setQuery({ ...query, malloyQuery, malloyResult: undefined });
       },
       [query],
    );
@@ -243,88 +243,75 @@ function SourceExplorerComponentInner({
    if (oldSourceInfo !== sourceAndPath.sourceInfo.name) {
       return <div>Loading...</div>;
    }
-
    return (
-      <StyledExplorerPage key={sourceAndPath.sourceInfo.name}>
-         <StyledExplorerContent>
-            <MalloyExplorerProvider
-               source={sourceAndPath.sourceInfo}
-               query={query?.malloyQuery}
-               onQueryChange={onQueryChange}
-               focusedNestViewPath={focusedNestViewPath}
-               onFocusedNestViewPathChange={setFocusedNestViewPath}
-               onDrill={(params) => {
-                  console.info(params);
+      <StyledExplorerContent key={sourceAndPath.sourceInfo.name}>
+         <MalloyExplorerProvider
+            source={sourceAndPath.sourceInfo}
+            query={query?.malloyQuery}
+            onQueryChange={onQueryChange}
+            focusedNestViewPath={focusedNestViewPath}
+            onFocusedNestViewPathChange={setFocusedNestViewPath}
+            onDrill={(params) => {
+               console.info(params);
+            }}
+         >
+            <div
+               style={{
+                  display: "flex",
+                  height: "100%",
+                  overflowY: "auto",
                }}
             >
-               <div
-                  style={{
-                     display: "flex",
-                     flexDirection: "column",
-                     height: "100%",
-                  }}
+               <ResizableCollapsiblePanel
+                  isInitiallyExpanded={true}
+                  initialWidth={180}
+                  minWidth={180}
+                  icon="database"
+                  title={sourceAndPath.sourceInfo.name}
                >
-                  <div
-                     style={{
-                        display: "flex",
-                        height: "100%",
-                        overflowY: "auto",
+                  <SourcePanel
+                     onRefresh={() => setQuery(emptyQueryExplorerResult())}
+                  />
+               </ResizableCollapsiblePanel>
+               <ResizableCollapsiblePanel
+                  isInitiallyExpanded={true}
+                  initialWidth={280}
+                  minWidth={280}
+                  icon="filterSliders"
+                  title="Query"
+               >
+                  <QueryPanel
+                     runQuery={() => {
+                        mutation.mutate();
                      }}
-                  >
-                     <ResizableCollapsiblePanel
-                        isInitiallyExpanded={true}
-                        initialWidth={180}
-                        minWidth={180}
-                        icon="database"
-                        title={sourceAndPath.sourceInfo.name}
-                     >
-                        <SourcePanel
-                           onRefresh={() =>
-                              setQuery(emptyQueryExplorerResult())
-                           }
-                        />
-                     </ResizableCollapsiblePanel>
-                     <ResizableCollapsiblePanel
-                        isInitiallyExpanded={true}
-                        initialWidth={280}
-                        minWidth={280}
-                        icon="filterSliders"
-                        title="Query"
-                     >
-                        <QueryPanel
-                           runQuery={() => {
-                              mutation.mutate();
-                           }}
-                        />
-                     </ResizableCollapsiblePanel>
-                     <ResultPanel
-                        source={sourceAndPath.sourceInfo}
-                        draftQuery={query?.malloyQuery}
-                        setDraftQuery={(malloyQuery) =>
-                           setQuery({ ...query, malloyQuery: malloyQuery })
-                        }
-                        submittedQuery={
-                           query?.malloyQuery
-                              ? {
-                                   executionState: mutation.isPending
-                                      ? "running"
-                                      : "finished",
-                                   response: {
-                                      result: query.malloyResult,
-                                   },
-                                   query: query.malloyQuery,
-                                   queryResolutionStartMillis: Date.now(),
-                                   onCancel: mutation.reset,
-                                }
-                              : undefined
-                        }
-                        options={{ showRawQuery: true }}
-                     />
-                  </div>
-               </div>
-            </MalloyExplorerProvider>
-         </StyledExplorerContent>
-      </StyledExplorerPage>
+                  />
+               </ResizableCollapsiblePanel>
+               <ResultPanel
+                  source={sourceAndPath.sourceInfo}
+                  draftQuery={query?.malloyQuery}
+                  setDraftQuery={(malloyQuery) =>
+                     setQuery({ ...query, malloyQuery: malloyQuery })
+                  }
+                  submittedQuery={
+                     query?.malloyQuery
+                        ? {
+                             executionState: mutation.isPending
+                                ? "running"
+                                : "finished",
+                             response: {
+                                result: query.malloyResult,
+                             },
+                             query: query.malloyQuery,
+                             queryResolutionStartMillis: Date.now(),
+                             onCancel: mutation.reset,
+                          }
+                        : undefined
+                  }
+                  options={{ showRawQuery: true }}
+               />
+            </div>
+         </MalloyExplorerProvider>
+      </StyledExplorerContent>
    );
 }
 
@@ -366,7 +353,6 @@ export function SourceExplorerComponent(props: SourceExplorerComponentProps) {
             <StyledExplorerContent>
                <div
                   style={{
-                     display: "flex",
                      alignItems: "center",
                      justifyContent: "center",
                      height: "200px",

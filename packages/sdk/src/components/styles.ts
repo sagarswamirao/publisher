@@ -18,8 +18,6 @@ export const StyledCardMedia = styled(CardMedia)({
 });
 
 export const StyledExplorerPage = styled("div")({
-   display: "flex",
-   flexDirection: "column",
    height: "100%",
 });
 
@@ -32,7 +30,6 @@ export const StyledExplorerBanner = styled("div")({
 });
 
 export const StyledExplorerContent = styled("div")({
-   display: "flex",
    height: "75vh",
    width: "100%",
    overflowY: "auto",

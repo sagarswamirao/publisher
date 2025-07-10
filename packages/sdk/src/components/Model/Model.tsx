@@ -1,34 +1,24 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
-   Box,
    CardActions,
    Collapse,
    Divider,
    IconButton,
    Stack,
-   Tab,
-   Tabs,
    Tooltip,
    Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
-import { Configuration, ModelsApi, CompiledModel } from "../../client";
 import { highlight } from "../highlighter";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
-import { ModelCell } from "./ModelCell";
+import { StyledCard, StyledCardContent } from "../styles";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 import "@malloydata/malloy-explorer/styles.css";
-import { usePackage } from "../Package/PackageProvider";
-import {
-   QueryExplorerResult,
-   SourceExplorerComponent,
-} from "./SourcesExplorer";
+import { QueryExplorerResult } from "./SourcesExplorer";
 import { Loading } from "../Loading";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
-
-const modelsApi = new ModelsApi(new Configuration());
+import { ModelExplorer } from "./ModelExplorer";
+import { useModelData } from "./useModelData";
 
 interface ModelProps {
    modelPath: string;
@@ -46,6 +36,7 @@ interface ModelProps {
 
 export default function Model({
    modelPath,
+   versionId,
    expandResults,
    hideResultIcons,
    expandEmbeddings,
@@ -56,9 +47,8 @@ export default function Model({
       React.useState<boolean>(false);
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
-   const [selectedTab, setSelectedTab] = React.useState(0);
 
-   const { projectName, packageName, versionId } = usePackage();
+   const { isError, isLoading, error } = useModelData(modelPath, versionId);
    const modelCodeSnippet = getModelCodeSnippet(modelPath);
    useEffect(() => {
       highlight(modelCodeSnippet, "typescript").then((code) => {
@@ -66,33 +56,13 @@ export default function Model({
       });
    }, [embeddingExpanded, modelCodeSnippet]);
 
-   const { data, isError, isLoading, error } =
-      useQueryWithApiError<CompiledModel>({
-         queryKey: ["package", projectName, packageName, modelPath, versionId],
-         queryFn: async (config) => {
-            const response = await modelsApi.getModel(
-               projectName,
-               packageName,
-               modelPath,
-               versionId,
-               config,
-            );
-            return response.data;
-         },
-      });
-
    if (isLoading) {
       return <Loading text="Fetching Model..." />;
    }
 
    if (isError) {
       console.log("error", error);
-      return (
-         <ApiErrorDisplay
-            error={error}
-            context={`${packageName} > ${modelPath}`}
-         />
-      );
+      return <ApiErrorDisplay error={error} context={`Model > ${modelPath}`} />;
    }
    return (
       <StyledCard variant="outlined">
@@ -100,39 +70,9 @@ export default function Model({
             <Stack
                sx={{
                   flexDirection: "row",
-                  justifyContent: "space-between",
+                  justifyContent: "flex-end",
                }}
             >
-               {Array.isArray(data.sourceInfos) &&
-                  data.sourceInfos.length > 0 && (
-                     <Tabs
-                        value={selectedTab}
-                        onChange={(_, newValue) => setSelectedTab(newValue)}
-                        variant="scrollable"
-                        scrollButtons="auto"
-                        sx={{
-                           borderBottom: 1,
-                           borderColor: "divider",
-                           minHeight: 36,
-                        }}
-                     >
-                        {data.sourceInfos.map((source, idx) => {
-                           let sourceInfo;
-                           try {
-                              sourceInfo = JSON.parse(source);
-                           } catch {
-                              sourceInfo = { name: String(idx) };
-                           }
-                           return (
-                              <Tab
-                                 key={sourceInfo.name || idx}
-                                 label={sourceInfo.name || `Source ${idx + 1}`}
-                                 sx={{ minHeight: 36 }}
-                              />
-                           );
-                        })}
-                     </Tabs>
-                  )}
                {!hideEmbeddingIcons && (
                   <CardActions
                      sx={{
@@ -196,52 +136,15 @@ export default function Model({
             </Collapse>
             <Divider />
          </StyledCardContent>
-         <StyledCardMedia>
-            <Stack spacing={2} component="section">
-               {/* Only render the selected sourceInfo */}
-               {Array.isArray(data.sourceInfos) &&
-                  data.sourceInfos.length > 0 && (
-                     <SourceExplorerComponent
-                        sourceAndPath={{
-                           modelPath,
-                           sourceInfo: JSON.parse(
-                              data.sourceInfos[selectedTab],
-                           ),
-                        }}
-                        onChange={onChange}
-                     />
-                  )}
-               {data.queries?.length > 0 && (
-                  <StyledCard
-                     variant="outlined"
-                     sx={{ padding: "0px 10px 0px 10px" }}
-                  >
-                     <StyledCardContent sx={{ p: "10px" }}>
-                        <Typography variant="subtitle1">
-                           Named Queries
-                        </Typography>
-                     </StyledCardContent>
-                     <Stack spacing={1} component="section">
-                        {data.queries.map((query) => (
-                           <ModelCell
-                              key={query.name}
-                              modelPath={modelPath}
-                              queryName={query.name}
-                              expandResult={expandResults}
-                              hideResultIcon={hideResultIcons}
-                              expandEmbedding={expandEmbeddings}
-                              hideEmbeddingIcon={hideEmbeddingIcons}
-                              noView={true}
-                              annotations={query.annotations}
-                           />
-                        ))}
-                     </Stack>
-                     <Box height="10px" />
-                  </StyledCard>
-               )}
-               <Box height="5px" />
-            </Stack>
-         </StyledCardMedia>
+         <ModelExplorer
+            modelPath={modelPath}
+            versionId={versionId}
+            expandResults={expandResults}
+            hideResultIcons={hideResultIcons}
+            expandEmbeddings={expandEmbeddings}
+            hideEmbeddingIcons={hideEmbeddingIcons}
+            onChange={onChange}
+         />
       </StyledCard>
    );
 }
