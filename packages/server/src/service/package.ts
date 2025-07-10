@@ -31,7 +31,7 @@ type ApiSchedule = components["schemas"]["Schedule"];
 type ApiColumn = components["schemas"]["Column"];
 type ApiTableDescription = components["schemas"]["TableDescription"];
 
-const ENABLE_LIST_MODEL_COMPILATION = false;
+const ENABLE_LIST_MODEL_COMPILATION = true;
 export class Package {
    private projectName: string;
    private packageName: string;
