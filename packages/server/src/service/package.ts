@@ -31,6 +31,7 @@ type ApiSchedule = components["schemas"]["Schedule"];
 type ApiColumn = components["schemas"]["Column"];
 type ApiTableDescription = components["schemas"]["TableDescription"];
 
+const ENABLE_LIST_MODEL_COMPILATION = false;
 export class Package {
    private projectName: string;
    private packageName: string;
@@ -74,17 +75,43 @@ export class Package {
    ): Promise<Package> {
       const startTime = performance.now();
       await Package.validatePackageManifestExistsOrThrowError(packagePath);
+      const manifestValidationTime = performance.now();
+      logger.info("Package manifest validation completed", {
+         packageName,
+         duration: manifestValidationTime - startTime,
+         unit: "ms",
+      });
 
       try {
          const packageConfig = await Package.readPackageConfig(packagePath);
+         const packageConfigTime = performance.now();
+         logger.info("Package config read completed", {
+            packageName,
+            duration: packageConfigTime - manifestValidationTime,
+            unit: "ms",
+         });
          packageConfig.resource = `${API_PREFIX}/projects/${projectName}/packages/${packageName}`;
 
          const databases = await Package.readDatabases(packagePath);
+         const databasesTime = performance.now();
+         logger.info("Databases read completed", {
+            packageName,
+            databaseCount: databases.length,
+            duration: databasesTime - packageConfigTime,
+            unit: "ms",
+         });
          const connections = new Map<string, Connection>(projectConnections);
 
          // Package connections override project connections.
          const { malloyConnections: packageConnections } =
             await createConnections(packagePath);
+         const connectionsTime = performance.now();
+         logger.info("Package connections created", {
+            packageName,
+            connectionCount: packageConnections.size,
+            duration: connectionsTime - databasesTime,
+            unit: "ms",
+         });
          packageConnections.forEach((connection) => {
             connections.set(connection.name, connection);
          });
@@ -100,7 +127,20 @@ export class Package {
             packagePath,
             connections,
          );
+         const modelsTime = performance.now();
+         logger.info("Models loaded", {
+            packageName,
+            modelCount: models.size,
+            duration: modelsTime - connectionsTime,
+            unit: "ms",
+         });
          const scheduler = Scheduler.create(models);
+         const schedulerTime = performance.now();
+         logger.info("Scheduler created", {
+            packageName,
+            duration: schedulerTime - modelsTime,
+            unit: "ms",
+         });
          const endTime = performance.now();
          const executionTime = endTime - startTime;
          this.packageLoadHistogram.record(executionTime, {
@@ -164,13 +204,15 @@ export class Package {
             })
             .map(async (modelPath) => {
                let error: string | undefined;
-               try {
-                  await this.models.get(modelPath)?.getModel();
-               } catch (modelError) {
-                  error =
-                     modelError instanceof Error
-                        ? modelError.message
-                        : undefined;
+               if (ENABLE_LIST_MODEL_COMPILATION) {
+                  try {
+                     await this.models.get(modelPath)?.getModel();
+                  } catch (modelError) {
+                     error =
+                        modelError instanceof Error
+                           ? modelError.message
+                           : undefined;
+                  }
                }
                return {
                   projectName: this.projectName,
@@ -190,7 +232,10 @@ export class Package {
                return modelPath.endsWith(NOTEBOOK_FILE_SUFFIX);
             })
             .map(async (modelPath) => {
-               const error = this.models.get(modelPath)?.getNotebookError();
+               let error: Error | undefined;
+               if (ENABLE_LIST_MODEL_COMPILATION) {
+                  error = this.models.get(modelPath)?.getNotebookError();
+               }
                return {
                   projectName: this.projectName,
                   packageName: this.packageName,

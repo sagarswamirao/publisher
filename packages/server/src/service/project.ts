@@ -10,6 +10,8 @@ import { Package } from "./package";
 type ApiPackage = components["schemas"]["Package"];
 type ApiProject = components["schemas"]["Project"];
 
+const MAX_PACKAGE_INIT_TIMEOUT = 20000;
+
 export class Project {
    private packages: Map<string, Package> = new Map();
    private malloyConnections: Map<string, BaseConnection>;
@@ -129,14 +131,26 @@ export class Project {
                .filter((file) => file.isDirectory())
                .map(async (directory) => {
                   try {
-                     const _package = await this.getPackage(
-                        directory.name,
-                        false,
+                     // Create a timeout promise that rejects after 6 seconds
+                     const timeoutPromise = new Promise<never>((_, reject) => {
+                        setTimeout(() => {
+                           reject(new Error(`Package loading timeout`));
+                        }, MAX_PACKAGE_INIT_TIMEOUT);
+                     });
+
+                     // Race between the actual package loading and the timeout
+                     const _package = await Promise.race([
+                        this.getPackage(directory.name, false),
+                        timeoutPromise,
+                     ]);
+
+                     return _package.getPackageMetadata();
+                  } catch (error) {
+                     console.log(
+                        `Failed to load package: ${directory.name} due to : ${error}`,
                      );
-                     const metadata = _package.getPackageMetadata();
-                     return metadata;
-                  } catch {
                      // Directory did not contain a valid package.json file -- therefore, it's not a package.
+                     // Or it timed out
                      return undefined;
                   }
                }),

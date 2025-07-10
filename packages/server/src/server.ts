@@ -92,6 +92,7 @@ const scheduleController = new ScheduleController(projectStore);
 
 const mcpApp = express();
 
+initProjects();
 mcpApp.use(MCP_ENDPOINT, express.json());
 mcpApp.use(MCP_ENDPOINT, cors());
 
@@ -634,3 +635,14 @@ const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
 });
 
 export { app, mainServer as httpServer, mcpApp, mcpHttpServer };
+
+// Warm up the packages
+function initProjects() {
+   projectStore.listProjects().then((projects) => {
+      projects.forEach((project) => {
+         projectStore.getProject(project.name!, false).then((project) => {
+            project.listPackages();
+         });
+      });
+   });
+}
