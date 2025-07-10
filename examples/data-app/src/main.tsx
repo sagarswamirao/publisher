@@ -5,6 +5,8 @@ import { CssBaseline } from "@mui/material";
 import theme from "./theme";
 import AppShell from "./AppShell";
 import { ServerProvider } from "@malloy-publisher/sdk";
+// Import required CSS
+import "@malloy-publisher/sdk/styles.css";
 
 const apiUrl = import.meta.env.VITE_PUBLISHER_API;
 const getAccessToken = async (): Promise<string> => {
