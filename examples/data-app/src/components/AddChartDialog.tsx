@@ -20,6 +20,7 @@ import {
   Packages,
   Model,
   createEmbeddedQueryResult,
+  ModelExplorer,
 } from "@malloy-publisher/sdk";
 import { QueryExplorerResult } from "@malloy-publisher/sdk/dist/components/Model/SourcesExplorer";
 import "@malloydata/malloy-explorer/styles.css";
@@ -227,7 +228,7 @@ export default function AddChartDialog({
                     overflow: "auto",
                   }}
                 >
-                  <Model
+                  <ModelExplorer
                     modelPath={selectedModel}
                     expandResults={false}
                     hideResultIcons={true}
