@@ -1,4 +1,5 @@
 import { BaseConnection } from "@malloydata/malloy/connection";
+import { Mutex } from "async-mutex";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
@@ -14,6 +15,7 @@ const MAX_PACKAGE_INIT_TIMEOUT = 20000;
 
 export class Project {
    private packages: Map<string, Package> = new Map();
+   private packageMutexes = new Map<string, Mutex>();
    private malloyConnections: Map<string, BaseConnection>;
    private apiConnections: ApiConnection[];
    private internalConnections: InternalConnection[];
@@ -169,21 +171,33 @@ export class Project {
       packageName: string,
       reload: boolean,
    ): Promise<Package> {
-      let _package = this.packages.get(packageName);
-      if (_package === undefined || reload) {
+      // We need to acquire the mutex to prevent a thundering herd of requests from creating the
+      // package multiple times.
+      let packageMutex = this.packageMutexes.get(packageName);
+      if (!packageMutex) {
+         packageMutex = new Mutex();
+         this.packageMutexes.set(packageName, packageMutex);
+      }
+
+      return await packageMutex.runExclusive(async () => {
+         const _package = this.packages.get(packageName);
+         if (_package !== undefined && !reload) {
+            return _package;
+         }
+
          try {
-            _package = await Package.create(
+            const _package = await Package.create(
                this.projectName,
                packageName,
                path.join(this.projectPath, packageName),
                this.malloyConnections,
             );
             this.packages.set(packageName, _package);
+            return _package;
          } catch (error) {
             this.packages.delete(packageName);
             throw error;
          }
-      }
-      return _package;
+      });
    }
 }

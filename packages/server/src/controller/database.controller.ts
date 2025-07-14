@@ -14,8 +14,8 @@ export class DatabaseController {
       projectName: string,
       packageName: string,
    ): Promise<ApiDatabase[]> {
-      const project = await this.projectStore.getProject(projectName);
-      const p = await project.getPackage(packageName);
+      const project = await this.projectStore.getProject(projectName, false);
+      const p = await project.getPackage(packageName, false);
       return p.listDatabases();
    }
 }
