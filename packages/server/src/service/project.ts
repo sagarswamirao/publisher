@@ -11,8 +11,6 @@ import { Package } from "./package";
 type ApiPackage = components["schemas"]["Package"];
 type ApiProject = components["schemas"]["Project"];
 
-const MAX_PACKAGE_INIT_TIMEOUT = 20000;
-
 export class Project {
    private packages: Map<string, Package> = new Map();
    private packageMutexes = new Map<string, Mutex>();
@@ -133,20 +131,9 @@ export class Project {
                .filter((file) => file.isDirectory())
                .map(async (directory) => {
                   try {
-                     // Create a timeout promise that rejects after 6 seconds
-                     const timeoutPromise = new Promise<never>((_, reject) => {
-                        setTimeout(() => {
-                           reject(new Error(`Package loading timeout`));
-                        }, MAX_PACKAGE_INIT_TIMEOUT);
-                     });
-
-                     // Race between the actual package loading and the timeout
-                     const _package = await Promise.race([
-                        this.getPackage(directory.name, false),
-                        timeoutPromise,
-                     ]);
-
-                     return _package.getPackageMetadata();
+                     return (
+                        await this.getPackage(directory.name, false)
+                     ).getPackageMetadata();
                   } catch (error) {
                      console.log(
                         `Failed to load package: ${directory.name} due to : ${error}`,
