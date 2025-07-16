@@ -27,20 +27,19 @@ export const logAxiosError = (error: AxiosError) => {
    if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      logger.error("Axios error", {
-         data: error.response.data,
+      logger.error("Axios server-side error", {
+         url: error.response.config.url,
          status: error.response.status,
          headers: error.response.headers,
+         data: error.response.data,
       });
    } else if (error.request) {
       // The request was made but no response was received
       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
       // http.ClientRequest in node.js
-      logger.error("Failed to receive a response from the server", {
-         request: error.request,
-      });
+      logger.error("Axios client-side error", { error: error.request });
    } else {
       // Something happened in setting up the request that triggered an Error
-      logger.error("Error", { error });
+      logger.error("Axios unknown error", { error });
    }
 };
