@@ -7,9 +7,24 @@ import { peerDependencies } from "./package.json";
 export default ({ mode }) => {
    const isDev = mode === "development";
    // In Dev, Resolve the SDK locally as src, not /dist so it can hot reload
+   // But for CSS files, we need to point to dist since they're only generated during build
    const resolve = isDev
       ? {
            alias: {
+              // CSS files must come BEFORE the general SDK alias
+              "@malloy-publisher/sdk/styles.css": path.resolve(
+                 __dirname,
+                 "../sdk/dist/styles.css",
+              ),
+              "@malloy-publisher/sdk/malloy-explorer.css": path.resolve(
+                 __dirname,
+                 "../sdk/dist/malloy-explorer.css",
+              ),
+              "@malloy-publisher/sdk/markdown-editor.css": path.resolve(
+                 __dirname,
+                 "../sdk/dist/markdown-editor.css",
+              ),
+              // General SDK alias for everything else
               "@malloy-publisher/sdk": path.resolve(__dirname, "../sdk/src"),
            },
         }
