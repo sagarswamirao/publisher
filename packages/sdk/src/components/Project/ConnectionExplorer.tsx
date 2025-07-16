@@ -187,14 +187,14 @@ function TableViewer({
    return (
       <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
          <DialogTitle>
-            Table: {schemaName}.{tableName}
             <Typography
                fontSize="large"
                variant="body2"
                fontFamily="monospace"
                component="span"
+               style={{ textTransform: "uppercase" }}
             >
-               {tableName}
+               {schemaName}.{tableName}
             </Typography>
             <IconButton
                aria-label="close"
