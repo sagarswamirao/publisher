@@ -91,7 +91,7 @@ export async function createConnections(basePath: string): Promise<{
                const config = {
                   host: connection.mysqlConnection.host,
                   port: connection.mysqlConnection.port,
-                  username: connection.mysqlConnection.user,
+                  user: connection.mysqlConnection.user,
                   password: connection.mysqlConnection.password,
                   database: connection.mysqlConnection.database,
                };
