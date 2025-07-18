@@ -33,44 +33,50 @@ export default function Packages({ navigate }: PackagesProps) {
                      .sort((a, b) => {
                         return a.name.localeCompare(b.name);
                      })
-                     .map((p) => (
-                        <Grid
-                           size={{ xs: 12, sm: 12, md: 12, lg: 4 }}
-                           key={p.name}
-                        >
-                           <StyledCard
-                              variant="outlined"
-                              sx={{
-                                 cursor: "pointer",
-                                 transition: "all 0.2s ease-in-out",
-                                 "&:hover": {
-                                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                                    transform: "translateY(-2px)",
-                                 },
-                              }}
-                              onClick={(event) => navigate(p.name + "/", event)}
+                     .map((p) => {
+                        const href = p.resource
+                           .replace("/api/v0/projects", "")
+                           .replace("/packages", "");
+                        return (
+                           <Grid
+                              size={{ xs: 12, sm: 12, md: 12, lg: 4 }}
+                              key={p.name}
                            >
-                              <StyledCardContent>
-                                 <Typography
-                                    variant="overline"
-                                    color="primary.main"
-                                 >
-                                    {p.name}
-                                 </Typography>
-                                 <Box
-                                    sx={{
-                                       maxHeight: "120px",
-                                       overflowY: "auto",
-                                    }}
-                                 >
-                                    <Typography variant="body2">
-                                       {p.description}
+                              <StyledCard
+                                 variant="outlined"
+                                 sx={{
+                                    cursor: "pointer",
+                                    transition: "all 0.2s ease-in-out",
+                                    "&:hover": {
+                                       boxShadow:
+                                          "0 4px 12px rgba(0, 0, 0, 0.1)",
+                                       transform: "translateY(-2px)",
+                                    },
+                                 }}
+                                 onClick={(event) => navigate(href, event)}
+                              >
+                                 <StyledCardContent>
+                                    <Typography
+                                       variant="overline"
+                                       color="primary.main"
+                                    >
+                                       {p.name}
                                     </Typography>
-                                 </Box>
-                              </StyledCardContent>
-                           </StyledCard>
-                        </Grid>
-                     ))}
+                                    <Box
+                                       sx={{
+                                          maxHeight: "120px",
+                                          overflowY: "auto",
+                                       }}
+                                    >
+                                       <Typography variant="body2">
+                                          {p.description}
+                                       </Typography>
+                                    </Box>
+                                 </StyledCardContent>
+                              </StyledCard>
+                           </Grid>
+                        );
+                     })}
                </Grid>
             </StyledCard>
          )}
