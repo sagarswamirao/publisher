@@ -212,7 +212,10 @@ export class Project {
 
    public async addPackage(packageName: string) {
       const packagePath = path.join(this.projectPath, packageName);
-      if (!(await fs.stat(packagePath)).isDirectory()) {
+      if (
+         !(await fs.exists(packagePath)) ||
+         !(await fs.stat(packagePath)).isDirectory()
+      ) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
       }
       this.packages.set(
