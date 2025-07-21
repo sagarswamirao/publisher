@@ -20,7 +20,7 @@ export default function About() {
    return (
       <>
          {!isSuccess && !isError && <Loading text="Fetching About..." />}
-         {isSuccess && (
+         {isSuccess && data.data?.readme && (
             <StyledCard variant="outlined" sx={{ p: 2 }}>
                <Typography variant="overline" fontWeight="bold" sx={{ mb: 1 }}>
                   Readme
