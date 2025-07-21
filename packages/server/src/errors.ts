@@ -3,6 +3,8 @@ import { MalloyError } from "@malloydata/malloy";
 export function internalErrorToHttpError(error: Error) {
    if (error instanceof BadRequestError) {
       return httpError(400, error.message);
+   } else if (error instanceof ProjectNotFoundError) {
+      return httpError(404, error.message);
    } else if (error instanceof PackageNotFoundError) {
       return httpError(404, error.message);
    } else if (error instanceof ModelNotFoundError) {

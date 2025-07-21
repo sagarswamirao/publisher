@@ -29,6 +29,30 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "500":
           $ref: "#/components/responses/InternalServerError"
+    post:
+      tags:
+        - projects
+      operationId: create-project
+      summary: Creates a new project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/Project'
+      responses:
+        "200":
+          description: Returns the project created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /projects/{projectName}:
     get:
@@ -52,6 +76,62 @@ paths:
       responses:
         "200":
           description: Metadata about the project.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      tags:
+        - projects
+      operationId: update-project
+      summary: Updates a project.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/Project'
+      responses:
+        "200":
+          description: Returns the project updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags:
+        - projects
+      operationId: delete-project
+      summary: Deletes a project.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Returns the project deleted
           content:
             application/json:
               schema:
@@ -424,6 +504,39 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         "501":
           $ref: "#/components/responses/NotImplementedError"
+    post:
+      tags:
+        - packages
+      operationId: create-package
+      summary: Creates a new package.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/Package'
+      responses:
+        "200":
+          description: Returns the package created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Package"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "501":
+          $ref: "#/components/responses/NotImplementedError"
 
   /projects/{projectName}/packages/{packageName}:
     get:
@@ -459,6 +572,80 @@ paths:
       responses:
         "200":
           description: Package metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Package"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "501":
+          $ref: "#/components/responses/NotImplementedError"
+    patch:
+      tags:
+        - packages
+      operationId: update-package
+      summary: Updates a package.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: packageName
+          in: path
+          description: Name of package
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/Package'
+      responses:
+        "200":
+          description: Returns the package updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Package"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "501":
+          $ref: "#/components/responses/NotImplementedError"
+    delete:
+      tags:
+        - packages
+      operationId: delete-package
+      summary: Deletes a package.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: packageName
+          in: path
+          description: Name of package
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Returns the package deleted
           content:
             application/json:
               schema:

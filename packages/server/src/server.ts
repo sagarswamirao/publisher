@@ -192,7 +192,7 @@ if (!isDevelopment) {
          target: "http://localhost:5173",
          changeOrigin: true,
          ws: true,
-         pathFilter: (path) => !path.startsWith("/api"),
+         pathFilter: (path) => !path.startsWith("/api/"),
       }),
    );
 }
@@ -217,6 +217,16 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    }
 });
 
+app.post(`${API_PREFIX}/projects`, async (req, res) => {
+   try {
+      res.status(200).json(await projectStore.addProject(req.body));
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
 app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
       const project = await projectStore.getProject(
@@ -224,6 +234,30 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
          req.query.reload === "true",
       );
       res.status(200).json(await project.getProjectMetadata());
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
+   try {
+      await projectStore.deleteProject(req.params.projectName);
+      const overwrittenProject = await projectStore.addProject(req.body);
+      res.status(200).json(overwrittenProject);
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.delete(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
+   try {
+      res.status(200).json(
+         await projectStore.deleteProject(req.params.projectName),
+      );
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -611,11 +645,18 @@ if (!isDevelopment) {
    app.get("*", (_req, res) => res.sendFile(path.resolve(ROOT, "index.html")));
 }
 
-app.use((err: Error, _req: express.Request, res: express.Response) => {
-   logger.error("Unhandled error:", err);
-   const { json, status } = internalErrorToHttpError(err);
-   res.status(status).json(json);
-});
+app.use(
+   (
+      err: Error,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction,
+   ) => {
+      logger.error("Unhandled error:", err);
+      const { json, status } = internalErrorToHttpError(err);
+      res.status(status).json(json);
+   },
+);
 
 const mainServer = http.createServer(app);
 mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {

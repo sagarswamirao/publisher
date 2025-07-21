@@ -35,6 +35,24 @@ export class Project {
       this.apiConnections = apiConnections;
    }
 
+   public async update(payload: ApiProject) {
+      if (payload.name) {
+         this.projectName = payload.name;
+      }
+      if (payload.resource) {
+         this.projectPath = payload.resource.replace(
+            `${API_PREFIX}/projects/`,
+            "",
+         );
+         if (!(await fs.stat(this.projectPath)).isDirectory()) {
+            throw new ProjectNotFoundError(
+               `Project path ${this.projectPath} not found`,
+            );
+         }
+      }
+      return this;
+   }
+
    static async create(
       projectName: string,
       projectPath: string,

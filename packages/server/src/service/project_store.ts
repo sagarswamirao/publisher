@@ -46,15 +46,59 @@ export class ProjectStore {
                `Project ${projectName} not found in publisher.config.json`,
             );
          }
-         project = await Project.create(
-            projectName,
-            path.join(
-               this.serverRootPath,
-               projectManifest.projects[projectName],
-            ),
-         );
-         this.projects.set(projectName, project);
+         project = await this.addProject({
+            name: projectName,
+            resource: `${API_PREFIX}/projects/${projectName}`,
+         });
       }
+      return project;
+   }
+
+   public async addProject(project: ApiProject) {
+      const projectName = project.name;
+      if (!projectName) {
+         throw new Error("Project name is required");
+      }
+      const projectManifest = await ProjectStore.getProjectManifest(
+         this.serverRootPath,
+      );
+      const projectPath = projectManifest.projects[projectName];
+      if (!projectPath) {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in publisher.config.json`,
+         );
+      }
+      const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
+      if (!(await fs.stat(absoluteProjectPath)).isDirectory()) {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in ${absoluteProjectPath}`,
+         );
+      }
+      const newProject = await Project.create(projectName, absoluteProjectPath);
+      this.projects.set(projectName, newProject);
+      return newProject;
+   }
+
+   public async updateProject(project: ApiProject) {
+      const projectName = project.name;
+      if (!projectName) {
+         throw new Error("Project name is required");
+      }
+      const existingProject = this.projects.get(projectName);
+      if (!existingProject) {
+         throw new ProjectNotFoundError(`Project ${projectName} not found`);
+      }
+      const updatedProject = await existingProject.update(project);
+      this.projects.set(projectName, updatedProject);
+      return updatedProject;
+   }
+
+   public async deleteProject(projectName: string) {
+      const project = this.projects.get(projectName);
+      if (!project) {
+         throw new ProjectNotFoundError(`Project ${projectName} not found`);
+      }
+      this.projects.delete(projectName);
       return project;
    }
 
