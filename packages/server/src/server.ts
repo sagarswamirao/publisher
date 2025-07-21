@@ -446,6 +446,18 @@ app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
    }
 });
 
+app.post(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
+   try {
+      res.status(200).json(
+         await packageController.addPackage(req.params.projectName, req.body),
+      );
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName`,
    async (req, res) => {
@@ -460,6 +472,43 @@ app.get(
                req.params.projectName,
                req.params.packageName,
                req.query.reload === "true",
+            ),
+         );
+      } catch (error) {
+         logger.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.patch(
+   `${API_PREFIX}/projects/:projectName/packages/:packageName`,
+   async (req, res) => {
+      try {
+         res.status(200).json(
+            await packageController.updatePackage(
+               req.params.projectName,
+               req.params.packageName,
+               req.body,
+            ),
+         );
+      } catch (error) {
+         logger.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.delete(
+   `${API_PREFIX}/projects/:projectName/packages/:packageName`,
+   async (req, res) => {
+      try {
+         res.status(200).json(
+            await packageController.deletePackage(
+               req.params.projectName,
+               req.params.packageName,
             ),
          );
       } catch (error) {

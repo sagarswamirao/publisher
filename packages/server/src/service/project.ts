@@ -4,7 +4,11 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
 import { API_PREFIX, README_NAME } from "../constants";
-import { ConnectionNotFoundError, ProjectNotFoundError } from "../errors";
+import {
+   ConnectionNotFoundError,
+   PackageNotFoundError,
+   ProjectNotFoundError,
+} from "../errors";
 import { createConnections, InternalConnection } from "./connection";
 import { ApiConnection } from "./model";
 import { Package } from "./package";
@@ -204,5 +208,46 @@ export class Project {
             throw error;
          }
       });
+   }
+
+   public async addPackage(packageName: string) {
+      const packagePath = path.join(this.projectPath, packageName);
+      if (!(await fs.stat(packagePath)).isDirectory()) {
+         throw new PackageNotFoundError(`Package ${packageName} not found`);
+      }
+      this.packages.set(
+         packageName,
+         await Package.create(
+            this.projectName,
+            packageName,
+            packagePath,
+            this.malloyConnections,
+         ),
+      );
+      return this.packages.get(packageName);
+   }
+
+   public async updatePackage(
+      packageName: string,
+      body: { resource?: string; name?: string; description?: string },
+   ) {
+      const _package = this.packages.get(packageName);
+      if (!_package) {
+         throw new PackageNotFoundError(`Package ${packageName} not found`);
+      }
+      _package.setPackageMetadata({
+         name: body.name,
+         description: body.description,
+         resource: body.resource,
+      });
+      return _package.getPackageMetadata();
+   }
+
+   public async deletePackage(packageName: string) {
+      const _package = this.packages.get(packageName);
+      if (!_package) {
+         throw new PackageNotFoundError(`Package ${packageName} not found`);
+      }
+      this.packages.delete(packageName);
    }
 }

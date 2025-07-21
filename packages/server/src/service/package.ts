@@ -373,4 +373,8 @@ export class Package {
       const rowCount = result.data.value[0].row_count?.valueOf() as number;
       return { name: databasePath, rowCount, columns: schema };
    }
+
+   public setPackageMetadata(packageMetadata: ApiPackage) {
+      this.packageMetadata = packageMetadata;
+   }
 }
