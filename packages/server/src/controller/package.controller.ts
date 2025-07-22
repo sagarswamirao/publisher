@@ -1,5 +1,5 @@
 import { components } from "../api";
-import { BadRequestError } from "../errors";
+import { BadRequestError, FrozenConfigError } from "../errors";
 import { ProjectStore } from "../service/project_store";
 
 type ApiPackage = components["schemas"]["Package"];
@@ -27,6 +27,9 @@ export class PackageController {
    }
 
    async addPackage(projectName: string, body: ApiPackage) {
+      if (this.projectStore.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
       if (!body.name) {
          throw new BadRequestError("Package name is required");
       }
@@ -35,6 +38,9 @@ export class PackageController {
    }
 
    public async deletePackage(projectName: string, packageName: string) {
+      if (this.projectStore.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
       const project = await this.projectStore.getProject(projectName, false);
       return project.deletePackage(packageName);
    }
@@ -44,6 +50,9 @@ export class PackageController {
       packageName: string,
       body: ApiPackage,
    ) {
+      if (this.projectStore.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
       const project = await this.projectStore.getProject(projectName, false);
       return project.updatePackage(packageName, body);
    }

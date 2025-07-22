@@ -2,31 +2,44 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
 import { API_PREFIX } from "../constants";
-import { ProjectNotFoundError } from "../errors";
+import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
+import { isPublisherConfigFrozen } from "../utils";
 import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
    private serverRootPath: string;
    private projects: Map<string, Project> = new Map();
+   public publisherConfigIsFrozen: boolean;
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
+      void this.initialize();
    }
 
-   public async listProjects(): Promise<ApiProject[]> {
+   public async initialize() {
+      this.publisherConfigIsFrozen = isPublisherConfigFrozen(
+         this.serverRootPath,
+      );
       const projectManifest = await ProjectStore.getProjectManifest(
          this.serverRootPath,
       );
-      if (!projectManifest.projects) {
-         return [];
-      } else {
-         return Object.keys(projectManifest.projects).map((projectName) => ({
-            name: projectName,
-            resource: `${API_PREFIX}/projects/${projectName}`,
-         })) as ApiProject[];
+      for (const projectName of Object.keys(projectManifest.projects)) {
+         const projectPath = projectManifest.projects[projectName];
+         const absoluteProjectPath = path.join(
+            this.serverRootPath,
+            projectPath,
+         );
+         const project = await Project.create(projectName, absoluteProjectPath);
+         this.projects.set(projectName, project);
       }
+   }
+
+   public async listProjects() {
+      return Promise.all(
+         this.projects.values().map((project) => project.getProjectMetadata()),
+      );
    }
 
    public async getProject(
@@ -55,6 +68,9 @@ export class ProjectStore {
    }
 
    public async addProject(project: ApiProject) {
+      if (this.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
       const projectName = project.name;
       if (!projectName) {
          throw new Error("Project name is required");
@@ -81,6 +97,9 @@ export class ProjectStore {
 
    // TODO: Return name and readme from memory instead of reading from disk
    public async updateProject(project: ApiProject) {
+      if (this.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
       const projectName = project.name;
       if (!projectName) {
          throw new Error("Project name is required");
@@ -95,6 +114,9 @@ export class ProjectStore {
    }
 
    public async deleteProject(projectName: string) {
+      if (this.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
       const project = this.projects.get(projectName);
       if (!project) {
          throw new ProjectNotFoundError(`Project ${projectName} not found`);

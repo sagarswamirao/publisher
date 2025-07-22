@@ -12,15 +12,10 @@ import { ModelController } from "./controller/model.controller";
 import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
-import {
-   FrozenConfigError,
-   internalErrorToHttpError,
-   NotImplementedError,
-} from "./errors";
+import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { logger, loggerMiddleware } from "./logger";
 import { initializeMcpServer } from "./mcp/server";
 import { ProjectStore } from "./service/project_store";
-import { isPublisherConfigFrozen } from "./utils";
 
 // Parse command line arguments
 function parseArgs() {
@@ -82,7 +77,6 @@ if (require.main) {
 const SERVER_ROOT = path.resolve(process.cwd(), process.env.SERVER_ROOT || ".");
 const API_PREFIX = "/api/v0";
 const isDevelopment = process.env["NODE_ENV"] === "development";
-const publisherConfigIsFrozen = isPublisherConfigFrozen(SERVER_ROOT);
 
 const app = express();
 app.use(loggerMiddleware);
@@ -225,9 +219,6 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
 
 app.post(`${API_PREFIX}/projects`, async (req, res) => {
    try {
-      if (publisherConfigIsFrozen) {
-         throw new FrozenConfigError();
-      }
       res.status(200).json(await projectStore.addProject(req.body));
    } catch (error) {
       logger.error(error);
@@ -252,9 +243,6 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
 
 app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
-      if (publisherConfigIsFrozen) {
-         throw new FrozenConfigError();
-      }
       await projectStore.deleteProject(req.params.projectName);
       const overwrittenProject = await projectStore.addProject(req.body);
       res.status(200).json(overwrittenProject);
@@ -267,9 +255,6 @@ app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
 
 app.delete(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
-      if (publisherConfigIsFrozen) {
-         throw new FrozenConfigError();
-      }
       res.status(200).json(
          await projectStore.deleteProject(req.params.projectName),
       );
@@ -463,9 +448,6 @@ app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
 
 app.post(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
    try {
-      if (publisherConfigIsFrozen) {
-         throw new FrozenConfigError();
-      }
       res.status(200).json(
          await packageController.addPackage(req.params.projectName, req.body),
       );
@@ -504,9 +486,6 @@ app.patch(
    `${API_PREFIX}/projects/:projectName/packages/:packageName`,
    async (req, res) => {
       try {
-         if (publisherConfigIsFrozen) {
-            throw new FrozenConfigError();
-         }
          res.status(200).json(
             await packageController.updatePackage(
                req.params.projectName,
@@ -526,9 +505,6 @@ app.delete(
    `${API_PREFIX}/projects/:projectName/packages/:packageName`,
    async (req, res) => {
       try {
-         if (publisherConfigIsFrozen) {
-            throw new FrozenConfigError();
-         }
          res.status(200).json(
             await packageController.deletePackage(
                req.params.projectName,
