@@ -23,6 +23,7 @@ export class Project {
    private internalConnections: InternalConnection[];
    private projectPath: string;
    private projectName: string;
+   public metadata: ApiProject;
 
    constructor(
       projectName: string,
@@ -37,6 +38,7 @@ export class Project {
       // InternalConnections have full connection details for doing schema inspection
       this.internalConnections = internalConnections;
       this.apiConnections = apiConnections;
+      void this.reloadProjectMetadata();
    }
 
    public async update(payload: ApiProject) {
@@ -45,18 +47,21 @@ export class Project {
          this.packages.forEach((_package) => {
             _package.setProjectName(this.projectName);
          });
+         this.metadata.name = this.projectName;
       }
       if (payload.resource) {
          this.projectPath = payload.resource.replace(
             `${API_PREFIX}/projects/`,
             "",
          );
-         if (!(await fs.stat(this.projectPath)).isDirectory()) {
+         if (!(await fs.exists(this.projectPath))) {
             throw new ProjectNotFoundError(
-               `Project path ${this.projectPath} not found`,
+               `Project path "${this.projectPath}" not found`,
             );
          }
+         this.metadata.resource = payload.resource;
       }
+      this.metadata.readme = payload.readme;
       return this;
    }
 
@@ -90,7 +95,7 @@ export class Project {
       );
    }
 
-   public async getProjectMetadata(): Promise<ApiProject> {
+   public async reloadProjectMetadata(): Promise<ApiProject> {
       let readme = "";
       try {
          readme = (
@@ -99,11 +104,12 @@ export class Project {
       } catch {
          // Readme not found, so we'll just return an empty string
       }
-      return {
+      this.metadata = {
          resource: `${API_PREFIX}/projects/${this.projectName}`,
          name: this.projectName,
          readme: readme,
       };
+      return this.metadata;
    }
 
    public listApiConnections(): ApiConnection[] {

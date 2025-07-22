@@ -92,7 +92,6 @@ const scheduleController = new ScheduleController(projectStore);
 
 const mcpApp = express();
 
-initProjects();
 mcpApp.use(MCP_ENDPOINT, express.json());
 mcpApp.use(MCP_ENDPOINT, cors());
 
@@ -233,7 +232,7 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
          req.params.projectName,
          req.query.reload === "true",
       );
-      res.status(200).json(await project.getProjectMetadata());
+      res.status(200).json(project.metadata);
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -243,9 +242,7 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
 
 app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
-      await projectStore.deleteProject(req.params.projectName);
-      const overwrittenProject = await projectStore.addProject(req.body);
-      res.status(200).json(overwrittenProject);
+      res.status(200).json(await projectStore.updateProject(req.body));
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -725,14 +722,3 @@ const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
 });
 
 export { app, mainServer as httpServer, mcpApp, mcpHttpServer };
-
-// Warm up the packages
-function initProjects() {
-   projectStore.listProjects().then((projects) => {
-      projects.forEach((project) => {
-         projectStore.getProject(project.name!, false).then((project) => {
-            project.listPackages();
-         });
-      });
-   });
-}

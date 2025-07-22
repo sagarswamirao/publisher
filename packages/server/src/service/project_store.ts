@@ -18,27 +18,36 @@ export class ProjectStore {
       void this.initialize();
    }
 
-   public async initialize() {
-      this.publisherConfigIsFrozen = isPublisherConfigFrozen(
-         this.serverRootPath,
-      );
-      const projectManifest = await ProjectStore.getProjectManifest(
-         this.serverRootPath,
-      );
-      for (const projectName of Object.keys(projectManifest.projects)) {
-         const projectPath = projectManifest.projects[projectName];
-         const absoluteProjectPath = path.join(
+   private async initialize() {
+      try {
+         this.publisherConfigIsFrozen = isPublisherConfigFrozen(
             this.serverRootPath,
-            projectPath,
          );
-         const project = await Project.create(projectName, absoluteProjectPath);
-         this.projects.set(projectName, project);
+         const projectManifest = await ProjectStore.reloadProjectManifest(
+            this.serverRootPath,
+         );
+         for (const projectName of Object.keys(projectManifest.projects)) {
+            const projectPath = projectManifest.projects[projectName];
+            const absoluteProjectPath = path.join(
+               this.serverRootPath,
+               projectPath,
+            );
+            const project = await Project.create(
+               projectName,
+               absoluteProjectPath,
+            );
+            this.projects.set(projectName, project);
+         }
+         logger.info("Project store successfully initialized");
+      } catch (error) {
+         logger.error("Error initializing project store", { error });
+         process.exit(1);
       }
    }
 
-   public async listProjects() {
-      return Promise.all(
-         this.projects.values().map((project) => project.getProjectMetadata()),
+   public listProjects() {
+      return Array.from(this.projects.values()).map(
+         (project) => project.metadata,
       );
    }
 
@@ -48,7 +57,7 @@ export class ProjectStore {
    ): Promise<Project> {
       let project = this.projects.get(projectName);
       if (project === undefined || reload) {
-         const projectManifest = await ProjectStore.getProjectManifest(
+         const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
          if (
@@ -56,7 +65,7 @@ export class ProjectStore {
             !projectManifest.projects[projectName]
          ) {
             throw new ProjectNotFoundError(
-               `Project ${projectName} not found in publisher.config.json`,
+               `Project "${projectName}" not found in publisher`,
             );
          }
          project = await this.addProject({
@@ -75,13 +84,13 @@ export class ProjectStore {
       if (!projectName) {
          throw new Error("Project name is required");
       }
-      const projectManifest = await ProjectStore.getProjectManifest(
+      const projectManifest = await ProjectStore.reloadProjectManifest(
          this.serverRootPath,
       );
       const projectPath = projectManifest.projects[projectName];
       if (!projectPath) {
          throw new ProjectNotFoundError(
-            `Project ${projectName} not found in publisher.config.json`,
+            `Project "${projectName}" not found in publisher.config.json`,
          );
       }
       const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
@@ -95,7 +104,6 @@ export class ProjectStore {
       return newProject;
    }
 
-   // TODO: Return name and readme from memory instead of reading from disk
    public async updateProject(project: ApiProject) {
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
@@ -125,7 +133,7 @@ export class ProjectStore {
       return project;
    }
 
-   private static async getProjectManifest(
+   private static async reloadProjectManifest(
       serverRootPath: string,
    ): Promise<{ projects: { [key: string]: string } }> {
       try {
