@@ -79,6 +79,7 @@ export class ProjectStore {
       return newProject;
    }
 
+   // TODO: Return name and readme from memory instead of reading from disk
    public async updateProject(project: ApiProject) {
       const projectName = project.name;
       if (!projectName) {

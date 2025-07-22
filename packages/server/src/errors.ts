@@ -77,3 +77,11 @@ export class ModelCompilationError extends Error {
       super(error.message);
    }
 }
+
+export class FrozenConfigError extends Error {
+   constructor(
+      message = "Publisher config can't be updated when publisher.config.json has `frozenConfig: true`",
+   ) {
+      super(message);
+   }
+}

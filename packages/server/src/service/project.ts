@@ -42,6 +42,9 @@ export class Project {
    public async update(payload: ApiProject) {
       if (payload.name) {
          this.projectName = payload.name;
+         this.packages.forEach((_package) => {
+            _package.setProjectName(this.projectName);
+         });
       }
       if (payload.resource) {
          this.projectPath = payload.resource.replace(
@@ -237,6 +240,9 @@ export class Project {
       const _package = this.packages.get(packageName);
       if (!_package) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
+      }
+      if (body.name) {
+         _package.setName(body.name);
       }
       _package.setPackageMetadata({
          name: body.name,

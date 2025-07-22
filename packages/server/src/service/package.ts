@@ -374,6 +374,14 @@ export class Package {
       return { name: databasePath, rowCount, columns: schema };
    }
 
+   public setName(name: string) {
+      this.packageName = name;
+   }
+
+   public setProjectName(projectName: string) {
+      this.projectName = projectName;
+   }
+
    public setPackageMetadata(packageMetadata: ApiPackage) {
       this.packageMetadata = packageMetadata;
    }
