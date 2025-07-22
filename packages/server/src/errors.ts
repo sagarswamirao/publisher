@@ -3,6 +3,10 @@ import { MalloyError } from "@malloydata/malloy";
 export function internalErrorToHttpError(error: Error) {
    if (error instanceof BadRequestError) {
       return httpError(400, error.message);
+   } else if (error instanceof FrozenConfigError) {
+      return httpError(403, error.message);
+   } else if (error instanceof ProjectNotFoundError) {
+      return httpError(404, error.message);
    } else if (error instanceof PackageNotFoundError) {
       return httpError(404, error.message);
    } else if (error instanceof ModelNotFoundError) {
@@ -73,5 +77,13 @@ export class ConnectionError extends Error {
 export class ModelCompilationError extends Error {
    constructor(error: MalloyError) {
       super(error.message);
+   }
+}
+
+export class FrozenConfigError extends Error {
+   constructor(
+      message = "Publisher config can't be updated when publisher.config.json has `frozenConfig: true`",
+   ) {
+      super(message);
    }
 }

@@ -1,5 +1,6 @@
 import { URLReader } from "@malloydata/malloy";
-import { promises as fs } from "fs";
+import * as fs from "fs";
+import path from "path";
 import { fileURLToPath } from "url";
 
 export const PACKAGE_MANIFEST_NAME = "publisher.json";
@@ -15,6 +16,17 @@ export const URL_READER: URLReader = {
       if (url.protocol == "file:") {
          path = fileURLToPath(url);
       }
-      return fs.readFile(path, "utf8");
+      return fs.promises.readFile(path, "utf8");
    },
+};
+
+export const isPublisherConfigFrozen = (serverRoot: string) => {
+   const publisherConfigPath = path.join(serverRoot, "publisher.config.json");
+   if (!fs.existsSync(publisherConfigPath)) {
+      return false;
+   }
+   const publisherConfig = JSON.parse(
+      fs.readFileSync(publisherConfigPath, "utf8"),
+   );
+   return Boolean(publisherConfig.frozenConfig);
 };

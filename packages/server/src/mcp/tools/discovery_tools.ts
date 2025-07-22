@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { ProjectStore } from "../../service/project_store";
 import { buildMalloyUri } from "../handler_utils";
-import { z } from "zod";
 
 const listPackagesShape = {
    // projectName is required; other fields mirror SDK expectations
@@ -78,7 +78,7 @@ export function registerTools(
             allProjects.map(async (project) => {
                const name = project.name;
                const projectInstance = await project.project;
-               const metadata = await projectInstance.getProjectMetadata();
+               const metadata = await projectInstance.reloadProjectMetadata();
                const readme = metadata.readme;
                return {
                   name,

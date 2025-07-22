@@ -2,31 +2,53 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
 import { API_PREFIX } from "../constants";
-import { ProjectNotFoundError } from "../errors";
+import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
+import { isPublisherConfigFrozen } from "../utils";
 import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
    private serverRootPath: string;
    private projects: Map<string, Project> = new Map();
+   public publisherConfigIsFrozen: boolean;
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
+      void this.initialize();
    }
 
-   public async listProjects(): Promise<ApiProject[]> {
-      const projectManifest = await ProjectStore.getProjectManifest(
-         this.serverRootPath,
-      );
-      if (!projectManifest.projects) {
-         return [];
-      } else {
-         return Object.keys(projectManifest.projects).map((projectName) => ({
-            name: projectName,
-            resource: `${API_PREFIX}/projects/${projectName}`,
-         })) as ApiProject[];
+   private async initialize() {
+      try {
+         this.publisherConfigIsFrozen = isPublisherConfigFrozen(
+            this.serverRootPath,
+         );
+         const projectManifest = await ProjectStore.reloadProjectManifest(
+            this.serverRootPath,
+         );
+         for (const projectName of Object.keys(projectManifest.projects)) {
+            const projectPath = projectManifest.projects[projectName];
+            const absoluteProjectPath = path.join(
+               this.serverRootPath,
+               projectPath,
+            );
+            const project = await Project.create(
+               projectName,
+               absoluteProjectPath,
+            );
+            this.projects.set(projectName, project);
+         }
+         logger.info("Project store successfully initialized");
+      } catch (error) {
+         logger.error("Error initializing project store", { error });
+         process.exit(1);
       }
+   }
+
+   public listProjects() {
+      return Array.from(this.projects.values()).map(
+         (project) => project.metadata,
+      );
    }
 
    public async getProject(
@@ -35,7 +57,7 @@ export class ProjectStore {
    ): Promise<Project> {
       let project = this.projects.get(projectName);
       if (project === undefined || reload) {
-         const projectManifest = await ProjectStore.getProjectManifest(
+         const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
          if (
@@ -43,22 +65,75 @@ export class ProjectStore {
             !projectManifest.projects[projectName]
          ) {
             throw new ProjectNotFoundError(
-               `Project ${projectName} not found in publisher.config.json`,
+               `Project "${projectName}" not found in publisher`,
             );
          }
-         project = await Project.create(
-            projectName,
-            path.join(
-               this.serverRootPath,
-               projectManifest.projects[projectName],
-            ),
-         );
-         this.projects.set(projectName, project);
+         project = await this.addProject({
+            name: projectName,
+            resource: `${API_PREFIX}/projects/${projectName}`,
+         });
       }
       return project;
    }
 
-   private static async getProjectManifest(
+   public async addProject(project: ApiProject) {
+      if (this.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
+      const projectName = project.name;
+      if (!projectName) {
+         throw new Error("Project name is required");
+      }
+      const projectManifest = await ProjectStore.reloadProjectManifest(
+         this.serverRootPath,
+      );
+      const projectPath = projectManifest.projects[projectName];
+      if (!projectPath) {
+         throw new ProjectNotFoundError(
+            `Project "${projectName}" not found in publisher.config.json`,
+         );
+      }
+      const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
+      if (!(await fs.stat(absoluteProjectPath)).isDirectory()) {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in ${absoluteProjectPath}`,
+         );
+      }
+      const newProject = await Project.create(projectName, absoluteProjectPath);
+      this.projects.set(projectName, newProject);
+      return newProject;
+   }
+
+   public async updateProject(project: ApiProject) {
+      if (this.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
+      const projectName = project.name;
+      if (!projectName) {
+         throw new Error("Project name is required");
+      }
+      const existingProject = this.projects.get(projectName);
+      if (!existingProject) {
+         throw new ProjectNotFoundError(`Project ${projectName} not found`);
+      }
+      const updatedProject = await existingProject.update(project);
+      this.projects.set(projectName, updatedProject);
+      return updatedProject;
+   }
+
+   public async deleteProject(projectName: string) {
+      if (this.publisherConfigIsFrozen) {
+         throw new FrozenConfigError();
+      }
+      const project = this.projects.get(projectName);
+      if (!project) {
+         throw new ProjectNotFoundError(`Project ${projectName} not found`);
+      }
+      this.projects.delete(projectName);
+      return project;
+   }
+
+   private static async reloadProjectManifest(
       serverRootPath: string,
    ): Promise<{ projects: { [key: string]: string } }> {
       try {

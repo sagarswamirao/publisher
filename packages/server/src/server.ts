@@ -92,7 +92,6 @@ const scheduleController = new ScheduleController(projectStore);
 
 const mcpApp = express();
 
-initProjects();
 mcpApp.use(MCP_ENDPOINT, express.json());
 mcpApp.use(MCP_ENDPOINT, cors());
 
@@ -192,7 +191,7 @@ if (!isDevelopment) {
          target: "http://localhost:5173",
          changeOrigin: true,
          ws: true,
-         pathFilter: (path) => !path.startsWith("/api"),
+         pathFilter: (path) => !path.startsWith("/api/"),
       }),
    );
 }
@@ -217,13 +216,45 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    }
 });
 
+app.post(`${API_PREFIX}/projects`, async (req, res) => {
+   try {
+      res.status(200).json(await projectStore.addProject(req.body));
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
 app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
       const project = await projectStore.getProject(
          req.params.projectName,
          req.query.reload === "true",
       );
-      res.status(200).json(await project.getProjectMetadata());
+      res.status(200).json(project.metadata);
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
+   try {
+      res.status(200).json(await projectStore.updateProject(req.body));
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
+app.delete(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
+   try {
+      res.status(200).json(
+         await projectStore.deleteProject(req.params.projectName),
+      );
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -412,6 +443,18 @@ app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
    }
 });
 
+app.post(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
+   try {
+      res.status(200).json(
+         await packageController.addPackage(req.params.projectName, req.body),
+      );
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
 app.get(
    `${API_PREFIX}/projects/:projectName/packages/:packageName`,
    async (req, res) => {
@@ -426,6 +469,43 @@ app.get(
                req.params.projectName,
                req.params.packageName,
                req.query.reload === "true",
+            ),
+         );
+      } catch (error) {
+         logger.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.patch(
+   `${API_PREFIX}/projects/:projectName/packages/:packageName`,
+   async (req, res) => {
+      try {
+         res.status(200).json(
+            await packageController.updatePackage(
+               req.params.projectName,
+               req.params.packageName,
+               req.body,
+            ),
+         );
+      } catch (error) {
+         logger.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.delete(
+   `${API_PREFIX}/projects/:projectName/packages/:packageName`,
+   async (req, res) => {
+      try {
+         res.status(200).json(
+            await packageController.deletePackage(
+               req.params.projectName,
+               req.params.packageName,
             ),
          );
       } catch (error) {
@@ -611,11 +691,18 @@ if (!isDevelopment) {
    app.get("*", (_req, res) => res.sendFile(path.resolve(ROOT, "index.html")));
 }
 
-app.use((err: Error, _req: express.Request, res: express.Response) => {
-   logger.error("Unhandled error:", err);
-   const { json, status } = internalErrorToHttpError(err);
-   res.status(status).json(json);
-});
+app.use(
+   (
+      err: Error,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction,
+   ) => {
+      logger.error("Unhandled error:", err);
+      const { json, status } = internalErrorToHttpError(err);
+      res.status(status).json(json);
+   },
+);
 
 const mainServer = http.createServer(app);
 mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
@@ -635,14 +722,3 @@ const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
 });
 
 export { app, mainServer as httpServer, mcpApp, mcpHttpServer };
-
-// Warm up the packages
-function initProjects() {
-   projectStore.listProjects().then((projects) => {
-      projects.forEach((project) => {
-         projectStore.getProject(project.name!, false).then((project) => {
-            project.listPackages();
-         });
-      });
-   });
-}

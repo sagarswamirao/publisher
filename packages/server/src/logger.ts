@@ -2,12 +2,19 @@ import { AxiosError } from "axios";
 import { RequestHandler } from "express";
 import winston from "winston";
 
+const isTelemetryEnabled = Boolean(process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
+
 export const logger = winston.createLogger({
-   format: winston.format.combine(
-      winston.format.uncolorize(),
-      winston.format.timestamp(),
-      winston.format.json(),
-   ),
+   format: isTelemetryEnabled
+      ? winston.format.combine(
+           winston.format.uncolorize(),
+           winston.format.timestamp(),
+           winston.format.json(),
+        )
+      : winston.format.combine(
+           winston.format.colorize(),
+           winston.format.simple(),
+        ),
    transports: [new winston.transports.Console()],
 });
 

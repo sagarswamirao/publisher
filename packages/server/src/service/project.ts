@@ -4,7 +4,11 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
 import { API_PREFIX, README_NAME } from "../constants";
-import { ConnectionNotFoundError, ProjectNotFoundError } from "../errors";
+import {
+   ConnectionNotFoundError,
+   PackageNotFoundError,
+   ProjectNotFoundError,
+} from "../errors";
 import { createConnections, InternalConnection } from "./connection";
 import { ApiConnection } from "./model";
 import { Package } from "./package";
@@ -19,6 +23,7 @@ export class Project {
    private internalConnections: InternalConnection[];
    private projectPath: string;
    private projectName: string;
+   public metadata: ApiProject;
 
    constructor(
       projectName: string,
@@ -33,6 +38,35 @@ export class Project {
       // InternalConnections have full connection details for doing schema inspection
       this.internalConnections = internalConnections;
       this.apiConnections = apiConnections;
+      this.metadata = {
+         resource: `${API_PREFIX}/projects/${this.projectName}`,
+         name: this.projectName,
+      };
+      void this.reloadProjectMetadata();
+   }
+
+   public async update(payload: ApiProject) {
+      if (payload.name) {
+         this.projectName = payload.name;
+         this.packages.forEach((_package) => {
+            _package.setProjectName(this.projectName);
+         });
+         this.metadata.name = this.projectName;
+      }
+      if (payload.resource) {
+         this.projectPath = payload.resource.replace(
+            `${API_PREFIX}/projects/`,
+            "",
+         );
+         if (!(await fs.exists(this.projectPath))) {
+            throw new ProjectNotFoundError(
+               `Project path "${this.projectPath}" not found`,
+            );
+         }
+         this.metadata.resource = payload.resource;
+      }
+      this.metadata.readme = payload.readme;
+      return this;
    }
 
    static async create(
@@ -65,7 +99,7 @@ export class Project {
       );
    }
 
-   public async getProjectMetadata(): Promise<ApiProject> {
+   public async reloadProjectMetadata(): Promise<ApiProject> {
       let readme = "";
       try {
          readme = (
@@ -74,11 +108,12 @@ export class Project {
       } catch {
          // Readme not found, so we'll just return an empty string
       }
-      return {
+      this.metadata = {
          resource: `${API_PREFIX}/projects/${this.projectName}`,
          name: this.projectName,
          readme: readme,
       };
+      return this.metadata;
    }
 
    public listApiConnections(): ApiConnection[] {
@@ -186,5 +221,52 @@ export class Project {
             throw error;
          }
       });
+   }
+
+   public async addPackage(packageName: string) {
+      const packagePath = path.join(this.projectPath, packageName);
+      if (
+         !(await fs.exists(packagePath)) ||
+         !(await fs.stat(packagePath)).isDirectory()
+      ) {
+         throw new PackageNotFoundError(`Package ${packageName} not found`);
+      }
+      this.packages.set(
+         packageName,
+         await Package.create(
+            this.projectName,
+            packageName,
+            packagePath,
+            this.malloyConnections,
+         ),
+      );
+      return this.packages.get(packageName);
+   }
+
+   public async updatePackage(
+      packageName: string,
+      body: { resource?: string; name?: string; description?: string },
+   ) {
+      const _package = this.packages.get(packageName);
+      if (!_package) {
+         throw new PackageNotFoundError(`Package ${packageName} not found`);
+      }
+      if (body.name) {
+         _package.setName(body.name);
+      }
+      _package.setPackageMetadata({
+         name: body.name,
+         description: body.description,
+         resource: body.resource,
+      });
+      return _package.getPackageMetadata();
+   }
+
+   public async deletePackage(packageName: string) {
+      const _package = this.packages.get(packageName);
+      if (!_package) {
+         throw new PackageNotFoundError(`Package ${packageName} not found`);
+      }
+      this.packages.delete(packageName);
    }
 }
