@@ -38,6 +38,10 @@ export class Project {
       // InternalConnections have full connection details for doing schema inspection
       this.internalConnections = internalConnections;
       this.apiConnections = apiConnections;
+      this.metadata = {
+         resource: `${API_PREFIX}/projects/${this.projectName}`,
+         name: this.projectName,
+      };
       void this.reloadProjectMetadata();
    }
 
