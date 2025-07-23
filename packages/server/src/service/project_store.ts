@@ -1,15 +1,15 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
+import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
 import { API_PREFIX, PUBLISHER_CONFIG_NAME } from "../constants";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
-import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
 import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
-   private serverRootPath: string;
+   public serverRootPath: string;
    private projects: Map<string, Project> = new Map();
    public publisherConfigIsFrozen: boolean;
    private finishedInitialization: Promise<void>;
@@ -139,7 +139,7 @@ export class ProjectStore {
       return project;
    }
 
-   private static async reloadProjectManifest(serverRootPath: string) {
+   public static async reloadProjectManifest(serverRootPath: string) {
       try {
          return getPublisherConfig(serverRootPath);
       } catch (error) {

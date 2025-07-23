@@ -12,6 +12,7 @@ import { ModelController } from "./controller/model.controller";
 import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
+import { WatchModeController } from "./controller/watch-mode.controller";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { logger, loggerMiddleware } from "./logger";
 import { initializeMcpServer } from "./mcp/server";
@@ -83,6 +84,7 @@ app.use(loggerMiddleware);
 app.use(cors());
 
 const projectStore = new ProjectStore(SERVER_ROOT);
+const watchModeController = new WatchModeController(projectStore);
 const connectionController = new ConnectionController(projectStore);
 const modelController = new ModelController(projectStore);
 const packageController = new PackageController(projectStore);
@@ -205,6 +207,10 @@ const setVersionIdError = (res: express.Response) => {
 
 app.use(cors());
 app.use(bodyParser.json());
+
+app.get(`${API_PREFIX}/watch-mode/status`, watchModeController.getWatchStatus);
+app.post(`${API_PREFIX}/watch-mode/start`, watchModeController.startWatching);
+app.post(`${API_PREFIX}/watch-mode/stop`, watchModeController.stopWatchMode);
 
 app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    try {
