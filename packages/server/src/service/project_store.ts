@@ -12,10 +12,11 @@ export class ProjectStore {
    private serverRootPath: string;
    private projects: Map<string, Project> = new Map();
    public publisherConfigIsFrozen: boolean;
+   private finishedInitialization: Promise<void>;
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
-      void this.initialize();
+      this.finishedInitialization = this.initialize();
    }
 
    private async initialize() {
@@ -45,7 +46,8 @@ export class ProjectStore {
       }
    }
 
-   public listProjects() {
+   public async listProjects() {
+      await this.finishedInitialization;
       return Array.from(this.projects.values()).map(
          (project) => project.metadata,
       );
@@ -55,6 +57,7 @@ export class ProjectStore {
       projectName: string,
       reload: boolean,
    ): Promise<Project> {
+      await this.finishedInitialization;
       let project = this.projects.get(projectName);
       if (project === undefined || reload) {
          const projectManifest = await ProjectStore.reloadProjectManifest(
@@ -77,6 +80,7 @@ export class ProjectStore {
    }
 
    public async addProject(project: ApiProject) {
+      await this.finishedInitialization;
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
@@ -105,6 +109,7 @@ export class ProjectStore {
    }
 
    public async updateProject(project: ApiProject) {
+      await this.finishedInitialization;
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
@@ -122,6 +127,7 @@ export class ProjectStore {
    }
 
    public async deleteProject(projectName: string) {
+      await this.finishedInitialization;
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
