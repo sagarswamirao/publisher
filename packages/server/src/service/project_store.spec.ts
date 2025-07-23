@@ -1,8 +1,8 @@
 import { describe, expect, it, mock, spyOn } from "bun:test";
 import * as fs from "fs/promises";
 import path from "path";
+import { isPublisherConfigFrozen } from "../config";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
-import { isPublisherConfigFrozen } from "../utils";
 import { ProjectStore } from "./project_store";
 
 describe("ProjectStore", () => {

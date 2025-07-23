@@ -1,4 +1,5 @@
 import { MalloyError } from "@malloydata/malloy";
+import { PUBLISHER_CONFIG_NAME } from "./constants";
 
 export function internalErrorToHttpError(error: Error) {
    if (error instanceof BadRequestError) {
@@ -82,7 +83,7 @@ export class ModelCompilationError extends Error {
 
 export class FrozenConfigError extends Error {
    constructor(
-      message = "Publisher config can't be updated when publisher.config.json has `frozenConfig: true`",
+      message = `Publisher config can't be updated when ${PUBLISHER_CONFIG_NAME} has { "frozenConfig": true }`,
    ) {
       super(message);
    }

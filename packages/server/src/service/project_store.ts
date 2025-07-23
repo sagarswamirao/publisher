@@ -1,10 +1,10 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
-import { API_PREFIX } from "../constants";
+import { API_PREFIX, PUBLISHER_CONFIG_NAME } from "../constants";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
-import { isPublisherConfigFrozen } from "../utils";
+import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
 import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
@@ -94,7 +94,7 @@ export class ProjectStore {
       const projectPath = projectManifest.projects[projectName];
       if (!projectPath) {
          throw new ProjectNotFoundError(
-            `Project "${projectName}" not found in publisher.config.json`,
+            `Project "${projectName}" not found in ${PUBLISHER_CONFIG_NAME}`,
          );
       }
       const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
@@ -139,19 +139,13 @@ export class ProjectStore {
       return project;
    }
 
-   private static async reloadProjectManifest(
-      serverRootPath: string,
-   ): Promise<{ projects: { [key: string]: string } }> {
+   private static async reloadProjectManifest(serverRootPath: string) {
       try {
-         const projectManifestContent = await fs.readFile(
-            path.join(serverRootPath, "publisher.config.json"),
-            "utf8",
-         );
-         return JSON.parse(projectManifestContent);
+         return getPublisherConfig(serverRootPath);
       } catch (error) {
          if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
             logger.error(
-               `Error reading publisher.config.json. Generating from directory`,
+               `Error reading ${PUBLISHER_CONFIG_NAME}. Generating from directory`,
                { error },
             );
             return { projects: {} };
