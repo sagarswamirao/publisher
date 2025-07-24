@@ -39,14 +39,6 @@ Slack Message → bot.py → LangChainCompatibilityAdapter → MalloyLangChainAg
 - **Anthropic** (Claude models)
 - **Google Vertex AI** (Gemini models)
 
-## 🚀 Cloud Deployment
-
-For cloud deployment instructions, see the `feature/cloud-deployment-enhanced` branch which contains:
-- Google Cloud Run deployment
-- Enhanced monitoring and health checks
-- Production-ready configuration
-- Auto-scaling and circuit breaker patterns
-
 ## 📁 Project Structure
 
 ```
@@ -58,12 +50,12 @@ examples/slack-bot/
 │   ├── tools/            # Chart generation tools
 │   └── prompts/          # Agent prompts and templates
 ├── tests/                # Test suite
-└── LOCAL_SETUP_PLAN.md   # Local development guide
+└── README_LOCAL.md       # Local development guide
 ```
 
 ## 🧪 Development
 
-See `LOCAL_SETUP_PLAN.md` for:
+See `README_LOCAL.md` for:
 - Environment setup
 - Slack app configuration
 - Local testing workflow

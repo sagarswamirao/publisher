@@ -50,7 +50,8 @@ MCP_URL=http://localhost:4040/mcp
 **Terminal 1 - Start MCP Server:**
 ```bash
 cd publisher
-npm start
+bun run build
+bun run start
 ```
 
 **Terminal 2 - Start Slack Bot:**
@@ -79,16 +80,9 @@ python bot.py
    chat:write
    files:write
    groups:history
-   groups:read
-   im:history
-   im:read
-   im:write
-   mpim:history
-   mpim:read
-   mpim:write
    ```
 
-2. **Install App to Workspace** → Copy **Bot User OAuth Token** (starts with `xoxb-`)
+2. **Install App to Workspace** → Copy **Bot User OAuth Token** (starts with `xoxb-`) and paste into your .env file
 
 ### Enable Socket Mode
 
@@ -96,7 +90,7 @@ python bot.py
 2. **Generate App-Level Token**:
    - Token Name: `Malloy Bot Token`
    - Scope: `connections:write`
-   - Copy **App-Level Token** (starts with `xapp-`)
+   - Copy **App-Level Token** (starts with `xapp-`) and paste into your .env file
 
 ### Subscribe to Events
 
@@ -106,13 +100,11 @@ python bot.py
    app_mention
    message.channels
    message.groups
-   message.im
-   message.mpim
    ```
 
 ## 🧠 Agent Architecture
 
-The bot includes a sophisticated LangChain agent:
+The bot includes a full LangChain agent:
 
 ```
 Slack Message
@@ -144,8 +136,7 @@ Intelligent Response + Optional Chart
 
 ### 1. Test MCP Server
 ```bash
-curl http://localhost:4040/mcp
-# Should return JSON with server info
+./start-mcp-server.sh
 ```
 
 ### 2. Test Slack Bot
@@ -158,33 +149,6 @@ In Slack, mention your bot:
 ```
 @malloy-bot show me top 5 brands by sales for 2021 in a chart
 ```
-
-## 🛠️ Development Workflow
-
-### Starting Development Session
-
-```bash
-# Terminal 1: MCP Server
-cd publisher
-npm start
-
-# Terminal 2: Bot Development
-cd examples/slack-bot
-source venv/bin/activate
-python bot.py
-
-# Optional Terminal 3: Monitor logs
-tail -f examples/slack-bot/bot.log
-```
-
-### Making Changes
-
-The bot automatically reloads when you make changes to:
-- Agent configuration in `src/agents/`
-- Prompt templates in `src/prompts/`
-- Tool implementations in `src/tools/`
-
-Just restart `python bot.py` to pick up changes.
 
 ## 📁 Project Structure
 
@@ -215,26 +179,10 @@ examples/slack-bot/
 
 ### Common Issues
 
-#### Bot doesn't respond to messages
-- ✅ Check Slack app has correct permissions
-- ✅ Verify Socket Mode is enabled
-- ✅ Ensure bot is mentioned with `@bot-name`
-- ✅ Check bot.log for errors
-
-#### "Agent is down" messages
-- ✅ Verify MCP server is running: `curl http://localhost:4040/mcp`
-- ✅ Check MCP_URL in .env is correct
-- ✅ Restart MCP server: `cd publisher && npm start`
-
-#### LLM API errors
-- ✅ Verify API key is correct in .env
-- ✅ Check API key has sufficient credits/quota
-- ✅ Try different model: set LLM_MODEL in .env
-
-#### Chart generation fails
-- ✅ Check matplotlib is installed: `pip install matplotlib`
-- ✅ Verify /tmp directory is writable
-- ✅ Check bot.log for specific matplotlib errors
+Check the logs for detailed error information:
+```bash
+tail -f examples/slack-bot/bot.log
+```
 
 ### Debug Mode
 
@@ -256,13 +204,26 @@ rm .env
 
 ## 🎨 Customization
 
-### Change Default Model
+### Change Model
 
-In .env:
+You can change the LLM model using command line flags:
+
 ```bash
-LLM_MODEL=claude-3.5-sonnet    # Anthropic
-LLM_MODEL=gemini-1.5-pro       # Vertex AI
-LLM_MODEL=gpt-4o               # OpenAI (default)
+# Use Claude
+python bot.py --model claude-4-sonnet
+
+# Use GPT-4
+python bot.py --model gpt-4o
+
+# Use Gemini  
+python bot.py --model gemini-1.5-pro
+```
+
+Or set the default in .env:
+```bash
+LLM_MODEL=claude-4-sonnet    # Anthropic
+LLM_MODEL=gemini-1.5-pro     # Vertex AI
+LLM_MODEL=gpt-4o             # OpenAI (default)
 ```
 
 ### Modify Agent Behavior
