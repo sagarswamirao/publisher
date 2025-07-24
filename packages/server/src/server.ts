@@ -63,7 +63,7 @@ function parseArgs() {
 parseArgs();
 
 const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
-const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
+const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "0.0.0.0";
 const MCP_PORT = Number(process.env.MCP_PORT || 4040);
 const MCP_ENDPOINT = "/mcp";
 // Find the app directory - handle NPX vs local execution
@@ -722,9 +722,7 @@ mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
       );
    }
 });
-
-const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
+mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
    logger.info(`MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`);
 });
 
-export { app, mainServer as httpServer, mcpApp, mcpHttpServer };
