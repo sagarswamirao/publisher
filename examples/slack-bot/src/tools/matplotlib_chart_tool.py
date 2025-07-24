@@ -19,7 +19,7 @@ matplotlib.use('Agg')  # Use non-interactive backend
 class MatplotlibChartInput(BaseModel):
     """Input for Matplotlib chart tool"""
     python_code: str = Field(
-        description="Python code that creates and saves a matplotlib chart. The code should handle parsing any data from the conversation context and save the chart using plt.savefig(filepath)."
+        description="Python code that creates and saves a matplotlib chart. MUST use the provided 'filepath' variable for saving: plt.savefig(filepath). Available variables: 'filepath', 'chart_filename'. DO NOT use hardcoded paths like '/mnt/data/'."
     )
 
 
@@ -35,17 +35,21 @@ class MatplotlibChartTool(BaseTool):
         "Guidelines for successful charts:"
         "- Parse the data from previous tool results"
         "- Use matplotlib.pyplot for visualization" 
-        "- Always call plt.savefig(filepath) to save the chart"
+        "- IMPORTANT: Use the provided 'filepath' variable for saving: plt.savefig(filepath)"
+        "- DO NOT use hardcoded paths like '/mnt/data/' - use the provided 'filepath' variable"
         "- Handle different data formats gracefully"
         "- Choose appropriate chart types (bar, line, pie, etc.)"
         "- Add clear titles and axis labels"
+        "- Always call plt.close() after saving to free memory"
     )
     args_schema: type[BaseModel] = MatplotlibChartInput
 
     def _run(self, python_code: str) -> str:
         """Execute matplotlib code to generate chart with better error handling"""
         try:
-            filepath = f"/tmp/{uuid.uuid4()}.png"
+            # Use current directory for charts to avoid permission issues
+            chart_filename = f"chart_{uuid.uuid4().hex[:8]}.png"
+            filepath = os.path.abspath(chart_filename)
             
             # Get list of PNG files before execution to detect new ones
             import glob
@@ -55,11 +59,28 @@ class MatplotlibChartTool(BaseTool):
                 "pd": pd,
                 "plt": plt,
                 "json": json,
-                "filepath": filepath
+                "filepath": filepath,
+                "chart_filename": chart_filename,
+                "os": os
             }
             
+            # Pre-process the code to fix common path issues
+            processed_code = python_code.replace("/mnt/data/", "./")
+            processed_code = processed_code.replace("'/mnt/data'", "'.'")
+            processed_code = processed_code.replace('"/mnt/data"', '"."')
+            
+            # More comprehensive replacements for full paths
+            import re
+            # Replace any /mnt/data/filename.png with just filename.png
+            processed_code = re.sub(r'/mnt/data/([^\'\"]*\.png)', r'\1', processed_code)
+            # Replace any plt.savefig('/mnt/data/...') with plt.savefig(filepath)
+            processed_code = re.sub(r'plt\.savefig\([\'\"]/mnt/data/[^\'\"]*[\'\"]\)', 'plt.savefig(filepath)', processed_code)
+            
+            print(f"🔍 DEBUG: Original code: {python_code[:100]}...")
+            print(f"🔍 DEBUG: Processed code: {processed_code[:100]}...")
+            
             local_vars = {}
-            exec(python_code, safe_globals, local_vars)
+            exec(processed_code, safe_globals, local_vars)
             
             # Check if file was saved to expected path
             if os.path.exists(filepath):

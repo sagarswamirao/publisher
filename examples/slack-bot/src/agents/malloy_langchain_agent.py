@@ -252,7 +252,7 @@ class MalloyLangChainAgent:
                 # For OpenAI and other providers
                 agent = create_openai_tools_agent(fresh_llm, self.tools, self.prompt_template)
                 
-            agent_executor = AgentExecutor(agent=agent, tools=self.tools, verbose=True, max_iterations=25)
+            agent_executor = AgentExecutor(agent=agent, tools=self.tools, verbose=True, max_iterations=25, return_intermediate_steps=True)
             
             input_data = {"input": question, "chat_history": augmented_history}
             result = await agent_executor.ainvoke(input_data)
