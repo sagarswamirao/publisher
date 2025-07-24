@@ -8,10 +8,6 @@ import {
    Divider,
    Paper,
    Grid,
-   Dialog,
-   DialogContent,
-   DialogTitle,
-   IconButton,
    Switch,
    FormControlLabel,
    Table,
@@ -32,10 +28,12 @@ const connectionsApi = new ConnectionsApi(new Configuration());
 
 interface ConnectionExplorerProps {
    connectionName: string;
+   schema?: string;
 }
 
 export default function ConnectionExplorer({
    connectionName,
+   schema,
 }: ConnectionExplorerProps) {
    const { projectName } = useProject();
 
@@ -43,7 +41,7 @@ export default function ConnectionExplorer({
       undefined,
    );
    const [selectedSchema, setSelectedSchema] = React.useState<string | null>(
-      null,
+      schema || null,
    );
    const [showHiddenSchemas, setShowHiddenSchemas] = React.useState(false);
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
@@ -54,75 +52,80 @@ export default function ConnectionExplorer({
 
    return (
       <Grid container spacing={2}>
-         <Grid size={{ xs: 12, md: 6 }}>
-            <Paper sx={{ p: 2 }}>
-               <Box
-                  sx={{
-                     display: "flex",
-                     alignItems: "center",
-                     justifyContent: "space-between",
-                     mb: 1,
-                  }}
-               >
-                  <Typography variant="overline" fontWeight="bold">
-                     Table Paths
-                  </Typography>
-                  <FormControlLabel
-                     control={
-                        <Switch
-                           checked={showHiddenSchemas}
-                           onChange={(e) =>
-                              setShowHiddenSchemas(e.target.checked)
-                           }
-                        />
-                     }
-                     label="Hidden Schemas"
-                  />
-               </Box>
-               <Divider />
-               <Box sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}>
-                  {isLoading && <Loading text="Fetching Table Paths..." />}
-                  {isError && (
-                     <ApiErrorDisplay
-                        error={error}
-                        context={`${projectName} > ${connectionName}`}
+         {!schema && (
+            <Grid size={{ xs: 12, md: 4 }}>
+               <Paper sx={{ p: 2 }}>
+                  <Box
+                     sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        mb: 1,
+                     }}
+                  >
+                     <Typography variant="overline" fontWeight="bold">
+                        Table Paths
+                     </Typography>
+                     <FormControlLabel
+                        control={
+                           <Switch
+                              checked={showHiddenSchemas}
+                              onChange={(e) =>
+                                 setShowHiddenSchemas(e.target.checked)
+                              }
+                           />
+                        }
+                        label="Hidden Schemas"
                      />
-                  )}
-                  {isSuccess && data.data.length === 0 && (
-                     <Typography variant="body2">No Schemas</Typography>
-                  )}
-                  {isSuccess && data.data.length > 0 && (
-                     <List dense disablePadding>
-                        {data.data
-                           .filter(
-                              ({ isHidden }) => showHiddenSchemas || !isHidden,
-                           )
-                           .sort((a, b) => {
-                              if (a.isDefault === b.isDefault) return 0;
-                              return a.isDefault ? -1 : 1;
-                           })
-                           .map(
-                              (schema: {
-                                 name: string;
-                                 isDefault: boolean;
-                              }) => (
-                                 <ListItemButton
-                                    key={schema.name}
-                                    selected={selectedSchema === schema.name}
-                                    onClick={() =>
-                                       setSelectedSchema(schema.name)
-                                    }
-                                 >
-                                    <ListItemText primary={schema.name} />
-                                 </ListItemButton>
-                              ),
-                           )}
-                     </List>
-                  )}
-               </Box>
-            </Paper>
-         </Grid>
-         <Grid size={{ xs: 12, md: 6 }}>
+                  </Box>
+                  <Divider />
+                  <Box
+                     sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}
+                  >
+                     {isLoading && <Loading text="Fetching Table Paths..." />}
+                     {isError && (
+                        <ApiErrorDisplay
+                           error={error}
+                           context={`${projectName} > ${connectionName}`}
+                        />
+                     )}
+                     {isSuccess && data.data.length === 0 && (
+                        <Typography variant="body2">No Schemas</Typography>
+                     )}
+                     {isSuccess && data.data.length > 0 && (
+                        <List dense disablePadding>
+                           {data.data
+                              .filter(
+                                 ({ isHidden }) =>
+                                    showHiddenSchemas || !isHidden,
+                              )
+                              .sort((a, b) => {
+                                 if (a.isDefault === b.isDefault) return 0;
+                                 return a.isDefault ? -1 : 1;
+                              })
+                              .map(
+                                 (schema: {
+                                    name: string;
+                                    isDefault: boolean;
+                                 }) => (
+                                    <ListItemButton
+                                       key={schema.name}
+                                       selected={selectedSchema === schema.name}
+                                       onClick={() =>
+                                          setSelectedSchema(schema.name)
+                                       }
+                                    >
+                                       <ListItemText primary={schema.name} />
+                                    </ListItemButton>
+                                 ),
+                              )}
+                        </List>
+                     )}
+                  </Box>
+               </Paper>
+            </Grid>
+         )}
+         <Grid size={{ xs: 12, md: schema ? 6 : 4 }}>
             {selectedSchema && (
                <Paper sx={{ p: 2 }}>
                   <TablesInSchema
@@ -135,31 +138,32 @@ export default function ConnectionExplorer({
                </Paper>
             )}
          </Grid>
-         {selectedTable && (
-            <TableViewer
-               connectionName={connectionName}
-               schemaName={selectedSchema}
-               tableName={selectedTable}
-               onClose={() => setSelectedTable(undefined)}
-            />
-         )}
+         <Grid size={{ xs: 12, md: schema ? 6 : 4 }}>
+            {selectedTable && selectedSchema && (
+               <Paper sx={{ p: 2 }}>
+                  <TableSchemaViewer
+                     connectionName={connectionName}
+                     schemaName={selectedSchema}
+                     tableName={selectedTable}
+                  />
+               </Paper>
+            )}
+         </Grid>
       </Grid>
    );
 }
 
-type TableViewerProps = {
+type TableSchemaViewerProps = {
    connectionName: string;
    schemaName: string;
    tableName: string;
-   onClose: () => void;
 };
 
-function TableViewer({
+function TableSchemaViewer({
    connectionName,
    schemaName,
    tableName,
-   onClose,
-}: TableViewerProps) {
+}: TableSchemaViewerProps) {
    const { projectName } = useProject();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
@@ -180,41 +184,13 @@ function TableViewer({
          ),
    });
 
-   if (isSuccess && data) {
-      console.log(data);
-   }
-
    return (
-      <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
-         <DialogTitle>
-            <Typography
-               fontSize="large"
-               variant="body2"
-               fontFamily="monospace"
-               component="span"
-               style={{ textTransform: "uppercase" }}
-            >
-               {schemaName}.{tableName}
-            </Typography>
-            <IconButton
-               aria-label="close"
-               onClick={onClose}
-               sx={{ position: "absolute", right: 8, top: 8 }}
-            >
-               <Box
-                  sx={{
-                     width: 24,
-                     height: 24,
-                     display: "flex",
-                     alignItems: "center",
-                     justifyContent: "center",
-                  }}
-               >
-                  X
-               </Box>
-            </IconButton>
-         </DialogTitle>
-         <DialogContent>
+      <>
+         <Typography variant="overline" fontWeight="bold">
+            Schema: {schemaName}.{tableName}
+         </Typography>
+         <Divider />
+         <Box sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}>
             {isLoading && <Loading text="Fetching Table Details..." />}
             {isError && (
                <ApiErrorDisplay
@@ -247,8 +223,8 @@ function TableViewer({
                   </Table>
                </TableContainer>
             )}
-         </DialogContent>
-      </Dialog>
+         </Box>
+      </>
    );
 }
 
