@@ -34,9 +34,6 @@ export default function Packages({ navigate }: PackagesProps) {
                         return a.name.localeCompare(b.name);
                      })
                      .map((p) => {
-                        const href = p.resource
-                           .replace("/api/v0/projects", "")
-                           .replace("/packages", "");
                         return (
                            <Grid
                               size={{ xs: 12, sm: 12, md: 12, lg: 4 }}
@@ -53,7 +50,7 @@ export default function Packages({ navigate }: PackagesProps) {
                                        transform: "translateY(-2px)",
                                     },
                                  }}
-                                 onClick={(event) => navigate(href, event)}
+                                 onClick={(event) => navigate(p.name, event)}
                               >
                                  <StyledCardContent>
                                     <Typography
