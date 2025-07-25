@@ -279,49 +279,48 @@ class MalloyLangChainAgent:
                 # Convert other types to string
                 output = str(output)
             
-            # 🎯 POST-PROCESS CHART RESPONSES (Simple Approach)
-            # For Claude agents (create_tool_calling_agent), check for recent chart files
-            if self.llm_provider == "anthropic" and output and ('chart' in output.lower() or 'png' in output.lower()):
-                print(f"🔍 DEBUG: Claude agent mentioned charts, checking for recent chart files...")
-                import glob
-                import os
-                import time
-                
-                # Look for PNG files created in the last 30 seconds
-                current_time = time.time()
-                recent_charts = []
-                for png_file in glob.glob("*.png"):
-                    file_time = os.path.getmtime(png_file)
-                    if current_time - file_time < 30:  # Created within last 30 seconds
-                        recent_charts.append(png_file)
-                
-                if recent_charts:
-                    # Use the most recent chart
-                    most_recent = max(recent_charts, key=os.path.getmtime)
-                    full_path = os.path.abspath(most_recent)
-                    print(f"🔍 DEBUG: Found recent chart file: {full_path}")
-                    chart_json = json.dumps({
-                        "text": "Chart created successfully!",
-                        "file_info": {"status": "success", "filepath": full_path}
-                    })
-                    output = chart_json
-                    print(f"🔍 DEBUG: Using Claude chart detection: {chart_json}")
-            
-            # For OpenAI agents, use traditional intermediate_steps approach
-            elif "intermediate_steps" in result:
-                print(f"🔍 DEBUG: Found {len(result['intermediate_steps'])} intermediate steps")
+            # 🎯 UNIFIED CHART RESPONSE PROCESSING
+            # Try to extract chart info from intermediate_steps first (works for both OpenAI and Claude)
+            chart_json = None
+            if "intermediate_steps" in result:
                 chart_json = self._extract_chart_json_response(result)
                 if chart_json:
-                    print(f"🔍 DEBUG: Chart detected via intermediate_steps")
+                    print(f"🔍 DEBUG: Chart detected via intermediate_steps for {self.llm_provider}")
                     output = chart_json
+            
+            # Fallback: If no chart detected via intermediate_steps but output mentions charts
+            if not chart_json and output and ('chart' in output.lower() or 'png' in output.lower()):
+                print(f"🔍 DEBUG: Agent mentioned charts but intermediate_steps didn't contain chart tool result")
+                
+                # Try the fallback constructor first
+                fallback_json = self._construct_chart_fallback(result)
+                if fallback_json:
+                    print(f"🔍 DEBUG: Using fallback chart JSON")
+                    output = fallback_json
                 else:
-                    # Fallback for OpenAI agents
-                    if output and ('chart' in output.lower() or 'png' in output.lower() or 'files.slack.com' in output.lower()):
-                        print(f"🔍 DEBUG: Agent mentioned charts but didn't return JSON format")
-                        fallback_json = self._construct_chart_fallback(result)
-                        if fallback_json:
-                            print(f"🔍 DEBUG: Using fallback chart JSON: {fallback_json}")
-                            output = fallback_json
+                    # Last resort: Check for recent chart files (filesystem-based detection)
+                    print(f"🔍 DEBUG: Attempting filesystem-based chart detection as last resort...")
+                    import glob
+                    import os
+                    import time
+                    
+                    current_time = time.time()
+                    recent_charts = []
+                    for png_file in glob.glob("*.png"):
+                        file_time = os.path.getmtime(png_file)
+                        if current_time - file_time < 30:  # Created within last 30 seconds
+                            recent_charts.append(png_file)
+                    
+                    if recent_charts:
+                        # Use the most recent chart
+                        most_recent = max(recent_charts, key=os.path.getmtime)
+                        full_path = os.path.abspath(most_recent)
+                        print(f"🔍 DEBUG: Found recent chart file (last resort): {full_path}")
+                        chart_json = json.dumps({
+                            "text": "Chart created successfully!",
+                            "file_info": {"status": "success", "filepath": full_path}
+                        })
+                        output = chart_json
             
             # Handle empty output from agent (more common with certain models like Gemini)
             if not output or output.strip() == "":

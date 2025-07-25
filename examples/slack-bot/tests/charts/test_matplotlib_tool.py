@@ -1,11 +1,90 @@
 #!/usr/bin/env python3
 """
-Test the matplotlib chart tool directly
+Test the matplotlib chart tool directly and unified chart response processing
 """
 
 import json
 import os
+import sys
+import tempfile
+from unittest.mock import Mock, patch
+
+# Add the project root to the path so we can import modules
+project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+sys.path.insert(0, project_root)
+
 from src.tools.matplotlib_chart_tool import MatplotlibChartTool
+from src.agents.malloy_langchain_agent import MalloyLangChainAgent
+
+def test_unified_chart_response_processor():
+    """Test that the unified chart response processor works for both OpenAI and Claude agents"""
+    
+    print("🔧 Testing Unified Chart Response Processor")
+    print("=" * 50)
+    
+    # Create a mock agent (we don't need full initialization for this test)
+    agent = Mock()
+    agent._extract_chart_json_response = MalloyLangChainAgent._extract_chart_json_response.__get__(agent)
+    agent._construct_chart_fallback = MalloyLangChainAgent._construct_chart_fallback.__get__(agent)
+    
+    # Test Case 1: OpenAI agent with proper intermediate_steps
+    print("\n1. Testing OpenAI agent with proper intermediate_steps")
+    
+    # Mock an intermediate step that contains chart tool execution
+    mock_action = Mock()
+    mock_action.tool = "generate_chart"
+    chart_result = json.dumps({
+        "text": "Chart created successfully!",
+        "file_info": {"status": "success", "filepath": "/tmp/test_chart.png"}
+    })
+    
+    openai_result = {
+        "output": "I've created a chart showing the sales data.",
+        "intermediate_steps": [(mock_action, chart_result)]
+    }
+    
+    # Test extraction
+    extracted = agent._extract_chart_json_response(openai_result)
+    assert extracted == chart_result, f"Expected {chart_result}, got {extracted}"
+    print("✅ OpenAI agent intermediate_steps extraction works")
+    
+    # Test Case 2: Claude agent with proper intermediate_steps (should work the same way now)
+    print("\n2. Testing Claude agent with proper intermediate_steps")
+    
+    claude_result = {
+        "output": ["I've created a chart showing the sales data."],  # Claude returns list format
+        "intermediate_steps": [(mock_action, chart_result)]
+    }
+    
+    extracted = agent._extract_chart_json_response(claude_result)
+    assert extracted == chart_result, f"Expected {chart_result}, got {extracted}"
+    print("✅ Claude agent intermediate_steps extraction works")
+    
+    # Test Case 3: No intermediate_steps (fallback scenarios)
+    print("\n3. Testing fallback when no intermediate_steps available")
+    
+    no_steps_result = {
+        "output": "I created a chart but intermediate_steps are missing",
+        "intermediate_steps": []
+    }
+    
+    extracted = agent._extract_chart_json_response(no_steps_result)
+    assert extracted is None, f"Expected None, got {extracted}"
+    print("✅ Fallback handling works when no intermediate_steps")
+    
+    # Test Case 4: Malformed intermediate_steps
+    print("\n4. Testing with malformed intermediate_steps")
+    
+    malformed_result = {
+        "output": "Chart created",
+        "intermediate_steps": [("invalid", "format")]
+    }
+    
+    extracted = agent._extract_chart_json_response(malformed_result)
+    assert extracted is None, f"Expected None, got {extracted}"
+    print("✅ Malformed intermediate_steps handled gracefully")
+    
+    print("\n🎉 All unified chart response processor tests passed!")
 
 def test_matplotlib_tool():
     """Test the matplotlib tool directly"""
@@ -159,5 +238,6 @@ plt.close()
         traceback.print_exc()
 
 if __name__ == "__main__":
+    test_unified_chart_response_processor()
     test_matplotlib_tool()
     test_complex_json_parsing()
