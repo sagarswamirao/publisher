@@ -51,16 +51,16 @@ export default function ConnectionExplorer({
    });
 
    return (
-      <Grid container spacing={2}>
+      <Grid container spacing={1}>
          {!schema && (
             <Grid size={{ xs: 12, md: 4 }}>
-               <Paper sx={{ p: 2 }}>
+               <Paper sx={{ p: 1, m: 0 }}>
                   <Box
                      sx={{
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        mb: 1,
+                        mb: 0,
                      }}
                   >
                      <Typography variant="overline" fontWeight="bold">
@@ -78,9 +78,9 @@ export default function ConnectionExplorer({
                         label="Hidden Schemas"
                      />
                   </Box>
-                  <Divider />
+                  <Divider sx={{ mt: "2px" }} />
                   <Box
-                     sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}
+                     sx={{ mt: "2px", maxHeight: "600px", overflowY: "auto" }}
                   >
                      {isLoading && <Loading text="Fetching Table Paths..." />}
                      {isError && (
@@ -127,7 +127,7 @@ export default function ConnectionExplorer({
          )}
          <Grid size={{ xs: 12, md: schema ? 6 : 4 }}>
             {selectedSchema && (
-               <Paper sx={{ p: 2 }}>
+               <Paper sx={{ p: 1, m: 0 }}>
                   <TablesInSchema
                      connectionName={connectionName}
                      schemaName={selectedSchema}
@@ -140,7 +140,7 @@ export default function ConnectionExplorer({
          </Grid>
          <Grid size={{ xs: 12, md: schema ? 6 : 4 }}>
             {selectedTable && selectedSchema && (
-               <Paper sx={{ p: 2 }}>
+               <Paper sx={{ p: 1, m: 0 }}>
                   <TableSchemaViewer
                      connectionName={connectionName}
                      schemaName={selectedSchema}
@@ -258,7 +258,7 @@ function TablesInSchema({
             Tables in {schemaName}
          </Typography>
          <Divider />
-         <Box sx={{ mt: "10px", maxHeight: "600px", overflowY: "auto" }}>
+         <Box sx={{ mt: "2px", maxHeight: "600px", overflowY: "auto" }}>
             {isLoading && <Loading text="Fetching Tables..." />}
             {isError && (
                <ApiErrorDisplay

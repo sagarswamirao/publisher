@@ -11,6 +11,8 @@ export function internalErrorToHttpError(error: Error) {
       return httpError(404, error.message);
    } else if (error instanceof ModelNotFoundError) {
       return httpError(404, error.message);
+   } else if (error instanceof MalloyError) {
+      return httpError(400, error.message);
    } else if (error instanceof ConnectionNotFoundError) {
       return httpError(404, error.message);
    } else if (error instanceof ModelCompilationError) {
