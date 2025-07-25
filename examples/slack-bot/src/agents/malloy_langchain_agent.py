@@ -292,35 +292,51 @@ class MalloyLangChainAgent:
             if not chart_json and output and ('chart' in output.lower() or 'png' in output.lower()):
                 print(f"🔍 DEBUG: Agent mentioned charts but intermediate_steps didn't contain chart tool result")
                 
-                # Try the fallback constructor first
-                fallback_json = self._construct_chart_fallback(result)
-                if fallback_json:
-                    print(f"🔍 DEBUG: Using fallback chart JSON")
-                    output = fallback_json
-                else:
-                    # Last resort: Check for recent chart files (filesystem-based detection)
-                    print(f"🔍 DEBUG: Attempting filesystem-based chart detection as last resort...")
-                    import glob
-                    import os
-                    import time
-                    
-                    current_time = time.time()
-                    recent_charts = []
-                    for png_file in glob.glob("*.png"):
-                        file_time = os.path.getmtime(png_file)
-                        if current_time - file_time < 30:  # Created within last 30 seconds
-                            recent_charts.append(png_file)
-                    
-                    if recent_charts:
-                        # Use the most recent chart
-                        most_recent = max(recent_charts, key=os.path.getmtime)
-                        full_path = os.path.abspath(most_recent)
-                        print(f"🔍 DEBUG: Found recent chart file (last resort): {full_path}")
+                # Try to extract chart file path from agent output
+                import re
+                chart_path_match = re.search(r'chart_[a-f0-9]{8}\.png', output)
+                if chart_path_match:
+                    chart_filename = chart_path_match.group(0)
+                    chart_filepath = os.path.abspath(chart_filename)
+                    if os.path.exists(chart_filepath):
+                        print(f"🔍 DEBUG: Found chart file in agent output: {chart_filepath}")
                         chart_json = json.dumps({
                             "text": "Chart created successfully!",
-                            "file_info": {"status": "success", "filepath": full_path}
+                            "file_info": {"status": "success", "filepath": chart_filepath}
                         })
                         output = chart_json
+                    else:
+                        print(f"🔍 DEBUG: Chart file mentioned in output doesn't exist: {chart_filepath}")
+                
+                # If still no chart found, try the fallback constructor
+                if not chart_json:
+                    fallback_json = self._construct_chart_fallback(result)
+                    if fallback_json:
+                        print(f"🔍 DEBUG: Using fallback chart JSON")
+                        output = fallback_json
+                    else:
+                        # Last resort: Check for recent chart files (filesystem-based detection)
+                        print(f"🔍 DEBUG: Attempting filesystem-based chart detection as last resort...")
+                        import glob
+                        import time
+                        
+                        current_time = time.time()
+                        recent_charts = []
+                        for png_file in glob.glob("*.png"):
+                            file_time = os.path.getmtime(png_file)
+                            if current_time - file_time < 30:  # Created within last 30 seconds
+                                recent_charts.append(png_file)
+                        
+                        if recent_charts:
+                            # Use the most recent chart
+                            most_recent = max(recent_charts, key=os.path.getmtime)
+                            full_path = os.path.abspath(most_recent)
+                            print(f"🔍 DEBUG: Found recent chart file (last resort): {full_path}")
+                            chart_json = json.dumps({
+                                "text": "Chart created successfully!",
+                                "file_info": {"status": "success", "filepath": full_path}
+                            })
+                            output = chart_json
             
             # Handle empty output from agent (more common with certain models like Gemini)
             if not output or output.strip() == "":
@@ -391,6 +407,9 @@ class MalloyLangChainAgent:
         """Extract JSON response from generate_chart tool if it was called"""
         try:
             if "intermediate_steps" in result and result["intermediate_steps"]:
+                chart_results = []
+                
+                # Collect all chart tool results
                 for step in result["intermediate_steps"]:
                     if len(step) >= 2:
                         action, observation = step[0], step[1]
@@ -402,15 +421,34 @@ class MalloyLangChainAgent:
                         )
                         
                         if is_chart_tool and isinstance(observation, str):
-                            # Return the raw JSON response from the chart tool
+                            # Validate it's proper JSON first
                             try:
-                                # Validate it's proper JSON first
-                                json.loads(observation) 
+                                parsed_result = json.loads(observation)
+                                chart_results.append((observation, parsed_result))
                                 print(f"🔍 DEBUG: Found chart tool result: {observation}")
-                                return observation
                             except json.JSONDecodeError:
                                 print(f"🔍 DEBUG: Chart tool result is not valid JSON: {observation}")
                                 continue
+                
+                # Prioritize successful results
+                if chart_results:
+                    # First, look for successful results
+                    successful_results = [
+                        (raw, parsed) for raw, parsed in chart_results 
+                        if parsed.get('file_info', {}).get('status') == 'success'
+                    ]
+                    
+                    if successful_results:
+                        # Return the most recent successful result
+                        raw_result, _ = successful_results[-1]
+                        print(f"🔍 DEBUG: Using successful chart result: {raw_result}")
+                        return raw_result
+                    else:
+                        # No successful results, return the most recent attempt
+                        raw_result, _ = chart_results[-1]
+                        print(f"🔍 DEBUG: No successful chart results, using last attempt: {raw_result}")
+                        return raw_result
+                        
             return None
         except Exception as e:
             print(f"🔍 DEBUG: Error extracting chart JSON: {e}")
