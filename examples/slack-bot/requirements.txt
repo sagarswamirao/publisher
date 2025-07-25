@@ -1,7 +1,6 @@
 # Core Slack Bot Dependencies
 slack_sdk>=3.23.0
 python-dotenv>=1.0.0
-flask>=3.0.0
 
 # LangChain and AI Dependencies
 langchain>=0.1.0

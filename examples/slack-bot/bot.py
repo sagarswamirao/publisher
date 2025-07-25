@@ -17,7 +17,7 @@ from threading import Thread, Event
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from dotenv import load_dotenv
-from flask import Flask, jsonify
+
 from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk.web import WebClient
 from slack_sdk.socket_mode.request import SocketModeRequest
@@ -489,94 +489,11 @@ def enhanced_health_check():
     
     return overall_healthy
 
-def create_health_app():
-    """Create enhanced Flask app for cloud health checks and monitoring"""
-    app = Flask(__name__)
-    
-    @app.route('/health')
-    def health():
-        """Basic health endpoint for Cloud Run"""
-        return jsonify({"status": "healthy", "service": "malloy-slack-bot", "timestamp": datetime.now().isoformat()})
-    
-    @app.route('/ready')
-    def ready():
-        """Readiness probe with detailed status"""
-        global malloy_agent, web_client, socket_mode_client, service_health
-        
-        ready_checks = {
-            "malloy_agent": malloy_agent is not None,
-            "slack_web_client": web_client is not None,
-            "slack_socket_client": socket_mode_client is not None,
-            "mcp_server": service_health.mcp_server,
-            "circuit_breaker_state": circuit_breaker.state,
-            "conversation_cache_size": len(CONVERSATION_CACHE),
-            "last_health_check": service_health.last_check.isoformat() if service_health.last_check else None,
-            "consecutive_failures": service_health.consecutive_failures
-        }
-        
-        all_ready = ready_checks["malloy_agent"] and ready_checks["slack_web_client"] and ready_checks["slack_socket_client"]
-        
-        return jsonify({
-            "status": "ready" if all_ready else "not_ready", 
-            "checks": ready_checks,
-            "timestamp": datetime.now().isoformat()
-        }), 200 if all_ready else 503
-    
-    @app.route('/metrics')
-    def metrics():
-        """Detailed metrics for monitoring"""
-        return jsonify({
-            "service": "malloy-slack-bot",
-            "health": {
-                "malloy_agent": service_health.malloy_agent,
-                "slack_client": service_health.slack_client,
-                "mcp_server": service_health.mcp_server,
-                "last_check": service_health.last_check.isoformat() if service_health.last_check else None,
-                "consecutive_failures": service_health.consecutive_failures
-            },
-            "circuit_breaker": {
-                "state": circuit_breaker.state,
-                "failure_count": circuit_breaker.failure_count,
-                "last_failure": circuit_breaker.last_failure_time
-            },
-            "memory": {
-                "conversation_cache_size": len(CONVERSATION_CACHE),
-                "max_conversations": MAX_CONVERSATIONS
-            },
-            "timestamp": datetime.now().isoformat()
-        })
-    
-    @app.route('/ping')
-    def ping():
-        """Simple ping endpoint for keep-alive"""
-        return "pong"
-    
-    return app
 
-def run_health_server():
-    """Run health check server in background"""
-    app = create_health_app()
-    app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False)
 
-def periodic_health_monitor():
-    """Background thread for periodic health monitoring and keep-alive"""
-    while not shutdown_event.is_set():
-        try:
-            enhanced_health_check()
-            
-            # Self-ping to prevent scale-to-zero (every 5 minutes)
-            import requests
-            try:
-                requests.get("http://localhost:8080/ping", timeout=5)
-                logger.debug("Keep-alive ping sent")
-            except:
-                pass  # Ignore ping failures
-            
-        except Exception as e:
-            logger.error(f"Error in periodic health monitor: {e}")
-        
-        # Wait 5 minutes between checks
-        shutdown_event.wait(300)
+
+
+
 
 def reconnect_socket_client():
     """Attempt to reconnect Socket Mode client"""
@@ -621,15 +538,7 @@ if __name__ == "__main__":
         # Initialize bot with command line arguments
         init_bot(model=args.model, provider=args.provider)
         
-        # Start health check server in background (for cloud deployment)
-        logger.info("🏥 Starting health check server on port 8080")
-        health_thread = Thread(target=run_health_server, daemon=True)
-        health_thread.start()
-        
-        # Start periodic health monitoring
-        logger.info("📊 Starting periodic health monitoring")
-        monitor_thread = Thread(target=periodic_health_monitor, daemon=True)
-        monitor_thread.start()
+
         
         # Run initial health check
         if not enhanced_health_check():
