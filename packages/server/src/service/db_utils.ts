@@ -93,12 +93,9 @@ export async function getSchemasForConnection(
       }
       try {
          const bigquery = getBigqueryConnection(connection);
-         // Set the projectId if it's provided in the bigqueryConnection
-         const [datasets] = await bigquery.getDatasets({
-            ...(connection.bigqueryConnection.defaultProjectId
-               ? { projectId: connection.bigqueryConnection.defaultProjectId }
-               : {}),
-         });
+         const projectId = connection.bigqueryConnection.defaultProjectId;
+         const options = projectId ? { projectId } : {};
+         const [datasets] = await bigquery.getDatasets(options);
          return datasets
             .filter((dataset) => dataset.id)
             .map((dataset) => {
