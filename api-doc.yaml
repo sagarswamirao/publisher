@@ -994,6 +994,58 @@ paths:
         "501":
           $ref: "#/components/responses/NotImplementedError"
 
+  /watch-mode/status:
+    get:
+      tags:
+        - watch-mode
+      operationId: get-watch-status
+      summary: Returns the current watch mode status.
+      responses:
+        "200":
+          description: The current watch mode status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchStatus"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /watch-mode/start:
+    post:
+      tags:
+        - watch-mode
+      operationId: start-watching
+      summary: Starts watching a project for file changes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartWatchRequest"
+      responses:
+        "200":
+          description: Watch mode started successfully.
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /watch-mode/stop:
+    post:
+      tags:
+        - watch-mode
+      operationId: stop-watching
+      summary: Stops watching for file changes.
+      responses:
+        "200":
+          description: Watch mode stopped successfully.
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
 components:
   responses:
     InternalServerError:
@@ -1459,3 +1511,28 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Column"
+
+    WatchStatus:
+      type: object
+      description: Current watch mode status
+      properties:
+        enabled:
+          type: boolean
+          description: Whether watch mode is currently enabled
+        projectName:
+          type: string
+          description: Name of the project being watched
+        watchingPath:
+          type: string
+          nullable: true
+          description: The path being watched, null if not watching
+
+    StartWatchRequest:
+      type: object
+      description: Request to start watching a project
+      properties:
+        projectName:
+          type: string
+          description: Name of the project to watch
+      required:
+        - projectName

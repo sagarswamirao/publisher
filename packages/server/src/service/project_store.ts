@@ -92,11 +92,6 @@ export class ProjectStore {
          this.serverRootPath,
       );
       const projectPath = projectManifest.projects[projectName];
-      if (!projectPath) {
-         throw new ProjectNotFoundError(
-            `Project "${projectName}" not found in ${PUBLISHER_CONFIG_NAME}`,
-         );
-      }
       const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
       if (!(await fs.stat(absoluteProjectPath)).isDirectory()) {
          throw new ProjectNotFoundError(
