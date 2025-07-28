@@ -20,20 +20,17 @@ RUN bun run build
 
 FROM oven/bun:1.2.19-slim AS runner
 WORKDIR /publisher
-COPY --from=builder /publisher/node_modules /publisher/node_modules
 COPY --from=builder /publisher/package.json /publisher/package.json
 # Copy app runtime dependencies
 COPY --from=builder /publisher/packages/app/dist/ /publisher/packages/app/dist/
-COPY --from=builder /publisher/packages/app/node_modules/ /publisher/packages/app/node_modules/
 COPY --from=builder /publisher/packages/app/package.json /publisher/packages/app/package.json
 # Copy server runtime dependencies
 COPY --from=builder /publisher/packages/server/dist/ /publisher/packages/server/dist/
-COPY --from=builder /publisher/packages/server/node_modules/ /publisher/packages/server/node_modules/
 COPY --from=builder /publisher/packages/server/package.json /publisher/packages/server/package.json
 # Copy sdk runtime dependencies
 COPY --from=builder /publisher/packages/sdk/dist/ /publisher/packages/sdk/dist/
-COPY --from=builder /publisher/packages/sdk/node_modules/ /publisher/packages/sdk/node_modules/
 COPY --from=builder /publisher/packages/sdk/package.json /publisher/packages/sdk/package.json
+RUN bun install --production
 
 ENV NODE_ENV=production
 EXPOSE 4000
