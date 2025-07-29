@@ -100,7 +100,7 @@ async def test_e2e_conversation(model_type="claude"):
             {
                 "turn": 3,
                 "query": "graph the girls names",
-                "expected": ["chart", "file_info", "filepath"],
+                "expected": ["chart", "chart_url", "status"],
                 "description": "Chart generation from previous data"
             }
         ]
@@ -145,14 +145,12 @@ async def test_e2e_conversation(model_type="claude"):
                 try:
                     import json
                     chart_data = json.loads(response)
-                    if 'file_info' in chart_data:
-                        file_path = chart_data['file_info'].get('filepath')
-                        if file_path and os.path.exists(file_path):
-                            file_size = os.path.getsize(file_path)
-                            print(f"🎨 Chart created: {file_path}")
-                            print(f"📊 File size: {file_size} bytes")
+                    if 'chart_url' in chart_data:
+                        chart_url = chart_data['chart_url']
+                        if chart_url:
+                            print(f"🎨 Chart created: {chart_url}")
                         else:
-                            print(f"❌ Chart file not found: {file_path}")
+                            print(f"❌ Chart URL not found in response: {chart_url}")
                 except json.JSONDecodeError:
                     if any(kw in response_lower for kw in ["chart", "png", "graph"]):
                         print("⚠️ Response mentions charts but not in expected JSON format")

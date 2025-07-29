@@ -3,37 +3,30 @@ Malloy LangChain Agent - Production-ready agent with conversation memory
 Replaces the agent with LangChain architecture and structured prompts
 """
 
-import os
 import uuid
 import json
-from typing import Dict, List, Any, Optional, Tuple
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.schema import BaseMessage, HumanMessage, AIMessage
-from langchain.memory import ConversationBufferMemory
-from langchain_community.chat_message_histories import ChatMessageHistory
-from langchain_openai import ChatOpenAI
-from langchain_google_vertexai import ChatVertexAI
-from langchain_anthropic import ChatAnthropic
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.tools import BaseTool
-from langchain.callbacks.base import BaseCallbackHandler
-import re
+import os
+from typing import Optional, List, Tuple, Dict, Any
 
-try:
-    from ..tools.dynamic_malloy_tools import MalloyToolsFactory
-    from ..clients.enhanced_mcp_client import EnhancedMCPClient, MCPConfig
-    from ..prompts.malloy_prompts import MalloyPromptTemplates
-except ImportError:
-    from src.tools.dynamic_malloy_tools import MalloyToolsFactory
-    from src.clients.enhanced_mcp_client import EnhancedMCPClient, MCPConfig
-    from src.prompts.malloy_prompts import MalloyPromptTemplates
+from langchain.callbacks.base import BaseCallbackHandler
+from langchain.llms import OpenAI
+from langchain.agents import create_openai_tools_agent, AgentExecutor
+from langchain.memory import ConversationBufferMemory
+from langchain.schema import AIMessage, BaseMessage
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain.tools import BaseTool
+
+from ..clients.enhanced_mcp_client import EnhancedMCPClient, MCPConfig
+from ..tools.dynamic_malloy_tools import MalloyToolsFactory
+from ..prompts.malloy_prompts import MalloyPromptTemplates
 
 
 class ToolUsageTracker(BaseCallbackHandler):
-    """Custom callback to track tool usage"""
+    """Callback to track which tools are used during agent execution"""
     
     def __init__(self):
-        self.tools_used = []
+        super().__init__()
+        self.tools_used: List[str] = []
     
     def on_tool_start(self, serialized: Dict[str, Any], input_str: str, **kwargs: Any) -> None:
         """Track when a tool starts"""
@@ -43,7 +36,7 @@ class ToolUsageTracker(BaseCallbackHandler):
     
     def clear(self):
         """Clear the tools used list"""
-        self.tools_used = []
+        self.tools_used.clear()
 
 
 class MalloyLangChainAgent:
@@ -62,8 +55,9 @@ class MalloyLangChainAgent:
         vertex_project_id: Optional[str] = None,
         vertex_location: str = "us-central1"
     ):
-        self.openai_api_key = openai_api_key
+        
         self.anthropic_api_key = anthropic_api_key
+        self.openai_api_key = openai_api_key
         self.mcp_url = mcp_url
         self.auth_token = auth_token
         self.model_name = model_name
@@ -106,7 +100,7 @@ class MalloyLangChainAgent:
         
         # Track tool usage manually
         self._tools_used_in_session = []
-        self.tool_tracker = ToolUsageTracker()
+
     
     def _augment_history_for_llm(self, history: List[BaseMessage]) -> List[BaseMessage]:
         """
@@ -114,95 +108,70 @@ class MalloyLangChainAgent:
         Injects a [TOOL_DATA] block into the content of AIMessages that have tool data.
         """
         augmented_history = []
-        for msg in history:
-            if isinstance(msg, AIMessage) and "tool_data" in msg.additional_kwargs:
-                tool_data = msg.additional_kwargs["tool_data"]
-                # Create a readable summary of the data
-                data_summary = json.dumps(tool_data, indent=2)
+        
+        for message in history:
+            if isinstance(message, AIMessage) and hasattr(message, 'additional_kwargs') and message.additional_kwargs.get('tool_data'):
+                # Extract tool data
+                tool_data = message.additional_kwargs['tool_data']
                 
-                # Create a new message with the augmented content
-                augmented_content = (
-                    f"{msg.content}\n\n"
-                    f"[TOOL_DATA]\n"
-                    f"{data_summary}\n"
-                    f"[/TOOL_DATA]"
+                # Create augmented content
+                augmented_content = f"{message.content}\n\n[TOOL_DATA]\n{json.dumps(tool_data, indent=2)}\n[/TOOL_DATA]"
+                
+                # Create new message with augmented content
+                augmented_message = AIMessage(
+                    content=augmented_content,
+                    additional_kwargs=message.additional_kwargs
                 )
-                augmented_history.append(AIMessage(content=augmented_content))
+                augmented_history.append(augmented_message)
             else:
-                augmented_history.append(msg)
+                # Keep message as-is
+                augmented_history.append(message)
+        
         return augmented_history
 
     def _initialize_llm(self):
-        """Initialize LLM based on provider"""
-        
+        """Initialize the LLM based on provider"""
         if self.llm_provider == "openai":
-            if not self.openai_api_key:
-                raise ValueError("OpenAI API key required for OpenAI provider")
-            
+            from langchain_openai import ChatOpenAI
             return ChatOpenAI(
-                api_key=self.openai_api_key,
                 model=self.model_name,
-                temperature=0.1,
-                max_tokens=2000
+                api_key=self.llm_config["openai_api_key"],
+                temperature=0.1
             )
-        
-        elif self.llm_provider == "vertex" or self.llm_provider == "gemini":
-            if not self.vertex_project_id:
-                raise ValueError("Vertex AI project ID required for Vertex AI provider")
-            
-            return ChatVertexAI(
-                project=self.vertex_project_id,
-                location=self.vertex_location,
-                model_name=self.model_name,
-                temperature=0.1,
-                max_output_tokens=2000
-            )
-        
         elif self.llm_provider == "anthropic":
-            if not self.anthropic_api_key:
-                raise ValueError("Anthropic API key required for Anthropic provider")
-            
-            # Map Claude model names to specific Anthropic model IDs
-            anthropic_model_map = {
-                # Claude 4 models (latest generation)
-                "claude-4": "claude-sonnet-4-20250514",
-                "claude-4-sonnet": "claude-sonnet-4-20250514", 
-                "claude-4-opus": "claude-opus-4-20250514",
-                "claude-sonnet-4": "claude-sonnet-4-20250514",
-                "claude-opus-4": "claude-opus-4-20250514",
-                # Claude 3.7 models
-                "claude-3.7": "claude-3-7-sonnet-20250219",
-                "claude-3.7-sonnet": "claude-3-7-sonnet-20250219",
-                # Claude 3.5 models (latest versions)
-                "claude-3.5": "claude-3-5-sonnet-20241022",
-                "claude-3.5-sonnet": "claude-3-5-sonnet-20241022",
-                "claude-3.5-haiku": "claude-3-5-haiku-20241022"
-            }
-            
-            anthropic_model = anthropic_model_map.get(self.model_name, self.model_name)
-            
+            from langchain_anthropic import ChatAnthropic
             return ChatAnthropic(
-                api_key=self.anthropic_api_key,
-                model=anthropic_model,
-                temperature=0.1,
-                max_tokens=2000
+                model=self.model_name,
+                api_key=self.llm_config["anthropic_api_key"],
+                temperature=0.1
             )
-        
+        elif self.llm_provider == "vertex":
+            from langchain_google_vertexai import ChatVertexAI
+            return ChatVertexAI(
+                model_name=self.model_name,
+                project=self.llm_config["vertex_project_id"],
+                location=self.llm_config["vertex_location"],
+                temperature=0.1
+            )
         else:
-            raise ValueError(f"Unsupported LLM provider: {self.llm_provider}. "
-                           f"Supported providers: openai, vertex, gemini, anthropic")
-        
+            raise ValueError(f"Unsupported LLM provider: {self.llm_provider}")
+
     async def setup(self) -> bool:
-        """Setup the agent with dynamic tools from MCP discovery"""
+        """Setup the agent with tools and configurations"""
         try:
-            # Create dynamic tools from MCP discovery
+            print("Setting up Malloy LangChain Agent...")
+            
+            # Setup tools using the dynamic factory
             tools_factory = MalloyToolsFactory(self.mcp_client)
             self.tools = await tools_factory.create_tools()
             
             if not self.tools:
-                raise Exception("No tools discovered from MCP server")
+                print("No tools available. Agent setup failed.")
+                return False
             
-            # Store the prompt template for later use
+            print(f"Agent setup complete with {len(self.tools)} tools")
+            
+            # Get prompt template
             self.prompt_template = self.prompt_templates.get_agent_prompt()
             
             # Don't create agent/executor yet - will be done fresh for each question
@@ -253,99 +222,32 @@ class MalloyLangChainAgent:
             
             output = result['output']
             
-            # Handle different output formats (Claude returns list, OpenAI returns string)
-            if isinstance(output, list) and len(output) > 0:
-                # Claude format: [{'text': '...', 'type': 'text', 'index': 0}]
-                if isinstance(output[0], dict) and 'text' in output[0]:
-                    output = output[0]['text']
-                else:
-                    # Fallback: join list elements
-                    output = ' '.join(str(item) for item in output)
-            elif not isinstance(output, str):
-                # Convert other types to string
-                output = str(output)
-            
-            # 🎯 UNIFIED CHART RESPONSE PROCESSING
-            # Try to extract chart info from intermediate_steps first (works for both OpenAI and Claude)
-            chart_json = None
+            # Simplified chart detection: just look for chart_url in tool results
+            chart_result = None
             if "intermediate_steps" in result:
-                chart_json = self._extract_chart_json_response(result)
-                if chart_json:
-                    print(f"🔍 DEBUG: Chart detected via intermediate_steps for {self.llm_provider}")
-                    output = chart_json
-            
-            # Fallback: If no chart detected via intermediate_steps but output mentions charts
-            if not chart_json and output and ('chart' in output.lower() or 'png' in output.lower()):
-                print(f"🔍 DEBUG: Agent mentioned charts but intermediate_steps didn't contain chart tool result")
-                
-                # Try to extract chart file path from agent output
-                import re
-                chart_path_match = re.search(r'chart_[a-f0-9]{8}\.png', output)
-                if chart_path_match:
-                    chart_filename = chart_path_match.group(0)
-                    chart_filepath = os.path.abspath(chart_filename)
-                    if os.path.exists(chart_filepath):
-                        print(f"🔍 DEBUG: Found chart file in agent output: {chart_filepath}")
-                        chart_json = json.dumps({
-                            "text": "Chart created successfully!",
-                            "file_info": {"status": "success", "filepath": chart_filepath}
-                        })
-                        output = chart_json
-                    else:
-                        print(f"🔍 DEBUG: Chart file mentioned in output doesn't exist: {chart_filepath}")
-                
-                # If still no chart found, try the fallback constructor
-                if not chart_json:
-                    fallback_json = self._construct_chart_fallback(result)
-                    if fallback_json:
-                        print(f"🔍 DEBUG: Using fallback chart JSON")
-                        output = fallback_json
-                    else:
-                        # Last resort: Check for recent chart files (filesystem-based detection)
-                        print(f"🔍 DEBUG: Attempting filesystem-based chart detection as last resort...")
-                        import glob
-                        import time
-                        
-                        current_time = time.time()
-                        recent_charts = []
-                        for png_file in glob.glob("*.png"):
-                            file_time = os.path.getmtime(png_file)
-                            if current_time - file_time < 30:  # Created within last 30 seconds
-                                recent_charts.append(png_file)
-                        
-                        if recent_charts:
-                            # Use the most recent chart
-                            most_recent = max(recent_charts, key=os.path.getmtime)
-                            full_path = os.path.abspath(most_recent)
-                            print(f"🔍 DEBUG: Found recent chart file (last resort): {full_path}")
-                            chart_json = json.dumps({
-                                "text": "Chart created successfully!",
-                                "file_info": {"status": "success", "filepath": full_path}
-                            })
-                            output = chart_json
+                chart_result = self._extract_chart_result(result)
+                if chart_result:
+                    print(f"🔍 DEBUG: Chart detected with URL")
+                    output = chart_result
             
             # Handle empty output from agent (more common with certain models like Gemini)
             if not output or output.strip() == "":
-                print(f"🔍 DEBUG: Agent returned empty output with {self.model_name}, generating fallback response")
-                print(f"🔍 DEBUG: Result keys: {list(result.keys())}")
-                print(f"🔍 DEBUG: Has intermediate_steps: {'intermediate_steps' in result}")
-                if "intermediate_steps" in result:
-                    print(f"🔍 DEBUG: Number of intermediate steps: {len(result['intermediate_steps'])}")
+                print("🔍 DEBUG: Agent returned empty output, constructing response from intermediate steps")
                 
-                # Try to generate a response from the last tool result
                 if "intermediate_steps" in result and result["intermediate_steps"]:
-                    last_tool_result = result["intermediate_steps"][-1][1]
-                    print(f"🔍 DEBUG: Last tool result type: {type(last_tool_result)}")
-                    print(f"🔍 DEBUG: Last tool result keys: {list(last_tool_result.keys()) if isinstance(last_tool_result, dict) else 'Not a dict'}")
+                    # Get the last meaningful tool result
+                    last_tool_result = None
+                    for step in reversed(result["intermediate_steps"]):
+                        if len(step) >= 2 and step[1]:  # Has result
+                            last_tool_result = step[1]
+                            break
                     
-                    if isinstance(last_tool_result, dict) and "content" in last_tool_result:
-                        # This is a successful query result - generate a summary
-                        print("🔍 DEBUG: Calling _generate_fallback_response")
-                        output = self._generate_fallback_response(last_tool_result, question)
-                        print(f"🔍 DEBUG: Fallback response generated: {len(output)} chars")
+                    if last_tool_result:
+                        # Use the fallback response generation
+                        output = self._generate_fallback_response({"tool_result": last_tool_result}, question)
                     else:
-                        print("🔍 DEBUG: Tool result doesn't have expected format")
-                        output = "I executed your query successfully but encountered an issue generating the response. Please try rephrasing your question."
+                        output = "I've processed your request, but I'm having trouble formatting the response. Please try asking your question differently."
+
                 else:
                     print("🔍 DEBUG: No intermediate steps found - this shouldn't happen if tools executed")
                     output = "I'm having trouble processing your request right now. Please try again."
@@ -377,25 +279,12 @@ class MalloyLangChainAgent:
             print(f"🔍 DEBUG: Exception in process_question: {e}")
             error_message = f"An unexpected error occurred: {e}"
             return False, error_message, {}
+
     
-    def _extract_chart_info(self, response: str) -> Optional[Dict[str, Any]]:
-        """Extract chart information from response if present"""
-        try:
-            # Try to parse as JSON for chart responses
-            parsed = json.loads(response)
-            if isinstance(parsed, dict) and "file_info" in parsed:
-                return parsed["file_info"]
-        except:
-            pass
-        return None
-    
-    def _extract_chart_json_response(self, result: Dict[str, Any]) -> Optional[str]:
-        """Extract JSON response from generate_chart tool if it was called"""
+    def _extract_chart_result(self, result: Dict[str, Any]) -> Optional[str]:
+        """Extract chart result from generate_chart tool if called"""
         try:
             if "intermediate_steps" in result and result["intermediate_steps"]:
-                chart_results = []
-                
-                # Collect all chart tool results
                 for step in result["intermediate_steps"]:
                     if len(step) >= 2:
                         action, observation = step[0], step[1]
@@ -407,87 +296,48 @@ class MalloyLangChainAgent:
                         )
                         
                         if is_chart_tool and isinstance(observation, str):
-                            # Validate it's proper JSON first
                             try:
                                 parsed_result = json.loads(observation)
-                                chart_results.append((observation, parsed_result))
-                                print(f"🔍 DEBUG: Found chart tool result: {observation}")
+                                # Check for successful chart generation with URL
+                                if (parsed_result.get('status') == 'success' and 
+                                    'chart_url' in parsed_result):
+                                    print(f"🔍 DEBUG: Found chart tool result with URL: {parsed_result['chart_url']}")
+                                    return observation
                             except json.JSONDecodeError:
                                 print(f"🔍 DEBUG: Chart tool result is not valid JSON: {observation}")
                                 continue
-                
-                # Prioritize successful results
-                if chart_results:
-                    # First, look for successful results
-                    successful_results = [
-                        (raw, parsed) for raw, parsed in chart_results 
-                        if parsed.get('file_info', {}).get('status') == 'success'
-                    ]
-                    
-                    if successful_results:
-                        # Return the most recent successful result
-                        raw_result, _ = successful_results[-1]
-                        print(f"🔍 DEBUG: Using successful chart result: {raw_result}")
-                        return raw_result
-                    else:
-                        # No successful results, return the most recent attempt
-                        raw_result, _ = chart_results[-1]
-                        print(f"🔍 DEBUG: No successful chart results, using last attempt: {raw_result}")
-                        return raw_result
-                        
             return None
         except Exception as e:
-            print(f"🔍 DEBUG: Error extracting chart JSON: {e}")
+            print(f"🔍 DEBUG: Error extracting chart result: {e}")
             return None
-    
-    def _construct_chart_fallback(self, result: Dict[str, Any]) -> Optional[str]:
-        """
-        Attempts to construct a JSON response from an agent's output if it mentions a chart
-        but didn't return a JSON file_info. This is a heuristic and might need refinement.
-        """
-        if "intermediate_steps" in result and result["intermediate_steps"]:
-            for step in result["intermediate_steps"]:
-                if len(step) >= 2:
-                    action, observation = step[0], step[1]
-                    if (hasattr(action, 'tool') and action.tool == 'generate_chart') or \
-                       (hasattr(action, 'tool_name') and action.tool_name == 'generate_chart') or \
-                       ('generate_chart' in str(action)):
-                        
-                        # Attempt to parse the observation as JSON
-                        try:
-                            json.loads(observation)
-                            print(f"🔍 DEBUG: Observation is valid JSON: {observation}")
-                            return observation
-                        except json.JSONDecodeError:
-                            print(f"🔍 DEBUG: Observation is not valid JSON: {observation}")
-                            continue
-        return None
     
     def _generate_fallback_response(self, tool_result: Dict[str, Any], question: str) -> str:
         """Generate a meaningful response when the agent doesn't provide output"""
         try:
-            print(f"🔍 DEBUG: Generating fallback response for question: {question[:50]}...")
+            # Try to extract tool result
+            result_data = tool_result.get("tool_result", "")
             
-            # Extract data from the tool result
-            if "content" in tool_result and tool_result["content"]:
-                content = tool_result["content"][0]
-                if "resource" in content and "text" in content["resource"]:
-                    data = json.loads(content["resource"]["text"])
-                    
-                    # If it's query results, provide a simple response
-                    if "data" in data and "array_value" in data["data"]:
-                        rows = data["data"]["array_value"]
-                        
-                        if rows:
-                            return f"I found {len(rows)} results for your query. The data looks good! Would you like me to analyze it further or create a visualization?"
-                        else:
-                            return "Your query executed successfully but returned no results. You might want to try adjusting your filters or checking a different time period."
-                    
-            return "I successfully executed your query and retrieved the data. Let me know if you'd like me to analyze it further or create a visualization!"
+            # Check if it's a JSON result
+            try:
+                parsed_result = json.loads(result_data) if isinstance(result_data, str) else result_data
+                
+                # Check if it's a chart result
+                if isinstance(parsed_result, dict) and 'chart_url' in parsed_result:
+                    return result_data  # Return the chart JSON directly
+                
+                # Check if it's a query result
+                if isinstance(parsed_result, dict) and 'data' in parsed_result:
+                    return f"I've analyzed the data and found the results. Here's what I discovered:\n\n{result_data}"
+                
+            except json.JSONDecodeError:
+                pass
+            
+            # Generic fallback
+            return f"I've processed your request about {question}. Here are the results:\n\n{result_data}"
             
         except Exception as e:
-            print(f"🔍 DEBUG: Error in fallback response generation: {e}")
-            return "I found some results for your query. Would you like me to analyze them or create a visualization?"
+            print(f"Error generating fallback response: {e}")
+            return "I've processed your request but encountered an issue formatting the response."
 
     def _extract_tools_used(self, result: Dict[str, Any]) -> List[str]:
         """Extract list of tools used from agent result"""
@@ -497,16 +347,15 @@ class MalloyLangChainAgent:
         if hasattr(self, 'tool_tracker') and self.tool_tracker.tools_used:
             tools_used.extend(self.tool_tracker.tools_used)
         
-        # Fallback: try to extract from intermediate_steps
-        if not tools_used:
-            for step in result.get("intermediate_steps", []):
-                if hasattr(step, "tool") and hasattr(step.tool, "name"):
-                    tools_used.append(step.tool.name)
-                elif isinstance(step, tuple) and len(step) >= 2:
-                    # Handle (AgentAction, observation) tuples
+        # Secondary method: parse intermediate_steps
+        if "intermediate_steps" in result and result["intermediate_steps"]:
+            for step in result["intermediate_steps"]:
+                if len(step) >= 2:
                     action = step[0]
-                    if hasattr(action, "tool"):
+                    if hasattr(action, 'tool'):
                         tools_used.append(action.tool)
+                    elif hasattr(action, 'tool_name'):
+                        tools_used.append(action.tool_name)
         
         # Fallback: extract from contextual response if intermediate_steps is empty
         if not tools_used and hasattr(self, '_last_contextual_response'):
@@ -519,11 +368,11 @@ class MalloyLangChainAgent:
         # Final fallback: Use a simple hardcoded approach for now
         # We know the agent calls these tools in sequence
         if not tools_used:
-            # Check if the response contains JSON with file_info (indicates chart generation)
+            # Check if the response contains JSON with chart_url (indicates chart generation)
             try:
                 output_response = result.get("output", "")
                 parsed_response = json.loads(output_response)
-                if 'file_info' in parsed_response:
+                if 'chart_url' in parsed_response:
                     # Chart was generated, so all tools were likely used
                     tools_used = ['malloy_projectList', 'malloy_packageList', 'malloy_packageGet', 
                                  'malloy_modelGetText', 'malloy_executeQuery', 'generate_chart']
@@ -549,35 +398,31 @@ class MalloyLangChainAgent:
     def save_conversation(self, filepath: str):
         """Save conversation history to file"""
         messages = self.get_conversation_history()
+        # Convert messages to serializable format
+        serializable_messages = []
+        for msg in messages:
+            serializable_messages.append({
+                "type": type(msg).__name__,
+                "content": msg.content,
+                "additional_kwargs": getattr(msg, 'additional_kwargs', {})
+            })
         
-        conversation_data = {
-            "session_id": self.session_id,
-            "messages": [
-                {
-                    "role": msg.type,
-                    "content": msg.content,
-                    "timestamp": getattr(msg, "timestamp", None)
-                }
-                for msg in messages
-            ]
-        }
-        
-        with open(filepath, "w") as f:
-            json.dump(conversation_data, f, indent=2)
+        with open(filepath, 'w') as f:
+            json.dump({
+                "session_id": self.session_id,
+                "messages": serializable_messages
+            }, f, indent=2)
     
     def get_agent_info(self) -> Dict[str, Any]:
         """Get information about the agent configuration"""
         return {
-            "llm_provider": self.llm_provider,
-            "model_name": self.model_name,
             "session_id": self.session_id,
+            "model_name": self.model_name,
+            "llm_provider": self.llm_provider,
             "mcp_url": self.mcp_url,
             "tools_count": len(self.tools),
-            "tool_names": [tool.name for tool in self.tools],
-            "memory_db": self.memory_db_path,
-            "agent_ready": len(self.tools) > 0,
-            "vertex_project_id": self.vertex_project_id if self.llm_provider in ["vertex", "gemini"] else None,
-            "vertex_location": self.vertex_location if self.llm_provider in ["vertex", "gemini"] else None
+            "conversation_length": len(self.memory.chat_memory.messages),
+            "prompt_version": self.prompt_templates.get_prompt_version_info()
         }
 
 

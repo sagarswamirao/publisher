@@ -360,42 +360,31 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
 
                     try:
                         response_data = json.loads(clean_response_text)
-                        if "file_info" in response_data and response_data["file_info"].get("status") == "success":
-                            filepath = response_data["file_info"]["filepath"]
+                        # Check for chart URL (new QuickChart approach)
+                        if "chart_url" in response_data and response_data.get("status") == "success":
+                            chart_url = response_data["chart_url"]
+                            chart_text = response_data.get("text", "Here's your chart:")
                             
-                            # Check if the file actually exists before trying to upload
-                            if os.path.exists(filepath):
-                                try:
-                                    # Upload the file to Slack
-                                    web_client.files_upload_v2(
-                                        channel=channel_id,
-                                        file=filepath,
-                                        title="Malloy Chart",
-                                        initial_comment=response_data.get("text", "Here's your chart:"),
-                                        thread_ts=conversation_id
-                                    )
-                                    logger.info(f"Successfully uploaded chart for user {user_id}")
-                                    
-                                    # Cleanup temporary file
-                                    os.remove(filepath)
-                                    logger.debug(f"Cleaned up temporary chart file: {filepath}")
-                                    
-                                except Exception as e:
-                                    logger.error(f"Failed to upload file: {e}")
-                                    web_client.chat_postMessage(
-                                        channel=channel_id,
-                                        thread_ts=conversation_id,
-                                        text=f"I created a chart but failed to upload it: {e}"
-                                    )
-                            else:
-                                logger.error(f"Chart file does not exist: {filepath}")
+                            try:
+                                # Send chart URL as a message - Slack will automatically display it as an image
                                 web_client.chat_postMessage(
                                     channel=channel_id,
                                     thread_ts=conversation_id,
-                                    text="I tried to create a chart but the file was not generated successfully."
+                                    text=f"{chart_text}\n{chart_url}",
+                                    unfurl_links=True,  # Allow Slack to unfurl the chart image
+                                    unfurl_media=True
+                                )
+                                logger.info(f"Successfully shared chart URL for user {user_id}: {chart_url}")
+                                
+                            except Exception as e:
+                                logger.error(f"Failed to send chart URL: {e}")
+                                web_client.chat_postMessage(
+                                    channel=channel_id,
+                                    thread_ts=conversation_id,
+                                    text=f"I created a chart but failed to share it: {e}"
                                 )
                         else:
-                            # It's JSON, but not a file upload, so send the text part
+                            # It's JSON, but not a chart, so send the text part
                             web_client.chat_postMessage(
                                 channel=channel_id,
                                 thread_ts=conversation_id,

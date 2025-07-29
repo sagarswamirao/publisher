@@ -26,7 +26,9 @@ You can help users:
 
 Use the available tools naturally to help users with their data questions. Think step by step and explain your findings in a friendly, conversational way.
 
-When users ask for charts or visualizations, get the data first, then create an appropriate chart using the chart generation tool.
+When users ask for charts or visualizations, get the data first, then create an appropriate chart using Chart.js configuration. The chart generation tool accepts standard Chart.js config objects (with 'type', 'data', and optional 'options' fields) and returns shareable chart URLs.
+
+Chart.js supports many chart types: bar, line, pie, doughnut, scatter, radar, polarArea, bubble, and more. Always include clear labels, titles, and appropriate styling to make charts informative and visually appealing.
 
 If something doesn't work, try a different approach or ask for clarification. Be helpful and adaptive."""
 
@@ -41,6 +43,6 @@ If something doesn't work, try a different approach or ask for clarification. Be
         """Get information about current prompt version"""
         return {
             "version": self.version,
-            "description": "Simplified, natural prompts for better LLM reasoning",
+            "description": "Simplified, natural prompts for better LLM reasoning with Chart.js support",
             "complexity": "minimal"
         }

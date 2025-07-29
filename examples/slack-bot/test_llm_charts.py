@@ -34,7 +34,7 @@ TEST_CONFIGS = {
         - 2022: $2,800,000
         - 2023: $3,100,000
         
-        Make it a nice looking chart with proper labels and save it as a PNG file.
+        Make it a nice looking chart with proper labels.
         """
     },
     "gpt4o": {
@@ -48,7 +48,7 @@ TEST_CONFIGS = {
         - Company C: 20%
         - Company D: 17%
         
-        Make it a colorful pie chart with proper labels and percentages shown, and save it as a PNG file.
+        Make it a colorful pie chart with proper labels and percentages shown.
         """
     }
 }
@@ -116,29 +116,29 @@ async def test_agent_chart_generation(model_type="claude"):
         print(f"Metadata: {metadata}")
         
         # Check if response contains chart info
-        if 'file_info' in response or 'filepath' in response:
-            print("✅ Response contains chart file information")
+        if 'chart_url' in response or 'status' in response:
+            print("✅ Response contains chart information")
             print(f"Response: {response}")
             
             # Try to parse as JSON to see chart details
             try:
                 import json
                 chart_data = json.loads(response)
-                if 'file_info' in chart_data:
-                    file_path = chart_data['file_info'].get('filepath')
-                    if file_path and os.path.exists(file_path):
-                        file_size = os.path.getsize(file_path)
-                        print(f"🎨 Chart file created: {file_path}")
-                        print(f"📊 File size: {file_size} bytes")
+                if 'chart_url' in chart_data:
+                    chart_url = chart_data['chart_url']
+                    status = chart_data.get('status', 'unknown')
+                    if chart_url and status == 'success':
+                        print(f"🎨 Chart URL created: {chart_url}")
+                        print(f"📊 Chart status: {status}")
                         return True
                     else:
-                        print(f"❌ Chart file not found: {file_path}")
+                        print(f"❌ Chart creation failed or no URL: {chart_url}, status: {status}")
                         return False
             except json.JSONDecodeError:
                 print("⚠️ Response is not valid JSON, but contains chart keywords")
                 print(f"Raw response: {response}")
         else:
-            print("❌ Response does not contain chart file information")
+            print("❌ Response does not contain chart information")
             print(f"Response: {response}")
             return False
             
