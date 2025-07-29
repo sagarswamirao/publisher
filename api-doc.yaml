@@ -1105,6 +1105,9 @@ components:
         readme:
           type: string
           description: Project readme.
+        location:
+          type: string
+          description: Project location, it can be an absolute path or an URI (e.g. github, s3, gcs, etc.).
 
     Package:
       type: object
@@ -1118,6 +1121,9 @@ components:
         description:
           type: string
           description: Package description.
+        location:
+          type: string
+          description: Package location, it can be an absolute path or an URI (e.g. github, s3, gcs, etc.).
 
     Model:
       type: object

@@ -44,6 +44,7 @@ export class ProjectStore {
                   {
                      name: projectName,
                      resource: `${API_PREFIX}/projects/${projectName}`,
+                     location: projectManifest.projects[projectName],
                   },
                   true,
                );
@@ -76,12 +77,11 @@ export class ProjectStore {
          const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
-         if (
-            !projectManifest.projects ||
-            !projectManifest.projects[projectName]
-         ) {
+         const projectPath =
+            project?.metadata.location || projectManifest.projects[projectName];
+         if (!projectPath) {
             throw new ProjectNotFoundError(
-               `Project "${projectName}" not found in publisher`,
+               `Project "${projectName}" could not be resolved to a path.`,
             );
          }
          project = await this.addProject({
@@ -109,7 +109,8 @@ export class ProjectStore {
       const projectManifest = await ProjectStore.reloadProjectManifest(
          this.serverRootPath,
       );
-      const projectPath = projectManifest.projects[projectName];
+      const projectPath =
+         project.location || projectManifest.projects[projectName];
       const absoluteProjectPath = await this.loadProjectIntoDisk(
          projectName,
          projectPath,
@@ -286,13 +287,14 @@ export class ProjectStore {
       }
    }
 
-   private async downloadGcsDirectory(
+   async downloadGcsDirectory(
       gcsPath: string,
       projectName: string,
       absoluteDirPath: string,
    ) {
       const trimmedPath = gcsPath.slice(5);
-      const [bucketName, prefix] = trimmedPath.split("/", 2);
+      const [bucketName, ...prefixParts] = trimmedPath.split("/");
+      const prefix = prefixParts.join("/");
       const [files] = await this.gcsClient.bucket(bucketName).getFiles({
          prefix,
       });
@@ -324,13 +326,14 @@ export class ProjectStore {
       );
    }
 
-   private async downloadS3Directory(
+   async downloadS3Directory(
       s3Path: string,
       projectName: string,
       absoluteDirPath: string,
    ) {
       const trimmedPath = s3Path.slice(5);
-      const [bucketName, prefix] = trimmedPath.split("/", 2);
+      const [bucketName, ...prefixParts] = trimmedPath.split("/");
+      const prefix = prefixParts.join("/");
       const objects = await this.s3Client.listObjectsV2({
          Bucket: bucketName,
          Prefix: prefix,
@@ -378,10 +381,7 @@ export class ProjectStore {
       );
    }
 
-   private async downloadGitHubDirectory(
-      githubUrl: string,
-      absoluteDirPath: string,
-   ) {
+   async downloadGitHubDirectory(githubUrl: string, absoluteDirPath: string) {
       await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
       await fs.promises.mkdir(absoluteDirPath, { recursive: true });
       await simpleGit().clone(githubUrl, absoluteDirPath);

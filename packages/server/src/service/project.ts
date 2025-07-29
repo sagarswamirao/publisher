@@ -41,6 +41,7 @@ export class Project {
       this.metadata = {
          resource: `${API_PREFIX}/projects/${this.projectName}`,
          name: this.projectName,
+         location: this.projectPath,
       };
       void this.reloadProjectMetadata();
    }
@@ -243,10 +244,7 @@ export class Project {
       return this.packages.get(packageName);
    }
 
-   public async updatePackage(
-      packageName: string,
-      body: { resource?: string; name?: string; description?: string },
-   ) {
+   public async updatePackage(packageName: string, body: ApiPackage) {
       const _package = this.packages.get(packageName);
       if (!_package) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
@@ -258,6 +256,7 @@ export class Project {
          name: body.name,
          description: body.description,
          resource: body.resource,
+         location: body.location,
       });
       return _package.getPackageMetadata();
    }
@@ -267,6 +266,9 @@ export class Project {
       if (!_package) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
       }
+      await fs.rm(path.join(this.projectPath, packageName), {
+         recursive: true,
+      });
       this.packages.delete(packageName);
    }
 }
