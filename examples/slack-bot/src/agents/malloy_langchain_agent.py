@@ -296,10 +296,15 @@ class MalloyLangChainAgent:
     
     def get_conversation_history(self):
         """Get conversation history for the compatibility adapter"""
-        # LangGraph manages conversation history differently through checkpoints
-        # For now, return an empty list since LangGraph handles memory internally
-        # In a full implementation, you'd retrieve from the checkpointer
-        return []
+        # LangGraph manages conversation history internally through checkpoints
+        # We return a minimal record to indicate this bot started/participated in the conversation
+        # This enables thread continuity without duplicating LangGraph's internal memory
+        
+        from langchain.schema import SystemMessage
+        
+        return [
+            SystemMessage(content=f"Bot conversation active (session: {self.session_id})")
+        ]
     
     def get_agent_info(self) -> Dict[str, Any]:
         """Get information about the agent configuration"""

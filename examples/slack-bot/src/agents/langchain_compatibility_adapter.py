@@ -37,11 +37,38 @@ class LangChainCompatibilityAdapter:
         """Initializes the agent and its setup in a new event loop if not already done."""
         if self.agent is None:
             print("🔍 DEBUG: First-time setup for agent in adapter.")
-            self.loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self.loop)
             
-            self.agent = self.loop.run_until_complete(create_malloy_agent(**self.agent_kwargs))
-            self.loop.run_until_complete(self.agent.setup())
+            # Check if we're already in an async context
+            try:
+                # If we're in an async context, we need to run in a thread
+                current_loop = asyncio.get_running_loop()
+                print("🔍 DEBUG: Detected running event loop, using thread executor")
+                
+                def setup_in_thread():
+                    # Create new loop in this thread
+                    new_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(new_loop)
+                    try:
+                        agent = new_loop.run_until_complete(create_malloy_agent(**self.agent_kwargs))
+                        new_loop.run_until_complete(agent.setup())
+                        return agent, new_loop
+                    except Exception as e:
+                        new_loop.close()
+                        raise e
+                
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(setup_in_thread)
+                    self.agent, self.loop = future.result(timeout=60)
+                    
+            except RuntimeError:
+                # No event loop running, we can create one normally
+                print("🔍 DEBUG: No running event loop detected, creating new one")
+                self.loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self.loop)
+                
+                self.agent = self.loop.run_until_complete(create_malloy_agent(**self.agent_kwargs))
+                self.loop.run_until_complete(self.agent.setup())
+                
             print("🔍 DEBUG: Agent setup complete in adapter.")
 
     def _serialize_history(self, messages: List[BaseMessage]) -> List[Dict[str, Any]]:
@@ -95,14 +122,19 @@ class LangChainCompatibilityAdapter:
         if not self.agent or not self.loop:
             raise RuntimeError("Adapter not initialized. Call _setup_agent_if_needed first.")
         
+        # Set the event loop for this thread
         asyncio.set_event_loop(self.loop)
         
-        # Note: LangGraph agents handle conversation history internally through checkpoints
-        # No need to manually manage memory like with the old LangChain agents
-        
-        success, response, _ = self.loop.run_until_complete(self.agent.process_question(question))
-        final_history_obj = self.agent.get_conversation_history()
-        return success, response, final_history_obj
+        try:
+            # Note: LangGraph agents handle conversation history internally through checkpoints
+            # No need to manually manage memory like with the old LangChain agents
+            
+            success, response, _ = self.loop.run_until_complete(self.agent.process_question(question))
+            final_history_obj = self.agent.get_conversation_history()
+            return success, response, final_history_obj
+        except Exception as e:
+            print(f"🔍 DEBUG: Error in _run_question_in_new_loop: {e}")
+            raise e
     
     def get_available_tools(self) -> List[Dict[str, Any]]:
         """Get available tools in OpenAI function format - for compatibility"""

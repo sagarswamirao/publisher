@@ -74,9 +74,10 @@ def parse_args():
     parser.add_argument('--model', choices=[
         'gpt-4o', 'gpt-4o-mini', 
         'gemini-1.5-pro', 'gemini-2.5-flash',
-        'claude-4', 'claude-4-sonnet', 'claude-4-opus',
-        'claude-3.7-sonnet', 'claude-3.5-sonnet', 'claude-3.5-haiku'
-    ], default='gpt-4o', help='LLM model to use')
+        'claude-3-5-sonnet-20241022', 'claude-3-7-sonnet', 
+        'claude-sonnet-4-20250514', 'claude-opus-4-20250514',
+        'claude-3-5-haiku-20241022'
+    ], default='claude-3-5-sonnet-20241022', help='LLM model to use')
     parser.add_argument('--provider', choices=['openai', 'vertex', 'anthropic'], 
                        help='LLM provider (auto-detected from model if not specified)')
     return parser.parse_args()
@@ -242,14 +243,16 @@ def send_error_message(channel_id: str, thread_ts: str, error_type: str, error_d
         logger.error(f"Failed to send error message: {e}")
 
 def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
-    """
-    Enhanced event handler with robust error handling and circuit breaker pattern
-    """
-    # Acknowledge the event first
+    """Process incoming Slack events with enhanced conversation tracking."""
+    global malloy_agent
+    
+    logger.info(f"🔍 SLACK EVENT: {req.type}")
+    
     if req.type == "events_api":
         client.send_socket_mode_response({"envelope_id": req.envelope_id})
 
         event = req.payload.get("event", {})
+        logger.info(f"🔍 EVENT DETAILS: type={event.get('type')}, user={event.get('user')}, ts={event.get('ts')}, thread_ts={event.get('thread_ts')}")
         
         # Handle both app_mention and message events
         event_type = event.get("type")
@@ -261,11 +264,14 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
             should_respond = True
         elif event_type == "message" and event.get("thread_ts"):
             # Only respond to threaded messages if:
-            # 1. Bot was mentioned in this message, OR
-            # 2. Bot has an existing conversation in this thread
+            # 1. Bot was mentioned in this message, OR  
+            # 2. Bot started this thread (has existing conversation in this thread)
             text = event.get("text", "").strip()
             thread_ts = event.get("thread_ts")
             bot_user_id = None
+            
+            logger.info(f"🧵 Threaded message received: text='{text}', thread_ts='{thread_ts}'")
+            logger.info(f"🧵 Current conversation cache keys: {list(CONVERSATION_CACHE.keys())}")
             
             try:
                 bot_user_id = web_client.auth_test()["user_id"]
@@ -276,12 +282,31 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
             # Check if bot was mentioned in this threaded message
             if f"<@{bot_user_id}>" in text:
                 should_respond = True
-            # Check if bot has existing conversation in this thread
+                logger.info(f"🧵 Bot mentioned in threaded message - will respond")
+            # Check if bot started this thread (has existing conversation)
             elif thread_ts in CONVERSATION_CACHE:
                 should_respond = True
-                logger.info(f"Continuing conversation in thread {thread_ts}")
+                logger.info(f"🧵 Continuing bot-started conversation in thread {thread_ts}")
             else:
-                logger.debug(f"Ignoring threaded message - bot not mentioned and no existing conversation")
+                # Try to find conversation with similar timestamp (fallback for timing mismatches)
+                found_conversation = False
+                for cached_id in CONVERSATION_CACHE.keys():
+                    # Check if the timestamps are very close (within 1 second)
+                    try:
+                        thread_time = float(thread_ts)
+                        cached_time = float(cached_id)
+                        if abs(thread_time - cached_time) < 1.0:
+                            should_respond = True
+                            logger.info(f"🧵 Found close conversation match: thread_ts={thread_ts}, cached_id={cached_id}")
+                            found_conversation = True
+                            break
+                    except (ValueError, TypeError):
+                        continue
+                
+                if not found_conversation:
+                    should_respond = False
+                    logger.info(f"🧵 Ignoring threaded message - bot not mentioned and didn't start this thread")
+                    logger.info(f"🧵 Looking for thread_ts '{thread_ts}' but cache has: {list(CONVERSATION_CACHE.keys())}")
         
         if should_respond:
             text = event.get("text", "").strip()
@@ -325,6 +350,8 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
                 conversation_id = message_ts
                 history = None
                 logger.info(f"Starting new conversation {conversation_id}")
+            
+            logger.info(f"💾 Using conversation_id: '{conversation_id}', thread_ts: '{thread_ts}', message_ts: '{message_ts}'")
             
             # Check circuit breaker before processing
             if circuit_breaker.is_open():
@@ -406,10 +433,13 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
                     # Update conversation cache with final history
                     if final_history:
                         CONVERSATION_CACHE[conversation_id] = final_history
-                        logger.debug(f"Updated conversation cache for {conversation_id}")
+                        logger.info(f"💾 Updated conversation cache for {conversation_id}")
+                        logger.info(f"💾 Cache now has keys: {list(CONVERSATION_CACHE.keys())}")
                         
                         # Clean up old conversations periodically
                         cleanup_old_conversations()
+                    else:
+                        logger.info(f"💾 No final_history to store for {conversation_id}")
                     
                 else:
                     # Failed to process - could be MCP server issue
@@ -426,6 +456,9 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
                     # Still update cache even for failed responses to maintain context
                     if final_history:
                         CONVERSATION_CACHE[conversation_id] = final_history
+                        logger.info(f"💾 Updated conversation cache for FAILED response {conversation_id}")
+                    else:
+                        logger.info(f"💾 No final_history to store for FAILED response {conversation_id}")
                         
             except Exception as e:
                 circuit_breaker.record_failure()

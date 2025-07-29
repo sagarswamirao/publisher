@@ -177,7 +177,7 @@ def main():
     parser = argparse.ArgumentParser(description="E2E Conversation Test")
     parser.add_argument(
         "--model", 
-        choices=["claude", "gpt4o"], 
+        choices=["claude", "claude4", "gpt4o"], 
         default="claude",
         help="Model to test with"
     )
