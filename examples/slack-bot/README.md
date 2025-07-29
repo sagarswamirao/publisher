@@ -1,62 +1,67 @@
 # 🤖 Malloy Slack Bot
 
-An intelligent Slack bot powered by Malloy for data analysis and visualization.
+An intelligent Slack bot powered by Malloy for data analysis and visualization using LangChain agents.
 
-## 🏠 Local Development Setup
+## Quick Setup
 
-This bot runs locally on your machine with the following architecture:
-- **Terminal 1**: Malloy Publisher MCP Server (localhost:4040/mcp)
-- **Terminal 2**: Slack Bot with LangChain Agent → LLM → MCP Tools
+1. **Install dependencies:**
+   ```bash
+   cd examples/slack-bot
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-### Quick Start
+2. **Configure environment** (create `.env` file):
+   ```bash
+   # Slack tokens (from your Slack app)
+   SLACK_BOT_TOKEN=xoxb-your-bot-token
+   SLACK_APP_TOKEN=xapp-your-app-token
+   
+   # LLM API key (choose one)
+   OPENAI_API_KEY=sk-your-openai-key
+   # ANTHROPIC_API_KEY=your-anthropic-key
+   # VERTEX_PROJECT_ID=your-gcp-project
+   
+   # MCP server
+   MCP_URL=http://localhost:4040/mcp
+   ```
 
-For detailed local setup instructions, see:
-**→ [README_LOCAL.md](./README_LOCAL.md)** - Complete setup guide with troubleshooting
+3. **Start the servers:**
+   ```bash
+   # Terminal 1: Start MCP server (from project root)
+   bun run build && bun run start
+   
+   # Terminal 2: Start bot (from examples/slack-bot)
+   source venv/bin/activate && python bot.py
+   ```
 
-Or use the automated setup:
-```bash
-cd examples/slack-bot
-./setup-local.sh
+## Slack App Setup
+
+1. Create app at [api.slack.com/apps](https://api.slack.com/apps)
+2. **Bot Token Scopes:** `app_mentions:read`, `channels:history`, `channels:read`, `chat:write`, `files:write`, `groups:history`
+3. **Enable Socket Mode** with `connections:write` scope
+4. **Subscribe to events:** `app_mention`, `message.channels`, `message.groups`
+
+## What It Does
+
+- **Smart Query Planning**: Understands questions and creates appropriate Malloy queries
+- **Data Analysis**: Executes queries against your datasets
+- **Chart Generation**: Creates visualizations with matplotlib  
+- **Multi-turn Conversations**: Maintains context across interactions
+- **Dynamic Tool Discovery**: Uses MCP tools automatically
+
+## Usage
+
+```
+@malloy-bot what datasets are available?
+@malloy-bot show top 5 brands by sales in a chart
 ```
 
-### What the Bot Does
+## Troubleshooting
 
-The bot includes a full LangChain agent that can:
-- 🧠 **Intelligent Query Planning**: Analyzes user questions and plans appropriate Malloy queries
-- 📊 **Data Analysis**: Executes Malloy queries against your datasets  
-- 📈 **Chart Generation**: Creates matplotlib visualizations
-- 🔄 **Multi-turn Conversations**: Maintains context across multiple questions
-- 🛠️ **Tool Integration**: Dynamically discovers and uses MCP tools
-
-### Agent Architecture
-
-```
-Slack Message → bot.py → LangChainCompatibilityAdapter → MalloyLangChainAgent → LLM (OpenAI/Anthropic/Vertex) → MCP Tools → Publisher Server → Intelligent Response
-```
-
-### Supported LLM Providers
-- **OpenAI** (GPT-4, GPT-4o, GPT-3.5-turbo)
-- **Anthropic** (Claude models)
-- **Google Vertex AI** (Gemini models)
-
-## 📁 Project Structure
-
-```
-examples/slack-bot/
-├── bot.py                 # Main bot entry point
-├── src/
-│   ├── agents/           # LangChain agent implementation
-│   ├── clients/          # Enhanced MCP client
-│   ├── tools/            # Chart generation tools
-│   └── prompts/          # Agent prompts and templates
-├── tests/                # Test suite
-└── README_LOCAL.md       # Local development guide
-```
-
-## 🧪 Development
-
-See `README_LOCAL.md` for:
-- Environment setup
-- Slack app configuration
-- Local testing workflow
-- Troubleshooting common issues 
+- **Check logs:** `tail -f bot.log`
+- **Test MCP:** Visit `http://localhost:4040/mcp` 
+- **Reset:** `rm -rf venv/ .env` then repeat setup steps
+- **Debug mode:** Set `ENVIRONMENT=development` in `.env`
+- **Tests:** `pytest tests/` (with venv activated) 
