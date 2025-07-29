@@ -25,6 +25,11 @@ import { metrics } from "@opentelemetry/api";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
+import {
+   MODEL_FILE_SUFFIX,
+   NOTEBOOK_FILE_SUFFIX,
+   ROW_LIMIT,
+} from "../constants";
 import { HackyDataStylesAccumulator } from "../data_styles";
 import {
    BadRequestError,
@@ -32,12 +37,7 @@ import {
    ModelNotFoundError,
 } from "../errors";
 import { logger } from "../logger";
-import {
-   MODEL_FILE_SUFFIX,
-   NOTEBOOK_FILE_SUFFIX,
-   ROW_LIMIT,
-   URL_READER,
-} from "../utils";
+import { URL_READER } from "../utils";
 
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 type ApiNotebookCell = components["schemas"]["NotebookCell"];

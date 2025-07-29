@@ -11,13 +11,13 @@
    },
    "scripts": {
       "test": "bun test ./**/*.spec.ts",
-      "build": "bun generate-api-types && NODE_ENV=production && bun build:app && bun build src/server.ts --outdir dist --target node --format cjs --external='@malloydata/db-duckdb' --external='@malloydata/malloy' --external='@malloydata/malloy-sql' --external='@malloydata/render' --external='@malloydata/db-bigquery' --external='@malloydata/db-mysql' --external='@malloydata/db-postgres' --external='@malloydata/db-snowflake' --external='@malloydata/db-trino' && NODE_ENV=production bun build src/instrumentation.ts --outdir dist --target node --format cjs && bun run build:app && echo '#!/usr/bin/env node' | cat - dist/server.js > temp && mv temp dist/server.js && chmod +x dist/server.js",
+      "build": "bun generate-api-types && bun build:app && NODE_ENV=production bun run build.ts",
       "start": "NODE_ENV=production node ./dist/server.js",
       "start:dev": "NODE_ENV=development bun --watch src/server.ts",
       "start:instrumented": "node --require ./dist/instrumentation.js ./dist/server.js",
       "lint": "bunx eslint \"./src/**/*.ts\"",
       "format": "bunx prettier --write '**/*.{ts,tsx}'",
-      "build:app": "cd ../app && bun run build:server && rm -rf ../server/dist/app && mkdir -p ../server/dist && cp -r dist ../server/dist/app",
+      "build:app": "cd ../app && NODE_ENV=production bunx vite build",
       "generate-api-types": "bunx openapi-typescript ../../api-doc.yaml --output src/api.ts"
    },
    "dependencies": {
@@ -38,6 +38,7 @@
       "@opentelemetry/sdk-trace-node": "^2.0.0",
       "async-mutex": "^0.5.0",
       "body-parser": "^1.20.2",
+      "chokidar": "^4.0.3",
       "class-transformer": "^0.5.1",
       "class-validator": "^0.14.1",
       "cors": "^2.8.5",

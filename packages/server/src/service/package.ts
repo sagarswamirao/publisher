@@ -11,14 +11,14 @@ import {
 import { metrics } from "@opentelemetry/api";
 import recursive from "recursive-readdir";
 import { components } from "../api";
-import { API_PREFIX } from "../constants";
-import { PackageNotFoundError } from "../errors";
-import { logger } from "../logger";
 import {
+   API_PREFIX,
    MODEL_FILE_SUFFIX,
    NOTEBOOK_FILE_SUFFIX,
    PACKAGE_MANIFEST_NAME,
-} from "../utils";
+} from "../constants";
+import { PackageNotFoundError } from "../errors";
+import { logger } from "../logger";
 import { createConnections } from "./connection";
 import { Model } from "./model";
 import { Scheduler } from "./scheduler";

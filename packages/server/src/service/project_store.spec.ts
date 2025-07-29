@@ -1,8 +1,8 @@
 import { describe, expect, it, mock, spyOn } from "bun:test";
 import * as fs from "fs/promises";
 import path from "path";
+import { isPublisherConfigFrozen } from "../config";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
-import { isPublisherConfigFrozen } from "../utils";
 import { ProjectStore } from "./project_store";
 
 describe("ProjectStore", () => {
@@ -17,8 +17,11 @@ describe("ProjectStore", () => {
       do {
          await new Promise((resolve) => setTimeout(resolve, 10));
          retries++;
-      } while (projectStore.listProjects().length === 0 && retries < maxRetries);
-      if (projectStore.listProjects().length === 0) {
+      } while (
+         (await projectStore.listProjects()).length === 0 &&
+         retries < maxRetries
+      );
+      if ((await projectStore.listProjects()).length === 0) {
          throw new Error("Timed out initializing ProjectStore");
       }
    }
@@ -27,7 +30,7 @@ describe("ProjectStore", () => {
       mock(isPublisherConfigFrozen).mockReturnValue(true);
       const projectStore = new ProjectStore(serverRoot);
       await waitForInitialization(projectStore);
-      expect(projectStore.listProjects()).toEqual([
+      expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
             readme: expect.stringContaining("# Malloy Analysis Examples"),
@@ -39,11 +42,13 @@ describe("ProjectStore", () => {
    it("should list projects from memory by default", async () => {
       mock(isPublisherConfigFrozen).mockReturnValue(true);
       const projectStore = new ProjectStore(serverRoot);
+      await waitForInitialization(projectStore);
+
       // Mock fs.readFile & fs.readdir to track calls
       const readFileSpy = spyOn(fs, "readFile");
       const readdirSpy = spyOn(fs, "readdir");
       // Call listProjects, which should use memory and not call fs.readFile
-      projectStore.listProjects();
+      await projectStore.listProjects();
 
       expect(readFileSpy).not.toHaveBeenCalled();
       expect(readdirSpy).not.toHaveBeenCalled();
@@ -72,7 +77,7 @@ describe("ProjectStore", () => {
          name: "malloy-samples",
          readme: "Updated README",
       });
-      expect(projectStore.listProjects()).toEqual([
+      expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
             readme: "Updated README",
@@ -80,7 +85,7 @@ describe("ProjectStore", () => {
          },
       ]);
       await projectStore.deleteProject("malloy-samples");
-      expect(projectStore.listProjects()).toEqual([]);
+      expect(await projectStore.listProjects()).toEqual([]);
       await projectStore.addProject({
          name: "malloy-samples",
       });
@@ -94,7 +99,7 @@ describe("ProjectStore", () => {
 
       // After a while, it'll resolve the async promise where the readme gets loaded in memory
       await waitForInitialization(projectStore);
-      expect(projectStore.listProjects()).toEqual([
+      expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
             readme: expect.stringContaining("# Malloy Analysis Examples"),
@@ -110,7 +115,7 @@ describe("ProjectStore", () => {
       const projectStore = new ProjectStore(serverRoot);
       // Initialization should succeed
       await waitForInitialization(projectStore);
-      expect(projectStore.listProjects()).toEqual([
+      expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
             readme: expect.stringContaining("# Malloy Analysis Examples"),
@@ -138,7 +143,7 @@ describe("ProjectStore", () => {
       );
 
       // Failed methods should not modify the in-memory hashmap
-      expect(projectStore.listProjects()).toEqual([
+      expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
             readme: expect.stringContaining("# Malloy Analysis Examples"),
@@ -154,7 +159,7 @@ describe("ProjectStore", () => {
       const projectStore = new ProjectStore(serverRoot);
       await waitForInitialization(projectStore);
       await projectStore.deleteProject("malloy-samples");
-      expect(projectStore.listProjects()).toEqual([]);
+      expect(await projectStore.listProjects()).toEqual([]);
       const readFileSpy = spyOn(fs, "readFile");
       await projectStore.getProject("malloy-samples", true);
       expect(readFileSpy).toHaveBeenCalled();
@@ -166,8 +171,8 @@ describe("ProjectStore", () => {
       }));
       const projectStore = new ProjectStore(serverRoot);
       await waitForInitialization(projectStore);
-      expect(projectStore.getProject("this-one-does-not-exist", true)).rejects.toThrow(
-         ProjectNotFoundError,
-      );
+      expect(
+         projectStore.getProject("this-one-does-not-exist", true),
+      ).rejects.toThrow(ProjectNotFoundError);
    });
 });

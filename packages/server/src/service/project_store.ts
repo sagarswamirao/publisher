@@ -1,21 +1,22 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
-import { API_PREFIX } from "../constants";
+import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
+import { API_PREFIX, PUBLISHER_CONFIG_NAME } from "../constants";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
-import { isPublisherConfigFrozen } from "../utils";
 import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
-   private serverRootPath: string;
+   public serverRootPath: string;
    private projects: Map<string, Project> = new Map();
    public publisherConfigIsFrozen: boolean;
+   private finishedInitialization: Promise<void>;
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
-      void this.initialize();
+      this.finishedInitialization = this.initialize();
    }
 
    private async initialize() {
@@ -45,7 +46,8 @@ export class ProjectStore {
       }
    }
 
-   public listProjects() {
+   public async listProjects() {
+      await this.finishedInitialization;
       return Array.from(this.projects.values()).map(
          (project) => project.metadata,
       );
@@ -55,6 +57,7 @@ export class ProjectStore {
       projectName: string,
       reload: boolean,
    ): Promise<Project> {
+      await this.finishedInitialization;
       let project = this.projects.get(projectName);
       if (project === undefined || reload) {
          const projectManifest = await ProjectStore.reloadProjectManifest(
@@ -77,6 +80,7 @@ export class ProjectStore {
    }
 
    public async addProject(project: ApiProject) {
+      await this.finishedInitialization;
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
@@ -88,11 +92,6 @@ export class ProjectStore {
          this.serverRootPath,
       );
       const projectPath = projectManifest.projects[projectName];
-      if (!projectPath) {
-         throw new ProjectNotFoundError(
-            `Project "${projectName}" not found in publisher.config.json`,
-         );
-      }
       const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
       if (!(await fs.stat(absoluteProjectPath)).isDirectory()) {
          throw new ProjectNotFoundError(
@@ -105,6 +104,7 @@ export class ProjectStore {
    }
 
    public async updateProject(project: ApiProject) {
+      await this.finishedInitialization;
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
@@ -122,6 +122,7 @@ export class ProjectStore {
    }
 
    public async deleteProject(projectName: string) {
+      await this.finishedInitialization;
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
@@ -133,19 +134,13 @@ export class ProjectStore {
       return project;
    }
 
-   private static async reloadProjectManifest(
-      serverRootPath: string,
-   ): Promise<{ projects: { [key: string]: string } }> {
+   public static async reloadProjectManifest(serverRootPath: string) {
       try {
-         const projectManifestContent = await fs.readFile(
-            path.join(serverRootPath, "publisher.config.json"),
-            "utf8",
-         );
-         return JSON.parse(projectManifestContent);
+         return getPublisherConfig(serverRootPath);
       } catch (error) {
          if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
             logger.error(
-               `Error reading publisher.config.json. Generating from directory`,
+               `Error reading ${PUBLISHER_CONFIG_NAME}. Generating from directory`,
                { error },
             );
             return { projects: {} };

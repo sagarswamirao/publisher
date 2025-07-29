@@ -12,6 +12,7 @@ import { ModelController } from "./controller/model.controller";
 import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
+import { WatchModeController } from "./controller/watch-mode.controller";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { logger, loggerMiddleware } from "./logger";
 import { initializeMcpServer } from "./mcp/server";
@@ -62,7 +63,7 @@ function parseArgs() {
 parseArgs();
 
 const PUBLISHER_PORT = Number(process.env.PUBLISHER_PORT || 4000);
-const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "localhost";
+const PUBLISHER_HOST = process.env.PUBLISHER_HOST || "0.0.0.0";
 const MCP_PORT = Number(process.env.MCP_PORT || 4040);
 const MCP_ENDPOINT = "/mcp";
 // Find the app directory - handle NPX vs local execution
@@ -83,6 +84,7 @@ app.use(loggerMiddleware);
 app.use(cors());
 
 const projectStore = new ProjectStore(SERVER_ROOT);
+const watchModeController = new WatchModeController(projectStore);
 const connectionController = new ConnectionController(projectStore);
 const modelController = new ModelController(projectStore);
 const packageController = new PackageController(projectStore);
@@ -205,6 +207,10 @@ const setVersionIdError = (res: express.Response) => {
 
 app.use(cors());
 app.use(bodyParser.json());
+
+app.get(`${API_PREFIX}/watch-mode/status`, watchModeController.getWatchStatus);
+app.post(`${API_PREFIX}/watch-mode/start`, watchModeController.startWatching);
+app.post(`${API_PREFIX}/watch-mode/stop`, watchModeController.stopWatchMode);
 
 app.get(`${API_PREFIX}/projects`, async (_req, res) => {
    try {
@@ -716,9 +722,7 @@ mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
       );
    }
 });
-
-const mcpHttpServer = mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
+mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
    logger.info(`MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`);
 });
 
-export { app, mainServer as httpServer, mcpApp, mcpHttpServer };

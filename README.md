@@ -184,6 +184,36 @@ git clone https://github.com/ms2data/malloy-samples
 npx @malloy-publisher/server --port 4000 --server_root .
 ```
 
+### Docker
+
+Alternatively, you can start a container locally or self-host it with [Docker](https://www.docker.com/).
+
+Once Docker is installed, in a new folder with your data, create a file called `publisher.config.json` with these contents:
+```json
+{
+   "frozenConfig": false,
+   "projects": {
+      "malloy-samples": "/publisher/malloy-samples"
+   }
+}
+```
+
+That file will tell the publisher where to look for the Malloy Samples, which you can clone into your new folder:
+```sh
+git clone https://github.com/ms2data/malloy-samples
+```
+
+and run the following command that will link the newly cloned samples with a Docker container:
+```sh
+docker run -p 4000:4000 \
+   -v ./publisher.config.json:/publisher/publisher.config.json \
+   -v ./malloy-samples:/publisher/malloy-samples \
+  publisher
+```
+Then, open http://localhost:4000 in your browser to continue setup.
+
+You can add more projects of your own by attaching additional volumes and referencing them in the config file.
+
 ### Code Approach
 
 Follow these steps to build the Publisher components and run the server locally. This project uses <a href="https://bun.sh/" target="_blank" rel="noopener noreferrer">`bun`</a> as the JavaScript runtime and package manager.

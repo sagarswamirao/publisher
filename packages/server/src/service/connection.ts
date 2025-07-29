@@ -1,15 +1,15 @@
-import { PostgresConnection } from "@malloydata/db-postgres";
 import { BigQueryConnection } from "@malloydata/db-bigquery";
+import { MySQLConnection } from "@malloydata/db-mysql";
+import { PostgresConnection } from "@malloydata/db-postgres";
 import { SnowflakeConnection } from "@malloydata/db-snowflake";
 import { TrinoConnection } from "@malloydata/db-trino";
-import { MySQLConnection } from "@malloydata/db-mysql";
-import { v4 as uuidv4 } from "uuid";
 import { Connection } from "@malloydata/malloy";
-import { components } from "../api";
-import path from "path";
-import fs from "fs/promises";
-import { CONNECTIONS_MANIFEST_NAME } from "../utils";
 import { BaseConnection } from "@malloydata/malloy/connection";
+import fs from "fs/promises";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import { components } from "../api";
+import { CONNECTIONS_MANIFEST_NAME } from "../constants";
 
 type ApiConnection = components["schemas"]["Connection"];
 type ApiConnectionAttributes = components["schemas"]["ConnectionAttributes"];
