@@ -1,6 +1,8 @@
+import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { Storage } from "@google-cloud/storage";
-import * as fs from "fs/promises";
+import * as fs from "fs";
 import * as path from "path";
+import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
 import { API_PREFIX, PUBLISHER_CONFIG_NAME } from "../constants";
@@ -14,6 +16,10 @@ export class ProjectStore {
    private projects: Map<string, Project> = new Map();
    public publisherConfigIsFrozen: boolean;
    public finishedInitialization: Promise<void>;
+   private s3Client = new S3({
+      followRegionRedirects: true,
+   });
+   private gcsClient = new Storage();
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
@@ -150,7 +156,7 @@ export class ProjectStore {
          } else {
             // If publisher.config.json is missing, generate the manifest from directories
             try {
-               const entries = await fs.readdir(serverRootPath, {
+               const entries = await fs.promises.readdir(serverRootPath, {
                   withFileTypes: true,
                });
                const projects: { [key: string]: string } = {};
@@ -174,21 +180,20 @@ export class ProjectStore {
       const absoluteTargetPath = `/etc/publisher/${projectName}`;
       // Handle absolute paths
       if (projectPath.startsWith("/")) {
-         const projectDirExists = (await fs.stat(projectPath)).isDirectory();
-         if (projectDirExists) {
-            logger.info(`Loading mounted project at "${projectPath}"`);
-            // Recursively copy projectPath into /etc/publisher/${projectName}
-            await fs.rm(absoluteTargetPath, { recursive: true, force: true });
-            await fs.mkdir(absoluteTargetPath, { recursive: true });
-            await fs.cp(projectPath, absoluteTargetPath, {
-               recursive: true,
-            });
-         } else {
-            throw new ProjectNotFoundError(
-               `Project ${projectName} not found in "${projectPath}"`,
+         try {
+            logger.info(`Mounting local directory at "${projectPath}"`);
+            await this.mountLocalDirectory(
+               projectPath,
+               absoluteTargetPath,
+               projectName,
             );
+            return absoluteTargetPath;
+         } catch (error) {
+            logger.error(`Failed to mount local directory "${projectPath}"`, {
+               error,
+            });
+            throw error;
          }
-         return absoluteTargetPath;
       }
 
       // Handle GCS URIs
@@ -213,11 +218,50 @@ export class ProjectStore {
       }
 
       // Handle S3 URIs
+      if (projectPath.startsWith("s3://")) {
+         try {
+            logger.info(`Mounting S3 path "${projectPath}"`);
+            await this.downloadS3Directory(
+               projectPath,
+               projectName,
+               absoluteTargetPath,
+            );
+            return absoluteTargetPath;
+         } catch (error) {
+            logger.error(`Failed to mount S3 path "${projectPath}"`, { error });
+            throw error;
+         }
+      }
 
       // Handle GitHub URIs
       const errorMsg = `Invalid project path: "${projectPath}". Must be an absolute mounted path or a GCS/S3/GitHub URI.`;
       logger.error(errorMsg, { projectName, projectPath });
       throw new ProjectNotFoundError(errorMsg);
+   }
+
+   private async mountLocalDirectory(
+      projectPath: string,
+      absoluteTargetPath: string,
+      projectName: string,
+   ) {
+      const projectDirExists = (
+         await fs.promises.stat(projectPath)
+      ).isDirectory();
+      if (projectDirExists) {
+         // Recursively copy projectPath into /etc/publisher/${projectName}
+         await fs.promises.rm(absoluteTargetPath, {
+            recursive: true,
+            force: true,
+         });
+         await fs.promises.mkdir(absoluteTargetPath, { recursive: true });
+         await fs.promises.cp(projectPath, absoluteTargetPath, {
+            recursive: true,
+         });
+      } else {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in "${projectPath}"`,
+         );
+      }
    }
 
    private async downloadGcsDirectory(
@@ -226,9 +270,8 @@ export class ProjectStore {
       absoluteDirPath: string,
    ) {
       const trimmedPath = gcsPath.slice(5);
-      const gcsClient = new Storage();
       const [bucketName, prefix] = trimmedPath.split("/", 2);
-      const [files] = await gcsClient.bucket(bucketName).getFiles({
+      const [files] = await this.gcsClient.bucket(bucketName).getFiles({
          prefix,
       });
       if (files.length === 0) {
@@ -236,8 +279,8 @@ export class ProjectStore {
             `Project ${projectName} not found in ${gcsPath}`,
          );
       }
-      await fs.rm(absoluteDirPath, { recursive: true, force: true });
-      await fs.mkdir(absoluteDirPath, { recursive: true });
+      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
+      await fs.promises.mkdir(absoluteDirPath, { recursive: true });
       await Promise.all(
          files.map(async (file) => {
             const relativeFilePath = file.name.replace(prefix, "");
@@ -248,8 +291,67 @@ export class ProjectStore {
             if (file.name.endsWith("/")) {
                return;
             }
-            await fs.mkdir(path.dirname(absoluteFilePath), { recursive: true });
-            return fs.writeFile(absoluteFilePath, await file.download());
+            await fs.promises.mkdir(path.dirname(absoluteFilePath), {
+               recursive: true,
+            });
+            return fs.promises.writeFile(
+               absoluteFilePath,
+               await file.download(),
+            );
+         }),
+      );
+   }
+
+   private async downloadS3Directory(
+      s3Path: string,
+      projectName: string,
+      absoluteDirPath: string,
+   ) {
+      const trimmedPath = s3Path.slice(5);
+      const [bucketName, prefix] = trimmedPath.split("/", 2);
+      const objects = await this.s3Client.listObjectsV2({
+         Bucket: bucketName,
+         Prefix: prefix,
+      });
+      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
+      await fs.promises.mkdir(absoluteDirPath, { recursive: true });
+
+      if (!objects.Contents || objects.Contents.length === 0) {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in ${s3Path}`,
+         );
+      }
+      await Promise.all(
+         objects.Contents?.map(async (object) => {
+            const key = object.Key;
+            if (!key) {
+               return;
+            }
+            const relativeFilePath = key.replace(prefix, "");
+            if (!relativeFilePath || relativeFilePath.endsWith("/")) {
+               return;
+            }
+            const absoluteFilePath = path.join(
+               absoluteDirPath,
+               relativeFilePath,
+            );
+            await fs.promises.mkdir(path.dirname(absoluteFilePath), {
+               recursive: true,
+            });
+            const command = new GetObjectCommand({
+               Bucket: bucketName,
+               Key: key,
+            });
+            const item = await this.s3Client.send(command);
+            if (!item.Body) {
+               return;
+            }
+            const file = fs.createWriteStream(absoluteFilePath);
+            item.Body.transformToWebStream().pipeTo(Writable.toWeb(file));
+            await new Promise<void>((resolve, reject) => {
+               file.on("error", reject);
+               file.on("finish", resolve);
+            });
          }),
       );
    }
