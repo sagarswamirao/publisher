@@ -11,10 +11,8 @@ import json
 import logging
 import argparse
 import time
-import asyncio
-from typing import cast, Dict, List, Any
-from threading import Thread, Event
-from datetime import datetime, timedelta
+from typing import Dict, List, Any
+from threading import Event
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
@@ -41,8 +39,6 @@ class ServiceHealth:
     malloy_agent: bool = False
     slack_client: bool = False
     mcp_server: bool = False
-    last_check: datetime = None
-    consecutive_failures: int = 0
     
 class CircuitBreaker:
     """Circuit breaker pattern for MCP failures"""
@@ -448,53 +444,6 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
                 logger.error(f"Exception processing question for user {user_id}: {e}")
                 send_error_message(channel_id, conversation_id, "processing_error", str(e))
 
-def enhanced_health_check():
-    """Enhanced health check with detailed component status"""
-    global service_health
-    
-    logger.info("Running enhanced health check...")
-    service_health.last_check = datetime.now()
-    
-    # Check MCP connection by calling the adapter's health_check method
-    try:
-        if malloy_agent and malloy_agent.health_check():
-            service_health.mcp_server = True
-            service_health.consecutive_failures = 0
-            logger.info("✅ MCP server is healthy")
-        else:
-            service_health.mcp_server = False
-            service_health.consecutive_failures += 1
-            logger.error(f"❌ MCP server is not healthy (consecutive failures: {service_health.consecutive_failures})")
-    except Exception as e:
-        service_health.mcp_server = False
-        service_health.consecutive_failures += 1
-        logger.error(f"❌ Health check failed with an exception: {e} (consecutive failures: {service_health.consecutive_failures})")
-    
-    # Check Slack connection
-    try:
-        if web_client:
-            web_client.auth_test()
-            service_health.slack_client = True
-            logger.info("✅ Slack client is healthy")
-        else:
-            service_health.slack_client = False
-            logger.error("❌ Slack client not initialized")
-    except Exception as e:
-        service_health.slack_client = False
-        logger.error(f"❌ Slack client health check failed: {e}")
-    
-    # Overall health
-    overall_healthy = service_health.malloy_agent and service_health.slack_client
-    logger.info(f"Overall health: {'✅ Healthy' if overall_healthy else '❌ Unhealthy'}")
-    
-    return overall_healthy
-
-
-
-
-
-
-
 def reconnect_socket_client():
     """Attempt to reconnect Socket Mode client"""
     global socket_mode_client
@@ -537,12 +486,6 @@ if __name__ == "__main__":
     try:
         # Initialize bot with command line arguments
         init_bot(model=args.model, provider=args.provider)
-        
-
-        
-        # Run initial health check
-        if not enhanced_health_check():
-            logger.error("❌ Initial health check failed. Starting anyway but monitoring for issues.")
         
         # Connect Socket Mode client with retry logic
         try:

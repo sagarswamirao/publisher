@@ -1,6 +1,6 @@
 """
 Malloy LangChain Agent - Production-ready agent with conversation memory
-Replaces the simple agent with LangChain architecture and structured prompts
+Replaces the agent with LangChain architecture and structured prompts
 """
 
 import os
@@ -21,11 +21,11 @@ import re
 
 try:
     from ..tools.dynamic_malloy_tools import MalloyToolsFactory
-    from ..clients.enhanced_mcp_client import EnhancedMCPClient
+    from ..clients.enhanced_mcp_client import EnhancedMCPClient, MCPConfig
     from ..prompts.malloy_prompts import MalloyPromptTemplates
 except ImportError:
     from src.tools.dynamic_malloy_tools import MalloyToolsFactory
-    from src.clients.enhanced_mcp_client import EnhancedMCPClient
+    from src.clients.enhanced_mcp_client import EnhancedMCPClient, MCPConfig
     from src.prompts.malloy_prompts import MalloyPromptTemplates
 
 
@@ -85,7 +85,6 @@ class MalloyLangChainAgent:
         self.llm = None  # Will be created fresh for each question
         
         # Initialize MCP client
-        from src.clients.enhanced_mcp_client import MCPConfig
         mcp_config = MCPConfig(url=mcp_url, auth_token=auth_token)
         self.mcp_client = EnhancedMCPClient(mcp_config)
         
@@ -151,23 +150,10 @@ class MalloyLangChainAgent:
             if not self.vertex_project_id:
                 raise ValueError("Vertex AI project ID required for Vertex AI provider")
             
-            # Map common model names to Vertex AI names
-            vertex_model_map = {
-                "gpt-4o": "gemini-1.5-pro",
-                "gpt-4": "gemini-1.5-pro", 
-                "gpt-3.5-turbo": "gemini-1.5-flash",
-                "gemini-pro": "gemini-1.0-pro",
-                "gemini-1.5-pro": "gemini-1.5-pro",
-                "gemini-1.5-flash": "gemini-1.5-flash",
-                "gemini-2.5-flash": "gemini-2.5-flash"
-            }
-            
-            vertex_model = vertex_model_map.get(self.model_name, self.model_name)
-            
             return ChatVertexAI(
                 project=self.vertex_project_id,
                 location=self.vertex_location,
-                model_name=vertex_model,
+                model_name=self.model_name,
                 temperature=0.1,
                 max_output_tokens=2000
             )
@@ -488,13 +474,12 @@ class MalloyLangChainAgent:
                 if "resource" in content and "text" in content["resource"]:
                     data = json.loads(content["resource"]["text"])
                     
-                    # If it's query results, parse and summarize them intelligently
+                    # If it's query results, provide a simple response
                     if "data" in data and "array_value" in data["data"]:
                         rows = data["data"]["array_value"]
-                        schema = data.get("schema", {}).get("fields", [])
                         
                         if rows:
-                            return self._format_query_results(rows, schema, question)
+                            return f"I found {len(rows)} results for your query. The data looks good! Would you like me to analyze it further or create a visualization?"
                         else:
                             return "Your query executed successfully but returned no results. You might want to try adjusting your filters or checking a different time period."
                     
@@ -502,96 +487,7 @@ class MalloyLangChainAgent:
             
         except Exception as e:
             print(f"🔍 DEBUG: Error in fallback response generation: {e}")
-            return "I executed your query successfully. Please let me know if you need any additional analysis!"
-    
-    def _format_query_results(self, rows: List[Dict], schema: List[Dict], question: str) -> str:
-        """Format query results into a meaningful response"""
-        try:
-            print(f"🔍 DEBUG: Formatting {len(rows)} rows with schema fields: {[f.get('name') for f in schema]}")
-            
-            # Extract field names and types from schema
-            field_names = [field.get("name", f"field_{i}") for i, field in enumerate(schema)]
-            
-            # Special handling for common query patterns
-            if "brand" in question.lower() and any("brand" in name for name in field_names):
-                return self._format_brand_analysis(rows, field_names)
-            elif "top" in question.lower():
-                return self._format_top_results(rows, field_names, question)
-            else:
-                return self._format_generic_results(rows, field_names, question)
-                
-        except Exception as e:
-            print(f"🔍 DEBUG: Error formatting results: {e}")
-            return f"I found {len(rows)} results for your query. The data looks good! Would you like me to analyze it further or create a visualization?"
-    
-    def _format_brand_analysis(self, rows: List[Dict], field_names: List[str]) -> str:
-        """Format brand analysis results"""
-        response = "I found your top brands! Here's the breakdown:\n\n"
-        
-        for i, row in enumerate(rows, 1):
-            record_values = row.get("record_value", [])
-            brand_name = record_values[0].get("string_value", "Unknown") if record_values else "Unknown"
-            
-            response += f"{i}. **{brand_name}**\n"
-            
-            # Extract numeric values (sales, percentages, etc.)
-            if len(record_values) > 1:
-                sales = record_values[1].get("number_value", 0)
-                response += f"   - Total Sales: ${sales:,.0f}\n"
-            
-            if len(record_values) > 2:
-                percentage = record_values[2].get("number_value", 0) * 100
-                response += f"   - Percentage of Total Sales: {percentage:.2f}%\n"
-            
-            response += "\n"
-        
-        response += "Would you like me to create a chart to visualize this data or analyze trends over time?"
-        return response
-    
-    def _format_top_results(self, rows: List[Dict], field_names: List[str], question: str) -> str:
-        """Format top N results"""
-        item_type = "items"
-        if "brand" in question.lower():
-            item_type = "brands"
-        elif "product" in question.lower():
-            item_type = "products"
-        elif "customer" in question.lower():
-            item_type = "customers"
-            
-        response = f"I found your top {len(rows)} {item_type}! Here's what stands out:\n\n"
-        
-        for i, row in enumerate(rows, 1):
-            record_values = row.get("record_value", [])
-            if record_values:
-                name = record_values[0].get("string_value", "Unknown")
-                response += f"{i}. **{name}**"
-                
-                # Add key metrics if available
-                if len(record_values) > 1:
-                    value = record_values[1].get("number_value", 0)
-                    if "sales" in field_names[1].lower() if len(field_names) > 1 else "":
-                        response += f" - ${value:,.0f}"
-                    else:
-                        response += f" - {value:,.0f}"
-                response += "\n"
-        
-        response += "\nWould you like me to dive deeper into any of these results or create a visualization?"
-        return response
-    
-    def _format_generic_results(self, rows: List[Dict], field_names: List[str], question: str) -> str:
-        """Format generic query results"""
-        response = f"I successfully analyzed your data and found {len(rows)} results. "
-        
-        # Try to identify key insights
-        if len(rows) > 0:
-            first_row = rows[0].get("record_value", [])
-            if first_row and len(field_names) > 0:
-                first_field = field_names[0] if field_names else "result"
-                first_value = first_row[0].get("string_value") or first_row[0].get("number_value")
-                response += f"The top {first_field.replace('_', ' ')} is {first_value}. "
-        
-        response += "Would you like me to break down these results further or create a chart?"
-        return response
+            return "I found some results for your query. Would you like me to analyze them or create a visualization?"
 
     def _extract_tools_used(self, result: Dict[str, Any]) -> List[str]:
         """Extract list of tools used from agent result"""
@@ -668,52 +564,6 @@ class MalloyLangChainAgent:
         
         with open(filepath, "w") as f:
             json.dump(conversation_data, f, indent=2)
-    
-    async def health_check(self) -> Dict[str, Any]:
-        """Check health of all components"""
-        health = {
-            "llm": False,
-            "mcp_client": False,
-            "tools": False,
-            "agent": False,
-            "memory": False
-        }
-        
-        try:
-            # Check LLM
-            test_response = await self.llm.ainvoke([HumanMessage(content="Hello")])
-            health["llm"] = bool(test_response.content)
-        except:
-            pass
-        
-        try:
-            # Check MCP client
-            health["mcp_client"] = await self.mcp_client.health_check()
-        except:
-            pass
-        
-        try:
-            # Check tools
-            health["tools"] = len(self.tools) > 0
-        except:
-            pass
-        
-        try:
-            # Check agent (tools setup indicates agent readiness)
-            health["agent"] = len(self.tools) > 0
-        except:
-            pass
-        
-        try:
-            # Check memory
-            self.memory.chat_memory.add_user_message("test")
-            messages = self.memory.chat_memory.messages
-            health["memory"] = len(messages) > 0
-            self.memory.chat_memory.clear()  # Clean up test
-        except:
-            pass
-        
-        return health
     
     def get_agent_info(self) -> Dict[str, Any]:
         """Get information about the agent configuration"""

@@ -10,10 +10,10 @@ from pydantic import BaseModel as PydanticV2BaseModel
 import json
 import asyncio
 try:
-    from ..clients.enhanced_mcp_client import EnhancedMCPClient
+    from ..clients.enhanced_mcp_client import EnhancedMCPClient, MCPConfig
     from ..tools.matplotlib_chart_tool import MatplotlibChartTool
 except ImportError:
-    from src.clients.enhanced_mcp_client import EnhancedMCPClient
+    from src.clients.enhanced_mcp_client import EnhancedMCPClient, MCPConfig
     from src.tools.matplotlib_chart_tool import MatplotlibChartTool
 
 
@@ -201,13 +201,8 @@ class MalloyToolsFactory:
 
 
 # Convenience function for easy tool creation
-def create_malloy_tools(mcp_url: str, auth_token: Optional[str] = None) -> List[BaseTool]:
+async def create_malloy_tools(mcp_url: str, auth_token: str = None):
     """Create Malloy LangChain tools from MCP server"""
-    
-    try:
-        from ..clients.enhanced_mcp_client import MCPConfig
-    except ImportError:
-        from src.clients.enhanced_mcp_client import MCPConfig
     
     config = MCPConfig(url=mcp_url, auth_token=auth_token)
     client = EnhancedMCPClient(config)

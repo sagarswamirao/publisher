@@ -1,6 +1,9 @@
 """
 LangChain Compatibility Adapter
-Provides a drop-in replacement for SimpleMalloyAgent using LangChain architecture
+
+Bridges the gap between the synchronous Slack bot interface and the asynchronous MalloyLangChainAgent.
+This adapter manages asyncio event loops, thread safety, and message serialization to make the 
+async LangChain agent work seamlessly in a synchronous Slack bot environment.
 """
 
 import json
@@ -15,8 +18,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 class LangChainCompatibilityAdapter:
     """
-    Adapter to make the async MalloyLangChainAgent compatible with a sync bot interface.
-    It handles the asyncio event loop management.
+    Synchronous wrapper for the async MalloyLangChainAgent.
+    
+    Handles:
+    - Event loop management for async operations in sync context
+    - Thread-safe execution using ThreadPoolExecutor
+    - Message serialization between LangChain objects and simple dicts
+    - Tool interface standardization for the Slack bot
     """
     def __init__(self, **kwargs):
         self.agent_kwargs = kwargs
@@ -96,42 +104,6 @@ class LangChainCompatibilityAdapter:
         success, response, _ = self.loop.run_until_complete(self.agent.process_question(question))
         final_history_obj = self.agent.get_conversation_history()
         return success, response, final_history_obj
-            
-    def _convert_history_to_simple_format(self) -> List[Dict[str, Any]]:
-        """Convert LangChain message history to SimpleMalloyAgent format"""
-        
-        try:
-            langchain_messages = self.agent.get_conversation_history()
-            converted_messages = []
-            
-            for msg in langchain_messages:
-                if hasattr(msg, 'type') and hasattr(msg, 'content'):
-                    # Map LangChain message types to OpenAI format
-                    if msg.type == 'human':
-                        role = 'user'
-                    elif msg.type == 'ai':
-                        role = 'assistant'
-                    elif msg.type == 'system':
-                        role = 'system'
-                    else:
-                        role = 'assistant'  # Default fallback
-                    
-                    message_dict = {
-                        "role": role,
-                        "content": msg.content
-                    }
-                    
-                    # Add additional fields if they exist
-                    if hasattr(msg, 'additional_kwargs'):
-                        message_dict.update(msg.additional_kwargs)
-                    
-                    converted_messages.append(message_dict)
-            
-            return converted_messages
-            
-        except Exception as e:
-            print(f"Error converting history: {e}")
-            return []
     
     def get_available_tools(self) -> List[Dict[str, Any]]:
         """Get available tools in OpenAI function format - for compatibility"""
@@ -200,24 +172,6 @@ class LangChainCompatibilityAdapter:
         except Exception as e:
             return f"Error calling tool {tool_name}: {str(e)}"
     
-    def health_check(self) -> bool:
-        """Check if the agent is healthy"""
-        try:
-            self._setup_agent_if_needed()
-            if not self.agent:
-                return False
-            
-            # This needs to run in the agent's event loop
-            if not self.loop or self.loop.is_closed():
-                raise RuntimeError("Event loop not available for health check.")
-
-            health_info = self.loop.run_until_complete(self.agent.health_check())
-            healthy_components = sum(1 for status in health_info.values() if status)
-            return healthy_components > 0
-        except Exception as e:
-            print(f"Health check failed with an exception: {e}")
-            return False
-    
     def get_agent_info(self) -> Dict[str, Any]:
         """Get information about the agent's configuration"""
         
@@ -264,24 +218,3 @@ class LangChainCompatibilityAdapter:
             return self.agent.mcp_client
         return None
 
-
-# Factory function for easy replacement
-def create_compatible_agent(openai_api_key: str = None, mcp_url: str = "http://localhost:4040/mcp", 
-                           llm_provider: str = "openai", llm_model: str = "gpt-4o", 
-                           anthropic_api_key: Optional[str] = None,
-                           vertex_project_id: Optional[str] = None, 
-                           vertex_location: str = "us-central1") -> LangChainCompatibilityAdapter:
-    """
-    Create a LangChain-powered agent that's compatible with SimpleMalloyAgent
-    This is a drop-in replacement that can be used anywhere SimpleMalloyAgent is used
-    """
-    
-    return LangChainCompatibilityAdapter(
-        openai_api_key=openai_api_key,
-        mcp_url=mcp_url,
-        llm_provider=llm_provider,
-        llm_model=llm_model,
-        anthropic_api_key=anthropic_api_key,
-        vertex_project_id=vertex_project_id,
-        vertex_location=vertex_location
-    )

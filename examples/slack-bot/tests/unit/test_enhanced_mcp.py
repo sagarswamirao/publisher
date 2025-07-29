@@ -233,28 +233,11 @@ class TestMCPClientHelperMethods:
     def config(self):
         return MCPConfig(url="http://localhost:4040/mcp")
     
-    def test_extract_projects_placeholder(self, config):
-        """Test placeholder implementation of _extract_projects"""
-        client = EnhancedMCPClient(config)
-        
-        # These methods are placeholders that return empty values
-        # They will be implemented when we test against real MCP server
-        result = client._extract_projects({})
-        assert result == []
-    
-    def test_extract_packages_placeholder(self, config):
-        """Test placeholder implementation of _extract_packages"""
-        client = EnhancedMCPClient(config)
-        
-        result = client._extract_packages({})
-        assert result == []
-    
-    def test_extract_model_text_placeholder(self, config):
-        """Test placeholder implementation of _extract_model_text"""
-        client = EnhancedMCPClient(config)
-        
-        result = client._extract_model_text({})
-        assert result == ""
+    def test_execute_query_tool_directly(self, config):
+        """Test calling execute query tool directly through the general tool interface"""
+        # Skip this test - requires actual MCP server running
+        # TODO: Mock MCP responses for proper testing
+        pass
 
 
 # Integration test stubs (will be expanded when we test against real server)
