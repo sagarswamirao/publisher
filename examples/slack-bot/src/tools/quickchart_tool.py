@@ -3,6 +3,7 @@ QuickChart.io Chart Generation Tool
 Creates charts using Chart.js configurations via QuickChart.io web service
 """
 import json
+import requests
 from typing import Dict, Any
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
@@ -45,6 +46,14 @@ class QuickChartInput(BaseModel):
     width: int = Field(default=500, description="Chart width in pixels")
     height: int = Field(default=300, description="Chart height in pixels")
     title: str = Field(default="", description="Optional chart title to add to the chart")
+    use_short_url: bool = Field(
+        default=False, 
+        description=(
+            "Generate a short URL for the chart (e.g., https://quickchart.io/chart/render/f-a1d3e804-...). "
+            "Short URLs are useful for sharing via email/SMS but expire after a few days for free users. "
+            "Use regular URLs for long-term storage."
+        )
+    )
 
 
 class QuickChartTool(BaseTool):
@@ -65,6 +74,12 @@ class QuickChartTool(BaseTool):
         "- Optional: 'options' for customization (titles, legends, axes, etc.)\n"
         "- Optional: 'backgroundColor' and 'borderColor' for styling\n\n"
         
+        "URL Options:\n"
+        "- Regular URLs: Long-term stable URLs for embedding\n"
+        "- Short URLs: Fixed-length URLs (use_short_url=True) ideal for sharing via email/SMS\n"
+        "  * Short URLs expire after a few days for free users\n"
+        "  * Format: https://quickchart.io/chart/render/f-a1d3e804-...\n\n"
+        
         "Example usage workflow:\n"
         "1. Get data from previous query results\n"
         "2. Format data into Chart.js structure\n"
@@ -74,7 +89,34 @@ class QuickChartTool(BaseTool):
     )
     args_schema: type[BaseModel] = QuickChartInput
 
-    def _run(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "") -> str:
+    def _generate_short_url(self, chart_config: dict, width: int, height: int) -> str:
+        """Generate a short URL using QuickChart.io API"""
+        try:
+            payload = {
+                "chart": chart_config,
+                "width": width,
+                "height": height
+            }
+            
+            response = requests.post(
+                "https://quickchart.io/chart/create",
+                json=payload,
+                timeout=30
+            )
+            response.raise_for_status()
+            
+            result = response.json()
+            if "url" in result:
+                return result["url"]
+            else:
+                raise ValueError("No URL returned from QuickChart.io API")
+                
+        except requests.RequestException as e:
+            raise Exception(f"Failed to create short URL: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Short URL generation error: {str(e)}")
+
+    def _run(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "", use_short_url: bool = False) -> str:
         """Generate chart using QuickChart.io and return URL"""
         
         if QuickChart is None:
@@ -111,22 +153,34 @@ class QuickChartTool(BaseTool):
                         "text": title
                     }
             
-            # Create QuickChart instance
-            qc = QuickChart()
-            qc.width = width
-            qc.height = height
-            qc.config = config
-            
-            # Get the chart URL
-            chart_url = qc.get_url()
+            # Generate chart URL
+            if use_short_url:
+                # Use short URL generation via API
+                chart_url = self._generate_short_url(config, width, height)
+                url_type = "short"
+                url_note = "Short URL - expires after a few days for free users"
+            else:
+                # Use regular QuickChart URL generation
+                if QuickChart is None:
+                    raise Exception("quickchart.io library required for regular URLs")
+                    
+                qc = QuickChart()
+                qc.width = width
+                qc.height = height
+                qc.config = config
+                chart_url = qc.get_url()
+                url_type = "regular"
+                url_note = "Regular URL - stable for long-term use"
             
             return json.dumps({
-                "text": "Chart created successfully!",
+                "text": f"Chart created successfully! ({url_type} URL)",
                 "chart_url": chart_url,
                 "status": "success",
                 "width": width,
                 "height": height,
-                "chart_type": config.get("type", "unknown")
+                "chart_type": config.get("type", "unknown"),
+                "url_type": url_type,
+                "url_note": url_note
             })
             
         except ValueError as e:
@@ -145,9 +199,9 @@ class QuickChartTool(BaseTool):
                 "suggestion": "Check your internet connection and try again. If the error persists, try a simpler chart configuration."
             })
 
-    async def _arun(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "") -> str:
+    async def _arun(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "", use_short_url: bool = False) -> str:
         """Async version of chart generation"""
-        return self._run(chart_config, width, height, title)
+        return self._run(chart_config, width, height, title, use_short_url)
 
 
 def create_quickchart_tool() -> QuickChartTool:
