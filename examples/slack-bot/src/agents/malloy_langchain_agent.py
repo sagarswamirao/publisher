@@ -161,6 +161,9 @@ class MalloyLangChainAgent:
         try:
             print("Setting up Malloy LangChain Agent...")
             
+            # Initialize MCP client connection
+            await self.mcp_client.__aenter__()
+            
             # Setup tools using the dynamic factory
             tools_factory = MalloyToolsFactory(self.mcp_client)
             self.tools = await tools_factory.create_tools()
@@ -391,6 +394,15 @@ class MalloyLangChainAgent:
         """Get current conversation history"""
         return self.memory.chat_memory.messages
     
+    async def cleanup(self):
+        """Cleanup agent resources"""
+        try:
+            if self.mcp_client:
+                await self.mcp_client.__aexit__(None, None, None)
+                print("✅ MCP client connection closed")
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+
     def clear_conversation(self):
         """Clear conversation history"""
         self.memory.chat_memory.clear()

@@ -78,11 +78,11 @@ class DynamicMalloyTool(BaseTool):
     async def _arun(self, **kwargs: Any) -> str:
         """Execute the tool via MCP client (async)"""
         try:
-            async with self.mcp_client as client:
-                result = await client.call_tool(self.tool_name, **kwargs)
-                if isinstance(result, dict):
-                    return json.dumps(result)
-                return str(result)
+            # Use the MCP client directly - it should already be connected
+            result = await self.mcp_client.call_tool(self.tool_name, **kwargs)
+            if isinstance(result, dict):
+                return json.dumps(result)
+            return str(result)
         except Exception as e:
             error_msg = f"Error calling {self.tool_name}: {str(e)}"
             print(f"🔍 DEBUG: {error_msg}")
@@ -109,38 +109,38 @@ class MalloyToolsFactory:
     async def create_tools(self) -> List[BaseTool]:
         """Create LangChain tools from MCP server tools"""
         try:
-            # Use async context manager for MCP client and discover tools
-            async with self.mcp_client as client:
-                tools_info = await client.discover_tools()
-                langchain_tools = []
-                
-                # Create LangChain tools from MCP tools
-                for tool_name, tool_info in tools_info.items():
-                    try:
-                        dynamic_tool = DynamicMalloyTool(
-                            mcp_client=self.mcp_client,
-                            tool_name=tool_name,
-                            tool_info=tool_info
-                        )
-                        langchain_tools.append(dynamic_tool)
-                        print(f"Created tool: {tool_name}")
-                    except Exception as e:
-                        print(f"Failed to create tool {tool_name}: {e}")
-                        continue
-                
-                # Always add the QuickChart tool for chart generation
+            # Use the MCP client directly instead of nested async context
+            # The agent should ensure the MCP client is already connected
+            tools_info = await self.mcp_client.discover_tools()
+            langchain_tools = []
+            
+            # Create LangChain tools from MCP tools
+            for tool_name, tool_info in tools_info.items():
                 try:
-                    if QuickChartTool is not None:
-                        quickchart_tool = QuickChartTool()
-                        langchain_tools.append(quickchart_tool)
-                        print(f"Added QuickChart tool for chart generation")
-                    else:
-                        print("Warning: QuickChart tool not available - quickchart.io library may not be installed")
+                    dynamic_tool = DynamicMalloyTool(
+                        mcp_client=self.mcp_client,
+                        tool_name=tool_name,
+                        tool_info=tool_info
+                    )
+                    langchain_tools.append(dynamic_tool)
+                    print(f"Created tool: {tool_name}")
                 except Exception as e:
-                    print(f"Warning: Failed to add QuickChart tool: {e}")
+                    print(f"Failed to create tool {tool_name}: {e}")
+                    continue
+            
+            # Always add the QuickChart tool for chart generation
+            try:
+                if QuickChartTool is not None:
+                    quickchart_tool = QuickChartTool()
+                    langchain_tools.append(quickchart_tool)
+                    print(f"Added QuickChart tool for chart generation")
+                else:
+                    print("Warning: QuickChart tool not available - quickchart.io library may not be installed")
+            except Exception as e:
+                print(f"Warning: Failed to add QuickChart tool: {e}")
 
-                print(f"Created {len(langchain_tools)} total tools")
-                return langchain_tools
+            print(f"Created {len(langchain_tools)} total tools")
+            return langchain_tools
             
         except Exception as e:
             print(f"Error creating tools: {e}")

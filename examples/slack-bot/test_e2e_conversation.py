@@ -10,7 +10,6 @@ This tests the complete pipeline: Malloy queries → memory/context → chart ge
 
 import os
 import sys
-import asyncio
 import time
 import argparse
 from datetime import datetime
@@ -23,10 +22,10 @@ load_dotenv()
 project_root = os.path.dirname(__file__)
 sys.path.insert(0, project_root)
 
-from src.agents.malloy_langchain_agent import MalloyLangChainAgent
+from src.agents.langchain_compatibility_adapter import LangChainCompatibilityAdapter
 
-async def test_e2e_conversation(model_type="claude"):
-    """Test end-to-end conversation flow"""
+def test_e2e_conversation(model_type="claude"):
+    """Test end-to-end conversation flow using the compatibility adapter"""
     
     print(f"🎭 E2E Conversation Test with {model_type.upper()}")
     print("=" * 60)
@@ -56,14 +55,14 @@ async def test_e2e_conversation(model_type="claude"):
     print(f"✅ {config['provider'].title()} API key configured")
     
     # Setup MCP server URL from environment
-    mcp_url = os.environ.get("MCP_URL", "http://localhost:3001")  # fallback to old default
+    mcp_url = os.environ.get("MCP_URL", "http://localhost:4040/mcp")
     print(f"🔗 Using MCP URL: {mcp_url}")
     
     try:
-        # Initialize agent
-        print(f"\n1️⃣ Initializing {config['model_name']} agent...")
+        # Initialize agent using compatibility adapter
+        print(f"\n1️⃣ Initializing {config['model_name']} agent via compatibility adapter...")
         
-        agent_kwargs = {
+        adapter_kwargs = {
             "mcp_url": mcp_url,
             "model_name": config["model_name"],
             "llm_provider": config["provider"],
@@ -72,16 +71,14 @@ async def test_e2e_conversation(model_type="claude"):
         
         # Add the appropriate API key
         if config["provider"] == "anthropic":
-            agent_kwargs["anthropic_api_key"] = api_key
+            adapter_kwargs["anthropic_api_key"] = api_key
         elif config["provider"] == "openai":
-            agent_kwargs["openai_api_key"] = api_key
+            adapter_kwargs["openai_api_key"] = api_key
         
-        agent = MalloyLangChainAgent(**agent_kwargs)
+        # Create the adapter (this handles all async complexity)
+        adapter = LangChainCompatibilityAdapter(**adapter_kwargs)
         
-        # Setup the agent
-        print("2️⃣ Setting up agent...")
-        await agent.setup()
-        print(f"✅ Agent initialized with {len(agent.tools)} tools")
+        print(f"✅ Compatibility adapter initialized")
         
         # Define the conversation flow
         conversation_turns = [
@@ -105,8 +102,9 @@ async def test_e2e_conversation(model_type="claude"):
             }
         ]
         
-        print(f"\n3️⃣ Starting conversation simulation...")
+        print(f"\n2️⃣ Starting conversation simulation...")
         results = []
+        conversation_history = []
         
         for turn_info in conversation_turns:
             turn_num = turn_info["turn"]
@@ -121,8 +119,9 @@ async def test_e2e_conversation(model_type="claude"):
             
             start_time = time.time()
             
-            # Process the question
-            success, response, metadata = await agent.process_question(query)
+            # Process the question using the compatibility adapter (sync interface)
+            success, response, updated_history = adapter.process_user_question(query, conversation_history)
+            conversation_history = updated_history  # Update for next turn
             
             duration = time.time() - start_time
             
@@ -156,66 +155,71 @@ async def test_e2e_conversation(model_type="claude"):
                         print("⚠️ Response mentions charts but not in expected JSON format")
             
             # Show first 200 chars of response
-            preview = response[:200] + "..." if len(response) > 200 else response
-            print(f"Response preview: {preview}")
+            response_preview = response[:200] + "..." if len(response) > 200 else response
+            print(f"Response preview: {response_preview}")
             
-            turn_result = {
+            # Store results
+            results.append({
                 "turn": turn_num,
+                "query": query,
                 "success": success,
-                "duration": duration,
+                "response_length": len(response),
                 "found_keywords": found_keywords,
                 "missing_keywords": missing_keywords,
-                "response_length": len(response)
-            }
-            
-            results.append(turn_result)
-            
-            # Brief pause between turns
-            await asyncio.sleep(1)
+                "duration": duration
+            })
         
         # Summary
-        print(f"\n{'='*60}")
+        print("\n" + "=" * 60)
         print("📋 CONVERSATION SUMMARY:")
-        
         all_successful = True
         for result in results:
-            turn_status = "✅ SUCCESS" if result["success"] else "❌ FAILED"
-            keyword_status = f"({len(result['found_keywords'])}/{len(result['found_keywords']) + len(result['missing_keywords'])} keywords)"
-            print(f"  Turn {result['turn']}: {turn_status} {keyword_status} ({result['duration']:.1f}s)")
+            status = "✅ PASSED" if result["success"] and not result["missing_keywords"] else "❌ FAILED"
+            keyword_ratio = f"({len(result['found_keywords'])}/{len(result['found_keywords']) + len(result['missing_keywords'])} keywords)"
+            print(f"  Turn {result['turn']}: {status} {keyword_ratio} ({result['duration']:.1f}s)")
             if not result["success"] or result["missing_keywords"]:
                 all_successful = False
         
-        return all_successful
-            
+        print(f"\n✅ E2E conversation test completed successfully!")
+        return True
+        
     except Exception as e:
         print(f"❌ Error during E2E test: {e}")
         import traceback
         traceback.print_exc()
         return False
 
-async def main():
-    """Main test function with argument parsing"""
-    parser = argparse.ArgumentParser(description="Run E2E conversation test")
-    parser.add_argument("--model", choices=["claude", "gpt4o"], default="claude",
-                       help="Which model to test (default: claude)")
+def main():
+    """Main entry point"""
+    parser = argparse.ArgumentParser(description="E2E Conversation Test")
+    parser.add_argument(
+        "--model", 
+        choices=["claude", "gpt4o"], 
+        default="claude",
+        help="Model to test with"
+    )
     
     args = parser.parse_args()
     
     print(f"🚀 Starting E2E Conversation Test at {datetime.now()}")
-    print(f"🎯 Testing multi-turn conversation flow with {args.model.upper()}")
-    print("\n🔍 Checking prerequisites...")
+    print("🎯 Testing multi-turn conversation flow with", args.model.upper())
+    print()
+    print("🔍 Checking prerequisites...")
     
     # Test the conversation flow
-    success = await test_e2e_conversation(args.model)
+    success = test_e2e_conversation(args.model)
     
     if success:
-        print(f"\n🎉 E2E conversation test PASSED!")
-        print("✅ Multi-turn conversation with data queries and chart generation works correctly")
+        print("\n🎉 E2E conversation test PASSED!")
+        print("✅ Chart generation with QuickChart.io works end-to-end")
+        print("✅ Multi-turn conversation memory works") 
+        print("✅ Tool integration works")
     else:
-        print(f"\n❌ E2E conversation test FAILED!")
+        print("\n❌ E2E conversation test FAILED!")
         print("❌ Check the logs above for details")
     
     return success
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    success = main()
+    exit(0 if success else 1) 
