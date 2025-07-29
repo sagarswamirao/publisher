@@ -47,11 +47,11 @@ class QuickChartInput(BaseModel):
     height: int = Field(default=300, description="Chart height in pixels")
     title: str = Field(default="", description="Optional chart title to add to the chart")
     use_short_url: bool = Field(
-        default=False, 
+        default=True, 
         description=(
             "Generate a short URL for the chart (e.g., https://quickchart.io/chart/render/f-a1d3e804-...). "
-            "Short URLs are useful for sharing via email/SMS but expire after a few days for free users. "
-            "Use regular URLs for long-term storage."
+            "Short URLs are clean and ideal for sharing in Slack/chat. Set to False only if you need "
+            "a long-term stable URL for embedding (short URLs expire after a few days for free users)."
         )
     )
 
@@ -74,11 +74,11 @@ class QuickChartTool(BaseTool):
         "- Optional: 'options' for customization (titles, legends, axes, etc.)\n"
         "- Optional: 'backgroundColor' and 'borderColor' for styling\n\n"
         
-        "URL Options:\n"
-        "- Regular URLs: Long-term stable URLs for embedding\n"
-        "- Short URLs: Fixed-length URLs (use_short_url=True) ideal for sharing via email/SMS\n"
-        "  * Short URLs expire after a few days for free users\n"
-        "  * Format: https://quickchart.io/chart/render/f-a1d3e804-...\n\n"
+        "URL Options (defaults to short URLs for Slack sharing):\n"
+        "- Short URLs (DEFAULT): Clean, shareable URLs ideal for Slack/chat conversations\n"
+        "  * Format: https://quickchart.io/chart/render/f-a1d3e804-...\n"
+        "  * Perfect for immediate sharing, expire after a few days for free users\n"
+        "- Regular URLs: Set use_short_url=False for long-term stable URLs for embedding\n\n"
         
         "Example usage workflow:\n"
         "1. Get data from previous query results\n"
@@ -116,7 +116,7 @@ class QuickChartTool(BaseTool):
         except Exception as e:
             raise Exception(f"Short URL generation error: {str(e)}")
 
-    def _run(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "", use_short_url: bool = False) -> str:
+    def _run(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "", use_short_url: bool = True) -> str:
         """Generate chart using QuickChart.io and return URL"""
         
         if QuickChart is None:
@@ -199,7 +199,7 @@ class QuickChartTool(BaseTool):
                 "suggestion": "Check your internet connection and try again. If the error persists, try a simpler chart configuration."
             })
 
-    async def _arun(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "", use_short_url: bool = False) -> str:
+    async def _arun(self, chart_config: dict, width: int = 500, height: int = 300, title: str = "", use_short_url: bool = True) -> str:
         """Async version of chart generation"""
         return self._run(chart_config, width, height, title, use_short_url)
 
