@@ -1,20 +1,19 @@
 """
-Enhanced MCP Client for Malloy Publisher
-- Async HTTP with aiohttp
-- Dynamic tool discovery  
-- Streaming support for large responses
-- Authentication support
-- Retry logic with exponential backoff
+Enhanced MCP Client for Malloy Publisher - Simplified SDK Integration
+- Uses official MCP ClientSession and streamablehttp_client  
+- No authentication (suitable for localhost development)
+- Maintains backward compatibility with existing interface
+- Built-in retry logic and proper error handling from SDK
 """
 
 import asyncio
-import aiohttp
-import json
 import logging
-import random
-import time
 from dataclasses import dataclass
 from typing import Dict, List, Any, Optional, AsyncGenerator, Union
+
+from mcp import ClientSession, types
+from mcp.client.streamable_http import streamablehttp_client
+from pydantic import AnyUrl
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 class MCPConfig:
     """Configuration for MCP client"""
     url: str
-    auth_token: Optional[str] = None
+    auth_token: Optional[str] = None  # Kept for backward compatibility, but not used
     timeout: int = 30
     max_retries: int = 3
     base_delay: float = 1.0
@@ -46,14 +45,15 @@ class MCPTimeoutError(MCPError):
 
 class EnhancedMCPClient:
     """
-    Enhanced MCP client with async support, streaming, and authentication
+    Enhanced MCP client using official MCP Python SDK
+    Simplified for localhost development without authentication
     """
     
     def __init__(self, config: MCPConfig):
         self.config = config
-        self.session: Optional[aiohttp.ClientSession] = None
+        self.session: Optional[ClientSession] = None
         self.available_tools: Dict[str, Any] = {}
-        self._request_id = 0
+        self._client_streams = None
     
     async def __aenter__(self) -> 'EnhancedMCPClient':
         """Async context manager entry"""
@@ -66,209 +66,75 @@ class EnhancedMCPClient:
         await self.close()
     
     async def _create_session(self):
-        """Create aiohttp session with proper headers and timeout"""
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json, text/event-stream'
-        }
-        
-        # Add authentication if provided
-        if self.config.auth_token:
-            headers['Authorization'] = f'Bearer {self.config.auth_token}'
-        
-        timeout = aiohttp.ClientTimeout(total=self.config.timeout)
-        self.session = aiohttp.ClientSession(
-            headers=headers,
-            timeout=timeout,
-            raise_for_status=False  # We'll handle status codes manually
-        )
-        
-        logger.info(f"Created MCP session for {self.config.url}")
+        """Create MCP session using official SDK"""
+        try:
+            # Determine the MCP endpoint URL
+            mcp_url = self.config.url
+            if not mcp_url.endswith('/mcp'):
+                mcp_url = f"{mcp_url}/mcp"
+            
+            # Create streamable HTTP client (no auth for localhost)
+            self._client_streams = await streamablehttp_client(mcp_url).__aenter__()
+            read_stream, write_stream, _ = self._client_streams
+            
+            # Create session
+            self.session = ClientSession(read_stream, write_stream)
+            await self.session.__aenter__()
+            
+            # Initialize the connection
+            await self.session.initialize()
+            
+            logger.info(f"Created MCP session for {mcp_url}")
+            
+        except Exception as e:
+            logger.error(f"Failed to create MCP session: {e}")
+            raise MCPConnectionError(f"Failed to connect to MCP server: {e}")
     
     async def close(self):
-        """Close the aiohttp session"""
-        if self.session:
-            await self.session.close()
-            self.session = None
+        """Close the MCP session and streams"""
+        try:
+            if self.session:
+                await self.session.__aexit__(None, None, None)
+                self.session = None
+            
+            if self._client_streams:
+                # The streamablehttp_client context manager handles cleanup
+                pass
+            
             logger.info("Closed MCP session")
-    
-    def _next_request_id(self) -> int:
-        """Get next request ID for JSON-RPC"""
-        self._request_id += 1
-        return self._request_id
-    
-    async def _make_request_with_retry(
-        self, 
-        method: str, 
-        params: Optional[Dict[str, Any]] = None,
-        stream: bool = False
-    ) -> Union[Dict[str, Any], AsyncGenerator[Dict[str, Any], None]]:
-        """
-        Make request with retry logic and exponential backoff
-        """
-        last_exception = None
-        
-        for attempt in range(self.config.max_retries + 1):
-            try:
-                if stream:
-                    return self._stream_request(method, params)
-                else:
-                    return await self._make_request(method, params)
-                    
-            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                last_exception = e
-                
-                if attempt < self.config.max_retries:
-                    # Exponential backoff with jitter
-                    delay = min(
-                        self.config.base_delay * (2 ** attempt) + random.uniform(0, 1),
-                        self.config.max_delay
-                    )
-                    
-                    logger.warning(
-                        f"MCP request failed (attempt {attempt + 1}/{self.config.max_retries + 1}): {e}. "
-                        f"Retrying in {delay:.2f} seconds..."
-                    )
-                    await asyncio.sleep(delay)
-                else:
-                    logger.error(f"MCP request failed after {self.config.max_retries + 1} attempts")
-                    
-        # Convert to appropriate exception type
-        if isinstance(last_exception, asyncio.TimeoutError):
-            raise MCPTimeoutError(f"Request timed out after {self.config.max_retries + 1} attempts")
-        elif isinstance(last_exception, aiohttp.ClientError):
-            raise MCPConnectionError(f"Connection failed: {last_exception}")
-        else:
-            raise MCPError(f"Request failed: {last_exception}")
-    
-    async def _make_request(self, method: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Make a single JSON-RPC request"""
-        if not self.session:
-            raise MCPConnectionError("Session not initialized. Use async context manager.")
-        
-        payload = {
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": method,
-            "params": params or {}
-        }
-        
-        logger.debug(f"MCP Request: {method} with params: {params}")
-        
-        try:
-            async with self.session.post(self.config.url, json=payload) as response:
-                # Handle authentication errors
-                if response.status == 401:
-                    raise MCPAuthError("Authentication failed - check auth token")
-                elif response.status == 403:
-                    raise MCPAuthError("Access forbidden - insufficient permissions")
-                
-                # Handle other HTTP errors
-                if response.status >= 400:
-                    error_text = await response.text()
-                    raise MCPConnectionError(f"HTTP {response.status}: {error_text}")
-                
-                response_text = await response.text()
-                logger.debug(f"Raw MCP Response: {response_text}")
-                
-                return await self._parse_response(response_text)
-                
-        except aiohttp.ClientError as e:
-            raise MCPConnectionError(f"Request failed: {e}")
-    
-    async def _stream_request(self, method: str, params: Optional[Dict[str, Any]] = None) -> AsyncGenerator[Dict[str, Any], None]:
-        """Handle streaming responses for large datasets"""
-        if not self.session:
-            raise MCPConnectionError("Session not initialized. Use async context manager.")
-        
-        payload = {
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": method,
-            "params": params or {}
-        }
-        
-        logger.debug(f"MCP Streaming Request: {method} with params: {params}")
-        
-        try:
-            async with self.session.post(
-                self.config.url, 
-                json=payload,
-                headers={'Accept': 'text/event-stream'}
-            ) as response:
-                
-                if response.status == 401:
-                    raise MCPAuthError("Authentication failed - check auth token")
-                elif response.status >= 400:
-                    error_text = await response.text()
-                    raise MCPConnectionError(f"HTTP {response.status}: {error_text}")
-                
-                async for line in response.content:
-                    if line.startswith(b'data: '):
-                        try:
-                            data = json.loads(line[6:].decode())
-                            yield data
-                        except json.JSONDecodeError as e:
-                            logger.warning(f"Failed to parse streaming data: {e}")
-                            continue
-                            
-        except aiohttp.ClientError as e:
-            raise MCPConnectionError(f"Streaming request failed: {e}")
-    
-    async def _parse_response(self, response_text: str) -> Dict[str, Any]:
-        """Parse MCP response, handling both regular JSON and SSE format"""
-        try:
-            # Handle SSE format: "event: message\ndata: {...}"
-            if response_text.startswith("event: message"):
-                lines = response_text.split('\n')
-                for line in lines:
-                    if line.startswith("data: "):
-                        json_data = line[6:]  # Remove "data: " prefix
-                        result = json.loads(json_data)
-                        
-                        if "error" in result:
-                            error = result["error"]
-                            raise MCPError(f"MCP Error: {error.get('message', error)}")
-                        
-                        return result.get("result", {})
-            else:
-                # Try parsing as regular JSON
-                result = json.loads(response_text)
-                
-                if "error" in result:
-                    error = result["error"]
-                    raise MCPError(f"MCP Error: {error.get('message', error)}")
-                
-                return result.get("result", {})
-                
-        except json.JSONDecodeError as e:
-            raise MCPError(f"Failed to parse MCP response: {e}")
+        except Exception as e:
+            logger.warning(f"Error during cleanup: {e}")
     
     async def discover_tools(self) -> Dict[str, Any]:
         """
-        Dynamically discover available MCP tools
-        This is called automatically when entering the context manager
+        Discover available MCP tools using official SDK
         """
+        if not self.session:
+            raise MCPConnectionError("Session not initialized. Use async context manager.")
+        
         logger.info("Discovering available MCP tools...")
         
         try:
-            result = await self._make_request_with_retry("tools/list")
+            # Use SDK's list_tools method
+            tools_response = await self.session.list_tools()
             
-            if isinstance(result, dict) and "tools" in result:
-                self.available_tools = {
-                    tool["name"]: tool for tool in result["tools"]
+            # Convert to the expected format for backward compatibility
+            self.available_tools = {
+                tool.name: {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "inputSchema": tool.inputSchema
                 }
-                logger.info(f"Discovered {len(self.available_tools)} MCP tools: {list(self.available_tools.keys())}")
-            else:
-                logger.warning(f"Unexpected tools/list response format: {result}")
-                self.available_tools = {}
+                for tool in tools_response.tools
+            }
             
+            logger.info(f"Discovered {len(self.available_tools)} MCP tools: {list(self.available_tools.keys())}")
             return self.available_tools
             
         except Exception as e:
             logger.error(f"Failed to discover tools: {e}")
             self.available_tools = {}
-            return {}
+            raise MCPError(f"Failed to discover tools: {e}")
     
     async def call_tool(
         self, 
@@ -277,25 +143,165 @@ class EnhancedMCPClient:
         stream: bool = False
     ) -> Union[Dict[str, Any], AsyncGenerator[Dict[str, Any], None]]:
         """
-        Call a specific MCP tool
+        Call a specific MCP tool using official SDK
         
         Args:
             tool_name: Name of the tool to call
             arguments: Arguments to pass to the tool
-            stream: Whether to use streaming response
+            stream: Whether to use streaming response (not implemented in SDK yet)
             
         Returns:
-            Tool response (dict) or async generator for streaming
+            Tool response (dict) for compatibility
         """
+        if not self.session:
+            raise MCPConnectionError("Session not initialized. Use async context manager.")
+        
         if tool_name not in self.available_tools:
             available = ", ".join(self.available_tools.keys())
             raise MCPError(f"Tool '{tool_name}' not available. Available tools: {available}")
         
-        params = {
-            "name": tool_name,
-            "arguments": arguments
-        }
-        
         logger.debug(f"Calling MCP tool: {tool_name} with args: {arguments}")
         
-        return await self._make_request_with_retry("tools/call", params, stream=stream)
+        try:
+            # Use SDK's call_tool method
+            result = await self.session.call_tool(tool_name, arguments)
+            
+            # Convert result to backward-compatible format
+            response = {
+                "content": [],
+                "isError": result.isError if hasattr(result, 'isError') else False
+            }
+            
+            # Handle content - convert SDK types to dict format
+            for content_item in result.content:
+                if isinstance(content_item, types.TextContent):
+                    response["content"].append({
+                        "type": "text",
+                        "text": content_item.text
+                    })
+                elif isinstance(content_item, types.ImageContent):
+                    response["content"].append({
+                        "type": "image",
+                        "data": content_item.data,
+                        "mimeType": content_item.mimeType
+                    })
+                else:
+                    # Fallback for other content types
+                    response["content"].append({
+                        "type": "unknown",
+                        "data": str(content_item)
+                    })
+            
+            # Add structured content if available
+            if hasattr(result, 'structuredContent') and result.structuredContent:
+                response["structuredContent"] = result.structuredContent
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Tool call failed: {e}")
+            raise MCPError(f"Tool '{tool_name}' failed: {e}")
+
+    # Additional methods for enhanced functionality using SDK
+    
+    async def list_resources(self) -> List[Dict[str, Any]]:
+        """List available resources using SDK"""
+        if not self.session:
+            raise MCPConnectionError("Session not initialized.")
+        
+        try:
+            resources_response = await self.session.list_resources()
+            return [
+                {
+                    "uri": str(resource.uri),
+                    "name": resource.name,
+                    "description": resource.description,
+                    "mimeType": resource.mimeType
+                }
+                for resource in resources_response.resources
+            ]
+        except Exception as e:
+            logger.error(f"Failed to list resources: {e}")
+            return []
+    
+    async def read_resource(self, uri: str) -> Optional[Dict[str, Any]]:
+        """Read a specific resource using SDK"""
+        if not self.session:
+            raise MCPConnectionError("Session not initialized.")
+        
+        try:
+            resource_content = await self.session.read_resource(AnyUrl(uri))
+            
+            # Convert to dict format
+            contents = []
+            for content in resource_content.contents:
+                if isinstance(content, types.TextContent):
+                    contents.append({
+                        "type": "text",
+                        "text": content.text
+                    })
+                elif isinstance(content, types.BlobContent):
+                    contents.append({
+                        "type": "blob",
+                        "data": content.data,
+                        "mimeType": content.mimeType
+                    })
+            
+            return {
+                "uri": uri,
+                "contents": contents
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to read resource {uri}: {e}")
+            return None
+    
+    async def list_prompts(self) -> List[Dict[str, Any]]:
+        """List available prompts using SDK"""
+        if not self.session:
+            raise MCPConnectionError("Session not initialized.")
+        
+        try:
+            prompts_response = await self.session.list_prompts()
+            return [
+                {
+                    "name": prompt.name,
+                    "description": prompt.description,
+                    "arguments": [
+                        {
+                            "name": arg.name,
+                            "description": arg.description,
+                            "required": arg.required
+                        }
+                        for arg in (prompt.arguments or [])
+                    ]
+                }
+                for prompt in prompts_response.prompts
+            ]
+        except Exception as e:
+            logger.error(f"Failed to list prompts: {e}")
+            return []
+    
+    async def get_prompt(self, name: str, arguments: Optional[Dict[str, str]] = None) -> Optional[Dict[str, Any]]:
+        """Get a specific prompt using SDK"""
+        if not self.session:
+            raise MCPConnectionError("Session not initialized.")
+        
+        try:
+            prompt_result = await self.session.get_prompt(name, arguments or {})
+            
+            return {
+                "name": name,
+                "description": prompt_result.description,
+                "messages": [
+                    {
+                        "role": msg.role,
+                        "content": msg.content.text if isinstance(msg.content, types.TextContent) else str(msg.content)
+                    }
+                    for msg in prompt_result.messages
+                ]
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get prompt {name}: {e}")
+            return None

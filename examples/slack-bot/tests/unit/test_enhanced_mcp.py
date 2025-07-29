@@ -1,14 +1,13 @@
 """
-Unit tests for Enhanced MCP Client
+Unit tests for Enhanced MCP Client (SDK-based implementation)
 
 Tests the basic functionality without requiring a real MCP server
 """
 
 import pytest
 import asyncio
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
-from aiohttp import ClientSession, ClientResponse
+from mcp import types
 
 from src.clients.enhanced_mcp_client import (
     EnhancedMCPClient, 
@@ -45,21 +44,36 @@ class TestMCPConfig:
         assert config.auth_token == "test-token-123"
         assert config.timeout == 60
 
+    def test_config_creation_with_oauth(self):
+        """Test creating config with OAuth settings"""
+        config = MCPConfig(
+            url="https://production.com/mcp",
+            oauth_client_name="Test Client",
+            oauth_redirect_uri="http://localhost:3000/callback",
+            oauth_scopes="user admin"
+        )
+        
+        assert config.oauth_client_name == "Test Client"
+        assert config.oauth_redirect_uri == "http://localhost:3000/callback"
+        assert config.oauth_scopes == "user admin"
+
 
 class TestEnhancedMCPClient:
-    """Test EnhancedMCPClient functionality"""
+    """Test EnhancedMCPClient functionality with SDK-based implementation"""
     
     @pytest.fixture
     def config(self):
         """Provide test configuration"""
-        return MCPConfig(url="http://localhost:4040/mcp")
+        return MCPConfig(url="http://localhost:4040")
     
     @pytest.fixture
-    def config_with_auth(self):
-        """Provide test configuration with auth"""
+    def config_with_oauth(self):
+        """Provide test configuration with OAuth"""
         return MCPConfig(
-            url="https://production.com/mcp",
-            auth_token="test-token-123"
+            url="https://production.com",
+            oauth_client_name="Test Client",
+            oauth_redirect_uri="http://localhost:3000/callback",
+            oauth_scopes="user"
         )
     
     def test_client_initialization(self, config):
@@ -69,53 +83,188 @@ class TestEnhancedMCPClient:
         assert client.config == config
         assert client.session is None
         assert client.available_tools == {}
-        assert client._request_id == 0
+        assert client._client_streams is None
     
-    def test_request_id_increment(self, config):
-        """Test request ID increments properly"""
-        client = EnhancedMCPClient(config)
+    def test_oauth_detection(self, config, config_with_oauth):
+        """Test OAuth detection logic"""
+        client_no_oauth = EnhancedMCPClient(config)
+        client_with_oauth = EnhancedMCPClient(config_with_oauth)
         
-        assert client._next_request_id() == 1
-        assert client._next_request_id() == 2
-        assert client._next_request_id() == 3
-    
-    @pytest.mark.asyncio
-    async def test_session_creation_without_auth(self, config):
-        """Test session creation without authentication"""
-        client = EnhancedMCPClient(config)
-        
-        with patch('aiohttp.ClientSession') as mock_session_class:
-            mock_session = AsyncMock()
-            mock_session_class.return_value = mock_session
-            
-            await client._create_session()
-            
-            # Verify session was created with correct parameters
-            mock_session_class.assert_called_once()
-            call_kwargs = mock_session_class.call_args.kwargs
-            
-            assert 'headers' in call_kwargs
-            headers = call_kwargs['headers']
-            assert headers['Content-Type'] == 'application/json'
-            assert 'Authorization' not in headers
-            
-            assert client.session == mock_session
+        assert not client_no_oauth._should_use_oauth()
+        assert client_with_oauth._should_use_oauth()
     
     @pytest.mark.asyncio
-    async def test_session_creation_with_auth(self, config_with_auth):
-        """Test session creation with authentication"""
-        client = EnhancedMCPClient(config_with_auth)
+    async def test_session_creation_success(self, config):
+        """Test successful session creation"""
+        client = EnhancedMCPClient(config)
         
-        with patch('aiohttp.ClientSession') as mock_session_class:
-            mock_session = AsyncMock()
-            mock_session_class.return_value = mock_session
+        # Mock the SDK components
+        mock_streams = (AsyncMock(), AsyncMock(), AsyncMock())
+        mock_session = AsyncMock()
+        
+        with patch('src.clients.enhanced_mcp_client.streamablehttp_client') as mock_client:
+            mock_context = AsyncMock()
+            mock_context.__aenter__ = AsyncMock(return_value=mock_streams)
+            mock_client.return_value = mock_context
             
-            await client._create_session()
+            with patch('src.clients.enhanced_mcp_client.ClientSession') as mock_session_class:
+                mock_session_class.return_value = mock_session
+                mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+                mock_session.initialize = AsyncMock()
+                
+                await client._create_session()
+                
+                # Verify the session was created and initialized
+                mock_client.assert_called_once_with("http://localhost:4040/mcp", auth=None)
+                mock_session_class.assert_called_once()
+                mock_session.initialize.assert_called_once()
+                assert client.session == mock_session
+    
+    @pytest.mark.asyncio
+    async def test_session_creation_failure(self, config):
+        """Test session creation failure handling"""
+        client = EnhancedMCPClient(config)
+        
+        with patch('src.clients.enhanced_mcp_client.streamablehttp_client') as mock_client:
+            mock_client.side_effect = Exception("Connection failed")
             
-            # Verify auth header was set
-            call_kwargs = mock_session_class.call_args.kwargs
-            headers = call_kwargs['headers']
-            assert headers['Authorization'] == 'Bearer test-token-123'
+            with pytest.raises(MCPConnectionError) as exc_info:
+                await client._create_session()
+            
+            assert "Failed to connect to MCP server" in str(exc_info.value)
+    
+    @pytest.mark.asyncio
+    async def test_discover_tools_success(self, config):
+        """Test successful tool discovery"""
+        client = EnhancedMCPClient(config)
+        
+        # Mock session and tools response
+        mock_session = AsyncMock()
+        client.session = mock_session
+        
+        # Create mock tools response
+        mock_tools = [
+            types.Tool(
+                name="test_tool_1",
+                description="Test tool 1",
+                inputSchema={"type": "object", "properties": {}}
+            ),
+            types.Tool(
+                name="test_tool_2", 
+                description="Test tool 2",
+                inputSchema={"type": "object", "properties": {"param": {"type": "string"}}}
+            )
+        ]
+        
+        mock_tools_response = types.ListToolsResult(tools=mock_tools)
+        mock_session.list_tools.return_value = mock_tools_response
+        
+        tools = await client.discover_tools()
+        
+        # Verify tools were discovered correctly
+        assert len(tools) == 2
+        assert "test_tool_1" in tools
+        assert "test_tool_2" in tools
+        assert tools["test_tool_1"]["description"] == "Test tool 1"
+        assert tools["test_tool_2"]["description"] == "Test tool 2"
+    
+    @pytest.mark.asyncio
+    async def test_discover_tools_failure(self, config):
+        """Test tool discovery failure"""
+        client = EnhancedMCPClient(config)
+        
+        mock_session = AsyncMock()
+        mock_session.list_tools.side_effect = Exception("Discovery failed")
+        client.session = mock_session
+        
+        with pytest.raises(MCPError) as exc_info:
+            await client.discover_tools()
+        
+        assert "Failed to discover tools" in str(exc_info.value)
+    
+    @pytest.mark.asyncio
+    async def test_call_tool_success(self, config):
+        """Test successful tool call"""
+        client = EnhancedMCPClient(config)
+        
+        # Setup session and available tools
+        mock_session = AsyncMock()
+        client.session = mock_session
+        client.available_tools = {"test_tool": {"name": "test_tool"}}
+        
+        # Mock tool call response
+        mock_result = types.CallToolResult(
+            content=[
+                types.TextContent(type="text", text="Tool result")
+            ],
+            isError=False
+        )
+        mock_session.call_tool.return_value = mock_result
+        
+        result = await client.call_tool("test_tool", {"param": "value"})
+        
+        # Verify the result format
+        assert result["isError"] is False
+        assert len(result["content"]) == 1
+        assert result["content"][0]["type"] == "text"
+        assert result["content"][0]["text"] == "Tool result"
+        
+        mock_session.call_tool.assert_called_once_with("test_tool", {"param": "value"})
+    
+    @pytest.mark.asyncio
+    async def test_call_tool_not_available(self, config):
+        """Test calling unavailable tool"""
+        client = EnhancedMCPClient(config)
+        
+        mock_session = AsyncMock()
+        client.session = mock_session
+        client.available_tools = {"other_tool": {"name": "other_tool"}}
+        
+        with pytest.raises(MCPError) as exc_info:
+            await client.call_tool("nonexistent_tool", {})
+        
+        assert "Tool 'nonexistent_tool' not available" in str(exc_info.value)
+    
+    @pytest.mark.asyncio
+    async def test_call_tool_failure(self, config):
+        """Test tool call failure"""
+        client = EnhancedMCPClient(config)
+        
+        mock_session = AsyncMock()
+        mock_session.call_tool.side_effect = Exception("Tool execution failed")
+        client.session = mock_session
+        client.available_tools = {"test_tool": {"name": "test_tool"}}
+        
+        with pytest.raises(MCPError) as exc_info:
+            await client.call_tool("test_tool", {})
+        
+        assert "Tool 'test_tool' failed" in str(exc_info.value)
+    
+    @pytest.mark.asyncio
+    async def test_list_resources(self, config):
+        """Test listing resources"""
+        client = EnhancedMCPClient(config)
+        
+        mock_session = AsyncMock()
+        client.session = mock_session
+        
+        # Mock resources response
+        mock_resources = [
+            types.Resource(
+                uri="test://resource1",
+                name="Resource 1",
+                description="Test resource 1",
+                mimeType="text/plain"
+            )
+        ]
+        mock_response = types.ListResourcesResult(resources=mock_resources)
+        mock_session.list_resources.return_value = mock_response
+        
+        resources = await client.list_resources()
+        
+        assert len(resources) == 1
+        assert resources[0]["uri"] == "test://resource1"
+        assert resources[0]["name"] == "Resource 1"
     
     @pytest.mark.asyncio
     async def test_close_session(self, config):
@@ -124,141 +273,46 @@ class TestEnhancedMCPClient:
         
         # Mock session
         mock_session = AsyncMock()
+        mock_session.__aexit__ = AsyncMock()
         client.session = mock_session
         
         await client.close()
         
-        mock_session.close.assert_called_once()
+        mock_session.__aexit__.assert_called_once()
         assert client.session is None
     
     @pytest.mark.asyncio
     async def test_context_manager(self, config):
         """Test async context manager functionality"""
-        with patch('aiohttp.ClientSession') as mock_session_class:
-            mock_session = AsyncMock()
-            mock_session_class.return_value = mock_session
-            
-            # Mock the discover_tools method to avoid actual network call
+        with patch.object(EnhancedMCPClient, '_create_session', new_callable=AsyncMock) as mock_create:
             with patch.object(EnhancedMCPClient, 'discover_tools', new_callable=AsyncMock) as mock_discover:
-                mock_discover.return_value = {}
-                
-                async with EnhancedMCPClient(config) as client:
-                    assert client.session == mock_session
-                    mock_discover.assert_called_once()
-                
-                # Verify session was closed
-                mock_session.close.assert_called_once()
-    
-    def test_parse_sse_response(self, config):
-        """Test parsing Server-Sent Events response format"""
-        client = EnhancedMCPClient(config)
-        
-        sse_response = """event: message
-data: {"jsonrpc": "2.0", "id": 1, "result": {"tools": [{"name": "test_tool"}]}}"""
-        
-        result = asyncio.run(client._parse_response(sse_response))
-        
-        assert result == {"tools": [{"name": "test_tool"}]}
-    
-    def test_parse_json_response(self, config):
-        """Test parsing regular JSON response"""
-        client = EnhancedMCPClient(config)
-        
-        json_response = '{"jsonrpc": "2.0", "id": 1, "result": {"status": "ok"}}'
-        
-        result = asyncio.run(client._parse_response(json_response))
-        
-        assert result == {"status": "ok"}
-    
-    def test_parse_error_response(self, config):
-        """Test parsing error response"""
-        client = EnhancedMCPClient(config)
-        
-        error_response = '{"jsonrpc": "2.0", "id": 1, "error": {"code": -1, "message": "Test error"}}'
-        
-        with pytest.raises(MCPError, match="Test error"):
-            asyncio.run(client._parse_response(error_response))
-    
-    def test_parse_invalid_json(self, config):
-        """Test handling invalid JSON response"""
-        client = EnhancedMCPClient(config)
-        
-        invalid_response = "not valid json"
-        
-        with pytest.raises(MCPError, match="Failed to parse MCP response"):
-            asyncio.run(client._parse_response(invalid_response))
+                with patch.object(EnhancedMCPClient, 'close', new_callable=AsyncMock) as mock_close:
+                    mock_discover.return_value = {}
+                    
+                    async with EnhancedMCPClient(config) as client:
+                        assert isinstance(client, EnhancedMCPClient)
+                        mock_create.assert_called_once()
+                        mock_discover.assert_called_once()
+                    
+                    # Verify cleanup was called
+                    mock_close.assert_called_once()
 
 
-class TestMCPClientErrorHandling:
-    """Test error handling and retry logic"""
+class TestMCPExceptions:
+    """Test MCP exception classes"""
     
-    @pytest.fixture
-    def config(self):
-        return MCPConfig(url="http://localhost:4040/mcp", max_retries=2)
+    def test_mcp_error_inheritance(self):
+        """Test exception inheritance"""
+        assert issubclass(MCPConnectionError, MCPError)
+        assert issubclass(MCPAuthError, MCPError)
+        assert issubclass(MCPTimeoutError, MCPError)
     
-    @pytest.mark.asyncio
-    async def test_connection_error_handling(self, config):
-        """Test handling of connection errors"""
-        client = EnhancedMCPClient(config)
+    def test_exception_messages(self):
+        """Test exception message handling"""
+        conn_error = MCPConnectionError("Connection failed")
+        auth_error = MCPAuthError("Auth failed")
+        timeout_error = MCPTimeoutError("Timeout")
         
-        # Test that we use the retry wrapper which converts exceptions
-        with patch.object(client, '_make_request_with_retry') as mock_retry:
-            mock_retry.side_effect = MCPConnectionError("Connection failed")
-            
-            with pytest.raises(MCPConnectionError):
-                await client._make_request_with_retry("test/method")
-    
-    @pytest.mark.asyncio 
-    async def test_auth_error_handling(self, config):
-        """Test handling of authentication errors"""
-        # TODO: Complex async context manager mocking - will implement in integration tests
-        # For now, just test that the error classes exist and can be raised
-        with pytest.raises(MCPAuthError, match="test error"):
-            raise MCPAuthError("test error")
-    
-    @pytest.mark.asyncio
-    async def test_tool_not_available_error(self, config):
-        """Test error when calling non-existent tool"""
-        client = EnhancedMCPClient(config)
-        client.available_tools = {"existing_tool": {}}
-        
-        with pytest.raises(MCPError, match="Tool 'non_existent_tool' not available"):
-            await client.call_tool("non_existent_tool", {})
-
-
-class TestMCPClientHelperMethods:
-    """Test helper methods for common operations"""
-    
-    @pytest.fixture
-    def config(self):
-        return MCPConfig(url="http://localhost:4040/mcp")
-    
-    def test_execute_query_tool_directly(self, config):
-        """Test calling execute query tool directly through the general tool interface"""
-        # Skip this test - requires actual MCP server running
-        # TODO: Mock MCP responses for proper testing
-        pass
-
-
-# Integration test stubs (will be expanded when we test against real server)
-class TestMCPIntegrationStubs:
-    """Placeholder for integration tests against real MCP server"""
-    
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_real_tool_discovery(self):
-        """Test tool discovery against real MCP server"""
-        # This will be implemented when we test against the actual server
-        pytest.skip("Integration test - requires real MCP server")
-    
-    @pytest.mark.integration  
-    @pytest.mark.asyncio
-    async def test_real_tool_execution(self):
-        """Test tool execution against real MCP server"""
-        # This will be implemented when we test against the actual server
-        pytest.skip("Integration test - requires real MCP server")
-
-
-if __name__ == "__main__":
-    # Run tests when script is executed directly
-    pytest.main([__file__, "-v"])
+        assert str(conn_error) == "Connection failed"
+        assert str(auth_error) == "Auth failed" 
+        assert str(timeout_error) == "Timeout"

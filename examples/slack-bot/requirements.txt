@@ -9,6 +9,9 @@ langchain-google-vertexai>=0.0.1
 langchain-anthropic>=0.1.1
 langchain-community>=0.0.10
 
+# MCP (Model Context Protocol) Support
+mcp>=1.0.0
+
 # HTTP and Async Support
 aiohttp>=3.9.1
 requests>=2.31.0
