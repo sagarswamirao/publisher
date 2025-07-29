@@ -296,35 +296,3 @@ class SimpleMCPClient:
                         "success": False
                     }
 
-
-async def test_simple_mcp_client():
-    """Test the SimpleMCPClient."""
-    import os
-    
-    mcp_url = os.environ.get("MCP_URL", "http://localhost:4040/mcp")
-    client = SimpleMCPClient(mcp_url)
-    
-    print(f"Testing connection to {mcp_url}...")
-    
-    # Test connection
-    connected = await client.test_connection()
-    print(f"Connection test: {'✅ Success' if connected else '❌ Failed'}")
-    
-    if connected:
-        # Test listing projects
-        try:
-            projects = await client.list_projects()
-            print(f"Found {len(projects)} projects: {[p.get('name', 'unnamed') for p in projects]}")
-            
-            if projects:
-                project_name = projects[0].get('name')
-                if project_name:
-                    packages = await client.list_packages(project_name)
-                    print(f"Found {len(packages)} packages in {project_name}")
-                    
-        except Exception as e:
-            print(f"Error testing client: {e}")
-
-
-if __name__ == "__main__":
-    asyncio.run(test_simple_mcp_client())
