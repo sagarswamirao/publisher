@@ -5,6 +5,7 @@ This client follows the recommended patterns from the MCP Python SDK documentati
 creating new sessions per operation rather than trying to reuse them.
 """
 import asyncio
+import json
 import logging
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -36,26 +37,56 @@ class SimpleMCPClient:
     
     async def list_projects(self) -> List[Dict[str, Any]]:
         """List all available projects."""
-        self.logger.debug("Listing projects")
+        self.logger.debug("🌐 MCP: Listing projects")
         
         async with streamablehttp_client(self.mcp_url) as (read, write, _):
             async with ClientSession(read, write) as session:
                 await session.initialize()
+                self.logger.debug("🤝 MCP: Session initialized successfully")
                 
-                # Call the list projects tool
-                result = await session.call_tool("malloy_projectList", {"random_string": "unused"})
+                # Call the list projects tool - no parameters needed
+                self.logger.debug("🔧 MCP: Calling malloy_projectList tool")
+                result = await session.call_tool("malloy_projectList", {})
+                self.logger.debug(f"📤 MCP: Tool call result type: {type(result)}")
+                self.logger.debug(f"📤 MCP: Tool call result content: {result}")
                 
                 # Parse the result
                 if result.content and len(result.content) > 0:
                     import json
                     try:
                         content = result.content[0]
-                        if hasattr(content, 'text'):
-                            data = json.loads(content.text)
-                            return data.get('projects', [])
-                    except (json.JSONDecodeError, AttributeError) as e:
-                        self.logger.error(f"Error parsing projects result: {e}")
+                        self.logger.debug(f"📋 MCP: First content item: {content}")
                         
+                        # Handle EmbeddedResource format
+                        text_content = None
+                        if hasattr(content, 'resource') and hasattr(content.resource, 'text'):
+                            text_content = content.resource.text
+                            self.logger.debug(f"📝 MCP: Resource text: {text_content}")
+                        elif hasattr(content, 'text'):
+                            text_content = content.text
+                            self.logger.debug(f"📝 MCP: Content text: {text_content}")
+                        
+                        if text_content:
+                            data = json.loads(text_content)
+                            
+                            # Handle different response formats
+                            if isinstance(data, list):
+                                # Server returns projects directly as an array
+                                projects = data
+                            else:
+                                # Server returns projects wrapped in an object
+                                projects = data.get('projects', [])
+                                
+                            self.logger.debug(f"✅ MCP: Successfully parsed {len(projects)} projects")
+                            return projects
+                        else:
+                            self.logger.warning("⚠️ MCP: No text content found in response")
+                            
+                    except (json.JSONDecodeError, AttributeError) as e:
+                        self.logger.error(f"❌ MCP: Error parsing projects result: {e}")
+                        self.logger.debug(f"❌ MCP: Content structure: {content}")
+                        
+                self.logger.warning("⚠️ MCP: No valid content found in result")
                 return []
     
     async def list_packages(self, project_name: str) -> List[Dict[str, Any]]:
@@ -176,20 +207,94 @@ class SimpleMCPClient:
     async def test_connection(self) -> bool:
         """Test if we can connect to the MCP server."""
         try:
-            self.logger.debug("Testing MCP connection")
+            self.logger.debug(f"🌐 MCP: Testing connection to {self.mcp_url}")
             
             async with streamablehttp_client(self.mcp_url) as (read, write, _):
                 async with ClientSession(read, write) as session:
+                    self.logger.debug("🤝 MCP: Initializing session...")
                     await session.initialize()
+                    self.logger.debug("✅ MCP: Session initialized successfully")
                     
                     # Try to list tools to verify connection
+                    self.logger.debug("🔧 MCP: Listing available tools...")
                     tools = await session.list_tools()
-                    self.logger.debug(f"Connected successfully, found {len(tools.tools)} tools")
+                    self.logger.debug(f"📋 MCP: Found {len(tools.tools)} tools:")
+                    for tool in tools.tools:
+                        self.logger.debug(f"  🔨 {tool.name}: {tool.description}")
+                    
+                    self.logger.debug(f"✅ MCP: Connected successfully, found {len(tools.tools)} tools")
                     return True
                     
         except Exception as e:
-            self.logger.error(f"Failed to connect to MCP server: {e}")
+            self.logger.error(f"❌ MCP: Failed to connect to MCP server: {e}")
+            self.logger.exception("Full connection error:")
             return False
+
+    async def get_tool_definitions(self) -> List[Dict[str, Any]]:
+        """Get tool definitions from the MCP server."""
+        self.logger.debug("🔧 MCP: Getting tool definitions")
+        
+        async with streamablehttp_client(self.mcp_url) as (read, write, _):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                
+                # Get tool definitions
+                tools_response = await session.list_tools()
+                tool_definitions = []
+                
+                for tool in tools_response.tools:
+                    tool_def = {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "inputSchema": tool.inputSchema if tool.inputSchema else {}
+                    }
+                    tool_definitions.append(tool_def)
+                    self.logger.debug(f"🔨 Tool: {tool.name}")
+                    self.logger.debug(f"   Schema: {tool_def['inputSchema']}")
+                
+                self.logger.debug(f"✅ MCP: Retrieved {len(tool_definitions)} tool definitions")
+                return tool_definitions
+
+    async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute any MCP tool dynamically with the given arguments."""
+        self.logger.debug(f"🔧 Calling MCP tool: {tool_name} with args: {arguments}")
+        
+        async with streamablehttp_client(self.mcp_url) as (read, write, _):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                
+                try:
+                    # Call the tool with the provided arguments
+                    result = await session.call_tool(tool_name, arguments)
+                    self.logger.debug(f"✅ MCP tool {tool_name} result: {result}")
+                    
+                    # Parse the result - handle different response formats
+                    if hasattr(result, 'content') and result.content:
+                        content = result.content[0]
+                        if hasattr(content, 'resource') and hasattr(content.resource, 'text'):
+                            # Handle resource responses with JSON text
+                            try:
+                                return json.loads(content.resource.text)
+                            except json.JSONDecodeError:
+                                return {"raw_text": content.resource.text}
+                        elif hasattr(content, 'text'):
+                            # Handle direct text responses
+                            try:
+                                return json.loads(content.text)
+                            except json.JSONDecodeError:
+                                return {"raw_text": content.text}
+                    
+                    # Fallback - return the raw result
+                    return {"raw_result": str(result)}
+                    
+                except Exception as e:
+                    self.logger.error(f"❌ Error calling tool {tool_name}: {e}")
+                    return {
+                        "error": str(e),
+                        "tool_name": tool_name,
+                        "arguments": arguments,
+                        "success": False
+                    }
 
 
 async def test_simple_mcp_client():

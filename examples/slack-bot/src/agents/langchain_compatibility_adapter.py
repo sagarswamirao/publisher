@@ -97,10 +97,9 @@ class LangChainCompatibilityAdapter:
         
         asyncio.set_event_loop(self.loop)
         
-        if history:
-            deserialized_history = self._deserialize_history(history)
-            self.agent.memory.chat_memory.messages = deserialized_history
-
+        # Note: LangGraph agents handle conversation history internally through checkpoints
+        # No need to manually manage memory like with the old LangChain agents
+        
         success, response, _ = self.loop.run_until_complete(self.agent.process_question(question))
         final_history_obj = self.agent.get_conversation_history()
         return success, response, final_history_obj

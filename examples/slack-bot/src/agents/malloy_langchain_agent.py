@@ -11,11 +11,11 @@ import os
 from typing import Dict, Any, List, Tuple, Optional
 
 # Import LangChain components
-from langchain.llms import OpenAI
+from langchain_community.llms import OpenAI  # Fixed: Import from langchain-community instead of deprecated langchain.llms
 from langchain_anthropic import ChatAnthropic
-from langchain.agents import AgentExecutor, create_react_agent
+from langgraph.prebuilt import create_react_agent  # Updated: Use LangGraph for agents in LangChain 0.3.x
+from langgraph.checkpoint.memory import MemorySaver  # Updated: Use LangGraph memory
 from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
 from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.schema import AgentAction, AgentFinish
 
@@ -35,7 +35,7 @@ class MalloyLangChainAgent:
     def __init__(
         self,
         mcp_url: str,
-        model_name: str = "claude-3.5-sonnet",
+        model_name: str = "claude-3-5-sonnet-20241022",  # Current Claude 3.5 Sonnet v2
         llm_provider: str = "anthropic",
         session_id: str = "default",
         anthropic_api_key: Optional[str] = None,
@@ -55,7 +55,7 @@ class MalloyLangChainAgent:
         self.agent = None
         self.agent_executor = None
         self.memory = None
-        self.prompt_manager = MalloyPromptTemplates()
+        # Removed: self.prompt_manager = MalloyPromptTemplates()  # Not needed with LangGraph
         
         # Set up logging
         self.logger = logging.getLogger(__name__)
@@ -87,12 +87,9 @@ class MalloyLangChainAgent:
             self.logger.info(f"Created {len(self.tools)} tools: {[tool.name for tool in self.tools]}")
             
             # Set up memory
-            self.memory = ConversationBufferMemory(
-                memory_key="chat_history",
-                return_messages=True
-            )
+            self.memory = MemorySaver()
             
-            # Create the agent using REACT pattern
+            # Create the agent using LangGraph
             self._setup_agent()
             
             self.logger.info("✅ Agent setup complete")
@@ -135,29 +132,16 @@ class MalloyLangChainAgent:
         self.logger.info(f"Initialized {self.llm_provider} LLM: {self.model_name}")
     
     def _setup_agent(self):
-        """Create the ReAct agent and executor"""
-        # Get the prompt template from prompt manager
-        prompt_template = self.prompt_manager.get_agent_prompt()
-        
-        # Create the agent
-        self.agent = create_react_agent(
-            llm=self.llm,
+        """Create the ReAct agent using LangGraph"""
+        # Create the agent using LangGraph's create_react_agent
+        # No need for complex prompt templates - LangGraph handles this internally
+        self.agent_executor = create_react_agent(
+            model=self.llm,
             tools=self.tools,
-            prompt=prompt_template
+            checkpointer=self.memory  # LangGraph uses checkpointer for memory
         )
         
-        # Create the agent executor
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            memory=self.memory,
-            verbose=True,
-            handle_parsing_errors=True,
-            max_iterations=10,
-            early_stopping_method="generate"
-        )
-        
-        self.logger.info("Agent and executor created successfully")
+        self.logger.info("LangGraph agent created successfully")
     
     async def process_question(self, question: str) -> Tuple[bool, str, Dict[str, Any]]:
         """Process a user question and return success status, response, and metadata"""
@@ -167,11 +151,48 @@ class MalloyLangChainAgent:
             if not self.agent_executor:
                 return False, "Agent not initialized. Please call setup() first.", {}
             
-            # Execute the agent
-            result = await self.agent_executor.ainvoke({"input": question})
+            # Use LangGraph's message-based invocation pattern
+            # Each conversation needs a unique thread_id for memory
+            config = {"configurable": {"thread_id": self.session_id}}
             
-            # Extract the response
-            response = result.get("output", "No response generated")
+            self.logger.debug("=" * 60)
+            self.logger.debug("🤖 AGENT EXECUTION START")
+            self.logger.debug(f"📝 User Question: {question}")
+            self.logger.debug(f"🧵 Thread ID: {self.session_id}")
+            self.logger.debug(f"🔧 Available Tools: {[tool.name for tool in self.tools]}")
+            self.logger.debug("=" * 60)
+            
+            # Execute the agent with the new message format
+            result = self.agent_executor.invoke(
+                {"messages": [("human", question)]},
+                config
+            )
+            
+            self.logger.debug("=" * 60)
+            self.logger.debug("🎯 AGENT EXECUTION RESULT")
+            self.logger.debug(f"📊 Total Messages: {len(result.get('messages', []))}")
+            
+            # Log all messages in the conversation
+            for i, msg in enumerate(result.get("messages", [])):
+                role = msg.__class__.__name__
+                content = msg.content[:200] + "..." if len(msg.content) > 200 else msg.content
+                self.logger.debug(f"💬 Message {i+1} ({role}): {content}")
+                
+                # Log tool calls if present
+                if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                    for tool_call in msg.tool_calls:
+                        self.logger.debug(f"🔧 Tool Call: {tool_call.get('name', 'unknown')} with args: {tool_call.get('args', {})}")
+            
+            self.logger.debug("=" * 60)
+            
+            # Extract the response from the last message
+            if "messages" in result and result["messages"]:
+                last_message = result["messages"][-1]
+                response = last_message.content
+                self.logger.debug(f"✅ Final Response: {response}")
+            else:
+                response = "No response generated"
+                self.logger.warning("⚠️ No messages in result")
             
             self.logger.info(f"Agent response generated: {len(response)} chars")
             
@@ -184,7 +205,8 @@ class MalloyLangChainAgent:
                 "session_id": self.session_id,
                 "model": self.model_name,
                 "provider": self.llm_provider,
-                "tools_used": self._extract_tools_used(response)
+                "tools_used": self._extract_tools_used(response),
+                "message_count": len(result.get("messages", []))
             }
             
             return True, response, metadata
@@ -192,6 +214,7 @@ class MalloyLangChainAgent:
         except Exception as e:
             error_msg = f"Error processing question: {str(e)}"
             self.logger.error(error_msg)
+            self.logger.exception("Full error details:")
             
             # Try to provide a helpful fallback response
             fallback_response = self._generate_fallback_response(question, str(e))
@@ -273,10 +296,10 @@ class MalloyLangChainAgent:
     
     def get_conversation_history(self):
         """Get conversation history for the compatibility adapter"""
-        if not self.memory or not self.memory.chat_memory:
-            return []
-        
-        return self.memory.chat_memory.messages
+        # LangGraph manages conversation history differently through checkpoints
+        # For now, return an empty list since LangGraph handles memory internally
+        # In a full implementation, you'd retrieve from the checkpointer
+        return []
     
     def get_agent_info(self) -> Dict[str, Any]:
         """Get information about the agent configuration"""
@@ -287,13 +310,14 @@ class MalloyLangChainAgent:
             "session_id": self.session_id,
             "tools_count": len(self.tools) if self.tools else 0,
             "tools": [tool.name for tool in self.tools] if self.tools else [],
-            "status": "ready" if self.agent_executor else "not_initialized"
+            "status": "ready" if self.agent_executor else "not_initialized",
+            "agent_type": "langgraph_react"  # Updated to reflect LangGraph usage
         }
 
 
 async def create_malloy_agent(
     mcp_url: str,
-    model_name: str = "claude-3.5-sonnet",
+    model_name: str = "claude-3-5-sonnet-20241022",  # Current Claude 3.5 Sonnet v2
     llm_provider: str = "anthropic",
     session_id: str = "default",
     **kwargs

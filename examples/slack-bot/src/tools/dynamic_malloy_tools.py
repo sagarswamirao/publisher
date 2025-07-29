@@ -7,137 +7,120 @@ Now uses SimpleMCPClient which follows proper MCP SDK patterns.
 
 import json
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Type
 
 from langchain.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 
 from ..clients.simple_mcp_client import SimpleMCPClient
 from ..tools.quickchart_tool import QuickChartTool
 
 
-class MalloyToolInput(BaseModel):
-    """Input schema for Malloy tools"""
-    project_name: str = Field(description="The project name to work with")
-    package_name: str = Field(description="The package name within the project")
-    model_path: str = Field(description="Path to the Malloy model file")
-    query: str = Field(default="", description="Optional Malloy query to execute")
-    query_name: str = Field(default="", description="Optional named query to execute")
+def create_pydantic_schema_from_mcp(tool_name: str, input_schema: Dict[str, Any]) -> Type[BaseModel]:
+    """Create a Pydantic schema from MCP tool input schema"""
+    properties = input_schema.get("properties", {})
+    required_fields = input_schema.get("required", [])
+    
+    # Create field definitions for Pydantic
+    field_definitions = {}
+    
+    for field_name, field_info in properties.items():
+        field_type = str  # Default to string
+        default_value = ...  # Required by default
+        description = field_info.get("description", "")
+        
+        # Convert JSON Schema types to Python types
+        json_type = field_info.get("type", "string")
+        if json_type == "string":
+            field_type = str
+        elif json_type == "integer":
+            field_type = int
+        elif json_type == "boolean":
+            field_type = bool
+        
+        # Set default value if field is not required
+        if field_name not in required_fields:
+            if json_type == "string":
+                default_value = field_info.get("default", "")
+            elif json_type == "integer":
+                default_value = field_info.get("default", 0)
+            elif json_type == "boolean":
+                default_value = field_info.get("default", False)
+        
+        # Create the field definition
+        if default_value is ...:
+            field_definitions[field_name] = (field_type, Field(description=description))
+        else:
+            field_definitions[field_name] = (field_type, Field(default=default_value, description=description))
+    
+    # Create the dynamic model
+    model_name = f"{tool_name}Input"
+    return create_model(model_name, **field_definitions)
 
 
 class DynamicMalloyTool(BaseTool):
     """A LangChain tool that wraps MCP Malloy operations"""
     
-    def __init__(self, mcp_client: SimpleMCPClient, tool_name: str, description: str):
-        # Store these as instance variables first
-        self._mcp_client = mcp_client
-        self._logger = logging.getLogger(__name__)
-        
-        # Call super with required fields
+    def __init__(self, mcp_client: SimpleMCPClient, tool_name: str, description: str, args_schema: Type[BaseModel]):
+        # Call super with required fields first
         super().__init__(
             name=tool_name,
             description=description,
-            args_schema=MalloyToolInput
+            args_schema=args_schema
         )
+        
+        # Store these as instance variables after super init
+        self._mcp_client = mcp_client
+        self._logger = logging.getLogger(__name__)
 
     def _run(self, **kwargs) -> str:
-        """Synchronous wrapper - should not be called directly"""
-        raise NotImplementedError("This tool requires async execution. Use _arun instead.")
+        """Synchronous wrapper that runs the async implementation"""
+        import asyncio
+        
+        # Get the current event loop or create a new one
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If there's already a running loop, we need to use a new thread
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(asyncio.run, self._arun(**kwargs))
+                    return future.result()
+            else:
+                # No running loop, we can use it directly
+                return loop.run_until_complete(self._arun(**kwargs))
+        except RuntimeError:
+            # No event loop, create a new one
+            return asyncio.run(self._arun(**kwargs))
 
     async def _arun(
         self,
-        project_name: str,
-        package_name: str,
-        model_path: str,
-        query: str = "",
-        query_name: str = "",
         **kwargs
     ) -> str:
-        """Execute the Malloy tool operation"""
+        """Execute the Malloy tool operation dynamically"""
+        import json  # Local import to ensure availability in async context
+        
         try:
-            self._logger.debug(f"Executing {self.name} with project={project_name}, package={package_name}, model={model_path}")
+            self._logger.debug("=" * 50)
+            self._logger.debug(f"🛠️ TOOL EXECUTION: {self.name}")
+            self._logger.debug(f"📝 Arguments: {kwargs}")
+            self._logger.debug("=" * 50)
             
-            if self.name == "malloy_projectList":
-                # List all projects
-                projects = await self._mcp_client.list_projects()
-                return json.dumps({
-                    "operation": "list_projects",
-                    "success": True,
-                    "projects": projects,
-                    "count": len(projects)
-                })
-                
-            elif self.name == "malloy_packageList":
-                # List packages for a project
-                packages = await self._mcp_client.list_packages(project_name)
-                return json.dumps({
-                    "operation": "list_packages",
-                    "success": True,
-                    "project": project_name,
-                    "packages": packages,
-                    "count": len(packages)
-                })
-                
-            elif self.name == "malloy_packageGet":
-                # Get package details
-                package_details = await self._mcp_client.get_package(project_name, package_name)
-                return json.dumps({
-                    "operation": "get_package",
-                    "success": True,
-                    "project": project_name,
-                    "package": package_name,
-                    "details": package_details
-                })
-                
-            elif self.name == "malloy_modelGetText":
-                # Get model text content
-                model_text = await self._mcp_client.get_model_text(project_name, package_name, model_path)
-                return json.dumps({
-                    "operation": "get_model_text",
-                    "success": True,
-                    "project": project_name,
-                    "package": package_name,
-                    "model_path": model_path,
-                    "content": model_text,
-                    "content_length": len(model_text)
-                })
-                
-            elif self.name == "malloy_executeQuery":
-                # Execute a Malloy query
-                result = await self._mcp_client.execute_query(
-                    project_name=project_name,
-                    package_name=package_name,
-                    model_path=model_path,
-                    query=query if query else None,
-                    query_name=query_name if query_name else None
-                )
-                return json.dumps({
-                    "operation": "execute_query",
-                    "success": True,
-                    "project": project_name,
-                    "package": package_name,
-                    "model_path": model_path,
-                    "query": query,
-                    "query_name": query_name,
-                    "result": result
-                })
-                
-            else:
-                return json.dumps({
-                    "operation": self.name,
-                    "success": False,
-                    "error": f"Unknown tool: {self.name}"
-                })
+            # Execute the tool dynamically via MCP client
+            self._logger.debug(f"🔧 Executing {self.name} with MCP client")
+            result = await self._mcp_client.call_tool(self.name, kwargs)
+            
+            self._logger.debug(f"✅ Tool result: {result}")
+            return json.dumps(result)
                 
         except Exception as e:
-            self._logger.error(f"Error executing {self.name}: {e}")
+            self._logger.error(f"❌ Error executing {self.name}: {e}")
             return json.dumps({
-                "operation": self.name,
+                "operation": self.name.replace("malloy_", ""),
                 "success": False,
                 "error": str(e),
-                "project": project_name,
-                "package": package_name,
-                "model_path": model_path
+                "tool_name": self.name,
+                "arguments": kwargs
             })
 
 
@@ -150,7 +133,7 @@ class MalloyToolsFactory:
         self.logger = logging.getLogger(__name__)
 
     async def create_tools(self) -> List[BaseTool]:
-        """Create all available tools"""
+        """Create all available tools dynamically from MCP server definitions"""
         try:
             self.logger.info("Creating Malloy tools using SimpleMCPClient")
             
@@ -160,34 +143,39 @@ class MalloyToolsFactory:
                 self.logger.error("Failed to connect to MCP server")
                 return [QuickChartTool()]
             
-            # Create the standard Malloy tools
-            malloy_tools = [
-                DynamicMalloyTool(
-                    self.mcp_client,
-                    "malloy_projectList",
-                    "List all available Malloy projects. Use this to discover what data projects are available for analysis."
-                ),
-                DynamicMalloyTool(
-                    self.mcp_client,
-                    "malloy_packageList", 
-                    "List packages within a specific Malloy project. Requires project_name parameter."
-                ),
-                DynamicMalloyTool(
-                    self.mcp_client,
-                    "malloy_packageGet",
-                    "Get detailed information about a specific package, including available models. Requires project_name and package_name."
-                ),
-                DynamicMalloyTool(
-                    self.mcp_client,
-                    "malloy_modelGetText",
-                    "Get the raw Malloy model definition text. Useful for understanding data structure and available queries. Requires project_name, package_name, and model_path."
-                ),
-                DynamicMalloyTool(
-                    self.mcp_client,
-                    "malloy_executeQuery",
-                    "Execute a Malloy query to retrieve data. You can provide either a custom 'query' string or use a 'query_name' for predefined queries. Requires project_name, package_name, and model_path."
-                )
-            ]
+            # Get tool definitions from MCP server
+            tool_definitions = await self.mcp_client.get_tool_definitions()
+            self.logger.debug(f"Retrieved {len(tool_definitions)} tool definitions from MCP server")
+            
+            malloy_tools = []
+            
+            # Create tools dynamically from MCP definitions
+            for tool_def in tool_definitions:
+                tool_name = tool_def["name"]
+                description = tool_def["description"]
+                input_schema = tool_def["inputSchema"]
+                
+                self.logger.debug(f"Creating tool: {tool_name}")
+                self.logger.debug(f"  Schema: {input_schema}")
+                
+                # Create dynamic Pydantic schema
+                try:
+                    pydantic_schema = create_pydantic_schema_from_mcp(tool_name, input_schema)
+                    
+                    # Create the tool with dynamic schema
+                    tool = DynamicMalloyTool(
+                        self.mcp_client,
+                        tool_name,
+                        description,
+                        pydantic_schema
+                    )
+                    malloy_tools.append(tool)
+                    
+                    self.logger.debug(f"✅ Created tool: {tool_name}")
+                    
+                except Exception as e:
+                    self.logger.error(f"❌ Failed to create tool {tool_name}: {e}")
+                    continue
             
             # Add the chart generation tool
             chart_tool = QuickChartTool()
@@ -199,6 +187,7 @@ class MalloyToolsFactory:
             
         except Exception as e:
             self.logger.error(f"Error creating Malloy tools: {e}")
+            self.logger.exception("Full error details:")
             # Return at least the chart tool if Malloy tools fail
             return [QuickChartTool()]
 
