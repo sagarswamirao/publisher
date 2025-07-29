@@ -711,18 +711,22 @@ app.use(
 );
 
 const mainServer = http.createServer(app);
-mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
-   const address = mainServer.address() as AddressInfo;
-   logger.info(
-      `Publisher server listening at http://${address.address}:${address.port}`,
-   );
-   if (isDevelopment) {
+projectStore.finishedInitialization.then(() => {
+   mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
+      const address = mainServer.address() as AddressInfo;
       logger.info(
-         "Running in development mode - proxying to React dev server at http://localhost:5173",
+         `Publisher server listening at http://${address.address}:${address.port}`,
       );
-   }
-});
-mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
-   logger.info(`MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`);
+      if (isDevelopment) {
+         logger.info(
+            "Running in development mode - proxying to React dev server at http://localhost:5173",
+         );
+      }
+   });
+   mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
+      logger.info(
+         `MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`,
+      );
+   });
 });
 

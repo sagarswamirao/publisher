@@ -1,3 +1,4 @@
+import { Storage } from "@google-cloud/storage";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { components } from "../api";
@@ -12,7 +13,7 @@ export class ProjectStore {
    public serverRootPath: string;
    private projects: Map<string, Project> = new Map();
    public publisherConfigIsFrozen: boolean;
-   private finishedInitialization: Promise<void>;
+   public finishedInitialization: Promise<void>;
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
@@ -27,17 +28,16 @@ export class ProjectStore {
          const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
+         logger.info(`Initializing project store.`);
          for (const projectName of Object.keys(projectManifest.projects)) {
-            const projectPath = projectManifest.projects[projectName];
-            const absoluteProjectPath = path.join(
-               this.serverRootPath,
-               projectPath,
+            logger.info(`Adding project "${projectName}"`);
+            await this.addProject(
+               {
+                  name: projectName,
+                  resource: `${API_PREFIX}/projects/${projectName}`,
+               },
+               true,
             );
-            const project = await Project.create(
-               projectName,
-               absoluteProjectPath,
-            );
-            this.projects.set(projectName, project);
          }
          logger.info("Project store successfully initialized");
       } catch (error) {
@@ -79,8 +79,13 @@ export class ProjectStore {
       return project;
    }
 
-   public async addProject(project: ApiProject) {
-      await this.finishedInitialization;
+   public async addProject(
+      project: ApiProject,
+      skipInitialization: boolean = false,
+   ) {
+      if (!skipInitialization) {
+         await this.finishedInitialization;
+      }
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
@@ -92,12 +97,10 @@ export class ProjectStore {
          this.serverRootPath,
       );
       const projectPath = projectManifest.projects[projectName];
-      const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
-      if (!(await fs.stat(absoluteProjectPath)).isDirectory()) {
-         throw new ProjectNotFoundError(
-            `Project ${projectName} not found in ${absoluteProjectPath}`,
-         );
-      }
+      const absoluteProjectPath = await this.loadProjectIntoDisk(
+         projectName,
+         projectPath,
+      );
       const newProject = await Project.create(projectName, absoluteProjectPath);
       this.projects.set(projectName, newProject);
       return newProject;
@@ -165,5 +168,89 @@ export class ProjectStore {
             }
          }
       }
+   }
+
+   private async loadProjectIntoDisk(projectName: string, projectPath: string) {
+      const absoluteTargetPath = `/etc/publisher/${projectName}`;
+      // Handle absolute paths
+      if (projectPath.startsWith("/")) {
+         const projectDirExists = (await fs.stat(projectPath)).isDirectory();
+         if (projectDirExists) {
+            logger.info(`Loading mounted project at "${projectPath}"`);
+            // Recursively copy projectPath into /etc/publisher/${projectName}
+            await fs.rm(absoluteTargetPath, { recursive: true, force: true });
+            await fs.mkdir(absoluteTargetPath, { recursive: true });
+            await fs.cp(projectPath, absoluteTargetPath, {
+               recursive: true,
+            });
+         } else {
+            throw new ProjectNotFoundError(
+               `Project ${projectName} not found in "${projectPath}"`,
+            );
+         }
+         return absoluteTargetPath;
+      }
+
+      // Handle GCS URIs
+      if (projectPath.startsWith("gs://")) {
+         // Download from GCS
+         try {
+            logger.info(
+               `Downloading GCS path "${projectPath}" to "${absoluteTargetPath}"`,
+            );
+            await this.downloadGcsDirectory(
+               projectPath,
+               projectName,
+               absoluteTargetPath,
+            );
+         } catch (error) {
+            logger.error(`Failed to download GCS path "${projectPath}"`, {
+               error,
+            });
+            throw error;
+         }
+         return absoluteTargetPath;
+      }
+
+      // Handle S3 URIs
+
+      // Handle GitHub URIs
+      const errorMsg = `Invalid project path: "${projectPath}". Must be an absolute mounted path or a GCS/S3/GitHub URI.`;
+      logger.error(errorMsg, { projectName, projectPath });
+      throw new ProjectNotFoundError(errorMsg);
+   }
+
+   private async downloadGcsDirectory(
+      gcsPath: string,
+      projectName: string,
+      absoluteDirPath: string,
+   ) {
+      const trimmedPath = gcsPath.slice(5);
+      const gcsClient = new Storage();
+      const [bucketName, prefix] = trimmedPath.split("/", 2);
+      const [files] = await gcsClient.bucket(bucketName).getFiles({
+         prefix,
+      });
+      if (files.length === 0) {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in ${gcsPath}`,
+         );
+      }
+      await fs.rm(absoluteDirPath, { recursive: true, force: true });
+      await fs.mkdir(absoluteDirPath, { recursive: true });
+      await Promise.all(
+         files.map(async (file) => {
+            const relativeFilePath = file.name.replace(prefix, "");
+            const absoluteFilePath = path.join(
+               absoluteDirPath,
+               relativeFilePath,
+            );
+            if (file.name.endsWith("/")) {
+               return;
+            }
+            await fs.mkdir(path.dirname(absoluteFilePath), { recursive: true });
+            return fs.writeFile(absoluteFilePath, await file.download());
+         }),
+      );
    }
 }
