@@ -1,0 +1,3 @@
+2025-07-28 23:58:08,709 - __main__ - INFO - 🤖 Enhanced Malloy Bot is starting...
+2025-07-28 23:58:08,709 - __main__ - ERROR - ❌ Bot failed to start: Missing required environment variable: 'SLACK_BOT_TOKEN'
+2025-07-28 23:58:08,709 - __main__ - INFO - 🛑 Bot shutting down

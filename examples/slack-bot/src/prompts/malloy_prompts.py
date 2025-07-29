@@ -30,7 +30,21 @@ When users ask for charts or visualizations, get the data first, then create an 
 
 Chart.js supports many chart types: bar, line, pie, doughnut, scatter, radar, polarArea, bubble, and more. Always include clear labels, titles, and appropriate styling to make charts informative and visually appealing.
 
-If something doesn't work, try a different approach or ask for clarification. Be helpful and adaptive."""
+If something doesn't work, try a different approach or ask for clarification. Be helpful and adaptive.
+
+TOOLS:
+{tools}
+
+Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question"""
 
         return ChatPromptTemplate.from_messages([
             ("system", system_message),
