@@ -1,6 +1,6 @@
 {
    "frozenConfig": false,
    "projects": {
-      "malloy-samples": "./malloy-samples"
+      "malloy-samples": "https://github.com/ms2data/malloy-samples"
    }
 }

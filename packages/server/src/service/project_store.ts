@@ -2,6 +2,7 @@ import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { Storage } from "@google-cloud/storage";
 import * as fs from "fs";
 import * as path from "path";
+import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
@@ -27,6 +28,7 @@ export class ProjectStore {
    }
 
    private async initialize() {
+      const initialTime = performance.now();
       try {
          this.publisherConfigIsFrozen = isPublisherConfigFrozen(
             this.serverRootPath,
@@ -35,17 +37,22 @@ export class ProjectStore {
             this.serverRootPath,
          );
          logger.info(`Initializing project store.`);
-         for (const projectName of Object.keys(projectManifest.projects)) {
-            logger.info(`Adding project "${projectName}"`);
-            await this.addProject(
-               {
-                  name: projectName,
-                  resource: `${API_PREFIX}/projects/${projectName}`,
-               },
-               true,
-            );
-         }
-         logger.info("Project store successfully initialized");
+         await Promise.all(
+            Object.keys(projectManifest.projects).map(async (projectName) => {
+               logger.info(`Adding project "${projectName}"`);
+               const project = await this.addProject(
+                  {
+                     name: projectName,
+                     resource: `${API_PREFIX}/projects/${projectName}`,
+                  },
+                  true,
+               );
+               return project.listPackages();
+            }),
+         );
+         logger.info(
+            `Project store successfully initialized in ${performance.now() - initialTime}ms`,
+         );
       } catch (error) {
          logger.error("Error initializing project store", { error });
          process.exit(1);
@@ -234,6 +241,22 @@ export class ProjectStore {
       }
 
       // Handle GitHub URIs
+      if (
+         projectPath.startsWith("https://github.com/") ||
+         projectPath.startsWith("git@")
+      ) {
+         try {
+            logger.info(`Mounting GitHub path "${projectPath}"`);
+            await this.downloadGitHubDirectory(projectPath, absoluteTargetPath);
+            return absoluteTargetPath;
+         } catch (error) {
+            logger.error(`Failed to mount GitHub path "${projectPath}"`, {
+               error,
+            });
+            throw error;
+         }
+      }
+
       const errorMsg = `Invalid project path: "${projectPath}". Must be an absolute mounted path or a GCS/S3/GitHub URI.`;
       logger.error(errorMsg, { projectName, projectPath });
       throw new ProjectNotFoundError(errorMsg);
@@ -248,7 +271,6 @@ export class ProjectStore {
          await fs.promises.stat(projectPath)
       ).isDirectory();
       if (projectDirExists) {
-         // Recursively copy projectPath into /etc/publisher/${projectName}
          await fs.promises.rm(absoluteTargetPath, {
             recursive: true,
             force: true,
@@ -354,5 +376,14 @@ export class ProjectStore {
             });
          }),
       );
+   }
+
+   private async downloadGitHubDirectory(
+      githubUrl: string,
+      absoluteDirPath: string,
+   ) {
+      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
+      await fs.promises.mkdir(absoluteDirPath, { recursive: true });
+      await simpleGit().clone(githubUrl, absoluteDirPath);
    }
 }

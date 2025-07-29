@@ -38,6 +38,7 @@
       "@opentelemetry/sdk-node": "^0.200.0",
       "@opentelemetry/sdk-trace-node": "^2.0.0",
       "async-mutex": "^0.5.0",
+      "aws-sdk": "^2.1692.0",
       "body-parser": "^1.20.2",
       "chokidar": "^4.0.3",
       "class-transformer": "^0.5.1",
@@ -50,6 +51,7 @@
       "morgan": "^1.10.0",
       "node-cron": "^3.0.3",
       "recursive-readdir": "^2.2.3",
+      "simple-git": "^3.28.0",
       "uuid": "^11.0.3"
    },
    "devDependencies": {
@@ -67,7 +69,6 @@
       "@types/supertest": "^6.0.2",
       "@typescript-eslint/eslint-plugin": "^8.6.0",
       "@typescript-eslint/parser": "^8.6.0",
-      "aws-sdk": "^2.1692.0",
       "eslint-config-prettier": "^9.1.0",
       "eslint-plugin-prettier": "^5.2.1",
       "mock-aws-s3": "^4.0.2",
