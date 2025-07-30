@@ -1,5 +1,9 @@
-import * as fs from "fs/promises";
+import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
+import { Storage } from "@google-cloud/storage";
+import * as fs from "fs";
 import * as path from "path";
+import simpleGit from "simple-git";
+import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
 import { API_PREFIX, PUBLISHER_CONFIG_NAME } from "../constants";
@@ -12,7 +16,11 @@ export class ProjectStore {
    public serverRootPath: string;
    private projects: Map<string, Project> = new Map();
    public publisherConfigIsFrozen: boolean;
-   private finishedInitialization: Promise<void>;
+   public finishedInitialization: Promise<void>;
+   private s3Client = new S3({
+      followRegionRedirects: true,
+   });
+   private gcsClient = new Storage();
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
@@ -20,6 +28,7 @@ export class ProjectStore {
    }
 
    private async initialize() {
+      const initialTime = performance.now();
       try {
          this.publisherConfigIsFrozen = isPublisherConfigFrozen(
             this.serverRootPath,
@@ -27,19 +36,24 @@ export class ProjectStore {
          const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
-         for (const projectName of Object.keys(projectManifest.projects)) {
-            const projectPath = projectManifest.projects[projectName];
-            const absoluteProjectPath = path.join(
-               this.serverRootPath,
-               projectPath,
-            );
-            const project = await Project.create(
-               projectName,
-               absoluteProjectPath,
-            );
-            this.projects.set(projectName, project);
-         }
-         logger.info("Project store successfully initialized");
+         logger.info(`Initializing project store.`);
+         await Promise.all(
+            Object.keys(projectManifest.projects).map(async (projectName) => {
+               logger.info(`Adding project "${projectName}"`);
+               const project = await this.addProject(
+                  {
+                     name: projectName,
+                     resource: `${API_PREFIX}/projects/${projectName}`,
+                     location: projectManifest.projects[projectName],
+                  },
+                  true,
+               );
+               return project.listPackages();
+            }),
+         );
+         logger.info(
+            `Project store successfully initialized in ${performance.now() - initialTime}ms`,
+         );
       } catch (error) {
          logger.error("Error initializing project store", { error });
          process.exit(1);
@@ -63,12 +77,11 @@ export class ProjectStore {
          const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
-         if (
-            !projectManifest.projects ||
-            !projectManifest.projects[projectName]
-         ) {
+         const projectPath =
+            project?.metadata.location || projectManifest.projects[projectName];
+         if (!projectPath) {
             throw new ProjectNotFoundError(
-               `Project "${projectName}" not found in publisher`,
+               `Project "${projectName}" could not be resolved to a path.`,
             );
          }
          project = await this.addProject({
@@ -79,8 +92,13 @@ export class ProjectStore {
       return project;
    }
 
-   public async addProject(project: ApiProject) {
-      await this.finishedInitialization;
+   public async addProject(
+      project: ApiProject,
+      skipInitialization: boolean = false,
+   ) {
+      if (!skipInitialization) {
+         await this.finishedInitialization;
+      }
       if (this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
@@ -91,13 +109,12 @@ export class ProjectStore {
       const projectManifest = await ProjectStore.reloadProjectManifest(
          this.serverRootPath,
       );
-      const projectPath = projectManifest.projects[projectName];
-      const absoluteProjectPath = path.join(this.serverRootPath, projectPath);
-      if (!(await fs.stat(absoluteProjectPath)).isDirectory()) {
-         throw new ProjectNotFoundError(
-            `Project ${projectName} not found in ${absoluteProjectPath}`,
-         );
-      }
+      const projectPath =
+         project.location || projectManifest.projects[projectName];
+      const absoluteProjectPath = await this.loadProjectIntoDisk(
+         projectName,
+         projectPath,
+      );
       const newProject = await Project.create(projectName, absoluteProjectPath);
       this.projects.set(projectName, newProject);
       return newProject;
@@ -147,7 +164,7 @@ export class ProjectStore {
          } else {
             // If publisher.config.json is missing, generate the manifest from directories
             try {
-               const entries = await fs.readdir(serverRootPath, {
+               const entries = await fs.promises.readdir(serverRootPath, {
                   withFileTypes: true,
                });
                const projects: { [key: string]: string } = {};
@@ -165,5 +182,208 @@ export class ProjectStore {
             }
          }
       }
+   }
+
+   private async loadProjectIntoDisk(projectName: string, projectPath: string) {
+      const absoluteTargetPath = `/etc/publisher/${projectName}`;
+      // Handle absolute paths
+      if (projectPath.startsWith("/")) {
+         try {
+            logger.info(`Mounting local directory at "${projectPath}"`);
+            await this.mountLocalDirectory(
+               projectPath,
+               absoluteTargetPath,
+               projectName,
+            );
+            return absoluteTargetPath;
+         } catch (error) {
+            logger.error(`Failed to mount local directory "${projectPath}"`, {
+               error,
+            });
+            throw error;
+         }
+      }
+
+      // Handle GCS URIs
+      if (projectPath.startsWith("gs://")) {
+         // Download from GCS
+         try {
+            logger.info(
+               `Downloading GCS path "${projectPath}" to "${absoluteTargetPath}"`,
+            );
+            await this.downloadGcsDirectory(
+               projectPath,
+               projectName,
+               absoluteTargetPath,
+            );
+         } catch (error) {
+            logger.error(`Failed to download GCS path "${projectPath}"`, {
+               error,
+            });
+            throw error;
+         }
+         return absoluteTargetPath;
+      }
+
+      // Handle S3 URIs
+      if (projectPath.startsWith("s3://")) {
+         try {
+            logger.info(`Mounting S3 path "${projectPath}"`);
+            await this.downloadS3Directory(
+               projectPath,
+               projectName,
+               absoluteTargetPath,
+            );
+            return absoluteTargetPath;
+         } catch (error) {
+            logger.error(`Failed to mount S3 path "${projectPath}"`, { error });
+            throw error;
+         }
+      }
+
+      // Handle GitHub URIs
+      if (
+         projectPath.startsWith("https://github.com/") ||
+         projectPath.startsWith("git@")
+      ) {
+         try {
+            logger.info(`Mounting GitHub path "${projectPath}"`);
+            await this.downloadGitHubDirectory(projectPath, absoluteTargetPath);
+            return absoluteTargetPath;
+         } catch (error) {
+            logger.error(`Failed to mount GitHub path "${projectPath}"`, {
+               error,
+            });
+            throw error;
+         }
+      }
+
+      const errorMsg = `Invalid project path: "${projectPath}". Must be an absolute mounted path or a GCS/S3/GitHub URI.`;
+      logger.error(errorMsg, { projectName, projectPath });
+      throw new ProjectNotFoundError(errorMsg);
+   }
+
+   private async mountLocalDirectory(
+      projectPath: string,
+      absoluteTargetPath: string,
+      projectName: string,
+   ) {
+      const projectDirExists = (
+         await fs.promises.stat(projectPath)
+      ).isDirectory();
+      if (projectDirExists) {
+         await fs.promises.rm(absoluteTargetPath, {
+            recursive: true,
+            force: true,
+         });
+         await fs.promises.mkdir(absoluteTargetPath, { recursive: true });
+         await fs.promises.cp(projectPath, absoluteTargetPath, {
+            recursive: true,
+         });
+      } else {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in "${projectPath}"`,
+         );
+      }
+   }
+
+   async downloadGcsDirectory(
+      gcsPath: string,
+      projectName: string,
+      absoluteDirPath: string,
+   ) {
+      const trimmedPath = gcsPath.slice(5);
+      const [bucketName, ...prefixParts] = trimmedPath.split("/");
+      const prefix = prefixParts.join("/");
+      const [files] = await this.gcsClient.bucket(bucketName).getFiles({
+         prefix,
+      });
+      if (files.length === 0) {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in ${gcsPath}`,
+         );
+      }
+      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
+      await fs.promises.mkdir(absoluteDirPath, { recursive: true });
+      await Promise.all(
+         files.map(async (file) => {
+            const relativeFilePath = file.name.replace(prefix, "");
+            const absoluteFilePath = path.join(
+               absoluteDirPath,
+               relativeFilePath,
+            );
+            if (file.name.endsWith("/")) {
+               return;
+            }
+            await fs.promises.mkdir(path.dirname(absoluteFilePath), {
+               recursive: true,
+            });
+            return fs.promises.writeFile(
+               absoluteFilePath,
+               await file.download(),
+            );
+         }),
+      );
+   }
+
+   async downloadS3Directory(
+      s3Path: string,
+      projectName: string,
+      absoluteDirPath: string,
+   ) {
+      const trimmedPath = s3Path.slice(5);
+      const [bucketName, ...prefixParts] = trimmedPath.split("/");
+      const prefix = prefixParts.join("/");
+      const objects = await this.s3Client.listObjectsV2({
+         Bucket: bucketName,
+         Prefix: prefix,
+      });
+      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
+      await fs.promises.mkdir(absoluteDirPath, { recursive: true });
+
+      if (!objects.Contents || objects.Contents.length === 0) {
+         throw new ProjectNotFoundError(
+            `Project ${projectName} not found in ${s3Path}`,
+         );
+      }
+      await Promise.all(
+         objects.Contents?.map(async (object) => {
+            const key = object.Key;
+            if (!key) {
+               return;
+            }
+            const relativeFilePath = key.replace(prefix, "");
+            if (!relativeFilePath || relativeFilePath.endsWith("/")) {
+               return;
+            }
+            const absoluteFilePath = path.join(
+               absoluteDirPath,
+               relativeFilePath,
+            );
+            await fs.promises.mkdir(path.dirname(absoluteFilePath), {
+               recursive: true,
+            });
+            const command = new GetObjectCommand({
+               Bucket: bucketName,
+               Key: key,
+            });
+            const item = await this.s3Client.send(command);
+            if (!item.Body) {
+               return;
+            }
+            const file = fs.createWriteStream(absoluteFilePath);
+            item.Body.transformToWebStream().pipeTo(Writable.toWeb(file));
+            await new Promise<void>((resolve, reject) => {
+               file.on("error", reject);
+               file.on("finish", resolve);
+            });
+         }),
+      );
+   }
+
+   async downloadGitHubDirectory(githubUrl: string, absoluteDirPath: string) {
+      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
+      await fs.promises.mkdir(absoluteDirPath, { recursive: true });
+      await simpleGit().clone(githubUrl, absoluteDirPath);
    }
 }

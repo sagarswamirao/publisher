@@ -22,8 +22,12 @@ export class PackageController {
       reload: boolean,
    ): Promise<ApiPackage> {
       const project = await this.projectStore.getProject(projectName, false);
-      const p = await project.getPackage(packageName, reload);
-      return p.getPackageMetadata();
+      const _package = await project.getPackage(packageName, reload);
+      const packageLocation = _package.getPackageMetadata().location;
+      if (reload && packageLocation) {
+         await this.downloadPackage(projectName, packageName, packageLocation);
+      }
+      return _package.getPackageMetadata();
    }
 
    async addPackage(projectName: string, body: ApiPackage) {
@@ -34,6 +38,9 @@ export class PackageController {
          throw new BadRequestError("Package name is required");
       }
       const project = await this.projectStore.getProject(projectName, false);
+      if (body.location) {
+         await this.downloadPackage(projectName, body.name, body.location);
+      }
       return project.addPackage(body.name);
    }
 
@@ -54,6 +61,38 @@ export class PackageController {
          throw new FrozenConfigError();
       }
       const project = await this.projectStore.getProject(projectName, false);
+      if (body.location) {
+         await this.downloadPackage(projectName, packageName, body.location);
+      }
       return project.updatePackage(packageName, body);
+   }
+
+   private async downloadPackage(
+      projectName: string,
+      packageName: string,
+      packageLocation: string,
+   ) {
+      const absoluteTargetPath = `/etc/publisher/${projectName}/${packageName}`;
+      if (
+         packageLocation.startsWith("https://") ||
+         packageLocation.startsWith("git@")
+      ) {
+         await this.projectStore.downloadGitHubDirectory(
+            packageLocation,
+            absoluteTargetPath,
+         );
+      } else if (packageLocation.startsWith("gs://")) {
+         await this.projectStore.downloadGcsDirectory(
+            packageLocation,
+            projectName,
+            absoluteTargetPath,
+         );
+      } else if (packageLocation.startsWith("s3://")) {
+         await this.projectStore.downloadS3Directory(
+            packageLocation,
+            projectName,
+            absoluteTargetPath,
+         );
+      }
    }
 }
