@@ -1,6 +1,9 @@
-import { RunSQLOptions, TestableConnection } from "@malloydata/malloy";
+import {
+   RunSQLOptions,
+   TableSourceDef,
+   TestableConnection,
+} from "@malloydata/malloy";
 import { Connection, PersistSQLResults } from "@malloydata/malloy/connection";
-import { TableSourceDef } from "../../../../../malloy/packages/malloy/dist";
 import { components } from "../api";
 import { ConnectionError } from "../errors";
 import { logger } from "../logger";
@@ -11,6 +14,7 @@ import {
 import { ProjectStore } from "../service/project_store";
 
 type ApiConnection = components["schemas"]["Connection"];
+type ApiConnectionStatus = components["schemas"]["ConnectionStatus"];
 type ApiSqlSource = components["schemas"]["SqlSource"];
 type ApiTableSource = components["schemas"]["TableSource"];
 type ApiQueryData = components["schemas"]["QueryData"];
@@ -57,15 +61,28 @@ export class ConnectionController {
       return getTablesForSchema(connection, schemaName);
    }
 
-   public async testConnection(projectName: string, connectionName: string) {
+   public async testConnection(
+      projectName: string,
+      connectionName: string,
+   ): Promise<ApiConnectionStatus> {
       const project = await this.projectStore.getProject(projectName, false);
       const connection = project.getMalloyConnection(
          connectionName,
       ) as Connection;
       try {
          await (connection as TestableConnection).test();
+         return {
+            status: "ok",
+            errorMessage: "",
+         };
       } catch (error) {
-         throw new ConnectionError((error as Error).message);
+         if (error instanceof ConnectionError) {
+            return {
+               status: "failed",
+               errorMessage: error.message,
+            };
+         }
+         throw error;
       }
    }
 

@@ -10,6 +10,20 @@ servers:
   - url: /api/v0/
 
 paths:
+  /status:
+    get:
+      tags:
+      - publisher
+      operationId: get-status
+      summary: Server status
+      responses:
+        '200':
+          description: Returns server status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerStatus'
+
   /projects:
     get:
       tags:
@@ -224,7 +238,11 @@ paths:
             type: string
       responses:
         "200":
-          description: Test passed.
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionStatus'
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "404":
@@ -1086,6 +1104,16 @@ components:
             $ref: "#/components/schemas/Error"
 
   schemas:
+    ServerStatus:
+      type: object
+      properties:
+        timestamp:
+          type: number
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+
     About:
       type: object
       properties:
@@ -1108,6 +1136,14 @@ components:
         location:
           type: string
           description: Project location, it can be an absolute path or an URI (e.g. github, s3, gcs, etc.).
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connection'
+        packages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Package'
 
     Package:
       type: object
@@ -1542,3 +1578,12 @@ components:
           description: Name of the project to watch
       required:
         - projectName
+
+    ConnectionStatus:
+        type: object
+        properties:
+          status:
+            type: string
+            enum: ["ok", "failed"]
+          errorMessage:
+            type: string

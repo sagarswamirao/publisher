@@ -271,4 +271,12 @@ export class Project {
       });
       this.packages.delete(packageName);
    }
+
+   public async serialize(): Promise<ApiProject> {
+      return {
+         ...this.metadata,
+         connections: this.listApiConnections(),
+         packages: await this.listPackages(),
+      };
+   }
 }

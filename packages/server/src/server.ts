@@ -208,6 +208,13 @@ const setVersionIdError = (res: express.Response) => {
 app.use(cors());
 app.use(bodyParser.json());
 
+app.get(`${API_PREFIX}/status`, async (_req, res) => {
+   res.status(200).json({
+      timestamp: Date.now(),
+      projects: await projectStore.listProjects(),
+   });
+});
+
 app.get(`${API_PREFIX}/watch-mode/status`, watchModeController.getWatchStatus);
 app.post(`${API_PREFIX}/watch-mode/start`, watchModeController.startWatching);
 app.post(`${API_PREFIX}/watch-mode/stop`, watchModeController.stopWatchMode);
@@ -238,7 +245,7 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
          req.params.projectName,
          req.query.reload === "true",
       );
-      res.status(200).json(project.metadata);
+      res.status(200).json(await project.serialize());
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -248,7 +255,8 @@ app.get(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
 
 app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
-      res.status(200).json(await projectStore.updateProject(req.body));
+      const project = await projectStore.updateProject(req.body);
+      res.status(200).json(await project.serialize());
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -258,9 +266,8 @@ app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
 
 app.delete(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
-      res.status(200).json(
-         await projectStore.deleteProject(req.params.projectName),
-      );
+      const project = await projectStore.deleteProject(req.params.projectName);
+      res.status(200).json(await project.serialize());
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -302,12 +309,11 @@ app.get(
    `${API_PREFIX}/projects/:projectName/connections/:connectionName/test`,
    async (req, res) => {
       try {
-         res.status(200).json(
-            await connectionController.testConnection(
-               req.params.projectName,
-               req.params.connectionName,
-            ),
+         const connectionStatus = await connectionController.testConnection(
+            req.params.projectName,
+            req.params.connectionName,
          );
+         res.status(200).json(connectionStatus);
       } catch (error) {
          logger.error(error);
          const { json, status } = internalErrorToHttpError(error as Error);
@@ -711,22 +717,28 @@ app.use(
 );
 
 const mainServer = http.createServer(app);
-projectStore.finishedInitialization.then(() => {
-   mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
-      const address = mainServer.address() as AddressInfo;
-      logger.info(
-         `Publisher server listening at http://${address.address}:${address.port}`,
-      );
-      if (isDevelopment) {
+projectStore.finishedInitialization
+   .then(() => {
+      mainServer.listen(PUBLISHER_PORT, PUBLISHER_HOST, () => {
+         const address = mainServer.address() as AddressInfo;
          logger.info(
-            "Running in development mode - proxying to React dev server at http://localhost:5173",
+            `Publisher server listening at http://${address.address}:${address.port}`,
          );
-      }
+         if (isDevelopment) {
+            logger.info(
+               "Running in development mode - proxying to React dev server at http://localhost:5173",
+            );
+         }
+      });
+      mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
+         logger.info(
+            `MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`,
+         );
+      });
+   })
+   .catch((error) => {
+      console.error(error);
+      logger.error("Failed to initialize publisher server", { error });
+      process.exit(1);
    });
-   mcpApp.listen(MCP_PORT, PUBLISHER_HOST, () => {
-      logger.info(
-         `MCP server listening at http://${PUBLISHER_HOST}:${MCP_PORT}`,
-      );
-   });
-});
 

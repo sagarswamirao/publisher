@@ -11,7 +11,7 @@ COPY packages/app/package.json ./packages/app/package.json
 COPY packages/sdk/package.json ./packages/sdk/package.json
 COPY packages/sdk/ ./packages/sdk/
 WORKDIR /publisher/packages/sdk
-RUN bun install --frozen-lockfile
+RUN bun install
 RUN bun run build
 WORKDIR /publisher
 RUN bun install --frozen-lockfile
@@ -20,7 +20,7 @@ RUN bun run build
 
 FROM oven/bun:1.2.19-slim AS runner
 WORKDIR /publisher
-COPY --from=builder /publisher/package.json /publisher/package.json
+COPY --from=builder /publisher/package.json /publisher/bun.lock ./
 # Copy app runtime dependencies
 COPY --from=builder /publisher/packages/app/dist/ /publisher/packages/app/dist/
 COPY --from=builder /publisher/packages/app/package.json /publisher/packages/app/package.json
@@ -33,5 +33,9 @@ COPY --from=builder /publisher/packages/sdk/package.json /publisher/packages/sdk
 RUN bun install --production
 
 ENV NODE_ENV=production
+RUN mkdir -p /etc/publisher
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
 EXPOSE 4000
 CMD ["node", "--require", "./packages/server/dist/instrumentation.js", "./packages/server/dist/server.js"]

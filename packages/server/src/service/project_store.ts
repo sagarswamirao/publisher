@@ -62,8 +62,10 @@ export class ProjectStore {
 
    public async listProjects() {
       await this.finishedInitialization;
-      return Array.from(this.projects.values()).map(
-         (project) => project.metadata,
+      return Promise.all(
+         Array.from(this.projects.values()).map((project) =>
+            project.serialize(),
+         ),
       );
    }
 
@@ -384,6 +386,14 @@ export class ProjectStore {
    async downloadGitHubDirectory(githubUrl: string, absoluteDirPath: string) {
       await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
       await fs.promises.mkdir(absoluteDirPath, { recursive: true });
-      await simpleGit().clone(githubUrl, absoluteDirPath);
+
+      await simpleGit().clone(githubUrl, absoluteDirPath, {}, (err) => {
+         if (err) {
+            console.error(err);
+            logger.error(`Failed to clone GitHub repository "${githubUrl}"`, {
+               error: err,
+            });
+         }
+      });
    }
 }
