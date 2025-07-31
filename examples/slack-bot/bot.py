@@ -1,9 +1,12 @@
 """
-Clean Malloy Slack Bot using SimpleMalloyAgent
-- LLM has direct access to raw MCP tool responses
-- Minimal parsing - let LLM handle everything naturally
-- Multi-turn tool calling conversation
-- Robust error handling and monitoring for cloud deployment
+Streamlined Malloy Slack Bot with Direct LLM-to-MCP Integration
+
+This bot implements a simplified architecture where:
+- LLM agents have direct access to raw MCP (Model Context Protocol) tool responses
+- Minimal response parsing - the LLM handles data interpretation naturally
+- Supports multi-turn conversations with context preservation across Slack threads
+- Production-ready with circuit breaker pattern, health monitoring, and auto-reconnection
+- Configurable LLM providers (OpenAI, Anthropic, Google Vertex AI)
 """
 
 import os
@@ -35,13 +38,23 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ServiceHealth:
-    """Track service health status"""
+    """Monitor the operational status of critical bot components
+    
+    Tracks connectivity and availability of:
+    - Malloy agent (LLM + MCP integration)
+    - Slack client connections
+    - MCP server availability
+    """
     malloy_agent: bool = False
     slack_client: bool = False
     mcp_server: bool = False
     
 class CircuitBreaker:
-    """Circuit breaker pattern for MCP failures"""
+    """Circuit breaker pattern to prevent cascading failures from MCP server issues
+    
+    Automatically opens (stops requests) when failure threshold is reached,
+    then gradually allows requests after timeout period to test recovery.
+    """
     def __init__(self, failure_threshold: int = 5, timeout: int = 60):
         self.failure_threshold = failure_threshold
         self.timeout = timeout
@@ -69,7 +82,11 @@ class CircuitBreaker:
             logger.warning(f"Circuit breaker OPEN - MCP failures: {self.failure_count}")
 
 def parse_args():
-    """Parse command line arguments for model selection"""
+    """Parse command line arguments for LLM model and provider configuration
+    
+    Returns:
+        argparse.Namespace: Parsed arguments including model choice and optional provider override
+    """
     parser = argparse.ArgumentParser(description='Malloy Slack Bot')
     parser.add_argument('--model', choices=[
         'gpt-4o', 'gpt-4o-mini', 
@@ -83,7 +100,14 @@ def parse_args():
     return parser.parse_args()
 
 def get_provider_from_model(model_name: str) -> str:
-    """Auto-detect provider from model name"""
+    """Auto-detect LLM provider based on model name prefix
+    
+    Args:
+        model_name: Name of the LLM model (e.g., 'gpt-4o', 'claude-3-5-sonnet')
+        
+    Returns:
+        str: Provider name ('openai', 'anthropic', or 'vertex')
+    """
     if model_name.startswith('gpt'):
         return 'openai'
     elif model_name.startswith('gemini'):
@@ -135,7 +159,19 @@ def cleanup_old_conversations():
         logger.info(f"Cleaned up old conversation: {oldest_id}")
 
 def init_bot(model: str = 'gpt-4o', provider: str = None):
-    """Initialize the bot with specified model and provider"""
+    """Initialize all bot components including LLM agent and Slack clients
+    
+    Args:
+        model: LLM model name (e.g., 'gpt-4o', 'claude-3-5-sonnet')
+        provider: Optional provider override ('openai', 'anthropic', 'vertex')
+        
+    Returns:
+        tuple: (malloy_agent, web_client, socket_mode_client)
+        
+    Raises:
+        ValueError: If required environment variables are missing
+        Exception: If initialization of any component fails
+    """
     global malloy_agent, web_client, socket_mode_client
     
     LLM_MODEL = model
@@ -204,9 +240,20 @@ def init_bot(model: str = 'gpt-4o', provider: str = None):
     return malloy_agent, web_client, socket_mode_client
 
 def _strip_markdown_json(text: str) -> str:
-    """
-    Strips the markdown JSON block (e.g., ```json ... ```) from a string.
-    Handles variations with and without the 'json' language identifier.
+    """Remove markdown code block formatting from JSON responses
+    
+    LLM responses sometimes wrap JSON in markdown code blocks like:
+    ```json
+    {"key": "value"}
+    ```
+    
+    This function strips those delimiters to extract raw JSON for parsing.
+    
+    Args:
+        text: Response text that may contain markdown-wrapped JSON
+        
+    Returns:
+        str: Clean text with markdown code block markers removed
     """
     text = text.strip()
     # Check for ```json at the beginning
@@ -223,7 +270,19 @@ def _strip_markdown_json(text: str) -> str:
     return text
 
 def send_error_message(channel_id: str, thread_ts: str, error_type: str, error_details: str = ""):
-    """Send appropriate error message to user"""
+    """Send user-friendly error messages based on failure type
+    
+    Provides contextual error messages for different failure scenarios:
+    - agent_down: Malloy agent is unavailable
+    - connection_error: MCP server connectivity issues  
+    - processing_error: Query processing failures
+    
+    Args:
+        channel_id: Slack channel to send message to
+        thread_ts: Thread timestamp for threaded response
+        error_type: Category of error for appropriate messaging
+        error_details: Optional specific error information
+    """
     try:
         if error_type == "agent_down":
             message = "🔧 The Malloy agent is currently down. Our team has been notified and we're working to restore service. Please try again in a few minutes."
@@ -243,7 +302,18 @@ def send_error_message(channel_id: str, thread_ts: str, error_type: str, error_d
         logger.error(f"Failed to send error message: {e}")
 
 def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
-    """Process incoming Slack events with enhanced conversation tracking."""
+    """Handle Slack events with intelligent conversation context management
+    
+    Processes app mentions and threaded messages while maintaining conversation
+    history across multiple turns. Implements smart thread detection to:
+    - Respond to direct mentions anywhere
+    - Continue conversations in threads the bot initiated
+    - Ignore unrelated threaded messages for focused interaction
+    
+    Args:
+        client: Slack Socket Mode client instance
+        req: Incoming Slack event request
+    """
     global malloy_agent
     
     logger.info(f"🔍 SLACK EVENT: {req.type}")
@@ -467,7 +537,14 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
                 send_error_message(channel_id, conversation_id, "processing_error", str(e))
 
 def reconnect_socket_client():
-    """Attempt to reconnect Socket Mode client"""
+    """Attempt to restore Slack Socket Mode connection with exponential backoff
+    
+    Implements retry logic with increasing delays between attempts to handle
+    temporary network issues or Slack service disruptions.
+    
+    Returns:
+        bool: True if reconnection successful, False if all attempts failed
+    """
     global socket_mode_client
     
     max_retries = 3
