@@ -9,14 +9,23 @@ COPY package.json bun.lock api-doc.yaml ./
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/app/package.json ./packages/app/package.json
 COPY packages/sdk/package.json ./packages/sdk/package.json
+# Build SDK
 COPY packages/sdk/ ./packages/sdk/
 WORKDIR /publisher/packages/sdk
 RUN bun install
 RUN bun run build
+# Install built SDK and build app
 WORKDIR /publisher
 RUN bun install --frozen-lockfile
-COPY packages/ ./packages/
+COPY packages/app/ ./packages/app/
+WORKDIR /publisher/packages/app
+RUN bun install --frozen-lockfile
 RUN bun run build
+# Copy built app and build server
+WORKDIR /publisher
+COPY packages/server/ ./packages/server/
+RUN bun install --frozen-lockfile
+RUN bun run build:server
 
 FROM oven/bun:1.2.19-slim AS runner
 WORKDIR /publisher
