@@ -97,18 +97,23 @@ class LangChainCompatibilityAdapter:
             content = content_data.get("content", "")
             kwargs = content_data.get("additional_kwargs", {})
 
+            # Skip messages with empty content to avoid Claude API errors
+            if not content or content.strip() == "":
+                print(f"🔍 DEBUG: Skipping empty message with role {role}")
+                continue
+
             if role == "user":
                 deserialized.append(HumanMessage(content=content))
             elif role == "assistant":
                 deserialized.append(AIMessage(content=content, additional_kwargs=kwargs))
         return deserialized
 
-    def process_user_question(self, user_question: str, history: Optional[List[Dict[str, Any]]] = None) -> Tuple[bool, str, List[Dict[str, Any]]]:
+    def process_user_question(self, user_question: str, history: Optional[List[Dict[str, Any]]] = None, session_id: Optional[str] = None) -> Tuple[bool, str, List[Dict[str, Any]]]:
         try:
             self._setup_agent_if_needed()
             
             with ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(self._run_question_in_new_loop, user_question, history)
+                future = executor.submit(self._run_question_in_new_loop, user_question, history, session_id)
                 success, response, final_history_obj = future.result(timeout=300)
                 final_history = self._serialize_history(final_history_obj)
                 return success, response, final_history
@@ -117,7 +122,7 @@ class LangChainCompatibilityAdapter:
             print(f"🔍 DEBUG: Error in process_user_question: {e}")
             return False, error_msg, []
 
-    def _run_question_in_new_loop(self, question: str, history: Optional[List[Dict[str, Any]]]) -> Tuple[bool, str, List[BaseMessage]]:
+    def _run_question_in_new_loop(self, question: str, history: Optional[List[Dict[str, Any]]], session_id: Optional[str] = None) -> Tuple[bool, str, List[BaseMessage]]:
         """This runs in a separate thread and uses the loop created during setup."""
         if not self.agent or not self.loop:
             raise RuntimeError("Adapter not initialized. Call _setup_agent_if_needed first.")
@@ -129,7 +134,11 @@ class LangChainCompatibilityAdapter:
             # Note: LangGraph agents handle conversation history internally through checkpoints
             # No need to manually manage memory like with the old LangChain agents
             
-            success, response, _ = self.loop.run_until_complete(self.agent.process_question(question))
+            # Use provided session_id or fall back to agent's default
+            effective_session_id = session_id if session_id else self.agent.session_id
+            print(f"🔍 DEBUG: Using session_id: {effective_session_id} for question: {question}")
+            
+            success, response, _ = self.loop.run_until_complete(self.agent.process_question(question, session_id=effective_session_id))
             final_history_obj = self.agent.get_conversation_history()
             return success, response, final_history_obj
         except Exception as e:

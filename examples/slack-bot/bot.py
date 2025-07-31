@@ -10,7 +10,6 @@ This bot implements a simplified architecture where:
 """
 
 import os
-import json
 import logging
 import argparse
 import time
@@ -35,6 +34,11 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# Set specific loggers to INFO level to show debug messages
+logging.getLogger('src.agents.malloy_langchain_agent').setLevel(logging.INFO)
+logging.getLogger('src.agents').setLevel(logging.INFO)
+logging.getLogger('src').setLevel(logging.INFO)
 
 @dataclass
 class ServiceHealth:
@@ -94,7 +98,7 @@ def parse_args():
         'claude-3-5-sonnet-20241022', 'claude-3-7-sonnet', 
         'claude-sonnet-4-20250514', 'claude-opus-4-20250514',
         'claude-3-5-haiku-20241022'
-    ], default='claude-3-5-sonnet-20241022', help='LLM model to use')
+    ], default='claude-sonnet-4-20250514', help='LLM model to use')
     parser.add_argument('--provider', choices=['openai', 'vertex', 'anthropic'], 
                        help='LLM provider (auto-detected from model if not specified)')
     return parser.parse_args()
@@ -239,35 +243,7 @@ def init_bot(model: str = 'gpt-4o', provider: str = None):
     
     return malloy_agent, web_client, socket_mode_client
 
-def _strip_markdown_json(text: str) -> str:
-    """Remove markdown code block formatting from JSON responses
-    
-    LLM responses sometimes wrap JSON in markdown code blocks like:
-    ```json
-    {"key": "value"}
-    ```
-    
-    This function strips those delimiters to extract raw JSON for parsing.
-    
-    Args:
-        text: Response text that may contain markdown-wrapped JSON
-        
-    Returns:
-        str: Clean text with markdown code block markers removed
-    """
-    text = text.strip()
-    # Check for ```json at the beginning
-    if text.startswith("```json"):
-        text = text[7:].strip()
-    # Check for ``` at the beginning
-    elif text.startswith("```"):
-        text = text[3:].strip()
-    
-    # Check for ``` at the end
-    if text.endswith("```"):
-        text = text[:-3].strip()
-        
-    return text
+
 
 def send_error_message(channel_id: str, thread_ts: str, error_type: str, error_details: str = ""):
     """Send user-friendly error messages based on failure type
@@ -326,12 +302,52 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
         
         # Handle both app_mention and message events
         event_type = event.get("type")
+        user_id = event.get("user")
+        
+        # Validate user_id exists
+        if not user_id:
+            logger.warning(f"🚨 Event missing user_id: {event}")
+            return
+            
+        # Skip bot's own messages early to prevent self-responses
+        try:
+            bot_user_id = web_client.auth_test()["user_id"]
+            if user_id == bot_user_id:
+                logger.info(f"🤖 Ignoring bot's own message from {user_id}")
+                return
+        except Exception as e:
+            logger.warning(f"Failed to check bot user ID: {e}")
+            return
         
         # Check if this is an event we should respond to
         should_respond = False
         
         if event_type == "app_mention":
-            should_respond = True
+            # Only respond to app mentions in channels, not DMs (DMs are handled separately)
+            channel_id = event.get("channel", "")
+            if not channel_id.startswith('D'):
+                should_respond = True
+                logger.info(f"📢 App mention in channel {channel_id}")
+            else:
+                logger.info(f"📢 Ignoring app mention in DM {channel_id} (handled by message event)")
+        elif event_type == "message" and not event.get("thread_ts"):
+            # Handle direct messages (channel starts with 'D') and direct mentions in channels
+            channel_id = event.get("channel", "")
+            text = event.get("text", "").strip()
+            
+            # Direct message channel (starts with 'D') - always respond, no mention needed
+            if channel_id.startswith('D'):
+                should_respond = True
+                logger.info(f"💬 Direct message received in channel {channel_id}")
+            # For regular channels, only respond if bot is mentioned in a non-threaded message
+            else:
+                try:
+                    bot_user_id = web_client.auth_test()["user_id"]
+                    if f"<@{bot_user_id}>" in text:
+                        should_respond = True
+                        logger.info(f"💬 Bot mentioned in channel message")
+                except Exception as e:
+                    logger.warning(f"Failed to get bot user ID for mention check: {e}")
         elif event_type == "message" and event.get("thread_ts"):
             # Only respond to threaded messages if:
             # 1. Bot was mentioned in this message, OR  
@@ -381,20 +397,22 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
         if should_respond:
             text = event.get("text", "").strip()
             channel_id = event.get("channel")
-            user_id = event.get("user")
             
-            # Skip bot's own messages
-            try:
-                bot_user_id = web_client.auth_test()["user_id"]
-                if user_id == bot_user_id:
-                    return
-            except Exception as e:
-                logger.warning(f"Failed to check bot user ID: {e}")
+            # Validate essential fields
+            if not channel_id:
+                logger.error(f"🚨 Event missing channel_id: {event}")
+                return
+            if not text:
+                logger.warning(f"🚨 Event has empty text - skipping")
                 return
             
             # Extract timestamps for conversation management
             thread_ts = event.get("thread_ts")
             message_ts = event.get("ts")
+            
+            if not message_ts:
+                logger.error(f"🚨 Event missing message timestamp: {event}")
+                return
             
             logger.info(f"Received {event_type} from user {user_id} in channel {channel_id}")
             
@@ -410,16 +428,29 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
                     user_question = text
             
             # Determine conversation ID and retrieve history
-            if thread_ts:
-                # Follow-up question in existing thread
+            # For direct messages, always use threading to maintain conversation history
+            if channel_id.startswith('D'):
+                # Direct message - always use threading for conversation continuity
+                if thread_ts:
+                    # Continue existing DM thread
+                    conversation_id = thread_ts
+                    history = CONVERSATION_CACHE.get(conversation_id)
+                    logger.info(f"💬 Continuing DM thread {conversation_id} with history: {bool(history)}")
+                else:
+                    # Start new DM thread using message timestamp
+                    conversation_id = message_ts
+                    history = CONVERSATION_CACHE.get(conversation_id)  # Check if we have history for this conversation
+                    logger.info(f"💬 Starting/continuing DM thread {conversation_id} with history: {bool(history)}")
+            elif thread_ts:
+                # Follow-up question in existing channel thread
                 conversation_id = thread_ts
                 history = CONVERSATION_CACHE.get(conversation_id)
-                logger.info(f"Continuing conversation {conversation_id} with history: {bool(history)}")
+                logger.info(f"Continuing channel thread {conversation_id} with history: {bool(history)}")
             else:
-                # New question in main channel - start new thread
+                # New question in channel - start new thread
                 conversation_id = message_ts
                 history = None
-                logger.info(f"Starting new conversation {conversation_id}")
+                logger.info(f"Starting new channel thread {conversation_id}")
             
             logger.info(f"💾 Using conversation_id: '{conversation_id}', thread_ts: '{thread_ts}', message_ts: '{message_ts}'")
             
@@ -441,64 +472,31 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
 
             # Process the question with enhanced error handling
             try:
-                success, response_text, final_history = malloy_agent.process_user_question(user_question, history=history)
+                logger.info(f"🔄 Processing question for user {user_id}: '{user_question}' (session: {conversation_id})")
+                success, response_text, final_history = malloy_agent.process_user_question(user_question, history=history, session_id=conversation_id)
                 
                 if success:
                     circuit_breaker.record_success()
                     service_health.mcp_server = True
                     logger.info(f"Successfully processed question for user {user_id}")
                     
-                    logger.debug(f"Response from agent: '{response_text}'")
-                    logger.debug(f"Response length: {len(response_text)}")
-                    logger.debug(f"Response type: {type(response_text)}")
+                    logger.info(f"Response from agent: '{response_text}'")
+                    logger.info(f"Response length: {len(response_text)}")
+                    logger.info(f"Response type: {type(response_text)}")
 
-                    # Sanitize the response to handle markdown ```json ... ```
-                    clean_response_text = _strip_markdown_json(response_text)
-
-                    try:
-                        response_data = json.loads(clean_response_text)
-                        # Check for chart URL (new QuickChart approach)
-                        if "chart_url" in response_data and response_data.get("status") == "success":
-                            chart_url = response_data["chart_url"]
-                            chart_text = response_data.get("text", "Here's your chart:")
-                            
-                            try:
-                                # Send chart URL as a message - Slack will automatically display it as an image
-                                web_client.chat_postMessage(
-                                    channel=channel_id,
-                                    thread_ts=conversation_id,
-                                    text=f"{chart_text}\n{chart_url}",
-                                    unfurl_links=True,  # Allow Slack to unfurl the chart image
-                                    unfurl_media=True
-                                )
-                                logger.info(f"Successfully shared chart URL for user {user_id}: {chart_url}")
-                                
-                            except Exception as e:
-                                logger.error(f"Failed to send chart URL: {e}")
-                                web_client.chat_postMessage(
-                                    channel=channel_id,
-                                    thread_ts=conversation_id,
-                                    text=f"I created a chart but failed to share it: {e}"
-                                )
-                        else:
-                            # It's JSON, but not a chart, so send the text part
-                            web_client.chat_postMessage(
-                                channel=channel_id,
-                                thread_ts=conversation_id,
-                                text=response_data.get("text", clean_response_text)
-                            )
-                            
-                    except json.JSONDecodeError:
-                        logger.debug(f"Not JSON, treating as text response: '{response_text}'")
-                        
-                        if not response_text or response_text.strip() == "":
-                            response_text = "I'm sorry, I couldn't generate a proper response."
-                        
-                        web_client.chat_postMessage(
-                            channel=channel_id,
-                            thread_ts=conversation_id,
-                            text=response_text
-                        )
+                    # Send the agent's response directly - no JSON parsing needed
+                    # The agent is now responsible for including chart URLs in its text response
+                    if not response_text or response_text.strip() == "":
+                        response_text = "I'm sorry, I couldn't generate a proper response."
+                    
+                    logger.info(f"📤 Sending agent response to Slack")
+                    web_client.chat_postMessage(
+                        channel=channel_id,
+                        thread_ts=conversation_id,
+                        text=response_text,
+                        unfurl_links=True,  # Allow Slack to unfurl chart URLs
+                        unfurl_media=True
+                    )
                     
                     # Update conversation cache with final history
                     if final_history:
@@ -533,7 +531,8 @@ def process_slack_events(client: BaseSocketModeClient, req: SocketModeRequest):
             except Exception as e:
                 circuit_breaker.record_failure()
                 service_health.mcp_server = False
-                logger.error(f"Exception processing question for user {user_id}: {e}")
+                logger.error(f"Exception processing question for user {user_id} ('{user_question}'): {e}")
+                logger.error(f"Full traceback:", exc_info=True)
                 send_error_message(channel_id, conversation_id, "processing_error", str(e))
 
 def reconnect_socket_client():

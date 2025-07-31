@@ -143,22 +143,24 @@ class MalloyLangChainAgent:
         
         self.logger.info("LangGraph agent created successfully")
     
-    async def process_question(self, question: str) -> Tuple[bool, str, Dict[str, Any]]:
+    async def process_question(self, question: str, session_id: Optional[str] = None) -> Tuple[bool, str, Dict[str, Any]]:
         """Process a user question and return success status, response, and metadata"""
         try:
-            self.logger.info(f"Processing question: {question}")
+            # Use provided session_id or fall back to instance default
+            effective_session_id = session_id if session_id else self.session_id
+            self.logger.info(f"Processing question: {question} (session: {effective_session_id})")
             
             if not self.agent_executor:
                 return False, "Agent not initialized. Please call setup() first.", {}
             
             # Use LangGraph's message-based invocation pattern
             # Each conversation needs a unique thread_id for memory
-            config = {"configurable": {"thread_id": self.session_id}}
+            config = {"configurable": {"thread_id": effective_session_id}}
             
             self.logger.debug("=" * 60)
             self.logger.debug("🤖 AGENT EXECUTION START")
             self.logger.debug(f"📝 User Question: {question}")
-            self.logger.debug(f"🧵 Thread ID: {self.session_id}")
+            self.logger.debug(f"🧵 Thread ID: {effective_session_id}")
             self.logger.debug(f"🔧 Available Tools: {[tool.name for tool in self.tools]}")
             self.logger.debug("=" * 60)
             

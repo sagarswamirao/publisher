@@ -57,7 +57,7 @@ export function registerTools(
 ): void {
    mcpServer.tool(
       "malloy_projectList",
-      "Lists all Malloy projects",
+      "Lists all Malloy projects - use this to identify which projects are avilable to you. After using projectList, you can use the malloy_packageList tool to list packages within a project.",
       {},
       async () => {
          console.log(
@@ -108,7 +108,7 @@ export function registerTools(
 
    mcpServer.tool(
       "malloy_packageList",
-      "Lists all Malloy packages within a project",
+      "Lists all Malloy packages within a project. packages contain resource (models and notebook files) which allow you to learn how to query against modeled data. After using packageList, you can use the malloy_packageGet to retrieve avilable resources (models and notebook files) within a package.",
       listPackagesShape,
       async (params: listPackagesParams) => {
          const { projectName } = params;
@@ -143,7 +143,7 @@ export function registerTools(
 
    mcpServer.tool(
       "malloy_packageGet",
-      "Lists resources within a package",
+      "Lists resources (models and notebook files) within a package - after using this tool, you can retrieve resources using the malloy_modelGetText tool",
       getModelsShape,
       async (params: getModelsParams) => {
          const { projectName, packageName } = params;
@@ -181,7 +181,7 @@ export function registerTools(
 
    mcpServer.tool(
       "malloy_modelGetText",
-      "Gets the raw text content of a model file",
+      "Gets the raw text content of a model file. This is the raw text content of the model file, which can be used to construct queries. use executeQuery to run queries against the model.",
       getModelTextShape,
       async (params: getModelTextParams) => {
          const { projectName, packageName, modelPath } = params;
