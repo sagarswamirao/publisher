@@ -20,7 +20,7 @@ export class BrowserWorkbookStorage implements WorkbookStorage {
    }
 
    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-   async listWorkbooks(workspace: Workspace): Promise<WorkbookLocator[]> {
+   async listWorkbooks(_workspace: Workspace): Promise<WorkbookLocator[]> {
       const keys: WorkbookLocator[] = [];
       for (let i = 0; i < localStorage.length; i++) {
          const key = localStorage.key(i);
