@@ -16,3 +16,36 @@ github
 Dockerfile.*
 .dockerignore
 
+# Additional exclusions to reduce build context
+*.log
+*.tmp
+*.temp
+.cache
+coverage
+.nyc_output
+.env*
+!.env.example
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Exclude large directories that aren't needed for build
+examples/
+malloy-samples/
+docs/
+scripts/
+.github/
+
+# Exclude test files if not needed for build
+**/*.test.*
+**/*.spec.*
+**/__tests__/
+**/test/
+**/tests/
+
+# Exclude development files
+**/*.dev.*
+**/*.local.*
+

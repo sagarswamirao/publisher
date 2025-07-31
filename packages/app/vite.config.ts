@@ -134,7 +134,27 @@ export default ({ mode }) => {
          emptyOutDir: true,
          chunkSizeWarningLimit: 1000,
          target: "esnext",
+         // Build optimizations for faster builds
+         reportCompressedSize: false, // Disable size reporting for faster builds
+         rollupOptions: {
+            output: {
+               manualChunks: {
+                  // Split vendor chunks for better caching
+                  vendor: ["react", "react-dom"],
+                  mui: ["@mui/material", "@mui/icons-material"],
+               },
+            },
+         },
       },
       resolve,
+      // Optimize for faster builds
+      optimizeDeps: {
+         include: [
+            "react",
+            "react-dom",
+            "@mui/material",
+            "@mui/icons-material",
+         ],
+      },
    });
 };

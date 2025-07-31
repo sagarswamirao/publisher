@@ -231,7 +231,8 @@ app.get(`${API_PREFIX}/projects`, async (_req, res) => {
 
 app.post(`${API_PREFIX}/projects`, async (req, res) => {
    try {
-      res.status(200).json(await projectStore.addProject(req.body));
+      const project = await projectStore.addProject(req.body);
+      res.status(200).json(await project.serialize());
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);
@@ -457,9 +458,11 @@ app.get(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
 
 app.post(`${API_PREFIX}/projects/:projectName/packages`, async (req, res) => {
    try {
-      res.status(200).json(
-         await packageController.addPackage(req.params.projectName, req.body),
+      const _package = await packageController.addPackage(
+         req.params.projectName,
+         req.body,
       );
+      res.status(200).json(_package?.getPackageMetadata());
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);

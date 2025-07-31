@@ -93,6 +93,12 @@ export class PackageController {
             projectName,
             absoluteTargetPath,
          );
+      } else if (packageLocation.startsWith("/")) {
+         await this.projectStore.mountLocalDirectory(
+            packageLocation,
+            absoluteTargetPath,
+            projectName,
+         );
       }
    }
 }

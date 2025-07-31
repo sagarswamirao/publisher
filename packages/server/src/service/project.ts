@@ -9,6 +9,7 @@ import {
    PackageNotFoundError,
    ProjectNotFoundError,
 } from "../errors";
+import { logger } from "../logger";
 import { createConnections, InternalConnection } from "./connection";
 import { ApiConnection } from "./model";
 import { Package } from "./package";
@@ -81,6 +82,13 @@ export class Project {
       }
       const { malloyConnections, apiConnections } =
          await createConnections(projectPath);
+      logger.info(
+         `Loaded ${malloyConnections.size + apiConnections.length} connections for project ${projectName}`,
+         {
+            malloyConnections,
+            apiConnections,
+         },
+      );
       return new Project(
          projectName,
          projectPath,

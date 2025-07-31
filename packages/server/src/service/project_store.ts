@@ -113,10 +113,15 @@ export class ProjectStore {
       );
       const projectPath =
          project.location || projectManifest.projects[projectName];
-      const absoluteProjectPath = await this.loadProjectIntoDisk(
-         projectName,
-         projectPath,
-      );
+      let absoluteProjectPath: string;
+      if (projectPath) {
+         absoluteProjectPath = await this.loadProjectIntoDisk(
+            projectName,
+            projectPath,
+         );
+      } else {
+         absoluteProjectPath = await this.scaffoldProject(project);
+      }
       const newProject = await Project.create(projectName, absoluteProjectPath);
       this.projects.set(projectName, newProject);
       return newProject;
@@ -184,6 +189,22 @@ export class ProjectStore {
             }
          }
       }
+   }
+
+   private async scaffoldProject(project: ApiProject) {
+      const projectName = project.name;
+      if (!projectName) {
+         throw new Error("Project name is required");
+      }
+      const absoluteProjectPath = `/etc/publisher/${projectName}`;
+      await fs.promises.mkdir(absoluteProjectPath, { recursive: true });
+      if (project.readme) {
+         await fs.promises.writeFile(
+            path.join(absoluteProjectPath, "README.md"),
+            project.readme,
+         );
+      }
+      return absoluteProjectPath;
    }
 
    private async loadProjectIntoDisk(projectName: string, projectPath: string) {
@@ -265,7 +286,7 @@ export class ProjectStore {
       throw new ProjectNotFoundError(errorMsg);
    }
 
-   private async mountLocalDirectory(
+   public async mountLocalDirectory(
       projectPath: string,
       absoluteTargetPath: string,
       projectName: string,

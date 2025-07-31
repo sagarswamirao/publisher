@@ -20,11 +20,20 @@ export const logger = winston.createLogger({
 
 export const loggerMiddleware: RequestHandler = (req, res, next) => {
    const startTime = performance.now();
+   const resJson = res.json;
+   res.json = (body: unknown) => {
+      res.locals.body = body;
+      return resJson.call(res, body);
+   };
    res.on("finish", () => {
       const endTime = performance.now();
       logger.info(`${req.method} ${req.url}`, {
          statusCode: res.statusCode,
          duration: endTime - startTime,
+         payload: req.body,
+         response: res.locals.body,
+         params: req.params,
+         query: req.query,
       });
    });
    next();
