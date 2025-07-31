@@ -71,7 +71,13 @@ export default function Header({ logoHeader, endCap }: HeaderProps) {
                   )
                ) : (
                   <>
-                     <AnalyzePackageButton />
+                     <AnalyzePackageButton
+                        onWorkbookSelect={(workbook) => {
+                           navigate(
+                              `/${projectName}/${packageName}/workbook/${workbook.workspace}/${workbook.path}`,
+                           );
+                        }}
+                     />
                   </>
                )}
                {endCap}
