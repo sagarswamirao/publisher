@@ -17,16 +17,20 @@ import {
    Typography,
 } from "@mui/material";
 import React from "react";
-import { useRouterClickHandler } from "./click_helper";
 import { WorkbookList } from "./Workbook";
 import { useWorkbookStorage } from "./Workbook/WorkbookStorageProvider";
 import type { WorkbookLocator, Workspace } from "./Workbook/WorkbookStorage";
-import { useParams } from "react-router-dom";
-import { PackageContextProps, PackageProvider } from "./Package";
 
-export function AnalyzePackageButton() {
-   const packageContext = useParams() as unknown as PackageContextProps;
-   const { packageName, projectName } = packageContext;
+export interface AnalyzePackageButtonProps {
+   onWorkbookSelect: (
+      workbook: WorkbookLocator,
+      event: React.MouseEvent,
+   ) => void;
+}
+
+export function AnalyzePackageButton({
+   onWorkbookSelect,
+}: AnalyzePackageButtonProps) {
    const { workbookStorage } = useWorkbookStorage();
    const [workbookName, setWorkbookName] = React.useState("");
    const [selectedWorkspace, setSelectedWorkspace] = React.useState("");
@@ -36,7 +40,6 @@ export function AnalyzePackageButton() {
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
    const [newDialogOpen, setNewDialogOpen] = React.useState(false);
    const [openDialogOpen, setOpenDialogOpen] = React.useState(false);
-   const navigate = useRouterClickHandler();
 
    const open = Boolean(anchorEl);
    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -56,9 +59,10 @@ export function AnalyzePackageButton() {
 
    // Fetch available workspaces when the new dialog opens
    React.useEffect(() => {
-      if (newDialogOpen && workbookStorage && packageContext) {
+      if (workbookStorage) {
+         console.log("fetching workspaces");
          workbookStorage
-            .listWorkspaces(packageContext, true) // Only show writeable workspaces
+            .listWorkspaces(true) // Only show writeable workspaces
             .then((workspaces) => {
                setAvailableWorkspaces(workspaces);
                // If only one workspace, select it by default
@@ -71,36 +75,30 @@ export function AnalyzePackageButton() {
                setAvailableWorkspaces([]);
             });
       }
-   }, [newDialogOpen, workbookStorage, packageContext]);
+   }, [workbookStorage]);
 
    const handleWorkbookClick = (
       workbook: WorkbookLocator,
       event: React.MouseEvent,
    ) => {
       setOpenDialogOpen(false);
-      // Navigate to the WorkbookPage with anchor text for notebookPath
-      navigate(
-         `/${projectName}/${packageName}/workbook/${encodeURIComponent(workbook.workspace)}/${encodeURIComponent(workbook.path)}`,
-         event,
-      );
+      onWorkbookSelect(workbook, event);
    };
 
    const createWorkbookClick = (event?: React.MouseEvent) => {
       setNewDialogOpen(false);
-      // Include workspace in the workbook path if selected
-      const workbookPath = `${encodeURIComponent(selectedWorkspace)}/${encodeURIComponent(workbookName)}`;
-      // Navigate to the WorkbookPage with anchor text for notebookPath
-      navigate(
-         `/${projectName}/${packageName}/workbook/${workbookPath}`,
+      onWorkbookSelect(
+         {
+            path: workbookName,
+            workspace: selectedWorkspace,
+         },
          event,
       );
       setWorkbookName("");
       setSelectedWorkspace("");
    };
 
-   if (!projectName || !packageName) {
-      return null;
-   }
+   const noWorkspaces = availableWorkspaces.length === 0;
    return (
       <>
          <Button
@@ -136,6 +134,7 @@ export function AnalyzePackageButton() {
                   handleMenuClose();
                }}
                sx={{ py: 1, px: 2 }}
+               disabled={noWorkspaces}
             >
                <ListItemIcon>
                   <Add fontSize="small" />
@@ -144,9 +143,15 @@ export function AnalyzePackageButton() {
                   <Typography variant="body2" fontWeight={500}>
                      New Workbook
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                     Create a new analysis workbook
-                  </Typography>
+                  {noWorkspaces ? (
+                     <Typography variant="caption" color="text.secondary">
+                        No workspaces available
+                     </Typography>
+                  ) : (
+                     <Typography variant="caption" color="text.secondary">
+                        Create a new analysis workbook
+                     </Typography>
+                  )}
                </ListItemText>
             </MenuItem>
             <MenuItem
@@ -300,12 +305,7 @@ export function AnalyzePackageButton() {
                </Typography>
             </DialogTitle>
             <DialogContent sx={{ px: 2, pb: 2 }}>
-               <PackageProvider
-                  projectName={projectName}
-                  packageName={packageName}
-               >
-                  <WorkbookList onWorkbookClick={handleWorkbookClick} />
-               </PackageProvider>
+               <WorkbookList onWorkbookClick={handleWorkbookClick} />
             </DialogContent>
          </Dialog>
       </>

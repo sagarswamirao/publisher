@@ -18,10 +18,8 @@ import {
 import Stack from "@mui/material/Stack";
 import React from "react";
 import { Configuration, ModelsApi } from "../../client";
-import { useRouterClickHandler } from "../click_helper";
 import { SourceAndPath } from "../Model/SourcesExplorer";
 import { WorkbookManager } from "./WorkbookManager";
-import { usePackage } from "../Package";
 import { useServer } from "../ServerProvider";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { MutableCell } from "./MutableCell";
@@ -31,6 +29,7 @@ import * as Malloy from "@malloydata/malloy-interfaces";
 import { ModelPicker } from "./ModelPicker";
 import { getAxiosConfig } from "../../hooks";
 import { WorkbookLocator } from "./WorkbookStorage";
+import { useRouterClickHandler } from "../click_helper";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -39,6 +38,8 @@ interface WorkbookProps {
    expandCodeCells?: boolean;
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
+   defaultProjectName?: string;
+   defaultPackageName?: string;
 }
 
 interface PathToSources {
@@ -51,20 +52,15 @@ export default function Workbook({
    expandCodeCells,
    expandEmbeddings,
    hideEmbeddingIcons,
+   defaultProjectName,
+   defaultPackageName,
 }: WorkbookProps) {
    const navigate = useRouterClickHandler();
-   const packageContext = usePackage();
-   const { projectName, packageName, versionId } = packageContext;
    const { server, getAccessToken } = useServer();
    const { workbookStorage } = useWorkbookStorage();
    const [lastError, setLastError] = React.useState<string | undefined>(
       undefined,
    );
-   if (!projectName || !packageName) {
-      throw new Error(
-         "Project and package must be provided via PubliserPackageProvider",
-      );
-   }
    if (!workbookStorage) {
       throw new Error(
          "Workbook storage be provided via WorkbookStorageProvider",
@@ -110,10 +106,10 @@ export default function Workbook({
       setDeleteDialogOpen(true);
    };
 
-   const handleDeleteConfirm = async (event?: React.MouseEvent) => {
-      if (workbookPath && workbookStorage && packageContext) {
+   const handleDeleteConfirm = async () => {
+      if (workbookPath && workbookStorage) {
          await workbookStorage
-            .deleteWorkbook(packageContext, workbookPath)
+            .deleteWorkbook(workbookPath)
             .then(() => {
                setLastError(undefined);
             })
@@ -122,7 +118,8 @@ export default function Workbook({
             });
       }
       setDeleteDialogOpen(false);
-      navigate(`/${projectName}/${packageName}`, event);
+      // TODO(jjs) - on delete event
+      navigate(`/${defaultProjectName}/${defaultPackageName}`);
    };
 
    const handleDeleteCancel = () => {
@@ -159,10 +156,10 @@ export default function Workbook({
                promises.push(
                   modelsApi
                      .getModel(
-                        projectName,
-                        packageName,
+                        defaultProjectName,
+                        defaultPackageName,
                         model,
-                        versionId,
+                        undefined,
                         await getAxiosConfig(server, getAccessToken),
                      )
                      .then((data) => ({
@@ -193,24 +190,21 @@ export default function Workbook({
       // Work this cannot depend on sourceAndPaths because it will cause an infinite loop.
       getAccessToken,
       workbookData,
-      packageName,
-      projectName,
+      defaultPackageName,
+      defaultProjectName,
       server,
-      versionId,
    ]);
 
    React.useEffect(() => {
       if (!workbookPath) {
          return;
       }
-      WorkbookManager.loadWorkbook(
-         workbookStorage,
-         packageContext,
-         workbookPath,
-      ).then((workbookData) => {
-         setWorkbookData(workbookData);
-      });
-   }, [workbookPath, workbookStorage, packageContext]);
+      WorkbookManager.loadWorkbook(workbookStorage, workbookPath).then(
+         (workbookData) => {
+            setWorkbookData(workbookData);
+         },
+      );
+   }, [workbookPath, workbookStorage]);
 
    if (!workbookData) {
       return <div>Loading...</div>;
@@ -305,7 +299,7 @@ export default function Workbook({
                         ml: 1,
                      }}
                   >
-                     {`${projectName} > ${packageName} > ${workbookPath.path}`}
+                     {`${workbookPath.workspace} > ${workbookPath.path}`}
                   </Typography>
                </Stack>
                <Stack sx={{ display: "flex", flexDirection: "row", gap: 1 }}>
@@ -416,7 +410,7 @@ export default function Workbook({
                      key={`${index}-${workbookData.getCells().length}`}
                   >
                      <MutableCell
-                        key={`${index}-${cell.isMarkdown}-${workbookPath}-${projectName}-${packageName}`}
+                        key={`${index}-${cell.isMarkdown}-${workbookPath.workspace}-${workbookPath.path}`}
                         cell={cell}
                         addButtonCallback={(isMarkdown) =>
                            plusButton(isMarkdown, index)

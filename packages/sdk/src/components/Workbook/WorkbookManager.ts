@@ -1,4 +1,3 @@
-import { PackageContextProps } from "../Package";
 import type { WorkbookLocator, WorkbookStorage } from "./WorkbookStorage";
 
 /**
@@ -40,21 +39,17 @@ export interface WorkbookCellValue {
 export class WorkbookManager {
    private isSaved: boolean;
    private workbookStorage: WorkbookStorage;
-   private packageContext: PackageContextProps;
 
    /**
     * Creates a new WorkbookManager instance
     * @param {WorkbookStorage} workbookStorage - Storage implementation
-    * @param {PackageContextProps} packageContext - Package context for storage
     * @param {WorkbookData} workbookData - Initial workbook data
     */
    constructor(
       workbookStorage: WorkbookStorage,
-      packageContext: PackageContextProps,
       private workbookData: WorkbookData,
    ) {
       this.workbookStorage = workbookStorage;
-      this.packageContext = packageContext;
       if (this.workbookData) {
          this.isSaved = true;
       } else {
@@ -92,7 +87,6 @@ export class WorkbookManager {
       if (this.workbookData.workbookPath.path !== workbookPath) {
          try {
             await this.workbookStorage.moveWorkbook(
-               this.packageContext,
                this.workbookData.workbookPath,
                {
                   path: workbookPath,
@@ -154,17 +148,12 @@ export class WorkbookManager {
             throw new Error("Workbook path is not set");
          }
          await this.workbookStorage.saveWorkbook(
-            this.packageContext,
             this.workbookData.workbookPath,
             JSON.stringify(this.workbookData),
          );
          this.isSaved = true;
       }
-      return new WorkbookManager(
-         this.workbookStorage,
-         this.packageContext,
-         this.workbookData,
-      );
+      return new WorkbookManager(this.workbookStorage, this.workbookData);
    }
 
    /**
@@ -188,11 +177,8 @@ export class WorkbookManager {
          .join("\n");
    }
 
-   static newWorkbook(
-      workbookStorage: WorkbookStorage,
-      packageContext: PackageContextProps,
-   ): WorkbookManager {
-      return new WorkbookManager(workbookStorage, packageContext, undefined);
+   static newWorkbook(workbookStorage: WorkbookStorage): WorkbookManager {
+      return new WorkbookManager(workbookStorage, undefined);
    }
 
    /**
@@ -204,16 +190,11 @@ export class WorkbookManager {
     */
    static async loadWorkbook(
       workbookStorage: WorkbookStorage,
-      packageContext: PackageContextProps,
       workbookPath: WorkbookLocator,
    ): Promise<WorkbookManager> {
       let workbookData: WorkbookData | undefined = undefined;
-      console.log("loadWorkbook", workbookPath);
       try {
-         const saved = await workbookStorage.getWorkbook(
-            packageContext,
-            workbookPath,
-         );
+         const saved = await workbookStorage.getWorkbook(workbookPath);
          if (saved) {
             workbookData = JSON.parse(saved);
          }
@@ -225,6 +206,6 @@ export class WorkbookManager {
             workbookPath: workbookPath,
          };
       }
-      return new WorkbookManager(workbookStorage, packageContext, workbookData);
+      return new WorkbookManager(workbookStorage, workbookData);
    }
 }
