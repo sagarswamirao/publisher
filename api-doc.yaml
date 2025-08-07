@@ -1114,13 +1114,6 @@ components:
           items:
             $ref: '#/components/schemas/Project'
 
-    About:
-      type: object
-      properties:
-        readme:
-          type: string
-          description: Readme markdown.
-
     Project:
       type: object
       properties:
