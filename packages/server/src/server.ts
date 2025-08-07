@@ -92,7 +92,7 @@ const databaseController = new DatabaseController(projectStore);
 const queryController = new QueryController(projectStore);
 const scheduleController = new ScheduleController(projectStore);
 
-const mcpApp = express();
+export const mcpApp = express();
 
 mcpApp.use(MCP_ENDPOINT, express.json());
 mcpApp.use(MCP_ENDPOINT, cors());

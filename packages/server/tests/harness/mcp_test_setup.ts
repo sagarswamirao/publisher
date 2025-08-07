@@ -1,14 +1,14 @@
-import http from "http";
-import { AddressInfo } from "net";
-import { URL } from "url";
-import path from "path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import {
-   Request,
    Notification,
+   Request,
    Result,
 } from "@modelcontextprotocol/sdk/types.js";
+import http from "http";
+import { AddressInfo } from "net";
+import path from "path";
+import { URL } from "url";
 
 // --- Real Server Import ---
 // Import the actual configured Express app instance

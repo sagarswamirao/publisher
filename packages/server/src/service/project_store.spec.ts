@@ -1,4 +1,12 @@
-import { beforeAll, describe, expect, it, mock, spyOn } from "bun:test";
+import {
+   afterAll,
+   beforeAll,
+   describe,
+   expect,
+   it,
+   mock,
+   spyOn,
+} from "bun:test";
 import { rmSync } from "fs";
 import * as fs from "fs/promises";
 import path from "path";
@@ -7,24 +15,24 @@ import { publisherPath } from "../constants";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
 import { ProjectStore } from "./project_store";
+import sinon from "sinon";
 
 describe("ProjectStore", () => {
    const serverRoot = path.resolve(
       process.cwd(),
       process.env.SERVER_ROOT || ".",
    );
+   let loggerStub: sinon.SinonStub;
 
    beforeAll(() => {
       rmSync(path.resolve(publisherPath, "malloy-samples"), {
          recursive: true,
          force: true,
       });
-      mock.module("../logger", () => ({
-         logger: {
-            ...logger,
-            info: (..._args: any[]) => {},
-         },
-      }));
+      loggerStub = sinon.stub(logger, "info").returns(logger);
+   });
+   afterAll(() => {
+      loggerStub.restore();
    });
 
    it("should load all projects from publisher.config.json on initialization", async () => {

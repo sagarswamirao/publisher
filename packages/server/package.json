@@ -10,7 +10,7 @@
       "access": "public"
    },
    "scripts": {
-      "test": "bun test ./**/*.spec.ts --timeout 100000",
+      "test": "bun test --timeout 100000",
       "build": "bun generate-api-types && bun build:app && NODE_ENV=production bun run build.ts",
       "build:server-only": "bun generate-api-types && NODE_ENV=production bun run build.ts",
       "start": "NODE_ENV=production node ./dist/server.js",
