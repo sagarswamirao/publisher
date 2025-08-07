@@ -6,7 +6,7 @@ import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
-import { API_PREFIX, PUBLISHER_CONFIG_NAME } from "../constants";
+import { API_PREFIX, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
 import { Project } from "./project";
@@ -102,9 +102,10 @@ export class ProjectStore {
       if (!skipInitialization) {
          await this.finishedInitialization;
       }
-      if (this.publisherConfigIsFrozen) {
+      if (!skipInitialization && this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
+
       const projectName = project.name;
       if (!projectName) {
          throw new Error("Project name is required");
@@ -201,7 +202,7 @@ export class ProjectStore {
       if (!projectName) {
          throw new Error("Project name is required");
       }
-      const absoluteProjectPath = `/etc/publisher/${projectName}`;
+      const absoluteProjectPath = `${publisherPath}/${projectName}`;
       await fs.promises.mkdir(absoluteProjectPath, { recursive: true });
       if (project.readme) {
          await fs.promises.writeFile(
@@ -213,7 +214,7 @@ export class ProjectStore {
    }
 
    private async loadProjectIntoDisk(projectName: string, projectPath: string) {
-      const absoluteTargetPath = `/etc/publisher/${projectName}`;
+      const absoluteTargetPath = `${publisherPath}/${projectName}`;
       // Handle absolute paths
       if (projectPath.startsWith("/")) {
          try {

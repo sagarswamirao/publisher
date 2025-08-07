@@ -1,9 +1,9 @@
 import { BaseConnection } from "@malloydata/malloy/connection";
 import { Mutex } from "async-mutex";
-import * as fs from "fs/promises";
+import * as fs from "fs";
 import * as path from "path";
 import { components } from "../api";
-import { API_PREFIX, README_NAME } from "../constants";
+import { API_PREFIX, PACKAGE_MANIFEST_NAME, README_NAME } from "../constants";
 import {
    ConnectionNotFoundError,
    PackageNotFoundError,
@@ -60,7 +60,7 @@ export class Project {
             `${API_PREFIX}/projects/`,
             "",
          );
-         if (!(await fs.exists(this.projectPath))) {
+         if (!(await fs.promises.exists(this.projectPath))) {
             throw new ProjectNotFoundError(
                `Project path "${this.projectPath}" not found`,
             );
@@ -76,7 +76,7 @@ export class Project {
       projectPath: string,
       defaultConnections: ApiConnection[],
    ): Promise<Project> {
-      if (!(await fs.stat(projectPath)).isDirectory()) {
+      if (!(await fs.promises.stat(projectPath)).isDirectory()) {
          throw new ProjectNotFoundError(
             `Project path ${projectPath} not found`,
          );
@@ -115,7 +115,7 @@ export class Project {
       let readme = "";
       try {
          readme = (
-            await fs.readFile(path.join(this.projectPath, README_NAME))
+            await fs.promises.readFile(path.join(this.projectPath, README_NAME))
          ).toString();
       } catch {
          // Readme not found, so we'll just return an empty string
@@ -171,26 +171,31 @@ export class Project {
    public async listPackages(): Promise<ApiPackage[]> {
       logger.info("Listing packages", { projectPath: this.projectPath });
       try {
-         const files = await fs.readdir(this.projectPath, {
+         const files = await fs.promises.readdir(this.projectPath, {
             withFileTypes: true,
          });
+         const packageDirectories = files.filter(
+            (file) =>
+               file.isDirectory() &&
+               fs.existsSync(
+                  path.join(this.projectPath, file.name, PACKAGE_MANIFEST_NAME),
+               ),
+         );
          const packageMetadata = await Promise.all(
-            files
-               .filter((file) => file.isDirectory())
-               .map(async (directory) => {
-                  try {
-                     return (
-                        await this.getPackage(directory.name, false)
-                     ).getPackageMetadata();
-                  } catch (error) {
-                     logger.error(
-                        `Failed to load package: ${directory.name} due to : ${error}`,
-                     );
-                     // Directory did not contain a valid package.json file -- therefore, it's not a package.
-                     // Or it timed out
-                     return undefined;
-                  }
-               }),
+            packageDirectories.map(async (directory) => {
+               try {
+                  return (
+                     await this.getPackage(directory.name, false)
+                  ).getPackageMetadata();
+               } catch (error) {
+                  logger.error(
+                     `Failed to load package: ${directory.name} due to : ${error}`,
+                  );
+                  // Directory did not contain a valid package.json file -- therefore, it's not a package.
+                  // Or it timed out
+                  return undefined;
+               }
+            }),
          );
          // Get rid of undefined entries (i.e, directories without publisher.json files).
          const filteredMetadata = packageMetadata.filter(
@@ -246,8 +251,8 @@ export class Project {
    public async addPackage(packageName: string) {
       const packagePath = path.join(this.projectPath, packageName);
       if (
-         !(await fs.exists(packagePath)) ||
-         !(await fs.stat(packagePath)).isDirectory()
+         !(await fs.promises.exists(packagePath)) ||
+         !(await fs.promises.stat(packagePath)).isDirectory()
       ) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
       }
@@ -292,7 +297,7 @@ export class Project {
       if (!_package) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
       }
-      await fs.rm(path.join(this.projectPath, packageName), {
+      await fs.promises.rm(path.join(this.projectPath, packageName), {
          recursive: true,
       });
       this.packages.delete(packageName);

@@ -1,4 +1,5 @@
 import { components } from "../api";
+import { publisherPath } from "../constants";
 import { BadRequestError, FrozenConfigError } from "../errors";
 import { ProjectStore } from "../service/project_store";
 
@@ -72,7 +73,7 @@ export class PackageController {
       packageName: string,
       packageLocation: string,
    ) {
-      const absoluteTargetPath = `/etc/publisher/${projectName}/${packageName}`;
+      const absoluteTargetPath = `${publisherPath}/${projectName}/${packageName}`;
       if (
          packageLocation.startsWith("https://") ||
          packageLocation.startsWith("git@")
