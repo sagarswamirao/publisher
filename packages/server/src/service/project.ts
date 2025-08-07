@@ -74,14 +74,17 @@ export class Project {
    static async create(
       projectName: string,
       projectPath: string,
+      defaultConnections: ApiConnection[],
    ): Promise<Project> {
       if (!(await fs.stat(projectPath)).isDirectory()) {
          throw new ProjectNotFoundError(
             `Project path ${projectPath} not found`,
          );
       }
-      const { malloyConnections, apiConnections } =
-         await createConnections(projectPath);
+      const { malloyConnections, apiConnections } = await createConnections(
+         projectPath,
+         defaultConnections,
+      );
       logger.info(
          `Loaded ${malloyConnections.size + apiConnections.length} connections for project ${projectName}`,
          {
@@ -166,6 +169,7 @@ export class Project {
    }
 
    public async listPackages(): Promise<ApiPackage[]> {
+      logger.info("Listing packages", { projectPath: this.projectPath });
       try {
          const files = await fs.readdir(this.projectPath, {
             withFileTypes: true,
@@ -179,7 +183,7 @@ export class Project {
                         await this.getPackage(directory.name, false)
                      ).getPackageMetadata();
                   } catch (error) {
-                     console.log(
+                     logger.error(
                         `Failed to load package: ${directory.name} due to : ${error}`,
                      );
                      // Directory did not contain a valid package.json file -- therefore, it's not a package.
@@ -194,23 +198,27 @@ export class Project {
          ) as ApiPackage[];
          return filteredMetadata;
       } catch (error) {
-         throw new Error("Error listing packages: " + error);
+         logger.error("Error listing packages", { error });
+         console.error(error);
+         throw error;
       }
    }
 
    public async getPackage(
       packageName: string,
-      reload: boolean,
+      reload: boolean = false,
    ): Promise<Package> {
       // We need to acquire the mutex to prevent a thundering herd of requests from creating the
       // package multiple times.
       let packageMutex = this.packageMutexes.get(packageName);
-      if (!packageMutex) {
-         packageMutex = new Mutex();
-         this.packageMutexes.set(packageName, packageMutex);
+      if (packageMutex?.isLocked()) {
+         await packageMutex.waitForUnlock();
+         return this.packages.get(packageName)!;
       }
+      packageMutex = new Mutex();
+      this.packageMutexes.set(packageName, packageMutex);
 
-      return await packageMutex.runExclusive(async () => {
+      return packageMutex.runExclusive(async () => {
          const _package = this.packages.get(packageName);
          if (_package !== undefined && !reload) {
             return _package;
@@ -228,6 +236,9 @@ export class Project {
          } catch (error) {
             this.packages.delete(packageName);
             throw error;
+         } finally {
+            packageMutex.release();
+            this.packageMutexes.delete(packageName);
          }
       });
    }
@@ -240,6 +251,13 @@ export class Project {
       ) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
       }
+      logger.info(
+         `Adding package ${packageName} to project ${this.projectName}`,
+         {
+            packagePath,
+            malloyConnections: this.malloyConnections,
+         },
+      );
       this.packages.set(
          packageName,
          await Package.create(

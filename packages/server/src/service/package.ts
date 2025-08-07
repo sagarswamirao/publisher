@@ -166,15 +166,14 @@ export class Package {
          );
       } catch (error) {
          logger.error(`Error loading package ${packageName}`, { error });
+         console.error(error);
          const endTime = performance.now();
          const executionTime = endTime - startTime;
          this.packageLoadHistogram.record(executionTime, {
             malloy_package_name: packageName,
             status: "error",
          });
-         throw new Error(`Error loading package ${packageName}`, {
-            cause: error,
-         });
+         throw error;
       }
    }
 

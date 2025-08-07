@@ -56,6 +56,7 @@ export class ProjectStore {
          );
       } catch (error) {
          logger.error("Error initializing project store", { error });
+         console.error(error);
          process.exit(1);
       }
    }
@@ -71,7 +72,7 @@ export class ProjectStore {
 
    public async getProject(
       projectName: string,
-      reload: boolean,
+      reload: boolean = false,
    ): Promise<Project> {
       await this.finishedInitialization;
       let project = this.projects.get(projectName);
@@ -122,7 +123,11 @@ export class ProjectStore {
       } else {
          absoluteProjectPath = await this.scaffoldProject(project);
       }
-      const newProject = await Project.create(projectName, absoluteProjectPath);
+      const newProject = await Project.create(
+         projectName,
+         absoluteProjectPath,
+         project.connections || [],
+      );
       this.projects.set(projectName, newProject);
       return newProject;
    }
@@ -408,13 +413,20 @@ export class ProjectStore {
       await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
       await fs.promises.mkdir(absoluteDirPath, { recursive: true });
 
-      await simpleGit().clone(githubUrl, absoluteDirPath, {}, (err) => {
-         if (err) {
-            console.error(err);
-            logger.error(`Failed to clone GitHub repository "${githubUrl}"`, {
-               error: err,
-            });
-         }
+      await new Promise<void>((resolve, reject) => {
+         simpleGit().clone(githubUrl, absoluteDirPath, {}, (err) => {
+            if (err) {
+               console.error(err);
+               logger.error(
+                  `Failed to clone GitHub repository "${githubUrl}"`,
+                  {
+                     error: err,
+                  },
+               );
+               reject(err);
+            }
+            resolve();
+         });
       });
    }
 }
