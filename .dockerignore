@@ -38,13 +38,6 @@ docs/
 scripts/
 .github/
 
-# Exclude test files if not needed for build
-**/*.test.*
-**/*.spec.*
-**/__tests__/
-**/test/
-**/tests/
-
 # Exclude development files
 **/*.dev.*
 **/*.local.*
