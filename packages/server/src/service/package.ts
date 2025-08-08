@@ -101,7 +101,10 @@ export class Package {
             unit: "ms",
          });
          const connections = new Map<string, Connection>(projectConnections);
-
+         logger.info(`Project connections: ${connections.size}`, {
+            connections,
+            projectConnections,
+         });
          // Package connections override project connections.
          const { malloyConnections: packageConnections } =
             await createConnections(packagePath);
@@ -147,6 +150,11 @@ export class Package {
             malloy_package_name: packageName,
             status: "success",
          });
+         logger.info(`Successfully loaded package ${packageName}`, {
+            packageName,
+            duration: executionTime,
+            unit: "ms",
+         });
          return new Package(
             projectName,
             packageName,
@@ -158,15 +166,14 @@ export class Package {
          );
       } catch (error) {
          logger.error(`Error loading package ${packageName}`, { error });
+         console.error(error);
          const endTime = performance.now();
          const executionTime = endTime - startTime;
          this.packageLoadHistogram.record(executionTime, {
             malloy_package_name: packageName,
             status: "error",
          });
-         throw new Error(`Error loading package ${packageName}`, {
-            cause: error,
-         });
+         throw error;
       }
    }
 

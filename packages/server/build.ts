@@ -19,6 +19,7 @@ await build({
       "@malloydata/db-postgres",
       "@malloydata/db-snowflake",
       "@malloydata/db-trino",
+      "@google-cloud/storage",
    ],
 });
 

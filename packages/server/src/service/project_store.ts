@@ -6,7 +6,7 @@ import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
-import { API_PREFIX, PUBLISHER_CONFIG_NAME } from "../constants";
+import { API_PREFIX, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
 import { logger } from "../logger";
 import { Project } from "./project";
@@ -56,20 +56,23 @@ export class ProjectStore {
          );
       } catch (error) {
          logger.error("Error initializing project store", { error });
+         console.error(error);
          process.exit(1);
       }
    }
 
    public async listProjects() {
       await this.finishedInitialization;
-      return Array.from(this.projects.values()).map(
-         (project) => project.metadata,
+      return Promise.all(
+         Array.from(this.projects.values()).map((project) =>
+            project.serialize(),
+         ),
       );
    }
 
    public async getProject(
       projectName: string,
-      reload: boolean,
+      reload: boolean = false,
    ): Promise<Project> {
       await this.finishedInitialization;
       let project = this.projects.get(projectName);
@@ -99,9 +102,10 @@ export class ProjectStore {
       if (!skipInitialization) {
          await this.finishedInitialization;
       }
-      if (this.publisherConfigIsFrozen) {
+      if (!skipInitialization && this.publisherConfigIsFrozen) {
          throw new FrozenConfigError();
       }
+
       const projectName = project.name;
       if (!projectName) {
          throw new Error("Project name is required");
@@ -111,11 +115,20 @@ export class ProjectStore {
       );
       const projectPath =
          project.location || projectManifest.projects[projectName];
-      const absoluteProjectPath = await this.loadProjectIntoDisk(
+      let absoluteProjectPath: string;
+      if (projectPath) {
+         absoluteProjectPath = await this.loadProjectIntoDisk(
+            projectName,
+            projectPath,
+         );
+      } else {
+         absoluteProjectPath = await this.scaffoldProject(project);
+      }
+      const newProject = await Project.create(
          projectName,
-         projectPath,
+         absoluteProjectPath,
+         project.connections || [],
       );
-      const newProject = await Project.create(projectName, absoluteProjectPath);
       this.projects.set(projectName, newProject);
       return newProject;
    }
@@ -184,8 +197,24 @@ export class ProjectStore {
       }
    }
 
+   private async scaffoldProject(project: ApiProject) {
+      const projectName = project.name;
+      if (!projectName) {
+         throw new Error("Project name is required");
+      }
+      const absoluteProjectPath = `${publisherPath}/${projectName}`;
+      await fs.promises.mkdir(absoluteProjectPath, { recursive: true });
+      if (project.readme) {
+         await fs.promises.writeFile(
+            path.join(absoluteProjectPath, "README.md"),
+            project.readme,
+         );
+      }
+      return absoluteProjectPath;
+   }
+
    private async loadProjectIntoDisk(projectName: string, projectPath: string) {
-      const absoluteTargetPath = `/etc/publisher/${projectName}`;
+      const absoluteTargetPath = `${publisherPath}/${projectName}`;
       // Handle absolute paths
       if (projectPath.startsWith("/")) {
          try {
@@ -263,7 +292,7 @@ export class ProjectStore {
       throw new ProjectNotFoundError(errorMsg);
    }
 
-   private async mountLocalDirectory(
+   public async mountLocalDirectory(
       projectPath: string,
       absoluteTargetPath: string,
       projectName: string,
@@ -384,6 +413,21 @@ export class ProjectStore {
    async downloadGitHubDirectory(githubUrl: string, absoluteDirPath: string) {
       await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
       await fs.promises.mkdir(absoluteDirPath, { recursive: true });
-      await simpleGit().clone(githubUrl, absoluteDirPath);
+
+      await new Promise<void>((resolve, reject) => {
+         simpleGit().clone(githubUrl, absoluteDirPath, {}, (err) => {
+            if (err) {
+               console.error(err);
+               logger.error(
+                  `Failed to clone GitHub repository "${githubUrl}"`,
+                  {
+                     error: err,
+                  },
+               );
+               reject(err);
+            }
+            resolve();
+         });
+      });
    }
 }

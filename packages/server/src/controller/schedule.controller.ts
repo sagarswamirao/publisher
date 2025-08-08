@@ -14,8 +14,8 @@ export class ScheduleController {
       projectName: string,
       packageName: string,
    ): Promise<ApiSchedule[]> {
-      const project = await this.projectStore.getProject(projectName);
-      const p = await project.getPackage(packageName);
-      return p.listSchedules();
+      const project = await this.projectStore?.getProject?.(projectName);
+      const p = await project?.getPackage?.(packageName);
+      return p?.listSchedules?.();
    }
 }

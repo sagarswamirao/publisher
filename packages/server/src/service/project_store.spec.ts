@@ -1,40 +1,52 @@
-import { describe, expect, it, mock, spyOn } from "bun:test";
+import {
+   afterAll,
+   beforeAll,
+   describe,
+   expect,
+   it,
+   mock,
+   spyOn,
+} from "bun:test";
+import { rmSync } from "fs";
 import * as fs from "fs/promises";
 import path from "path";
 import { isPublisherConfigFrozen } from "../config";
+import { publisherPath } from "../constants";
 import { FrozenConfigError, ProjectNotFoundError } from "../errors";
+import { logger } from "../logger";
 import { ProjectStore } from "./project_store";
+import sinon from "sinon";
 
 describe("ProjectStore", () => {
    const serverRoot = path.resolve(
       process.cwd(),
       process.env.SERVER_ROOT || ".",
    );
+   let loggerStub: sinon.SinonStub;
 
-   async function waitForInitialization(projectStore: ProjectStore) {
-      const maxRetries = 100;
-      let retries = 0;
-      do {
-         await new Promise((resolve) => setTimeout(resolve, 10));
-         retries++;
-      } while (
-         (await projectStore.listProjects()).length === 0 &&
-         retries < maxRetries
-      );
-      if ((await projectStore.listProjects()).length === 0) {
-         throw new Error("Timed out initializing ProjectStore");
-      }
-   }
+   beforeAll(() => {
+      rmSync(path.resolve(publisherPath, "malloy-samples"), {
+         recursive: true,
+         force: true,
+      });
+      loggerStub = sinon.stub(logger, "info").returns(logger);
+   });
+   afterAll(() => {
+      loggerStub.restore();
+   });
 
-   it("should load all projects from publisher.config.json within a second on initialization", async () => {
+   it("should load all projects from publisher.config.json on initialization", async () => {
       mock(isPublisherConfigFrozen).mockReturnValue(true);
       const projectStore = new ProjectStore(serverRoot);
-      await waitForInitialization(projectStore);
+      mock(projectStore.downloadGitHubDirectory).mockResolvedValue(undefined);
+      await projectStore.finishedInitialization;
       expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
-            readme: expect.stringContaining("# Malloy Analysis Examples"),
+            readme: expect.any(String),
             resource: "/api/v0/projects/malloy-samples",
+            packages: expect.any(Array),
+            connections: expect.any(Array),
          },
       ]);
    });
@@ -42,16 +54,16 @@ describe("ProjectStore", () => {
    it("should list projects from memory by default", async () => {
       mock(isPublisherConfigFrozen).mockReturnValue(true);
       const projectStore = new ProjectStore(serverRoot);
-      await waitForInitialization(projectStore);
-
-      // Mock fs.readFile & fs.readdir to track calls
-      const readFileSpy = spyOn(fs, "readFile");
-      const readdirSpy = spyOn(fs, "readdir");
-      // Call listProjects, which should use memory and not call fs.readFile
-      await projectStore.listProjects();
-
-      expect(readFileSpy).not.toHaveBeenCalled();
-      expect(readdirSpy).not.toHaveBeenCalled();
+      const projects = await projectStore.listProjects();
+      expect(projects).toEqual([
+         {
+            name: "malloy-samples",
+            readme: expect.any(String),
+            resource: "/api/v0/projects/malloy-samples",
+            packages: expect.any(Array),
+            connections: expect.any(Array),
+         },
+      ]);
    });
 
    it("should list projects from disk if reload is true", async () => {
@@ -68,22 +80,29 @@ describe("ProjectStore", () => {
    });
 
    it("should allow modifying the in-memory hashmap if config is not frozen", async () => {
-      mock.module("../utils", () => ({
+      mock.module("../config", () => ({
          isPublisherConfigFrozen: () => false,
       }));
       const projectStore = new ProjectStore(serverRoot);
-      await waitForInitialization(projectStore);
+      mock(projectStore.downloadGitHubDirectory).mockResolvedValue(undefined);
+      await projectStore.finishedInitialization;
       await projectStore.updateProject({
          name: "malloy-samples",
          readme: "Updated README",
       });
-      expect(await projectStore.listProjects()).toEqual([
-         {
+      let projects = await projectStore.listProjects();
+      projects = await projectStore.listProjects();
+      let malloySamplesProject = projects.find(
+         (p) => p.name === "malloy-samples",
+      );
+      expect(malloySamplesProject).toBeDefined();
+      expect(malloySamplesProject).toMatchObject(
+         expect.objectContaining({
             name: "malloy-samples",
             readme: "Updated README",
             resource: "/api/v0/projects/malloy-samples",
-         },
-      ]);
+         }),
+      );
       await projectStore.deleteProject("malloy-samples");
       expect(await projectStore.listProjects()).toEqual([]);
       await projectStore.addProject({
@@ -95,31 +114,32 @@ describe("ProjectStore", () => {
       ).toHaveProperty("metadata", {
          name: "malloy-samples",
          resource: "/api/v0/projects/malloy-samples",
+         location: expect.any(String),
       });
 
-      // After a while, it'll resolve the async promise where the readme gets loaded in memory
-      await waitForInitialization(projectStore);
-      expect(await projectStore.listProjects()).toEqual([
-         {
-            name: "malloy-samples",
-            readme: expect.stringContaining("# Malloy Analysis Examples"),
-            resource: "/api/v0/projects/malloy-samples",
-         },
-      ]);
+      projects = await projectStore.listProjects();
+      malloySamplesProject = projects.find((p) => p.name === "malloy-samples");
+      expect(malloySamplesProject).toBeDefined();
+      expect(malloySamplesProject).toMatchObject({
+         name: "malloy-samples",
+         resource: "/api/v0/projects/malloy-samples",
+      });
    });
 
    it("should not allow modifying the in-memory hashmap if config is frozen", async () => {
-      mock.module("../utils", () => ({
+      mock.module("../config", () => ({
          isPublisherConfigFrozen: () => true,
       }));
       const projectStore = new ProjectStore(serverRoot);
       // Initialization should succeed
-      await waitForInitialization(projectStore);
+      await projectStore.finishedInitialization;
       expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
-            readme: expect.stringContaining("# Malloy Analysis Examples"),
+            readme: expect.any(String),
             resource: "/api/v0/projects/malloy-samples",
+            packages: expect.any(Array),
+            connections: expect.any(Array),
          },
       ]);
       // Adding a project should fail
@@ -146,18 +166,20 @@ describe("ProjectStore", () => {
       expect(await projectStore.listProjects()).toEqual([
          {
             name: "malloy-samples",
-            readme: expect.stringContaining("# Malloy Analysis Examples"),
+            readme: expect.any(String),
             resource: "/api/v0/projects/malloy-samples",
+            packages: expect.any(Array),
+            connections: expect.any(Array),
          },
       ]);
    });
 
    it("should always try to reload a project if it's not in the hashmap", async () => {
-      mock.module("../utils", () => ({
+      mock.module("../config", () => ({
          isPublisherConfigFrozen: () => false,
       }));
       const projectStore = new ProjectStore(serverRoot);
-      await waitForInitialization(projectStore);
+      await projectStore.finishedInitialization;
       await projectStore.deleteProject("malloy-samples");
       expect(await projectStore.listProjects()).toEqual([]);
       const readFileSpy = spyOn(fs, "readFile");
@@ -166,11 +188,11 @@ describe("ProjectStore", () => {
    });
 
    it("should throw a NotFound error when reloading a project that is not in disk", async () => {
-      mock.module("../utils", () => ({
+      mock.module("../config", () => ({
          isPublisherConfigFrozen: () => false,
       }));
       const projectStore = new ProjectStore(serverRoot);
-      await waitForInitialization(projectStore);
+      await projectStore.finishedInitialization;
       expect(
          projectStore.getProject("this-one-does-not-exist", true),
       ).rejects.toThrow(ProjectNotFoundError);

@@ -4,12 +4,17 @@ import { join } from "path";
 import sinon from "sinon";
 import { PackageNotFoundError } from "../errors";
 import { readConnectionConfig } from "./connection";
-import { Model } from "./model";
+import { ApiConnection, Model } from "./model";
 import { Package } from "./package";
 import { Scheduler } from "./scheduler";
 
 // Minimal partial types for mocking
 type PartialScheduler = Pick<Scheduler, "list">;
+
+const connectionMocks: ApiConnection[] = [
+   { name: "conn1", type: "postgres", postgresConnection: {} },
+   { name: "conn2", type: "bigquery", bigqueryConnection: {} },
+];
 
 describe("service/package", () => {
    const testPackageDirectory = "testPackage";
@@ -24,10 +29,7 @@ describe("service/package", () => {
          join(testPackageDirectory, "database.csv"),
          parquetBuffer,
       );
-      const content = JSON.stringify([
-         { name: "conn1", type: "database" },
-         { name: "conn2", type: "api" },
-      ]);
+      const content = JSON.stringify(connectionMocks);
       await fs.writeFile(
          join(testPackageDirectory, "publisher.connections.json"),
          content,
@@ -82,7 +84,7 @@ describe("service/package", () => {
          });
          it("should return a Package object if the package exists", async () => {
             sinon.stub(fs, "stat").resolves();
-            sinon
+            const readFileStub = sinon
                .stub(fs, "readFile")
                .resolves(
                   Buffer.from(JSON.stringify({ description: "Test package" })),
@@ -97,6 +99,9 @@ describe("service/package", () => {
             sinon.stub(Scheduler, "create").returns({
                list: () => [],
             } as PartialScheduler);
+
+            readFileStub.restore();
+            readFileStub.resolves(Buffer.from(JSON.stringify([])));
 
             const packageInstance = await Package.create(
                "testProject",
@@ -221,10 +226,7 @@ describe("service/package", () => {
             sinon.stub(fs, "stat").resolves();
             const config = await readConnectionConfig(testPackageDirectory);
 
-            expect(config).toEqual([
-               { name: "conn1", type: "database" },
-               { name: "conn2", type: "api" },
-            ]);
+            expect(config).toEqual(connectionMocks);
          });
       });
    });
