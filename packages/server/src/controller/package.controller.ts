@@ -95,6 +95,10 @@ export class PackageController {
             absoluteTargetPath,
          );
       } else if (packageLocation.startsWith("/")) {
+         if (packageLocation.endsWith(".zip")) {
+            packageLocation =
+               await this.projectStore.unzipProject(packageLocation);
+         }
          await this.projectStore.mountLocalDirectory(
             packageLocation,
             absoluteTargetPath,

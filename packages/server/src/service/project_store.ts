@@ -2,6 +2,7 @@ import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { Storage } from "@google-cloud/storage";
 import * as fs from "fs";
 import * as path from "path";
+import AdmZip from "adm-zip";
 import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
@@ -121,6 +122,9 @@ export class ProjectStore {
             projectName,
             projectPath,
          );
+         if (absoluteProjectPath.endsWith(".zip")) {
+            absoluteProjectPath = await this.unzipProject(absoluteProjectPath);
+         }
       } else {
          absoluteProjectPath = await this.scaffoldProject(project);
       }
@@ -131,6 +135,23 @@ export class ProjectStore {
       );
       this.projects.set(projectName, newProject);
       return newProject;
+   }
+
+   public async unzipProject(absoluteProjectPath: string) {
+      logger.info(
+         `Detected zip file at "${absoluteProjectPath}". Unzipping...`,
+      );
+      const unzippedProjectPath = absoluteProjectPath.replace(".zip", "");
+      await fs.promises.rm(unzippedProjectPath, {
+         recursive: true,
+         force: true,
+      });
+      await fs.promises.mkdir(unzippedProjectPath, { recursive: true });
+
+      const zip = new AdmZip(absoluteProjectPath);
+      zip.extractAllTo(unzippedProjectPath, true);
+
+      return unzippedProjectPath;
    }
 
    public async updateProject(project: ApiProject) {
