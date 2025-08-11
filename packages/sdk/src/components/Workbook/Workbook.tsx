@@ -58,6 +58,7 @@ export default function Workbook({
    const navigate = useRouterClickHandler();
    const { server, getAccessToken } = useServer();
    const { workbookStorage } = useWorkbookStorage();
+   const [success, setSuccess] = React.useState<string | undefined>(undefined);
    const [lastError, setLastError] = React.useState<string | undefined>(
       undefined,
    );
@@ -88,17 +89,20 @@ export default function Workbook({
       setMenuIndex(null);
    };
    const handleAddCell = (isMarkdown: boolean, index: number) => {
-      workbookData.insertCell(index, {
-         isMarkdown,
-         value: "",
-      });
-      saveWorkbook();
+      if (!workbookData) return;
+      setWorkbookData(
+         workbookData.insertCell(index, {
+            isMarkdown,
+            value: "",
+         }),
+      );
       if (isMarkdown) {
          setEditingMarkdownIndex(index);
       } else {
          setEditingMalloyIndex(index);
       }
       handleMenuClose();
+      console.log("handleAddCell", isMarkdown, index);
    };
 
    const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
@@ -112,9 +116,11 @@ export default function Workbook({
             .deleteWorkbook(workbookPath)
             .then(() => {
                setLastError(undefined);
+               setSuccess(undefined);
             })
             .catch((error) => {
                setLastError(`Error deleting workbook: ${error.message}`);
+               setSuccess(undefined);
             });
       }
       setDeleteDialogOpen(false);
@@ -127,11 +133,17 @@ export default function Workbook({
    };
 
    const saveWorkbook = React.useCallback(async () => {
+      if (!workbookData) {
+         console.log("No workbook data ref");
+         return;
+      }
       try {
          setWorkbookData(await workbookData.saveWorkbook());
          setLastError(undefined);
+         setSuccess("Workbook saved");
       } catch (error) {
          setLastError(`Error saving workbook: ${error.message}`);
+         setSuccess(undefined);
       }
    }, [workbookData]);
    React.useEffect(() => {
@@ -265,13 +277,21 @@ export default function Workbook({
    return (
       <StyledCard variant="outlined">
          <StyledCardContent>
-            {lastError && (
-               <Box sx={{ mb: 2 }}>
-                  <Typography color="error" variant="body2">
-                     {lastError}
-                  </Typography>
+            <Box sx={{ mb: 2 }}>
+               <Box sx={{ minHeight: "24px" }}>
+                  {lastError ? (
+                     <Typography color="error" variant="body2">
+                        {lastError}
+                     </Typography>
+                  ) : success ? (
+                     <Typography color="success" variant="body2">
+                        {success}
+                     </Typography>
+                  ) : (
+                     <span>&nbsp;</span>
+                  )}
                </Box>
-            )}
+            </Box>
             <Stack
                sx={{
                   flexDirection: "row",
@@ -350,7 +370,7 @@ export default function Workbook({
                               Cancel
                            </Button>
                            <Button
-                              onClick={(event) => handleDeleteConfirm(event)}
+                              onClick={handleDeleteConfirm}
                               color="error"
                               autoFocus
                               size="small"
@@ -427,7 +447,6 @@ export default function Workbook({
                         }}
                         onCellChange={(cell) => {
                            setWorkbookData(workbookData.setCell(index, cell));
-                           saveWorkbook();
                         }}
                         onEdit={() => {
                            if (cell.isMarkdown) {
@@ -442,6 +461,7 @@ export default function Workbook({
                            } else {
                               setEditingMalloyIndex(undefined);
                            }
+                           saveWorkbook();
                         }}
                      />
                   </React.Fragment>
