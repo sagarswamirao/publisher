@@ -58,6 +58,7 @@ export function MutableCell({
    onDelete,
    addButtonCallback,
 }: NotebookCellProps) {
+   const [value, setValue] = useState(cell.value);
    const [codeExpanded, setCodeExpanded] =
       React.useState<boolean>(expandCodeCell);
    const [embeddingExpanded, setEmbeddingExpanded] =
@@ -83,12 +84,8 @@ export function MutableCell({
             setHighlightedMalloyCode(code);
          });
    }, [cell]);
-   const [value, setValue] = useState(cell.value);
    React.useEffect(() => {
       document.documentElement.setAttribute("data-color-mode", "light");
-   });
-   const updateMarkdown = useDebounce((newValue: string) => {
-      onCellChange({ ...cell, value: newValue });
    });
    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -98,7 +95,7 @@ export function MutableCell({
    };
    const noSources = sourceAndPaths.length === 0;
 
-   const saveResult = () => {
+   const saveResult = React.useCallback(() => {
       // Get the current modelPath and sourceName from the selected source
       const currentSource = sourceAndPaths[selectedSourceIndex];
       const modelPath = currentSource?.modelPath || cell.modelPath || "";
@@ -109,7 +106,7 @@ export function MutableCell({
       // the stringified JSON objects that are stored in the cell.
       onCellChange({
          ...cell,
-         value: query.query,
+         value: cell.isMarkdown ? value : query.query,
          result: query.malloyResult
             ? JSON.stringify(query.malloyResult)
             : undefined,
@@ -119,7 +116,7 @@ export function MutableCell({
          sourceName,
          modelPath,
       });
-   };
+   }, [cell, value, query, onCellChange, selectedSourceIndex, sourceAndPaths]);
 
    const deleteButton = (
       <Tooltip title="Delete Cell">
@@ -160,11 +157,15 @@ export function MutableCell({
          </DialogActions>
       </Dialog>
    );
+   const saveAndClose = () => {
+      saveResult();
+      onClose();
+   };
    const buttons = cell.isMarkdown ? (
       <>
          {editingMarkdown ? (
             <Tooltip title="Save">
-               <IconButton size="small" onClick={onClose}>
+               <IconButton size="small" onClick={saveAndClose}>
                   <CheckIcon />
                </IconButton>
             </Tooltip>
@@ -207,13 +208,7 @@ export function MutableCell({
          )}
          {editingMalloy && (
             <Tooltip title="Save">
-               <IconButton
-                  size="small"
-                  onClick={() => {
-                     saveResult();
-                     onClose();
-                  }}
-               >
+               <IconButton size="small" onClick={saveAndClose}>
                   <CheckIcon />
                </IconButton>
             </Tooltip>
@@ -230,22 +225,15 @@ export function MutableCell({
    );
 
    const isEditing = editingMalloy || editingMarkdown;
-
    const editingButtons = editingMarkdown ? (
       <Tooltip title="Save">
-         <IconButton size="small" onClick={onClose}>
+         <IconButton size="small" onClick={saveAndClose}>
             <CheckIcon />
          </IconButton>
       </Tooltip>
    ) : editingMalloy ? (
       <Tooltip title="Save">
-         <IconButton
-            size="small"
-            onClick={() => {
-               saveResult();
-               onClose();
-            }}
-         >
+         <IconButton size="small" onClick={saveAndClose}>
             <CheckIcon />
          </IconButton>
       </Tooltip>
@@ -305,12 +293,12 @@ export function MutableCell({
                      autoFocus
                      onChange={(newValue) => {
                         setValue(newValue);
-                        updateMarkdown(newValue);
+                        onCellChange({ ...cell, value: newValue });
                      }}
                      onBlur={() => {
                         saveResult();
                         if (!isHovered) {
-                           onClose();
+                           saveAndClose();
                         }
                      }}
                   />
@@ -331,9 +319,9 @@ export function MutableCell({
                         "& blockquote": { mt: 0.5, mb: 0.5 },
                      }}
                   >
-                     {value ? (
+                     {cell.value ? (
                         <Box onClick={onEdit} sx={{ cursor: "pointer" }}>
-                           <Markdown>{value}</Markdown>
+                           <Markdown>{cell.value}</Markdown>
                         </Box>
                      ) : (
                         <Box onClick={onEdit} sx={{ cursor: "pointer" }}>
@@ -467,24 +455,5 @@ export function MutableCell({
          )}
          {deleteDialogOpen && deleteDialog}
       </StyledCard>
-   );
-}
-
-function useDebounce<T>(callback: (value: T) => void, delay: number = 2000) {
-   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(
-      undefined,
-   );
-
-   return React.useCallback(
-      (value: T) => {
-         if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-         }
-
-         timeoutRef.current = setTimeout(() => {
-            callback(value);
-         }, delay);
-      },
-      [callback, delay],
    );
 }
