@@ -318,6 +318,9 @@ export class ProjectStore {
       absoluteTargetPath: string,
       projectName: string,
    ) {
+      if (projectPath.endsWith(".zip")) {
+         projectPath = await this.unzipProject(projectPath);
+      }
       const projectDirExists = (
          await fs.promises.stat(projectPath)
       ).isDirectory();
