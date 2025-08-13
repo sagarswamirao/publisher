@@ -295,7 +295,7 @@ export class Project {
    public async deletePackage(packageName: string) {
       const _package = this.packages.get(packageName);
       if (!_package) {
-         throw new PackageNotFoundError(`Package ${packageName} not found`);
+         return;
       }
       await fs.promises.rm(path.join(this.projectPath, packageName), {
          recursive: true,

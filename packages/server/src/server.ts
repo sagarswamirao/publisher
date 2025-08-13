@@ -13,7 +13,11 @@ import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
 import { WatchModeController } from "./controller/watch-mode.controller";
-import { internalErrorToHttpError, NotImplementedError } from "./errors";
+import {
+   internalErrorToHttpError,
+   NotImplementedError,
+   PackageNotFoundError,
+} from "./errors";
 import { logger, loggerMiddleware } from "./logger";
 import { initializeMcpServer } from "./mcp/server";
 import { ProjectStore } from "./service/project_store";
@@ -269,7 +273,7 @@ app.patch(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
 app.delete(`${API_PREFIX}/projects/:projectName`, async (req, res) => {
    try {
       const project = await projectStore.deleteProject(req.params.projectName);
-      res.status(200).json(await project.serialize());
+      res.status(200).json(await project?.serialize());
    } catch (error) {
       logger.error(error);
       const { json, status } = internalErrorToHttpError(error as Error);

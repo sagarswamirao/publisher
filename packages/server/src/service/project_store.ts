@@ -179,7 +179,7 @@ export class ProjectStore {
       }
       const project = this.projects.get(projectName);
       if (!project) {
-         throw new ProjectNotFoundError(`Project ${projectName} not found`);
+         return;
       }
       this.projects.delete(projectName);
       return project;
