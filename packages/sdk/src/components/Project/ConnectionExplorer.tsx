@@ -16,6 +16,7 @@ import {
    TableContainer,
    TableHead,
    TableRow,
+   Tooltip,
 } from "@mui/material";
 import { ConnectionsApi } from "../../client/api";
 import { Configuration } from "../../client/configuration";
@@ -107,17 +108,46 @@ export default function ConnectionExplorer({
                                  (schema: {
                                     name: string;
                                     isDefault: boolean;
-                                 }) => (
-                                    <ListItemButton
-                                       key={schema.name}
-                                       selected={selectedSchema === schema.name}
-                                       onClick={() =>
-                                          setSelectedSchema(schema.name)
-                                       }
-                                    >
-                                       <ListItemText primary={schema.name} />
-                                    </ListItemButton>
-                                 ),
+                                    description?: string;
+                                 }) => {
+                                    const fullDescription = (
+                                       schema.description || ""
+                                    ).trim();
+                                    const hasDescription =
+                                       fullDescription !== "";
+                                    const firstLine = hasDescription
+                                       ? fullDescription.split(/\r?\n/)[0]
+                                       : undefined;
+
+                                    const item = (
+                                       <ListItemButton
+                                          key={schema.name}
+                                          selected={
+                                             selectedSchema === schema.name
+                                          }
+                                          onClick={() =>
+                                             setSelectedSchema(schema.name)
+                                          }
+                                       >
+                                          <ListItemText
+                                             primary={schema.name}
+                                             secondary={firstLine}
+                                          />
+                                       </ListItemButton>
+                                    );
+
+                                    return hasDescription ? (
+                                       <Tooltip
+                                          key={schema.name}
+                                          title={fullDescription}
+                                          arrow
+                                       >
+                                          {item}
+                                       </Tooltip>
+                                    ) : (
+                                       item
+                                    );
+                                 },
                               )}
                         </List>
                      )}
