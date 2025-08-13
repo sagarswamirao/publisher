@@ -17,9 +17,15 @@ export default ({ mode }) => {
       build: {
          minify: mode === "production",
          lib: {
-            entry: "./src/index.ts",
+            entry: {
+               index: "./src/index.ts",
+               "client/index": "./src/client/index.ts",
+            },
             name: "@malloy-publisher/sdk",
-            fileName: (format) => `index.${format}.js`,
+            fileName: (format, entryName) =>
+               entryName === "index"
+                  ? `index.${format}.js`
+                  : `client/index.${format}.js`,
             formats: ["cjs", "es"],
          },
          rollupOptions: {
@@ -69,6 +75,8 @@ export default ({ mode }) => {
                ...Object.keys(peerDependencies),
             ],
             output: {
+               preserveModules: true,
+               preserveModulesRoot: "src",
                // Provide global variable names for externalized dependencies
                globals: {
                   react: "React",
