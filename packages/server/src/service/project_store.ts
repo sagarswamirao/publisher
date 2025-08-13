@@ -179,7 +179,7 @@ export class ProjectStore {
       }
       const project = this.projects.get(projectName);
       if (!project) {
-         throw new ProjectNotFoundError(`Project ${projectName} not found`);
+         return;
       }
       this.projects.delete(projectName);
       return project;
@@ -318,6 +318,9 @@ export class ProjectStore {
       absoluteTargetPath: string,
       projectName: string,
    ) {
+      if (projectPath.endsWith(".zip")) {
+         projectPath = await this.unzipProject(projectPath);
+      }
       const projectDirExists = (
          await fs.promises.stat(projectPath)
       ).isDirectory();
