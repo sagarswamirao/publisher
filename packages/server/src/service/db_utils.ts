@@ -96,15 +96,22 @@ export async function getSchemasForConnection(
          const projectId = connection.bigqueryConnection.defaultProjectId;
          const options = projectId ? { projectId } : {};
          const [datasets] = await bigquery.getDatasets(options);
-         return datasets
-            .filter((dataset) => dataset.id)
-            .map((dataset) => {
-               return {
-                  name: dataset.id,
-                  isHidden: false,
-                  isDefault: false,
-               };
-            });
+         const schemas = await Promise.all(
+            datasets
+               .filter((dataset) => dataset.id)
+               .map(async (dataset) => {
+                  const [metadata] = await dataset.getMetadata();
+                  return {
+                     name: dataset.id,
+                     isHidden: false,
+                     isDefault: false,
+                     // Include description from dataset metadata if available
+                     description: (metadata as { description?: string })
+                        ?.description,
+                  };
+               }),
+         );
+         return schemas;
       } catch (error) {
          console.error(
             `Error getting schemas for BigQuery connection ${connection.name}:`,
