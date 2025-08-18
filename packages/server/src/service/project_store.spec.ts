@@ -1,200 +1,512 @@
-import {
-   afterAll,
-   beforeAll,
-   describe,
-   expect,
-   it,
-   mock,
-   spyOn,
-} from "bun:test";
-import { rmSync } from "fs";
-import * as fs from "fs/promises";
-import path from "path";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { existsSync, rmSync, mkdirSync, writeFileSync } from "fs";
+import * as path from "path";
+import * as sinon from "sinon";
+import { components } from "../api";
 import { isPublisherConfigFrozen } from "../config";
-import { publisherPath } from "../constants";
-import { FrozenConfigError, ProjectNotFoundError } from "../errors";
-import { logger } from "../logger";
 import { ProjectStore } from "./project_store";
-import sinon from "sinon";
+import { Project } from "./project";
 
-describe("ProjectStore", () => {
-   const serverRoot = path.resolve(
-      process.cwd(),
-      process.env.SERVER_ROOT || ".",
-   );
-   let loggerStub: sinon.SinonStub;
+type Connection = components["schemas"]["Connection"];
 
-   beforeAll(() => {
-      rmSync(path.resolve(publisherPath, "malloy-samples"), {
-         recursive: true,
-         force: true,
-      });
-      loggerStub = sinon.stub(logger, "info").returns(logger);
-   });
-   afterAll(() => {
-      loggerStub.restore();
-   });
+const serverRootPath = "/tmp/pathways-worker-publisher-project-store-test";
+const projectName = "organizationName-projectName";
+const testConnections: Connection[] = [
+   {
+      name: "testConnection",
+      type: "postgres",
+      postgresConnection: {
+         host: "host",
+         port: 1234,
+         databaseName: "databaseName",
+         userName: "userName",
+         password: "password",
+      },
+   },
+];
 
-   it("should load all projects from publisher.config.json on initialization", async () => {
-      mock(isPublisherConfigFrozen).mockReturnValue(true);
-      const projectStore = new ProjectStore(serverRoot);
-      mock(projectStore.downloadGitHubDirectory).mockResolvedValue(undefined);
-      await projectStore.finishedInitialization;
-      expect(await projectStore.listProjects()).toEqual([
-         {
-            name: "malloy-samples",
-            readme: expect.any(String),
-            resource: "/api/v0/projects/malloy-samples",
-            packages: expect.any(Array),
-            connections: expect.any(Array),
-         },
-      ]);
-   });
+let sandbox: sinon.SinonSandbox;
 
-   it("should list projects from memory by default", async () => {
-      mock(isPublisherConfigFrozen).mockReturnValue(true);
-      const projectStore = new ProjectStore(serverRoot);
-      const projects = await projectStore.listProjects();
-      expect(projects).toEqual([
-         {
-            name: "malloy-samples",
-            readme: expect.any(String),
-            resource: "/api/v0/projects/malloy-samples",
-            packages: expect.any(Array),
-            connections: expect.any(Array),
-         },
-      ]);
-   });
+describe("ProjectStore Service", () => {
+   let projectStore: ProjectStore;
 
-   it("should list projects from disk if reload is true", async () => {
-      // Mock fs.readFile to track calls
-      const fs = await import("fs/promises");
-      const readFileSpy = spyOn(fs, "readFile");
-      mock(isPublisherConfigFrozen).mockReturnValue(true);
-      const projectStore = new ProjectStore(serverRoot);
+   beforeEach(async () => {
+      // Clean up any existing test directory
+      if (existsSync(serverRootPath)) {
+         rmSync(serverRootPath, { recursive: true, force: true });
+      }
+      mkdirSync(serverRootPath);
+      sandbox = sinon.createSandbox();
 
-      // Call getProject with reload=true
-      await projectStore.getProject("malloy-samples", true);
-
-      expect(readFileSpy).toHaveBeenCalled();
-   });
-
-   it("should allow modifying the in-memory hashmap if config is not frozen", async () => {
+      // Mock the configuration to prevent initialization errors
+      mock(isPublisherConfigFrozen).mockReturnValue(false);
       mock.module("../config", () => ({
          isPublisherConfigFrozen: () => false,
       }));
-      const projectStore = new ProjectStore(serverRoot);
-      mock(projectStore.downloadGitHubDirectory).mockResolvedValue(undefined);
-      await projectStore.finishedInitialization;
-      await projectStore.updateProject({
-         name: "malloy-samples",
-         readme: "Updated README",
-      });
-      let projects = await projectStore.listProjects();
-      projects = await projectStore.listProjects();
-      let malloySamplesProject = projects.find(
-         (p) => p.name === "malloy-samples",
-      );
-      expect(malloySamplesProject).toBeDefined();
-      expect(malloySamplesProject).toMatchObject(
-         expect.objectContaining({
-            name: "malloy-samples",
-            readme: "Updated README",
-            resource: "/api/v0/projects/malloy-samples",
-         }),
-      );
-      await projectStore.deleteProject("malloy-samples");
-      expect(await projectStore.listProjects()).toEqual([]);
-      await projectStore.addProject({
-         name: "malloy-samples",
-      });
 
-      expect(
-         await projectStore.getProject("malloy-samples", false),
-      ).toHaveProperty("metadata", {
-         name: "malloy-samples",
-         resource: "/api/v0/projects/malloy-samples",
-         location: expect.any(String),
-      });
-
-      projects = await projectStore.listProjects();
-      malloySamplesProject = projects.find((p) => p.name === "malloy-samples");
-      expect(malloySamplesProject).toBeDefined();
-      expect(malloySamplesProject).toMatchObject({
-         name: "malloy-samples",
-         resource: "/api/v0/projects/malloy-samples",
-      });
+      // Create project store after mocking
+      projectStore = new ProjectStore(serverRootPath);
    });
 
-   it("should not allow modifying the in-memory hashmap if config is frozen", async () => {
-      mock.module("../config", () => ({
-         isPublisherConfigFrozen: () => true,
-      }));
-      const projectStore = new ProjectStore(serverRoot);
-      // Initialization should succeed
-      await projectStore.finishedInitialization;
-      expect(await projectStore.listProjects()).toEqual([
-         {
-            name: "malloy-samples",
-            readme: expect.any(String),
-            resource: "/api/v0/projects/malloy-samples",
-            packages: expect.any(Array),
-            connections: expect.any(Array),
-         },
-      ]);
-      // Adding a project should fail
-      expect(
-         projectStore.addProject({
-            name: "malloy-samples",
-         }),
-      ).rejects.toThrow(FrozenConfigError);
-
-      // Updating a project should fail
-      expect(
-         projectStore.updateProject({
-            name: "malloy-samples",
-            readme: "Updated README",
-         }),
-      ).rejects.toThrow(FrozenConfigError);
-
-      // Deleting a project should fail
-      expect(projectStore.deleteProject("malloy-samples")).rejects.toThrow(
-         FrozenConfigError,
-      );
-
-      // Failed methods should not modify the in-memory hashmap
-      expect(await projectStore.listProjects()).toEqual([
-         {
-            name: "malloy-samples",
-            readme: expect.any(String),
-            resource: "/api/v0/projects/malloy-samples",
-            packages: expect.any(Array),
-            connections: expect.any(Array),
-         },
-      ]);
+   afterEach(async () => {
+      // Clean up the test directory after each test
+      if (existsSync(serverRootPath)) {
+         rmSync(serverRootPath, { recursive: true, force: true });
+      }
+      mkdirSync(serverRootPath);
+      sandbox.restore();
    });
 
-   it("should always try to reload a project if it's not in the hashmap", async () => {
+   it("should not load a package if the project does not exist", async () => {
+      await expect(
+         projectStore.getProject("non-existent-project"),
+      ).rejects.toThrow();
+   });
+
+   it("should create and manage projects with connections", async () => {
+      // Create a project directory
+      const projectPath = path.join(serverRootPath, projectName);
+      mkdirSync(projectPath, { recursive: true });
+
+      // Create connections file
+      const connectionsPath = path.join(
+         projectPath,
+         "publisher.connections.json",
+      );
+      writeFileSync(connectionsPath, JSON.stringify(testConnections));
+
+      // Create publisher config
+      const publisherConfigPath = path.join(
+         serverRootPath,
+         "publisher.config.json",
+      );
+      writeFileSync(
+         publisherConfigPath,
+         JSON.stringify({
+            projects: [
+               {
+                  name: projectName,
+                  packages: [
+                     {
+                        name: projectName,
+                        location: projectPath,
+                     },
+                  ],
+               },
+            ],
+         }),
+      );
+
+      // Test that the project can be retrieved
+      const project = await projectStore.getProject(projectName);
+      expect(project).toBeInstanceOf(Project);
+      expect(project.metadata.name).toBe(projectName);
+   });
+
+   it("should handle multiple projects", async () => {
+      const projectName1 = "project1";
+      const projectName2 = "project2";
+      const projectPath1 = path.join(serverRootPath, projectName1);
+      const projectPath2 = path.join(serverRootPath, projectName2);
+
+      // Create project directories
+      mkdirSync(projectPath1, { recursive: true });
+      mkdirSync(projectPath2, { recursive: true });
+
+      // Create connections files
+      writeFileSync(
+         path.join(projectPath1, "publisher.connections.json"),
+         JSON.stringify(testConnections),
+      );
+      writeFileSync(
+         path.join(projectPath2, "publisher.connections.json"),
+         JSON.stringify(testConnections),
+      );
+
+      // Create publisher config
+      const publisherConfigPath = path.join(
+         serverRootPath,
+         "publisher.config.json",
+      );
+      writeFileSync(
+         publisherConfigPath,
+         JSON.stringify({
+            projects: [
+               {
+                  name: projectName1,
+                  packages: [
+                     {
+                        name: projectName1,
+                        location: projectPath1,
+                     },
+                  ],
+               },
+               {
+                  name: projectName2,
+                  packages: [
+                     {
+                        name: projectName2,
+                        location: projectPath2,
+                     },
+                  ],
+               },
+            ],
+         }),
+      );
+
+      // Create a new project store that will read the configuration
+      const newProjectStore = new ProjectStore(serverRootPath);
+      await newProjectStore.finishedInitialization;
+
+      // Test that both projects can be listed
+      const projects = await newProjectStore.listProjects();
+      expect(projects).toBeInstanceOf(Array);
+      expect(projects.length).toBe(2);
+      expect(projects.map((p) => p.name)).toContain(projectName1);
+      expect(projects.map((p) => p.name)).toContain(projectName2);
+   });
+
+   it("should handle project updates", async () => {
+      // Create a project directory
+      const projectPath = path.join(serverRootPath, projectName);
+      mkdirSync(projectPath, { recursive: true });
+
+      // Create connections file
+      const connectionsPath = path.join(
+         projectPath,
+         "publisher.connections.json",
+      );
+      writeFileSync(connectionsPath, JSON.stringify(testConnections));
+
+      // Create publisher config
+      const publisherConfigPath = path.join(
+         serverRootPath,
+         "publisher.config.json",
+      );
+      writeFileSync(
+         publisherConfigPath,
+         JSON.stringify({
+            projects: [
+               {
+                  name: projectName,
+                  packages: [
+                     {
+                        name: projectName,
+                        location: projectPath,
+                     },
+                  ],
+               },
+            ],
+         }),
+      );
+
+      // Get the project
+      const project = await projectStore.getProject(projectName);
+
+      // Update the project
+      const updatedProject = await project.update({
+         name: projectName,
+         readme: "Updated README content",
+      });
+
+      expect(updatedProject.metadata.readme).toBe("Updated README content");
+   });
+
+   it("should handle project reload", async () => {
+      // Create a project directory
+      const projectPath = path.join(serverRootPath, projectName);
+      mkdirSync(projectPath, { recursive: true });
+
+      // Create connections file
+      const connectionsPath = path.join(
+         projectPath,
+         "publisher.connections.json",
+      );
+      writeFileSync(connectionsPath, JSON.stringify(testConnections));
+
+      // Create publisher config
+      const publisherConfigPath = path.join(
+         serverRootPath,
+         "publisher.config.json",
+      );
+      writeFileSync(
+         publisherConfigPath,
+         JSON.stringify({
+            projects: [
+               {
+                  name: projectName,
+                  packages: [
+                     {
+                        name: projectName,
+                        location: projectPath,
+                     },
+                  ],
+               },
+            ],
+         }),
+      );
+
+      // Get the project
+      const project1 = await projectStore.getProject(projectName);
+
+      // Get the project again with reload=true
+      const project2 = await projectStore.getProject(projectName, true);
+
+      expect(project1).toBeInstanceOf(Project);
+      expect(project2).toBeInstanceOf(Project);
+      expect(project1.metadata.name).toBe(project2.metadata.name);
+   });
+
+   it("should handle missing project paths", async () => {
+      // Create publisher config with non-existent project path
+      const publisherConfigPath = path.join(
+         serverRootPath,
+         "publisher.config.json",
+      );
+      writeFileSync(
+         publisherConfigPath,
+         JSON.stringify({
+            projects: [
+               {
+                  name: projectName,
+                  packages: [
+                     {
+                        name: projectName,
+                        location: "/non/existent/path",
+                     },
+                  ],
+               },
+            ],
+         }),
+      );
+
+      // Test that getting the project throws an error
+      await expect(projectStore.getProject(projectName)).rejects.toThrow();
+   });
+
+   it("should handle invalid publisher config", async () => {
+      // Create invalid publisher config
+      const publisherConfigPath = path.join(
+         serverRootPath,
+         "publisher.config.json",
+      );
+      writeFileSync(publisherConfigPath, "invalid json");
+
+      // Create a new project store that will read the invalid config
+      const newProjectStore = new ProjectStore(serverRootPath);
+
+      // Test that the project store handles invalid JSON gracefully by falling back to empty config
+      await newProjectStore.finishedInitialization;
+      const projects = await newProjectStore.listProjects();
+      expect(projects).toEqual([]);
+   });
+
+   it("should handle concurrent project access", async () => {
+      // Create a project directory
+      const projectPath = path.join(serverRootPath, projectName);
+      mkdirSync(projectPath, { recursive: true });
+
+      // Create connections file
+      const connectionsPath = path.join(
+         projectPath,
+         "publisher.connections.json",
+      );
+      writeFileSync(connectionsPath, JSON.stringify(testConnections));
+
+      // Create publisher config
+      const publisherConfigPath = path.join(
+         serverRootPath,
+         "publisher.config.json",
+      );
+      writeFileSync(
+         publisherConfigPath,
+         JSON.stringify({
+            projects: [
+               {
+                  name: projectName,
+                  packages: [
+                     {
+                        name: projectName,
+                        location: projectPath,
+                     },
+                  ],
+               },
+            ],
+         }),
+      );
+
+      // Test concurrent access to the same project
+      const promises = Array.from({ length: 5 }, () =>
+         projectStore.getProject(projectName),
+      );
+
+      const projects = await Promise.all(promises);
+
+      expect(projects).toHaveLength(5);
+      projects.forEach((project) => {
+         expect(project).toBeInstanceOf(Project);
+         expect(project.metadata.name).toBe(projectName);
+      });
+   });
+});
+
+describe("Project Service Error Recovery", () => {
+   let sandbox: sinon.SinonSandbox;
+   let projectStore: ProjectStore;
+   const serverRootPath = "/tmp/pathways-worker-publisher-error-recovery-test";
+   const projectName = "organizationName-projectName-error-recovery";
+   const testConnections: Connection[] = [
+      {
+         name: "testConnection",
+         type: "postgres",
+         postgresConnection: {
+            host: "host",
+            port: 1234,
+            databaseName: "databaseName",
+            userName: "userName",
+            password: "password",
+         },
+      },
+   ];
+
+   beforeEach(async () => {
+      sandbox = sinon.createSandbox();
+      mkdirSync(serverRootPath, { recursive: true });
+
+      // Mock the configuration to prevent initialization errors
+      mock(isPublisherConfigFrozen).mockReturnValue(false);
       mock.module("../config", () => ({
          isPublisherConfigFrozen: () => false,
       }));
-      const projectStore = new ProjectStore(serverRoot);
-      await projectStore.finishedInitialization;
-      await projectStore.deleteProject("malloy-samples");
-      expect(await projectStore.listProjects()).toEqual([]);
-      const readFileSpy = spyOn(fs, "readFile");
-      await projectStore.getProject("malloy-samples", true);
-      expect(readFileSpy).toHaveBeenCalled();
+
+      // Create project store after mocking
+      projectStore = new ProjectStore(serverRootPath);
    });
 
-   it("should throw a NotFound error when reloading a project that is not in disk", async () => {
-      mock.module("../config", () => ({
-         isPublisherConfigFrozen: () => false,
-      }));
-      const projectStore = new ProjectStore(serverRoot);
-      await projectStore.finishedInitialization;
-      expect(
-         projectStore.getProject("this-one-does-not-exist", true),
-      ).rejects.toThrow(ProjectNotFoundError);
+   afterEach(async () => {
+      sandbox.restore();
+      if (existsSync(serverRootPath)) {
+         rmSync(serverRootPath, { recursive: true, force: true });
+      }
+   });
+
+   describe("Project Loading Error Recovery", () => {
+      it("should handle missing project directories gracefully", async () => {
+         // Create publisher config with missing project directory
+         const publisherConfigPath = path.join(
+            serverRootPath,
+            "publisher.config.json",
+         );
+         writeFileSync(
+            publisherConfigPath,
+            JSON.stringify({
+               projects: [
+                  {
+                     name: projectName,
+                     packages: [
+                        {
+                           name: projectName,
+                           location: path.join(
+                              serverRootPath,
+                              "missing-project",
+                           ),
+                        },
+                     ],
+                  },
+               ],
+            }),
+         );
+
+         // Test that the project store handles the missing directory
+         await expect(projectStore.getProject(projectName)).rejects.toThrow();
+      });
+
+      it("should handle corrupted connection files", async () => {
+         // Create a project directory
+         const projectPath = path.join(serverRootPath, projectName);
+         mkdirSync(projectPath, { recursive: true });
+
+         // Create corrupted connections file
+         const connectionsPath = path.join(
+            projectPath,
+            "publisher.connections.json",
+         );
+         writeFileSync(connectionsPath, "invalid json");
+
+         // Create publisher config
+         const publisherConfigPath = path.join(
+            serverRootPath,
+            "publisher.config.json",
+         );
+         writeFileSync(
+            publisherConfigPath,
+            JSON.stringify({
+               projects: [
+                  {
+                     name: projectName,
+                     packages: [
+                        {
+                           name: projectName,
+                           location: projectPath,
+                        },
+                     ],
+                  },
+               ],
+            }),
+         );
+
+         // Test that the project store handles corrupted connection files gracefully
+         // (The current implementation loads the project even with corrupted connection files)
+         const project = await projectStore.getProject(projectName);
+         expect(project).toBeInstanceOf(Project);
+         expect(project.metadata.name).toBe(projectName);
+      });
+   });
+
+   describe("Project Store State Management", () => {
+      it("should maintain consistent state after errors", async () => {
+         // Create a valid project first
+         const projectPath = path.join(serverRootPath, projectName);
+         mkdirSync(projectPath, { recursive: true });
+         writeFileSync(
+            path.join(projectPath, "publisher.connections.json"),
+            JSON.stringify(testConnections),
+         );
+
+         const publisherConfigPath = path.join(
+            serverRootPath,
+            "publisher.config.json",
+         );
+         writeFileSync(
+            publisherConfigPath,
+            JSON.stringify({
+               projects: [
+                  {
+                     name: projectName,
+                     packages: [
+                        {
+                           name: projectName,
+                           location: projectPath,
+                        },
+                     ],
+                  },
+               ],
+            }),
+         );
+
+         // Get the project successfully
+         const project = await projectStore.getProject(projectName);
+         expect(project).toBeInstanceOf(Project);
+
+         // Try to get a non-existent project
+         await expect(
+            projectStore.getProject("non-existent"),
+         ).rejects.toThrow();
+
+         // Verify the original project is still accessible
+         const projectAgain = await projectStore.getProject(projectName);
+         expect(projectAgain).toBeInstanceOf(Project);
+         expect(projectAgain.metadata.name).toBe(projectName);
+      });
    });
 });

@@ -13,12 +13,26 @@ import { logger } from "../logger";
 import { createConnections, InternalConnection } from "./connection";
 import { ApiConnection } from "./model";
 import { Package } from "./package";
+
+enum PackageStatus {
+   LOADING = "loading",
+   SERVING = "serving",
+   UNLOADING = "unloading",
+}
+
+interface PackageInfo {
+   name: string;
+   loadTimestamp: number;
+   status: PackageStatus;
+}
+
 type ApiPackage = components["schemas"]["Package"];
 type ApiProject = components["schemas"]["Project"];
 
 export class Project {
    private packages: Map<string, Package> = new Map();
    private packageMutexes = new Map<string, Mutex>();
+   private packageStatuses: Map<string, PackageInfo> = new Map();
    private malloyConnections: Map<string, BaseConnection>;
    private apiConnections: ApiConnection[];
    private internalConnections: InternalConnection[];
@@ -60,7 +74,12 @@ export class Project {
             `${API_PREFIX}/projects/`,
             "",
          );
-         if (!(await fs.promises.exists(this.projectPath))) {
+         if (
+            !(await fs.promises
+               .access(this.projectPath)
+               .then(() => true)
+               .catch(() => false))
+         ) {
             throw new ProjectNotFoundError(
                `Project path "${this.projectPath}" not found`,
             );
@@ -68,6 +87,35 @@ export class Project {
          this.metadata.resource = payload.resource;
       }
       this.metadata.readme = payload.readme;
+      // const connections = payload.connections;
+
+      // Handle connections update
+      if (payload.connections) {
+         logger.info(
+            `Updating ${payload.connections.length} connections for project ${this.projectName}`,
+         );
+
+         // Reload connections with full config
+         const { malloyConnections, apiConnections } = await createConnections(
+            this.projectPath,
+            payload.connections,
+         );
+
+         // Update the project's connection maps
+         this.malloyConnections = malloyConnections;
+         this.apiConnections = apiConnections;
+         this.internalConnections = apiConnections;
+
+         logger.info(
+            `Successfully updated connections for project ${this.projectName}`,
+            {
+               malloyConnections: malloyConnections.size,
+               apiConnections: apiConnections.length,
+               internalConnections: apiConnections.length,
+            },
+         );
+      }
+
       return this;
    }
 
@@ -81,10 +129,18 @@ export class Project {
             `Project path ${projectPath} not found`,
          );
       }
-      const { malloyConnections, apiConnections } = await createConnections(
+
+      let malloyConnections: Map<string, BaseConnection> = new Map();
+      let apiConnections: InternalConnection[] = [];
+
+      logger.info(`Creating project with connection configuration`);
+      const result = await createConnections(
          projectPath,
          defaultConnections,
       );
+      malloyConnections = result.malloyConnections;
+      apiConnections = result.apiConnections;
+
       logger.info(
          `Loaded ${malloyConnections.size + apiConnections.length} connections for project ${projectName}`,
          {
@@ -92,6 +148,7 @@ export class Project {
             apiConnections,
          },
       );
+
       return new Project(
          projectName,
          projectPath,
@@ -201,7 +258,14 @@ export class Project {
          const filteredMetadata = packageMetadata.filter(
             (metadata) => metadata,
          ) as ApiPackage[];
-         return filteredMetadata;
+
+         // Filter out packages that are being unloaded
+         const finalMetadata = filteredMetadata.filter((metadata) => {
+            const packageStatus = this.packageStatuses.get(metadata.name || "");
+            return packageStatus?.status !== PackageStatus.UNLOADING;
+         });
+
+         return finalMetadata;
       } catch (error) {
          logger.error("Error listing packages", { error });
          console.error(error);
@@ -213,21 +277,38 @@ export class Project {
       packageName: string,
       reload: boolean = false,
    ): Promise<Package> {
+      // Check if package is already loaded first
+      const _package = this.packages.get(packageName);
+      if (_package !== undefined && !reload) {
+         return _package;
+      }
+
       // We need to acquire the mutex to prevent a thundering herd of requests from creating the
       // package multiple times.
       let packageMutex = this.packageMutexes.get(packageName);
       if (packageMutex?.isLocked()) {
          await packageMutex.waitForUnlock();
-         return this.packages.get(packageName)!;
+         const existingPackage = this.packages.get(packageName);
+         if (existingPackage) {
+            return existingPackage;
+         }
       }
       packageMutex = new Mutex();
       this.packageMutexes.set(packageName, packageMutex);
 
       return packageMutex.runExclusive(async () => {
-         const _package = this.packages.get(packageName);
-         if (_package !== undefined && !reload) {
-            return _package;
+         // Double-check after acquiring mutex
+         const existingPackage = this.packages.get(packageName);
+         if (existingPackage !== undefined && !reload) {
+            return existingPackage;
          }
+
+         // Set package status to loading
+         this.packageStatuses.set(packageName, {
+            name: packageName,
+            loadTimestamp: 0,
+            status: PackageStatus.LOADING,
+         });
 
          try {
             const _package = await Package.create(
@@ -237,21 +318,32 @@ export class Project {
                this.malloyConnections,
             );
             this.packages.set(packageName, _package);
+
+            // Set package status to serving
+            this.packageStatuses.set(packageName, {
+               name: packageName,
+               loadTimestamp: Date.now(),
+               status: PackageStatus.SERVING,
+            });
+
             return _package;
          } catch (error) {
+            // Clean up on error - mutex will be automatically released by runExclusive
             this.packages.delete(packageName);
+            this.packageStatuses.delete(packageName);
             throw error;
-         } finally {
-            packageMutex.release();
-            this.packageMutexes.delete(packageName);
          }
+         // Mutex is automatically released here by runExclusive
       });
    }
 
    public async addPackage(packageName: string) {
       const packagePath = path.join(this.projectPath, packageName);
       if (
-         !(await fs.promises.exists(packagePath)) ||
+         !(await fs.promises
+            .access(packagePath)
+            .then(() => true)
+            .catch(() => false)) ||
          !(await fs.promises.stat(packagePath)).isDirectory()
       ) {
          throw new PackageNotFoundError(`Package ${packageName} not found`);
@@ -292,15 +384,56 @@ export class Project {
       return _package.getPackageMetadata();
    }
 
-   public async deletePackage(packageName: string) {
+   public getPackageStatus(packageName: string): PackageInfo | undefined {
+      return this.packageStatuses.get(packageName);
+   }
+
+   public setPackageStatus(packageName: string, status: PackageStatus): void {
+      const currentStatus = this.packageStatuses.get(packageName);
+      this.packageStatuses.set(packageName, {
+         name: packageName,
+         loadTimestamp: currentStatus?.loadTimestamp || Date.now(),
+         status: status,
+      });
+   }
+
+   public async deletePackage(packageName: string): Promise<void> {
       const _package = this.packages.get(packageName);
       if (!_package) {
          return;
       }
-      await fs.promises.rm(path.join(this.projectPath, packageName), {
-         recursive: true,
-      });
+      const packageStatus = this.packageStatuses.get(packageName);
+
+      if (packageStatus?.status === PackageStatus.LOADING) {
+         logger.error("Package loading. Can't unload.", {
+            projectName: this.projectName,
+            packageName,
+         });
+         throw new Error(
+            "Package loading. Can't unload. " +
+               this.projectName +
+               " " +
+               packageName,
+         );
+      } else if (packageStatus?.status === PackageStatus.SERVING) {
+         this.setPackageStatus(packageName, PackageStatus.UNLOADING);
+      }
+
+      try {
+         await fs.promises.rm(path.join(this.projectPath, packageName), {
+            recursive: true,
+            force: true,
+         });
+      } catch (err) {
+         logger.error(
+            "Error removing package directory while unloading package",
+            { error: err, projectName: this.projectName, packageName },
+         );
+      }
+
+      // Remove from internal tracking
       this.packages.delete(packageName);
+      this.packageStatuses.delete(packageName);
    }
 
    public async serialize(): Promise<ApiProject> {

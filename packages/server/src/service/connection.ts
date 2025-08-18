@@ -53,15 +53,25 @@ export async function createConnections(
    const connectionMap = new Map<string, BaseConnection>();
    const connectionConfig = await readConnectionConfig(basePath);
 
-   for (const connection of [...defaultConnections, ...connectionConfig]) {
+   const allConnections = [...defaultConnections, ...connectionConfig];
+
+   const processedConnections = new Set<string>();
+   const apiConnections: InternalConnection[] = [];
+
+   for (const connection of allConnections) {
+      if (connection.name && processedConnections.has(connection.name)) {
+         continue;
+      }
+
       logger.info(`Adding connection ${connection.name}`, {
          connection,
       });
-      // This case shouldn't happen.  The package validation logic should
-      // catch it.
+
       if (!connection.name) {
          throw "Invalid connection configuration.  No name.";
       }
+
+      processedConnections.add(connection.name);
 
       switch (connection.type) {
          case "postgres": {
@@ -218,11 +228,14 @@ export async function createConnections(
             throw new Error(`Unsupported connection type: ${connection.type}`);
          }
       }
+
+      // Add the connection to apiConnections (this will be sanitized when returned)
+      apiConnections.push(connection);
    }
 
    return {
       malloyConnections: connectionMap,
-      apiConnections: connectionConfig,
+      apiConnections: apiConnections,
    };
 }
 

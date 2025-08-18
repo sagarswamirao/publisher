@@ -13,13 +13,10 @@ import { PackageController } from "./controller/package.controller";
 import { QueryController } from "./controller/query.controller";
 import { ScheduleController } from "./controller/schedule.controller";
 import { WatchModeController } from "./controller/watch-mode.controller";
-import {
-   internalErrorToHttpError,
-   NotImplementedError,
-   PackageNotFoundError,
-} from "./errors";
+import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { logger, loggerMiddleware } from "./logger";
 import { initializeMcpServer } from "./mcp/server";
+import { Project } from "./service/project";
 import { ProjectStore } from "./service/project_store";
 
 // Parse command line arguments
@@ -213,10 +210,56 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.get(`${API_PREFIX}/status`, async (_req, res) => {
-   res.status(200).json({
-      timestamp: Date.now(),
-      projects: await projectStore.listProjects(),
-   });
+   try {
+      let status: any = {
+         timestamp: Date.now(),
+         projects: [],
+      };
+
+      const projects = await projectStore.listProjects();
+
+      await Promise.all(
+         projects.map(async (project) => {
+            try {
+               const packages = project.packages;
+               const connections = project.connections;
+
+               logger.info(`Project ${project.name} status:`, {
+                  connectionsCount: project.connections?.length || 0,
+                  packagesCount: packages?.length || 0,
+               });
+
+               const _connections = connections?.map((connection) => {
+                  // eveything other than the attributes
+                  return {
+                     ...connection,
+                     attributes: undefined,
+                  };
+               });
+
+               const _project = {
+                  ...project,
+                  connections: _connections,
+               };
+               project.connections = _connections;
+               status.projects.push(_project);
+            } catch (error) {
+               logger.error("Error listing packages and connections", {
+                  error,
+               });
+               throw new Error(
+                  "Error listing packages and connections: " + error,
+               );
+            }
+         }),
+      );
+
+      res.status(200).json(status);
+   } catch (error) {
+      logger.error("Error getting status", { error });
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
 });
 
 app.get(`${API_PREFIX}/watch-mode/status`, watchModeController.getWatchStatus);

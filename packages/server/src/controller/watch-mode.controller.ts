@@ -32,9 +32,19 @@ export class WatchModeController {
          this.projectStore.serverRootPath,
       );
       this.watchingProjectName = req.body.projectName;
+
+      // Find the project in the new array structure
+      const project = projectManifest.projects.find(p => p.name === req.body.projectName);
+      if (!project || !project.packages || project.packages.length === 0) {
+         res.status(404).json({ error: `Project ${req.body.projectName} not found or has no packages` });
+         return;
+      }
+
+      // Use the first package's location for watching (or could watch all package locations)
+      const packageLocation = project.packages[0].location;
       this.watchingPath = path.join(
          this.projectStore.serverRootPath,
-         projectManifest.projects[req.body.projectName],
+         req.body.projectName,
       );
       this.watcher = chokidar.watch(this.watchingPath, {
          ignored: (path, stats) =>
