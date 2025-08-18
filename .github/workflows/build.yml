@@ -40,11 +40,11 @@ jobs:
         run: bun install && bun run build
       - name: Start npx server
         run: |
-          cd packages/server && npx malloy-publisher --port 4000 --server_root ./ &
+          cd packages/server && npx malloy-publisher --port 4002 --server_root ./ &
           sleep 12
       - name: Test API endpoint
         run: |
-          response=$(curl -s http://localhost:4000/api/v0/projects)
+          response=$(curl -s http://localhost:4002/api/v0/projects)
           echo "API Response: $response"
           # Check if response is a JSON array with 1 entry
           if echo "$response" | jq -e '. | length == 1' > /dev/null; then
