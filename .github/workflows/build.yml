@@ -37,10 +37,10 @@ jobs:
       - name: Install Bun
         run: curl -fsSL https://bun.sh/install | bash && echo "$HOME/.bun/bin" >> $GITHUB_PATH
       - name: build server
-        run: cd packages/server && bun install && bun run build
+        run: bun install && bun run build
       - name: Start npx server
         run: |
-          npx malloy-publisher --port 4000 --server_root ./test-data &
+          cd packages/server && npx malloy-publisher --port 4000 --server_root ./test-data &
           sleep 5
       - name: Test API endpoint
         run: |
