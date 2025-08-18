@@ -23,3 +23,33 @@ jobs:
         run: docker exec -t publisher-ci bun run build
       - name: Run tests
         run: docker exec -t publisher-ci sh -c "cd packages/server && bun test ./src/service/model.spec.ts ./src/service/package.spec.ts ./src/__tests__/setup.spec.ts ./src/__tests__/mcp_execute_query_tool.integration.spec.ts ./src/__tests__/mcp_resource.integration.spec.ts ./src/__tests__/mcp_transport.integration.spec.ts"
+  npx_test:
+    name: npx test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "true" # Fetch submodules
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - name: Install Bun
+        run: curl -fsSL https://bun.sh/install | bash && echo "$HOME/.bun/bin" >> $GITHUB_PATH
+      - name: build server
+        run: bun install && bun run build
+      - name: Start npx server
+        run: |
+          cd packages/server && npx malloy-publisher --port 4002 --server_root ./ &
+          sleep 12
+      - name: Test API endpoint
+        run: |
+          response=$(curl -s http://localhost:4002/api/v0/projects)
+          echo "API Response: $response"
+          # Check if response is a JSON array with 1 entry
+          if echo "$response" | jq -e '. | length == 1' > /dev/null; then
+            echo "✓ API test passed: Found 1 project"
+          else
+            echo "✗ API test failed: Expected 1 project, got different response"
+            exit 1
+          fi

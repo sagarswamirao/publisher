@@ -237,7 +237,7 @@ export class ProjectStore {
    private async loadProjectIntoDisk(projectName: string, projectPath: string) {
       const absoluteTargetPath = `${publisherPath}/${projectName}`;
       // Handle absolute paths
-      if (projectPath.startsWith("/")) {
+      if (projectPath.startsWith("/") || projectPath.startsWith("./")) {
          try {
             logger.info(`Mounting local directory at "${projectPath}"`);
             await this.mountLocalDirectory(
@@ -308,7 +308,7 @@ export class ProjectStore {
          }
       }
 
-      const errorMsg = `Invalid project path: "${projectPath}". Must be an absolute mounted path or a GCS/S3/GitHub URI.`;
+      const errorMsg = `Invalid project path: "${projectPath}". Paths must start with "/" or "./" or a GCS/S3/GitHub URI.`;
       logger.error(errorMsg, { projectName, projectPath });
       throw new ProjectNotFoundError(errorMsg);
    }
