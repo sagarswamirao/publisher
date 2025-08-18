@@ -1,0 +1,6 @@
+{
+   "frozenConfig": false,
+   "projects": {
+      "test-project": "./test-data/test-project"
+   }
+}
