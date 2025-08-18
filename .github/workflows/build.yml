@@ -40,8 +40,8 @@ jobs:
         run: bun install && bun run build
       - name: Start npx server
         run: |
-          cd packages/server && npx malloy-publisher --port 4000 --server_root ./test-data &
-          sleep 5
+          cd packages/server && npx malloy-publisher --port 4000 --server_root malloy-samples &
+          sleep 12
       - name: Test API endpoint
         run: |
           response=$(curl -s http://localhost:4000/api/v0/projects)
