@@ -221,8 +221,9 @@ export class Project {
             packageDirectories.map(async (directory) => {
                try {
                   return (
+                     (this.packageMutexes.get(directory.name)?.isLocked())? undefined :
                      await this.getPackage(directory.name, false)
-                  ).getPackageMetadata();
+                  )?.getPackageMetadata();
                } catch (error) {
                   logger.error(
                      `Failed to load package: ${directory.name} due to : ${error}`,
@@ -334,6 +335,8 @@ export class Project {
             malloyConnections: this.malloyConnections,
          },
       );
+      this.setPackageStatus(packageName, PackageStatus.LOADING);
+      try {
       this.packages.set(
          packageName,
          await Package.create(
@@ -341,8 +344,14 @@ export class Project {
             packageName,
             packagePath,
             this.malloyConnections,
-         ),
-      );
+            ),
+         );
+      } catch (error) {
+         logger.error("Error adding package", { error });
+         this.deletePackageStatus(packageName);
+         throw error;
+      }
+      this.setPackageStatus(packageName, PackageStatus.SERVING);
       return this.packages.get(packageName);
    }
 
@@ -374,6 +383,10 @@ export class Project {
          loadTimestamp: currentStatus?.loadTimestamp || Date.now(),
          status: status,
       });
+   }
+
+   public deletePackageStatus(packageName: string): void {
+      this.packageStatuses.delete(packageName);
    }
 
    public async deletePackage(packageName: string): Promise<void> {

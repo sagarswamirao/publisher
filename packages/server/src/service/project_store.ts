@@ -22,6 +22,7 @@ export class ProjectStore {
    private projects: Map<string, Project> = new Map();
    public publisherConfigIsFrozen: boolean;
    public finishedInitialization: Promise<void>;
+   private isInitialized: boolean = false;
    private s3Client = new S3({
       followRegionRedirects: true,
    });
@@ -57,6 +58,7 @@ export class ProjectStore {
                return projectInstance.listPackages();
             }),
          );
+         this.isInitialized = true;
          logger.info(
             `Project store successfully initialized in ${performance.now() - initialTime}ms`,
          );
@@ -67,8 +69,10 @@ export class ProjectStore {
       }
    }
 
-   public async listProjects() {
-      await this.finishedInitialization;
+   public async listProjects(skipInitializationCheck: boolean = false) {
+      if (!skipInitializationCheck) {
+         await this.finishedInitialization;
+      }
       return Promise.all(
          Array.from(this.projects.values()).map((project) =>
             project.serialize(),
@@ -80,9 +84,10 @@ export class ProjectStore {
       let status: any = {
          timestamp: Date.now(),
          projects: [],
+         initialized: this.isInitialized,
       };
 
-      const projects = await this.listProjects();
+      const projects = await this.listProjects(true);
 
       await Promise.all(
          projects.map(async (project) => {
