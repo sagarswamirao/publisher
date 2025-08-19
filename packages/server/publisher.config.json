@@ -1,6 +1,26 @@
 {
-   "frozenConfig": false,
-   "projects": {
-      "malloy-samples": "https://github.com/ms2data/malloy-samples"
-   }
-}
+    "frozenConfig": false,
+    "projects": [
+      {
+        "name": "malloy-samples",
+        "packages": [
+          {
+            "name": "ecommerce",
+            "location": "https://github.com/ms2data/malloy-samples"
+          },
+          {
+            "name": "imdb",
+            "location": "https://github.com/ms2data/malloy-samples"
+          },
+          {
+            "name": "faa",
+            "location": "https://github.com/ms2data/malloy-samples"
+          },
+          {
+            "name": "bigquery-hackernews",
+            "location": "https://github.com/ms2data/malloy-samples"
+          }
+        ]
+      }
+    ]
+  }

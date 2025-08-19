@@ -1,14 +1,18 @@
 import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
 import { Storage } from "@google-cloud/storage";
+import AdmZip from "adm-zip";
 import * as fs from "fs";
 import * as path from "path";
-import AdmZip from "adm-zip";
 import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
-import { API_PREFIX, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
-import { FrozenConfigError, ProjectNotFoundError } from "../errors";
+import { API_PREFIX, CONNECTIONS_MANIFEST_NAME, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
+import {
+   FrozenConfigError,
+   PackageNotFoundError,
+   ProjectNotFoundError,
+} from "../errors";
 import { logger } from "../logger";
 import { Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
@@ -21,10 +25,12 @@ export class ProjectStore {
    private s3Client = new S3({
       followRegionRedirects: true,
    });
-   private gcsClient = new Storage();
+   private gcsClient: Storage;
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
+      this.gcsClient = new Storage();
+
       this.finishedInitialization = this.initialize();
    }
 
@@ -39,17 +45,16 @@ export class ProjectStore {
          );
          logger.info(`Initializing project store.`);
          await Promise.all(
-            Object.keys(projectManifest.projects).map(async (projectName) => {
-               logger.info(`Adding project "${projectName}"`);
-               const project = await this.addProject(
+            projectManifest.projects.map(async (project) => {
+               logger.info(`Adding project "${project.name}"`);
+               const projectInstance = await this.addProject(
                   {
-                     name: projectName,
-                     resource: `${API_PREFIX}/projects/${projectName}`,
-                     location: projectManifest.projects[projectName],
+                     name: project.name,
+                     resource: `${API_PREFIX}/projects/${project.name}`,
                   },
                   true,
                );
-               return project.listPackages();
+               return projectInstance.listPackages();
             }),
          );
          logger.info(
@@ -71,6 +76,51 @@ export class ProjectStore {
       );
    }
 
+   public async getStatus() {
+      let status: any = {
+         timestamp: Date.now(),
+         projects: [],
+      };
+
+      const projects = await this.listProjects();
+
+      await Promise.all(
+         projects.map(async (project) => {
+            try {
+               const packages = project.packages;
+               const connections = project.connections;
+
+               logger.info(`Project ${project.name} status:`, {
+                  connectionsCount: project.connections?.length || 0,
+                  packagesCount: packages?.length || 0,
+               });
+
+               const _connections = connections?.map((connection) => {
+                  return {
+                     ...connection,
+                     attributes: undefined,
+                  };
+               });
+
+               const _project = {
+                  ...project,
+                  connections: _connections,
+               };
+               project.connections = _connections;
+               status.projects.push(_project);
+            } catch (error) {
+               logger.error("Error listing packages and connections", {
+                  error,
+               });
+               throw new Error(
+                  "Error listing packages and connections: " + error,
+               );
+            }
+         })
+      );
+      return status;
+   }
+
    public async getProject(
       projectName: string,
       reload: boolean = false,
@@ -81,8 +131,11 @@ export class ProjectStore {
          const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
+         const projectConfig = projectManifest.projects.find(
+            (p) => p.name === projectName,
+         );
          const projectPath =
-            project?.metadata.location || projectManifest.projects[projectName];
+            project?.metadata.location || projectConfig?.packages[0]?.location;
          if (!projectPath) {
             throw new ProjectNotFoundError(
                `Project "${projectName}" could not be resolved to a path.`,
@@ -111,16 +164,34 @@ export class ProjectStore {
       if (!projectName) {
          throw new Error("Project name is required");
       }
+
+      // Check if project already exists and update it instead of creating a new one
+      const existingProject = this.projects.get(projectName);
+      if (existingProject) {
+         logger.info(`Project ${projectName} already exists, updating it`);
+         const updatedProject = await existingProject.update(project);
+         this.projects.set(projectName, updatedProject);
+         return updatedProject;
+      }
+
       const projectManifest = await ProjectStore.reloadProjectManifest(
          this.serverRootPath,
       );
-      const projectPath =
-         project.location || projectManifest.projects[projectName];
+      const projectConfig = projectManifest.projects.find(
+         (p) => p.name === projectName,
+      );
+
+      const hasPackages =
+         (project?.packages && project.packages.length > 0) ||
+         (projectConfig?.packages && projectConfig.packages.length > 0);
       let absoluteProjectPath: string;
-      if (projectPath) {
+      if (hasPackages) {
+         const packagesToProcess =
+            project?.packages || projectConfig?.packages || [];
          absoluteProjectPath = await this.loadProjectIntoDisk(
             projectName,
-            projectPath,
+            projectName,
+            packagesToProcess,
          );
          if (absoluteProjectPath.endsWith(".zip")) {
             absoluteProjectPath = await this.unzipProject(absoluteProjectPath);
@@ -194,17 +265,31 @@ export class ProjectStore {
                `Error reading ${PUBLISHER_CONFIG_NAME}. Generating from directory`,
                { error },
             );
-            return { projects: {} };
+            return { projects: [] };
          } else {
             // If publisher.config.json is missing, generate the manifest from directories
             try {
                const entries = await fs.promises.readdir(serverRootPath, {
                   withFileTypes: true,
                });
-               const projects: { [key: string]: string } = {};
+               const projects: {
+                  name: string;
+                  packages: {
+                     name: string;
+                     location: string;
+                  }[];
+               }[] = [];
                for (const entry of entries) {
                   if (entry.isDirectory()) {
-                     projects[entry.name] = entry.name;
+                     projects.push({
+                        name: entry.name,
+                        packages: [
+                           {
+                              name: entry.name,
+                              location: entry.name,
+                           },
+                        ],
+                     });
                   }
                }
                return { projects };
@@ -212,7 +297,7 @@ export class ProjectStore {
                logger.error(`Error listing directories in ${serverRootPath}`, {
                   error: lsError,
                });
-               return { projects: {} };
+               return { projects: [] };
             }
          }
       }
@@ -234,89 +319,226 @@ export class ProjectStore {
       return absoluteProjectPath;
    }
 
-   private async loadProjectIntoDisk(projectName: string, projectPath: string) {
-      const absoluteTargetPath = `${publisherPath}/${projectName}`;
-      // Handle absolute paths
-      if (projectPath.startsWith("/") || projectPath.startsWith("./")) {
-         try {
-            logger.info(`Mounting local directory at "${projectPath}"`);
-            await this.mountLocalDirectory(
-               projectPath,
-               absoluteTargetPath,
-               projectName,
+   private async loadProjectIntoDisk(
+      projectName: string,
+      projectPath: string,
+      packages: ApiProject["packages"],
+   ) {
+      const absoluteTargetPath = `${publisherPath}/${projectPath}`;
+
+      if (!packages || packages.length === 0) {
+         throw new PackageNotFoundError(
+            `No packages found for project ${projectName}`,
+         );
+      }
+
+      // Group packages by location to optimize downloads
+      const locationGroups = new Map<
+         string,
+         Array<{ name: string; location: string }>
+      >();
+
+      for (const _package of packages) {
+         if (!_package.name) {
+            throw new PackageNotFoundError(`Package has no name specified`);
+         }
+
+         if (!_package.location) {
+            throw new PackageNotFoundError(
+               `Package ${_package.name} has no location specified`,
             );
-            return absoluteTargetPath;
-         } catch (error) {
-            logger.error(`Failed to mount local directory "${projectPath}"`, {
-               error,
+         }
+
+         const location = _package.location;
+         const packageName = _package.name;
+
+         if (!locationGroups.has(location)) {
+            locationGroups.set(location, []);
+         }
+         locationGroups.get(location)!.push({ name: packageName, location });
+      }
+
+      // Processing by each unique location
+      for (const [location, packagesForLocation] of locationGroups) {
+         // Create a temporary directory for the shared download
+         const tempDownloadPath = `${absoluteTargetPath}/.temp_${Buffer.from(
+            location,
+         )
+            .toString("base64")
+            .replace(/[^a-zA-Z0-9]/g, "")}`;
+         await fs.promises.mkdir(tempDownloadPath, { recursive: true });
+
+         try {
+            // Download the entire location once
+            await this.downloadOrMountLocation(
+               location,
+               tempDownloadPath,
+               projectName,
+               "shared",
+            );
+
+            // Extract each package from the downloaded content
+            for (const _package of packagesForLocation) {
+               const packageDir = _package.name;
+               const absolutePackagePath = `${absoluteTargetPath}/${packageDir}`;
+
+               // Check if the package directory exists in the downloaded content
+               const packagePathInDownload = path.join(
+                  tempDownloadPath,
+                  packageDir,
+               );
+               const packageExists = await fs.promises
+                  .access(packagePathInDownload)
+                  .then(() => true)
+                  .catch(() => false);
+
+               if (packageExists) {
+                  // Copy the specific package directory
+                  await fs.promises.mkdir(absolutePackagePath, {
+                     recursive: true,
+                  });
+                  await fs.promises.cp(
+                     packagePathInDownload,
+                     absolutePackagePath,
+                     { recursive: true },
+                  );
+                  logger.info(
+                     `Extracted package "${packageDir}" from shared download`,
+                  );
+               } else {
+                  // If package directory doesn't exist, copy the entire download as the package
+                  // This handles cases where the location itself is the package
+                  await fs.promises.mkdir(absolutePackagePath, {
+                     recursive: true,
+                  });
+                  await fs.promises.cp(tempDownloadPath, absolutePackagePath, {
+                     recursive: true,
+                  });
+                  logger.info(
+                     `Copied entire download as package "${packageDir}"`,
+                  );
+               }
+            }
+
+            const connectionsFileInDownload = path.join(tempDownloadPath, CONNECTIONS_MANIFEST_NAME);
+            const connectionsFileInProject = path.join(absoluteTargetPath, CONNECTIONS_MANIFEST_NAME);
+
+            try {
+               await fs.promises.access(connectionsFileInDownload, fs.constants.F_OK);
+               await fs.promises.cp(connectionsFileInDownload, connectionsFileInProject);
+               logger.info(`Copied ${CONNECTIONS_MANIFEST_NAME} to project directory`);
+            } catch (error) {
+               logger.info(`No ${CONNECTIONS_MANIFEST_NAME} found`);
+            }
+         } finally {
+            // Clean up temporary download directory
+            await fs.promises.rm(tempDownloadPath, {
+               recursive: true,
+               force: true,
             });
-            throw error;
          }
       }
 
-      // Handle GCS URIs
-      if (projectPath.startsWith("gs://")) {
-         // Download from GCS
+      return absoluteTargetPath;
+   }
+
+   private async downloadOrMountLocation(
+      location: string,
+      targetPath: string,
+      projectName: string,
+      packageName: string,
+   ) {
+      // Handle absolute paths
+      if (location.startsWith("/")) {
          try {
             logger.info(
-               `Downloading GCS path "${projectPath}" to "${absoluteTargetPath}"`,
+               `Mounting local directory at "${location}" to "${targetPath}"`,
             );
-            await this.downloadGcsDirectory(
-               projectPath,
+            await this.mountLocalDirectory(
+               location,
+               targetPath,
                projectName,
-               absoluteTargetPath,
+               packageName,
             );
+            return;
          } catch (error) {
-            logger.error(`Failed to download GCS path "${projectPath}"`, {
+            logger.error(`Failed to mount local directory "${location}"`, {
                error,
             });
-            throw error;
-         }
-         return absoluteTargetPath;
-      }
-
-      // Handle S3 URIs
-      if (projectPath.startsWith("s3://")) {
-         try {
-            logger.info(`Mounting S3 path "${projectPath}"`);
-            await this.downloadS3Directory(
-               projectPath,
-               projectName,
-               absoluteTargetPath,
+            throw new PackageNotFoundError(
+               `Failed to mount local directory: ${location}`,
             );
-            return absoluteTargetPath;
-         } catch (error) {
-            logger.error(`Failed to mount S3 path "${projectPath}"`, { error });
-            throw error;
          }
       }
 
-      // Handle GitHub URIs
+      // Handle GCS paths
+      if (location.startsWith("gs://")) {
+         try {
+            logger.info(
+               `Downloading GCS directory from "${location}" to "${targetPath}"`,
+            );
+            await this.downloadGcsDirectory(location, projectName, targetPath);
+            return;
+         } catch (error) {
+            logger.error(`Failed to download GCS directory "${location}"`, {
+               error,
+            });
+            throw new PackageNotFoundError(
+               `Failed to download GCS directory: ${location}`,
+            );
+         }
+      }
+
+      // Handle GitHub URLs
       if (
-         projectPath.startsWith("https://github.com/") ||
-         projectPath.startsWith("git@")
+         location.startsWith("https://github.com/") ||
+         location.startsWith("git@")
       ) {
          try {
-            logger.info(`Mounting GitHub path "${projectPath}"`);
-            await this.downloadGitHubDirectory(projectPath, absoluteTargetPath);
-            return absoluteTargetPath;
+            logger.info(
+               `Cloning GitHub repository from "${location}" to "${targetPath}"`,
+            );
+            await this.downloadGitHubDirectory(location, targetPath);
+            return;
          } catch (error) {
-            logger.error(`Failed to mount GitHub path "${projectPath}"`, {
+            logger.error(`Failed to clone GitHub repository "${location}"`, {
                error,
             });
-            throw error;
+            throw new PackageNotFoundError(
+               `Failed to clone GitHub repository: ${location}`,
+            );
          }
       }
 
-      const errorMsg = `Invalid project path: "${projectPath}". Paths must start with "/" or "./" or a GCS/S3/GitHub URI.`;
-      logger.error(errorMsg, { projectName, projectPath });
-      throw new ProjectNotFoundError(errorMsg);
+      // Handle S3 paths
+      if (location.startsWith("s3://")) {
+         try {
+            logger.info(
+               `Downloading S3 directory from "${location}" to "${targetPath}"`,
+            );
+            await this.downloadS3Directory(location, projectName, targetPath);
+            return;
+         } catch (error) {
+            logger.error(`Failed to download S3 directory "${location}"`, {
+               error,
+            });
+            throw new PackageNotFoundError(
+               `Failed to download S3 directory: ${location}`,
+            );
+         }
+      }
+
+      // If we get here, the path format is not supported
+      const errorMsg = `Invalid package path: "${location}". Must be an absolute mounted path or a GCS/S3/GitHub URI.`;
+      logger.error(errorMsg, { projectName, location });
+      throw new PackageNotFoundError(errorMsg);
    }
 
    public async mountLocalDirectory(
       projectPath: string,
       absoluteTargetPath: string,
       projectName: string,
+      packageName: string,
    ) {
       if (projectPath.endsWith(".zip")) {
          projectPath = await this.unzipProject(projectPath);
@@ -334,8 +556,8 @@ export class ProjectStore {
             recursive: true,
          });
       } else {
-         throw new ProjectNotFoundError(
-            `Project ${projectName} not found in "${projectPath}"`,
+         throw new PackageNotFoundError(
+            `Package ${packageName} for project ${projectName} not found in "${projectPath}"`,
          );
       }
    }

@@ -11,4 +11,3 @@ export const URL_READER: URLReader = {
       return fs.promises.readFile(path, "utf8");
    },
 };
-

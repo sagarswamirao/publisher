@@ -103,6 +103,7 @@ export class PackageController {
             packageLocation,
             absoluteTargetPath,
             projectName,
+            packageName,
          );
       }
    }
