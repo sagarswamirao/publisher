@@ -211,49 +211,7 @@ app.use(bodyParser.json());
 
 app.get(`${API_PREFIX}/status`, async (_req, res) => {
    try {
-      let status: any = {
-         timestamp: Date.now(),
-         projects: [],
-      };
-
-      const projects = await projectStore.listProjects();
-
-      await Promise.all(
-         projects.map(async (project) => {
-            try {
-               const packages = project.packages;
-               const connections = project.connections;
-
-               logger.info(`Project ${project.name} status:`, {
-                  connectionsCount: project.connections?.length || 0,
-                  packagesCount: packages?.length || 0,
-               });
-
-               const _connections = connections?.map((connection) => {
-                  // eveything other than the attributes
-                  return {
-                     ...connection,
-                     attributes: undefined,
-                  };
-               });
-
-               const _project = {
-                  ...project,
-                  connections: _connections,
-               };
-               project.connections = _connections;
-               status.projects.push(_project);
-            } catch (error) {
-               logger.error("Error listing packages and connections", {
-                  error,
-               });
-               throw new Error(
-                  "Error listing packages and connections: " + error,
-               );
-            }
-         }),
-      );
-
+      const status = await projectStore.getStatus();
       res.status(200).json(status);
    } catch (error) {
       logger.error("Error getting status", { error });

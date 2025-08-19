@@ -62,34 +62,12 @@ export class Project {
    }
 
    public async update(payload: ApiProject) {
-      if (payload.name) {
-         this.projectName = payload.name;
-         this.packages.forEach((_package) => {
-            _package.setProjectName(this.projectName);
-         });
-         this.metadata.name = this.projectName;
+      if (payload.readme !== undefined) {
+         this.metadata.readme = payload.readme;
       }
-      if (payload.resource) {
-         this.projectPath = payload.resource.replace(
-            `${API_PREFIX}/projects/`,
-            "",
-         );
-         if (
-            !(await fs.promises
-               .access(this.projectPath)
-               .then(() => true)
-               .catch(() => false))
-         ) {
-            throw new ProjectNotFoundError(
-               `Project path "${this.projectPath}" not found`,
-            );
-         }
-         this.metadata.resource = payload.resource;
-      }
-      this.metadata.readme = payload.readme;
-      // const connections = payload.connections;
 
       // Handle connections update
+      // TODO: Update project connections should have its own API endpoint
       if (payload.connections) {
          logger.info(
             `Updating ${payload.connections.length} connections for project ${this.projectName}`,
