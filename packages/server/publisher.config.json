@@ -17,27 +17,7 @@
             "location": "https://github.com/ms2data/malloy-samples"
           },
           {
-            "name": "names",
-            "location": "https://github.com/ms2data/malloy-samples"
-          },
-          {
-            "name": "patterns",
-            "location": "https://github.com/ms2data/malloy-samples"
-          },
-          {
-            "name": "ga4",
-            "location": "https://github.com/ms2data/malloy-samples"
-          },
-          {
             "name": "bigquery-hackernews",
-            "location": "https://github.com/ms2data/malloy-samples"
-          },
-          {
-            "name": "bigquery-ga4",
-            "location": "https://github.com/ms2data/malloy-samples"
-          },
-          {
-            "name": "bigquery-ga_sessions",
             "location": "https://github.com/ms2data/malloy-samples"
           }
         ]

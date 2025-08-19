@@ -7,7 +7,7 @@ import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
-import { API_PREFIX, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
+import { API_PREFIX, CONNECTIONS_MANIFEST_NAME, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
 import {
    FrozenConfigError,
    PackageNotFoundError,
@@ -25,10 +25,12 @@ export class ProjectStore {
    private s3Client = new S3({
       followRegionRedirects: true,
    });
-   private gcsClient = new Storage();
+   private gcsClient: Storage;
 
    constructor(serverRootPath: string) {
       this.serverRootPath = serverRootPath;
+      this.gcsClient = new Storage();
+
       this.finishedInitialization = this.initialize();
    }
 
@@ -72,6 +74,51 @@ export class ProjectStore {
             project.serialize(),
          ),
       );
+   }
+
+   public async getStatus() {
+      let status: any = {
+         timestamp: Date.now(),
+         projects: [],
+      };
+
+      const projects = await this.listProjects();
+
+      await Promise.all(
+         projects.map(async (project) => {
+            try {
+               const packages = project.packages;
+               const connections = project.connections;
+
+               logger.info(`Project ${project.name} status:`, {
+                  connectionsCount: project.connections?.length || 0,
+                  packagesCount: packages?.length || 0,
+               });
+
+               const _connections = connections?.map((connection) => {
+                  return {
+                     ...connection,
+                     attributes: undefined,
+                  };
+               });
+
+               const _project = {
+                  ...project,
+                  connections: _connections,
+               };
+               project.connections = _connections;
+               status.projects.push(_project);
+            } catch (error) {
+               logger.error("Error listing packages and connections", {
+                  error,
+               });
+               throw new Error(
+                  "Error listing packages and connections: " + error,
+               );
+            }
+         })
+      );
+      return status;
    }
 
    public async getProject(
@@ -371,6 +418,17 @@ export class ProjectStore {
                      `Copied entire download as package "${packageDir}"`,
                   );
                }
+            }
+
+            const connectionsFileInDownload = path.join(tempDownloadPath, CONNECTIONS_MANIFEST_NAME);
+            const connectionsFileInProject = path.join(absoluteTargetPath, CONNECTIONS_MANIFEST_NAME);
+
+            try {
+               await fs.promises.access(connectionsFileInDownload, fs.constants.F_OK);
+               await fs.promises.cp(connectionsFileInDownload, connectionsFileInProject);
+               logger.info(`Copied ${CONNECTIONS_MANIFEST_NAME} to project directory`);
+            } catch (error) {
+               logger.info(`No ${CONNECTIONS_MANIFEST_NAME} found`);
             }
          } finally {
             // Clean up temporary download directory
