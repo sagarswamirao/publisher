@@ -221,7 +221,7 @@ export class Project {
             packageDirectories.map(async (directory) => {
                try {
                   return (
-                     (this.packageMutexes.get(directory.name)?.isLocked())? undefined :
+                     (this.packageStatuses.get(directory.name)?.status === PackageStatus.LOADING) ? undefined :
                      await this.getPackage(directory.name, false)
                   )?.getPackageMetadata();
                } catch (error) {
@@ -284,11 +284,7 @@ export class Project {
          }
 
          // Set package status to loading
-         this.packageStatuses.set(packageName, {
-            name: packageName,
-            loadTimestamp: 0,
-            status: PackageStatus.LOADING,
-         });
+         this.setPackageStatus(packageName, PackageStatus.LOADING);
 
          try {
             const _package = await Package.create(
@@ -300,11 +296,7 @@ export class Project {
             this.packages.set(packageName, _package);
 
             // Set package status to serving
-            this.packageStatuses.set(packageName, {
-               name: packageName,
-               loadTimestamp: Date.now(),
-               status: PackageStatus.SERVING,
-            });
+            this.setPackageStatus(packageName, PackageStatus.SERVING);
 
             return _package;
          } catch (error) {
