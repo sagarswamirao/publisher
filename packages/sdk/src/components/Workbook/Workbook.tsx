@@ -198,8 +198,9 @@ export default function Workbook({
       };
 
       fetchModels();
+      // This function cannot depend on sourceAndPaths because it would cause an infinite loop.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [
-      // Work this cannot depend on sourceAndPaths because it will cause an infinite loop.
       getAccessToken,
       workbookData,
       defaultPackageName,

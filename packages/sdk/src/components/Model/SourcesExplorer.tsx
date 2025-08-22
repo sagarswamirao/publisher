@@ -15,6 +15,9 @@ import { Configuration, QueryresultsApi } from "../../client";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 import { usePackage } from "../Package/PackageProvider";
 
+type ExplorerComponents = typeof import("@malloydata/malloy-explorer");
+type QueryBuilder = typeof import("@malloydata/malloy-query-builder");
+
 const queryResultsApi = new QueryresultsApi(new Configuration());
 
 export interface SourceAndPath {
@@ -162,8 +165,8 @@ function SourceExplorerComponentInner({
    explorerComponents,
    QueryBuilder,
 }: SourceExplorerComponentProps & {
-   explorerComponents: any;
-   QueryBuilder: any;
+   explorerComponents: ExplorerComponents;
+   QueryBuilder: QueryBuilder;
 }) {
    const [query, setQuery] = React.useState<QueryExplorerResult>(
       existingQuery || emptyQueryExplorerResult(),
@@ -317,8 +320,9 @@ function SourceExplorerComponentInner({
 
 // Lazy-loaded wrapper component
 export function SourceExplorerComponent(props: SourceExplorerComponentProps) {
-   const [explorerComponents, setExplorerComponents] = useState<any>(null);
-   const [QueryBuilder, setQueryBuilder] = useState<any>(null);
+   const [explorerComponents, setExplorerComponents] =
+      useState<ExplorerComponents | null>(null);
+   const [QueryBuilder, setQueryBuilder] = useState<QueryBuilder | null>(null);
    const [loading, setLoading] = useState(true);
 
    useEffect(() => {
