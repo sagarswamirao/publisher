@@ -86,9 +86,9 @@ export class ProjectStore {
    }
 
    public async getStatus() {
-      let status: any = {
+      const status = {
          timestamp: Date.now(),
-         projects: [],
+         projects: [] as Array<components["schemas"]["Project"]>,
          initialized: this.isInitialized,
       };
 
@@ -452,6 +452,7 @@ export class ProjectStore {
                   `Copied ${CONNECTIONS_MANIFEST_NAME} to project directory`,
                );
             } catch (error) {
+               console.error(error);
                logger.info(`No ${CONNECTIONS_MANIFEST_NAME} found`);
             }
          } finally {

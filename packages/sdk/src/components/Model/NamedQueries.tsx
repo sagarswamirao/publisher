@@ -84,7 +84,7 @@ export default function NamedQueries({
             <Typography variant="subtitle1">Named Queries</Typography>
          </StyledCardContent>
          <Box>
-            {namedQueries.map((query: any, idx: number) => {
+            {namedQueries.map((query: Query, idx: number) => {
                const queryKey = query.name || `query-${idx}`;
                return (
                   <Accordion

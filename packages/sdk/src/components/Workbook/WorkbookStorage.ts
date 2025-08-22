@@ -1,5 +1,3 @@
-import { PackageContextProps } from "../Package";
-
 export interface Workspace {
    name: string;
    writeable: boolean;

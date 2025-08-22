@@ -4,7 +4,7 @@
       {
         "name": "malloy-samples",
         "packages": [
-          {
+            {
             "name": "ecommerce",
             "location": "https://github.com/ms2data/malloy-samples"
           },

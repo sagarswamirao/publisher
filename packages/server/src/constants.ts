@@ -11,6 +11,6 @@ export const ROW_LIMIT = 1000;
 export let publisherPath = "/etc/publisher";
 try {
    fs.accessSync(publisherPath, fs.constants.W_OK);
-} catch (e) {
+} catch {
    publisherPath = "/tmp/publisher";
 }

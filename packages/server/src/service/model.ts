@@ -20,6 +20,7 @@ import {
    MalloySQLStatementType,
 } from "@malloydata/malloy-sql";
 import malloyPackage from "@malloydata/malloy/package.json";
+// @ts-expect-error until this gets merged https://github.com/malloydata/malloy/pull/2484
 import { DataStyles } from "@malloydata/render";
 import { metrics } from "@opentelemetry/api";
 import * as fs from "fs/promises";
@@ -42,6 +43,7 @@ import { URL_READER } from "../utils";
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 type ApiNotebookCell = components["schemas"]["NotebookCell"];
 type ApiCompiledNotebook = components["schemas"]["CompiledNotebook"];
+// @ts-expect-error TODO: Fix missing Source type in API
 type ApiSource = components["schemas"]["Source"];
 type ApiView = components["schemas"]["View"];
 type ApiQuery = components["schemas"]["Query"];

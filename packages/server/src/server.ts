@@ -16,7 +16,6 @@ import { WatchModeController } from "./controller/watch-mode.controller";
 import { internalErrorToHttpError, NotImplementedError } from "./errors";
 import { logger, loggerMiddleware } from "./logger";
 import { initializeMcpServer } from "./mcp/server";
-import { Project } from "./service/project";
 import { ProjectStore } from "./service/project_store";
 
 // Parse command line arguments

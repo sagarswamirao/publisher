@@ -1,4 +1,5 @@
 import { URLReader } from "@malloydata/malloy";
+// @ts-expect-error until this gets merged https://github.com/malloydata/malloy/pull/2484
 import { DataStyles } from "@malloydata/render";
 import { logger } from "./logger";
 
@@ -25,7 +26,9 @@ export async function dataStylesForFile(
          //      created, so that the error can be shown there.
          let stylesText;
          try {
-            stylesText = await urlReader.readURL(new URL(fileName, url));
+            stylesText = (await urlReader.readURL(
+               new URL(fileName, url),
+            )) as string;
          } catch (error) {
             logger.error(`Error loading data style '${fileName}': ${error}`);
             stylesText = "{}";
@@ -53,10 +56,14 @@ export class HackyDataStylesAccumulator implements URLReader {
       const contents = await this.urlReader.readURL(url);
       this.dataStyles = {
          ...this.dataStyles,
-         ...(await dataStylesForFile(url.toString(), contents, this.urlReader)),
+         ...(await dataStylesForFile(
+            url.toString(),
+            contents as string,
+            this.urlReader,
+         )),
       };
 
-      return contents;
+      return contents as string;
    }
 
    getHackyAccumulatedDataStyles(): DataStyles {

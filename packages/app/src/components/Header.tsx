@@ -1,4 +1,3 @@
-
 import { AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
@@ -57,17 +56,16 @@ export default function Header({ logoHeader, endCap }: HeaderProps) {
 
             <Stack direction="row" spacing={2} alignItems="center">
                {!logoHeader && (
-                     <>
-                        <Button href="https://docs.malloydata.dev/documentation/">
-                           Malloy Docs
-                        </Button>
-                        <Button href="https://github.com/malloydata/publisher/blob/main/README.md">
-                           Publisher Docs
-                        </Button>
-                        <Button href="/api-doc.html">Publisher API</Button>
-                     </>
-                  )
-               }
+                  <>
+                     <Button href="https://docs.malloydata.dev/documentation/">
+                        Malloy Docs
+                     </Button>
+                     <Button href="https://github.com/malloydata/publisher/blob/main/README.md">
+                        Publisher Docs
+                     </Button>
+                     <Button href="/api-doc.html">Publisher API</Button>
+                  </>
+               )}
                {endCap}
             </Stack>
          </Toolbar>

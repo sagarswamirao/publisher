@@ -83,6 +83,7 @@ export function registerViewResource(
                      throw new Error("Could not retrieve sources from model.");
                   }
                   const source = sources.find(
+                     // @ts-expect-error TODO: Fix missing Source type in API
                      (s: components["schemas"]["Source"]) =>
                         s.name === sourceName,
                   );

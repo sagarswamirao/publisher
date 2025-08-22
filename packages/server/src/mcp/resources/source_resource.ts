@@ -91,6 +91,7 @@ export function registerSourceResource(
                   }
                   // Add type annotation for 's'
                   const source = sources.find(
+                     // @ts-expect-error TODO: Fix missing Source type in API
                      (s: components["schemas"]["Source"]) =>
                         s.name === sourceName,
                   );
