@@ -183,6 +183,8 @@ describe("service/package", () => {
             const models = await packageInstance.listModels();
             expect(models).toEqual([
                {
+                  // @ts-expect-error TODO: Fix missing projectName type in API
+                  projectName: "testProject",
                   packageName: "testPackage",
                   path: "model1.malloy",
                   error: undefined,
