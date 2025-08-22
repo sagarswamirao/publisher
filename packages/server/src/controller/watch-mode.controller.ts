@@ -34,9 +34,13 @@ export class WatchModeController {
       this.watchingProjectName = req.body.projectName;
 
       // Find the project in the new array structure
-      const project = projectManifest.projects.find(p => p.name === req.body.projectName);
+      const project = projectManifest.projects.find(
+         (p) => p.name === req.body.projectName,
+      );
       if (!project || !project.packages || project.packages.length === 0) {
-         res.status(404).json({ error: `Project ${req.body.projectName} not found or has no packages` });
+         res.status(404).json({
+            error: `Project ${req.body.projectName} not found or has no packages`,
+         });
          return;
       }
 

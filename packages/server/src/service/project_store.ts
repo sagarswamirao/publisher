@@ -7,7 +7,12 @@ import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
 import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
-import { API_PREFIX, CONNECTIONS_MANIFEST_NAME, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
+import {
+   API_PREFIX,
+   CONNECTIONS_MANIFEST_NAME,
+   PUBLISHER_CONFIG_NAME,
+   publisherPath,
+} from "../constants";
 import {
    FrozenConfigError,
    PackageNotFoundError,
@@ -121,7 +126,7 @@ export class ProjectStore {
                   "Error listing packages and connections: " + error,
                );
             }
-         })
+         }),
       );
       return status;
    }
@@ -425,13 +430,27 @@ export class ProjectStore {
                }
             }
 
-            const connectionsFileInDownload = path.join(tempDownloadPath, CONNECTIONS_MANIFEST_NAME);
-            const connectionsFileInProject = path.join(absoluteTargetPath, CONNECTIONS_MANIFEST_NAME);
+            const connectionsFileInDownload = path.join(
+               tempDownloadPath,
+               CONNECTIONS_MANIFEST_NAME,
+            );
+            const connectionsFileInProject = path.join(
+               absoluteTargetPath,
+               CONNECTIONS_MANIFEST_NAME,
+            );
 
             try {
-               await fs.promises.access(connectionsFileInDownload, fs.constants.F_OK);
-               await fs.promises.cp(connectionsFileInDownload, connectionsFileInProject);
-               logger.info(`Copied ${CONNECTIONS_MANIFEST_NAME} to project directory`);
+               await fs.promises.access(
+                  connectionsFileInDownload,
+                  fs.constants.F_OK,
+               );
+               await fs.promises.cp(
+                  connectionsFileInDownload,
+                  connectionsFileInProject,
+               );
+               logger.info(
+                  `Copied ${CONNECTIONS_MANIFEST_NAME} to project directory`,
+               );
             } catch (error) {
                logger.info(`No ${CONNECTIONS_MANIFEST_NAME} found`);
             }

@@ -97,7 +97,6 @@ export class Project {
       return this;
    }
 
-
    static async create(
       projectName: string,
       projectPath: string,
@@ -113,10 +112,7 @@ export class Project {
       let apiConnections: InternalConnection[] = [];
 
       logger.info(`Creating project with connection configuration`);
-      const result = await createConnections(
-         projectPath,
-         defaultConnections,
-      );
+      const result = await createConnections(projectPath, defaultConnections);
       malloyConnections = result.malloyConnections;
       apiConnections = result.apiConnections;
 
@@ -221,8 +217,10 @@ export class Project {
             packageDirectories.map(async (directory) => {
                try {
                   return (
-                     (this.packageStatuses.get(directory.name)?.status === PackageStatus.LOADING) ? undefined :
-                     await this.getPackage(directory.name, false)
+                     this.packageStatuses.get(directory.name)?.status ===
+                     PackageStatus.LOADING
+                        ? undefined
+                        : await this.getPackage(directory.name, false)
                   )?.getPackageMetadata();
                } catch (error) {
                   logger.error(
@@ -329,13 +327,13 @@ export class Project {
       );
       this.setPackageStatus(packageName, PackageStatus.LOADING);
       try {
-      this.packages.set(
-         packageName,
-         await Package.create(
-            this.projectName,
+         this.packages.set(
             packageName,
-            packagePath,
-            this.malloyConnections,
+            await Package.create(
+               this.projectName,
+               packageName,
+               packagePath,
+               this.malloyConnections,
             ),
          );
       } catch (error) {

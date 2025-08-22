@@ -87,9 +87,9 @@ export default function ResultContainer({
       : undefined;
    const height = explicitHeight
       ? {
-         minHeight: `${explicitHeight}px`,
-         height: `100%`,
-      }
+           minHeight: `${explicitHeight}px`,
+           height: `100%`,
+        }
       : { height: `100%` };
    return (
       <>

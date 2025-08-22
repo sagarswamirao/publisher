@@ -8,6 +8,15 @@ on:
 
 # self contained tests
 jobs:
+  format:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Check formatting
+        run: bunx prettier './packages/**/*.{ts,tsx}' --check
   build:
     name: Build
     runs-on: ubuntu-latest
