@@ -69,20 +69,20 @@ export default function Config() {
                            />
                         </ListItem>
                      )) || (
-                           <ListItem
-                              disablePadding={true}
-                              dense={true}
-                              sx={{ mt: "20px" }}
-                           >
-                              <ErrorIcon
-                                 sx={{
-                                    color: "grey.600",
-                                    mr: "10px",
-                                 }}
-                              />
-                              <ListItemText primary={"No package manifest"} />
-                           </ListItem>
-                        ))}
+                        <ListItem
+                           disablePadding={true}
+                           dense={true}
+                           sx={{ mt: "20px" }}
+                        >
+                           <ErrorIcon
+                              sx={{
+                                 color: "grey.600",
+                                 mr: "10px",
+                              }}
+                           />
+                           <ListItemText primary={"No package manifest"} />
+                        </ListItem>
+                     ))}
                   {isError && (
                      <ApiErrorDisplay
                         error={error}

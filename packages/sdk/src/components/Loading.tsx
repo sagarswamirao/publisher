@@ -15,13 +15,13 @@ export interface LoadingProps {
     * @default "primary"
     */
    color?:
-   | "primary"
-   | "secondary"
-   | "error"
-   | "info"
-   | "success"
-   | "warning"
-   | "inherit";
+      | "primary"
+      | "secondary"
+      | "error"
+      | "info"
+      | "success"
+      | "warning"
+      | "inherit";
    /**
     * The thickness of the circular progress
     * @default 3.6
@@ -42,18 +42,18 @@ export interface LoadingProps {
     * @default "body1"
     */
    textVariant?:
-   | "h1"
-   | "h2"
-   | "h3"
-   | "h4"
-   | "h5"
-   | "h6"
-   | "subtitle1"
-   | "subtitle2"
-   | "body1"
-   | "body2"
-   | "caption"
-   | "overline";
+      | "h1"
+      | "h2"
+      | "h3"
+      | "h4"
+      | "h5"
+      | "h6"
+      | "subtitle1"
+      | "subtitle2"
+      | "body1"
+      | "body2"
+      | "caption"
+      | "overline";
 }
 
 export function Loading({
