@@ -38,13 +38,14 @@ async function handleGetPackageContents(
       const packageInstance = await project.getPackage(packageName, false);
 
       // Use listModels() which returns { path: string, type: 'source' | 'notebook' }[]
-      const entries = packageInstance.listModels();
+      const entries = await packageInstance.listModels();
 
       // Use a type that includes metadata explicitly
       const resourceDefinitions: { uri: string; metadata: unknown }[] = [];
 
       for (const entry of entries) {
          const entryPath = entry.path; // e.g., "flights.malloy", "overview.malloynb"
+         // @ts-expect-error TODO: Fix missing type in API
          const entryType = entry.type; // 'source' or 'notebook'
 
          if (typeof entryPath !== "string" || entryPath === "") {

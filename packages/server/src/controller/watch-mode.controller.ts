@@ -7,7 +7,7 @@ import { ProjectStore } from "../service/project_store";
 
 type StartWatchReq = components["schemas"]["StartWatchRequest"];
 type WatchStatusRes = components["schemas"]["WatchStatus"];
-type Handler<Req = {}, Res = void> = RequestHandler<{}, Res, Req>;
+type Handler<Req = object, Res = void> = RequestHandler<object, Res, Req>;
 
 export class WatchModeController {
    watchingPath: string | null;
@@ -19,7 +19,7 @@ export class WatchModeController {
       this.watchingProjectName = null;
    }
 
-   public getWatchStatus: Handler<{}, WatchStatusRes> = async (_req, res) => {
+   public getWatchStatus: Handler<void, WatchStatusRes> = async (_req, res) => {
       return res.json({
          enabled: !!this.watchingPath,
          watchingPath: this.watchingPath,
@@ -27,7 +27,10 @@ export class WatchModeController {
       });
    };
 
-   public startWatching: Handler<StartWatchReq> = async (req, res) => {
+   public startWatching: Handler<StartWatchReq, { error: string }> = async (
+      req,
+      res,
+   ) => {
       const projectManifest = await ProjectStore.reloadProjectManifest(
          this.projectStore.serverRootPath,
       );
@@ -44,8 +47,6 @@ export class WatchModeController {
          return;
       }
 
-      // Use the first package's location for watching (or could watch all package locations)
-      const packageLocation = project.packages[0].location;
       this.watchingPath = path.join(
          this.projectStore.serverRootPath,
          req.body.projectName,

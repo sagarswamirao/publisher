@@ -42,6 +42,7 @@ import { URL_READER } from "../utils";
 type ApiCompiledModel = components["schemas"]["CompiledModel"];
 type ApiNotebookCell = components["schemas"]["NotebookCell"];
 type ApiCompiledNotebook = components["schemas"]["CompiledNotebook"];
+// @ts-expect-error TODO: Fix missing Source type in API
 type ApiSource = components["schemas"]["Source"];
 type ApiView = components["schemas"]["View"];
 type ApiQuery = components["schemas"]["Query"];

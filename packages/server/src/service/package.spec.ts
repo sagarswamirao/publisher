@@ -7,6 +7,7 @@ import { readConnectionConfig } from "./connection";
 import { ApiConnection, Model } from "./model";
 import { Package } from "./package";
 import { Scheduler } from "./scheduler";
+import { Stats } from "fs";
 
 // Minimal partial types for mocking
 type PartialScheduler = Pick<Scheduler, "list">;
@@ -55,8 +56,16 @@ describe("service/package", () => {
          { name: "testPackage", description: "Test package" },
          [],
          new Map([
-            ["model1.malloy", { getPath: () => "model1.malloy" } as any],
-            ["model2.malloynb", { getPath: () => "model2.malloynb" } as any],
+            [
+               "model1.malloy",
+               // @ts-expect-error PartialModel is a partial type
+               { getPath: () => "model1.malloy" } as PartialModel,
+            ],
+            [
+               "model2.malloynb",
+               // @ts-expect-error PartialModel is a partial type
+               { getPath: () => "model2.malloynb" } as PartialModel,
+            ],
          ]),
          undefined,
       );
@@ -78,8 +87,9 @@ describe("service/package", () => {
                   new Map(),
                ),
             ).rejects.toThrowError(
-               PackageNotFoundError,
-               "Package manifest for testPackage does not exist.",
+               new PackageNotFoundError(
+                  "Package manifest for testPackage does not exist.",
+               ),
             );
          });
          it("should return a Package object if the package exists", async () => {
@@ -94,8 +104,10 @@ describe("service/package", () => {
             type PartialModel = Pick<Model, "getPath">;
             sinon
                .stub(Model, "create")
+               // @ts-expect-error PartialModel is a partial type
                .resolves({ getPath: () => "model1.model" } as PartialModel);
 
+            // @ts-expect-error PartialScheduler is a partial type
             sinon.stub(Scheduler, "create").returns({
                list: () => [],
             } as PartialScheduler);
@@ -149,7 +161,8 @@ describe("service/package", () => {
                      {
                         getPath: () => "model1.malloy",
                         getModel: () => "foo",
-                     } as any,
+                        // @ts-expect-error PartialModel is a partial type
+                     } as PartialModel,
                   ],
                   [
                      "model2.malloynb",
@@ -160,7 +173,8 @@ describe("service/package", () => {
                               message: "This is the error",
                            };
                         },
-                     } as any,
+                        // @ts-expect-error PartialModel is a partial type
+                     } as PartialModel,
                   ],
                ]),
                undefined,
@@ -169,7 +183,6 @@ describe("service/package", () => {
             const models = await packageInstance.listModels();
             expect(models).toEqual([
                {
-                  projectName: "testProject",
                   packageName: "testPackage",
                   path: "model1.malloy",
                   error: undefined,
@@ -179,7 +192,6 @@ describe("service/package", () => {
             const notebooks = await packageInstance.listNotebooks();
             expect(notebooks).toEqual([
                {
-                  projectName: "testProject",
                   packageName: "testPackage",
                   path: "model2.malloynb",
                   error: "This is the error",
@@ -190,7 +202,7 @@ describe("service/package", () => {
 
       describe("getDatabaseInfo", () => {
          it("should return the size of the database file", async () => {
-            sinon.stub(fs, "stat").resolves({ size: 13 } as { size: number });
+            sinon.stub(fs, "stat").resolves({ size: 13 } as Stats);
 
             // @ts-expect-error Accessing private static method for testing
             const info = await Package.getDatabaseInfo(

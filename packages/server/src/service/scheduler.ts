@@ -3,6 +3,7 @@ import { components } from "../api";
 import { logger } from "../logger";
 import { Model } from "./model";
 
+// @ts-expect-error TODO: Fix missing Source type in API
 type ApiSource = components["schemas"]["Source"];
 type ApiView = components["schemas"]["View"];
 type ApiQuery = components["schemas"]["Query"];
@@ -162,8 +163,8 @@ export class Scheduler {
 
       models.forEach((m) => {
          m.getSources()?.forEach((s) => {
-            s.views?.forEach((v) => {
-               v.annotations?.forEach((a) => {
+            s.views?.forEach((v: ApiView) => {
+               v.annotations?.forEach((a: string) => {
                   if (a.startsWith(SCHEDULE_ANNOTATION)) {
                      schedules.push(new Schedule(m, s, v, undefined, a));
                   }

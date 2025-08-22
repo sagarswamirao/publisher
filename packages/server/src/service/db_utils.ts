@@ -9,6 +9,7 @@ import { components } from "../api";
 import { logger } from "../logger";
 import {
    ApiConnection,
+   // @ts-expect-error TODO: Fix missing MysqlConnection type in API
    MysqlConnection,
    PostgresConnection,
    SnowflakeConnection,
@@ -68,7 +69,7 @@ async function getSnowflakeConnection(
    }
    return new Promise((resolve, reject) => {
       const connection = snowflake.createConnection({
-         account: apiSnowflakeConnection.account,
+         account: apiSnowflakeConnection.account as string,
          username: apiSnowflakeConnection.username,
          password: apiSnowflakeConnection.password,
          database: apiSnowflakeConnection.database,
@@ -318,7 +319,7 @@ async function getSnowflakeSchemas(
    return new Promise((resolve, reject) => {
       connection.execute({
          sqlText: "SHOW SCHEMAS",
-         complete: (err, stmt, rows) => {
+         complete: (err, _stmt, rows) => {
             if (err) {
                reject(err);
             } else {

@@ -254,7 +254,7 @@ describe("ProjectStore Service", () => {
 
       expect(project1).toBeInstanceOf(Project);
       expect(project2).toBeInstanceOf(Project);
-      expect(project1.metadata.name).toBe(project2.metadata.name);
+      expect(project1.metadata.name).toBe(project2.metadata.name as string);
    });
 
    it("should handle missing project paths", async () => {

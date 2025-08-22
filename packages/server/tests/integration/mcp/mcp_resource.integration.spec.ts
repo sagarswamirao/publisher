@@ -631,6 +631,16 @@ describe("MCP Resource Handlers (E2E Integration)", () => {
          expect(errorPayload.suggestions).toBeDefined();
          expect(Array.isArray(errorPayload.suggestions)).toBe(true);
          expect(errorPayload.suggestions.length).toBeGreaterThan(0);
+
+         const expectedSuggestions = [
+            "Verify the identifier or URI",
+            "project 'malloy-samples'",
+            "is spelled correctly",
+            "Check capitalization and path separators.",
+         ];
+         for (const chunk of errorPayload.suggestions) {
+            expect(expectedSuggestions).toContain(chunk);
+         }
          // Check suggestion content for project not found
          expect(errorPayload.suggestions[0]).toContain(
             "Verify the identifier or URI (project 'malloy-samples') is spelled correctly",
