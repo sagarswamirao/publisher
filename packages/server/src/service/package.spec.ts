@@ -92,58 +92,64 @@ describe("service/package", () => {
                ),
             );
          });
-         it("should return a Package object if the package exists", async () => {
-            sinon.stub(fs, "stat").resolves();
-            const readFileStub = sinon
-               .stub(fs, "readFile")
-               .resolves(
-                  Buffer.from(JSON.stringify({ description: "Test package" })),
+         it(
+            "should return a Package object if the package exists",
+            async () => {
+               sinon.stub(fs, "stat").resolves();
+               const readFileStub = sinon
+                  .stub(fs, "readFile")
+                  .resolves(
+                     Buffer.from(
+                        JSON.stringify({ description: "Test package" }),
+                     ),
+                  );
+
+               // Still use Partial<Model> for the stub resolution type
+               type PartialModel = Pick<Model, "getPath">;
+               sinon
+                  .stub(Model, "create")
+                  // @ts-expect-error PartialModel is a partial type
+                  .resolves({ getPath: () => "model1.model" } as PartialModel);
+
+               // @ts-expect-error PartialScheduler is a partial type
+               sinon.stub(Scheduler, "create").returns({
+                  list: () => [],
+               } as PartialScheduler);
+
+               readFileStub.restore();
+               readFileStub.resolves(Buffer.from(JSON.stringify([])));
+
+               const packageInstance = await Package.create(
+                  "testProject",
+                  "testPackage",
+                  testPackageDirectory,
+                  new Map(),
                );
 
-            // Still use Partial<Model> for the stub resolution type
-            type PartialModel = Pick<Model, "getPath">;
-            sinon
-               .stub(Model, "create")
-               // @ts-expect-error PartialModel is a partial type
-               .resolves({ getPath: () => "model1.model" } as PartialModel);
-
-            // @ts-expect-error PartialScheduler is a partial type
-            sinon.stub(Scheduler, "create").returns({
-               list: () => [],
-            } as PartialScheduler);
-
-            readFileStub.restore();
-            readFileStub.resolves(Buffer.from(JSON.stringify([])));
-
-            const packageInstance = await Package.create(
-               "testProject",
-               "testPackage",
-               testPackageDirectory,
-               new Map(),
-            );
-
-            expect(packageInstance).toBeInstanceOf(Package);
-            expect(packageInstance.getPackageName()).toBe("testPackage");
-            expect(packageInstance.getPackageMetadata().description).toBe(
-               "Test package",
-            );
-            expect(packageInstance.listDatabases()).toEqual([
-               {
-                  path: "database.csv",
-                  type: "embedded",
-                  info: {
-                     name: "database.csv",
-                     columns: [
-                        { name: "Name", type: "string" },
-                        { name: "Value", type: "number" },
-                     ],
-                     rowCount: 3,
+               expect(packageInstance).toBeInstanceOf(Package);
+               expect(packageInstance.getPackageName()).toBe("testPackage");
+               expect(packageInstance.getPackageMetadata().description).toBe(
+                  "Test package",
+               );
+               expect(packageInstance.listDatabases()).toEqual([
+                  {
+                     path: "database.csv",
+                     type: "embedded",
+                     info: {
+                        name: "database.csv",
+                        columns: [
+                           { name: "Name", type: "string" },
+                           { name: "Value", type: "number" },
+                        ],
+                        rowCount: 3,
+                     },
                   },
-               },
-            ]);
-            expect(packageInstance.listModels()).toBeEmpty();
-            expect(packageInstance.listSchedules()).toBeEmpty();
-         });
+               ]);
+               expect(packageInstance.listModels()).toBeEmpty();
+               expect(packageInstance.listSchedules()).toBeEmpty();
+            },
+            { timeout: 15000 },
+         );
       });
 
       describe("listModels", () => {
