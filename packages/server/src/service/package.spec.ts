@@ -194,6 +194,8 @@ describe("service/package", () => {
             const notebooks = await packageInstance.listNotebooks();
             expect(notebooks).toEqual([
                {
+                  // @ts-expect-error TODO: Fix missing projectName type in API
+                  projectName: "testProject",
                   packageName: "testPackage",
                   path: "model2.malloynb",
                   error: "This is the error",
