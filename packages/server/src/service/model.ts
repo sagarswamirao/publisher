@@ -20,6 +20,7 @@ import {
    MalloySQLStatementType,
 } from "@malloydata/malloy-sql";
 import malloyPackage from "@malloydata/malloy/package.json";
+// @ts-expect-error until this gets merged https://github.com/malloydata/malloy/pull/2484
 import { DataStyles } from "@malloydata/render";
 import { metrics } from "@opentelemetry/api";
 import * as fs from "fs/promises";

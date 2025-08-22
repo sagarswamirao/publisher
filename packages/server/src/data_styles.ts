@@ -1,4 +1,5 @@
 import { URLReader } from "@malloydata/malloy";
+// @ts-expect-error until this gets merged https://github.com/malloydata/malloy/pull/2484
 import { DataStyles } from "@malloydata/render";
 import { logger } from "./logger";
 
