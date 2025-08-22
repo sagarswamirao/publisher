@@ -19,6 +19,7 @@ jobs:
       - name: Typecheck
         run: |
           bun install
+          bun run generate-api-types
           bun run build:sdk
           bun run typecheck
   lint_format:
