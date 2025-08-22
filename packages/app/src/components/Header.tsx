@@ -1,6 +1,6 @@
-import { AnalyzePackageButton } from "@malloy-publisher/sdk";
+
 import { AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import BreadcrumbNav from "./BreadcrumbNav";
 
 export interface HeaderProps {
@@ -10,7 +10,6 @@ export interface HeaderProps {
 
 export default function Header({ logoHeader, endCap }: HeaderProps) {
    const navigate = useNavigate();
-   const { projectName, packageName } = useParams();
 
    return (
       <AppBar
@@ -57,8 +56,7 @@ export default function Header({ logoHeader, endCap }: HeaderProps) {
             </Stack>
 
             <Stack direction="row" spacing={2} alignItems="center">
-               {!projectName || !packageName ? (
-                  !logoHeader && (
+               {!logoHeader && (
                      <>
                         <Button href="https://docs.malloydata.dev/documentation/">
                            Malloy Docs
@@ -69,17 +67,7 @@ export default function Header({ logoHeader, endCap }: HeaderProps) {
                         <Button href="/api-doc.html">Publisher API</Button>
                      </>
                   )
-               ) : (
-                  <>
-                     <AnalyzePackageButton
-                        onWorkbookSelect={(workbook) => {
-                           navigate(
-                              `/${projectName}/${packageName}/workbook/${workbook.workspace}/${workbook.path}`,
-                           );
-                        }}
-                     />
-                  </>
-               )}
+               }
                {endCap}
             </Stack>
          </Toolbar>
