@@ -24,6 +24,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServerStatus'
 
+  /connections/test:
+    post:
+      tags:
+        - connections
+      operationId: test-connection-configuration
+      summary: Test a connection configuration before adding it to the project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Connection'
+      responses:
+        "200":
+          description: Connection test result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionStatus'
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /projects:
     get:
       tags:
@@ -217,11 +245,12 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+
   /projects/{projectName}/connections/{connectionName}/test:
     get:
       tags:
         - connections
-      operationId: get-test
+      operationId: test-connection
       summary: Returns a test.
       parameters:
         - name: projectName
@@ -1113,6 +1142,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Project'
+        initialized:
+          type: boolean
+          description: Whether the server is initialized.
 
     Project:
       type: object
@@ -1167,7 +1199,7 @@ components:
         path:
           type: string
           description: Model's relative path in its package directory.
-        error: 
+        error:
           type: string
           description: Error message for this model object.
 
@@ -1184,7 +1216,7 @@ components:
         path:
           type: string
           description: Notebook's relative path in its package directory.
-        error: 
+        error:
           type: string
           description: Error message for this notebook object.
 
