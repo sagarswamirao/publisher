@@ -4,15 +4,15 @@ import {
    TestableConnection,
 } from "@malloydata/malloy";
 import { Connection, PersistSQLResults } from "@malloydata/malloy/connection";
-import { components } from "../api";
-import { ConnectionError } from "../errors";
+import { BadRequestError, ConnectionError } from "../errors";
 import { logger } from "../logger";
+import { components } from "../api";
 import {
    getSchemasForConnection,
    getTablesForSchema,
 } from "../service/db_utils";
 import { ProjectStore } from "../service/project_store";
-
+import { testConnectionConfig } from "../service/connection";
 type ApiConnection = components["schemas"]["Connection"];
 type ApiConnectionStatus = components["schemas"]["ConnectionStatus"];
 type ApiSqlSource = components["schemas"]["SqlSource"];
@@ -187,6 +187,35 @@ export class ConnectionController {
          };
       } catch (error) {
          throw new ConnectionError((error as Error).message);
+      }
+   }
+
+   public async testConnectionConfiguration(
+      connectionConfig: ApiConnection,
+   ): Promise<ApiConnectionStatus> {
+      if (
+         !connectionConfig ||
+         typeof connectionConfig !== "object" ||
+         Object.keys(connectionConfig).length === 0
+      ) {
+         throw new BadRequestError(
+            "Connection configuration is required and cannot be empty",
+         );
+      }
+
+      if (!connectionConfig.type || typeof connectionConfig.type !== "string") {
+         throw new BadRequestError(
+            "Connection type is required and must be a string",
+         );
+      }
+
+      try {
+         return await testConnectionConfig(connectionConfig);
+      } catch (error) {
+         return {
+            status: "failed",
+            errorMessage: `Connection test failed: ${(error as Error).message}`,
+         };
       }
    }
 }

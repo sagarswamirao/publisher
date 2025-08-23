@@ -311,6 +311,20 @@ app.get(
    },
 );
 
+app.post(`${API_PREFIX}/connections/test`, async (req, res) => {
+   try {
+      const connectionStatus =
+         await connectionController.testConnectionConfiguration(
+            req.body.connectionConfig,
+         );
+      res.status(200).json(connectionStatus);
+   } catch (error) {
+      logger.error(error);
+      const { json, status } = internalErrorToHttpError(error as Error);
+      res.status(status).json(json);
+   }
+});
+
 app.get(
    `${API_PREFIX}/projects/:projectName/connections/:connectionName/test`,
    async (req, res) => {

@@ -4,16 +4,19 @@ import { PostgresConnection } from "@malloydata/db-postgres";
 import { SnowflakeConnection } from "@malloydata/db-snowflake";
 import { TrinoConnection } from "@malloydata/db-trino";
 import { Connection } from "@malloydata/malloy";
+import { BadRequestError } from "../errors";
+import { logAxiosError, logger } from "../logger";
 import { BaseConnection } from "@malloydata/malloy/connection";
 import fs from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { components } from "../api";
 import { CONNECTIONS_MANIFEST_NAME } from "../constants";
-import { logger } from "../logger";
+import { AxiosError } from "axios";
 
 type ApiConnection = components["schemas"]["Connection"];
 type ApiConnectionAttributes = components["schemas"]["ConnectionAttributes"];
+type ApiConnectionStatus = components["schemas"]["ConnectionStatus"];
 
 // Extends the public API connection with the internal connection objects
 // which contains passwords and connection strings.
@@ -253,5 +256,259 @@ function getConnectionAttributes(
       isPool: connection.isPool(),
       canPersist: connection.canPersist(),
       canStream: canStream,
+   };
+}
+
+export async function testConnectionConfig(
+   connectionConfig: ApiConnection,
+): Promise<ApiConnectionStatus> {
+   let testResult: { status: "ok" | "failed"; errorMessage?: string };
+
+   switch (connectionConfig.type) {
+      case "postgres": {
+         if (!connectionConfig.postgresConnection) {
+            throw new Error(
+               "Invalid connection configuration. No postgres connection.",
+            );
+         }
+
+         const postgresConfig = connectionConfig.postgresConnection;
+         if (
+            !postgresConfig.host ||
+            !postgresConfig.port ||
+            !postgresConfig.userName ||
+            !postgresConfig.password ||
+            !postgresConfig.databaseName
+         ) {
+            throw new Error(
+               "PostgreSQL connection requires: host, port, userName, password, and databaseName",
+            );
+         }
+
+         const configReader = async () => {
+            return {
+               host: postgresConfig.host,
+               port: postgresConfig.port,
+               username: postgresConfig.userName,
+               password: postgresConfig.password,
+               databaseName: postgresConfig.databaseName,
+               connectionString: postgresConfig.connectionString,
+            };
+         };
+
+         const postgresConnection = new PostgresConnection(
+            "testConnection",
+            () => ({}),
+            configReader,
+         );
+
+         try {
+            await postgresConnection.test();
+            testResult = { status: "ok" };
+         } catch (error) {
+            if (error instanceof AxiosError) {
+               logAxiosError(error);
+            } else {
+               logger.error(error);
+            }
+            testResult = {
+               status: "failed",
+               errorMessage: (error as Error).message,
+            };
+         }
+         break;
+      }
+
+      case "snowflake": {
+         if (!connectionConfig.snowflakeConnection) {
+            throw new Error(
+               "Invalid connection configuration. No snowflake connection.",
+            );
+         }
+
+         const snowflakeConfig = connectionConfig.snowflakeConnection;
+         if (
+            !snowflakeConfig.account ||
+            !snowflakeConfig.username ||
+            !snowflakeConfig.password ||
+            !snowflakeConfig.warehouse ||
+            !snowflakeConfig.database ||
+            !snowflakeConfig.schema
+         ) {
+            throw new Error(
+               "Snowflake connection requires: account, username, password, warehouse, database, and schema",
+            );
+         }
+
+         const snowflakeConnectionOptions = {
+            connOptions: {
+               account: snowflakeConfig.account,
+               username: snowflakeConfig.username,
+               password: snowflakeConfig.password,
+               warehouse: snowflakeConfig.warehouse,
+               database: snowflakeConfig.database,
+               schema: snowflakeConfig.schema,
+               timeout: snowflakeConfig.responseTimeoutMilliseconds,
+            },
+         };
+         const snowflakeConnection = new SnowflakeConnection(
+            "testConnection",
+            snowflakeConnectionOptions,
+         );
+
+         try {
+            await snowflakeConnection.test();
+            testResult = { status: "ok" };
+         } catch (error) {
+            if (error instanceof AxiosError) {
+               logAxiosError(error);
+            } else {
+               logger.error(error);
+            }
+            testResult = {
+               status: "failed",
+               errorMessage: (error as Error).message,
+            };
+         }
+         break;
+      }
+
+      case "bigquery": {
+         if (!connectionConfig.bigqueryConnection) {
+            throw new Error(
+               "Invalid connection configuration. No bigquery connection.",
+            );
+         }
+
+         const bigqueryConfig = connectionConfig.bigqueryConnection;
+         if (
+            !bigqueryConfig.serviceAccountKeyJson ||
+            !bigqueryConfig.defaultProjectId
+         ) {
+            throw new Error(
+               "BigQuery connection requires: serviceAccountKeyJson and defaultProjectId",
+            );
+         }
+
+         const serviceAccountKeyPath = path.join(
+            "/tmp",
+            `test-${uuidv4()}-service-account-key.json`,
+         );
+
+         try {
+            await fs.writeFile(
+               serviceAccountKeyPath,
+               connectionConfig.bigqueryConnection
+                  .serviceAccountKeyJson as string,
+            );
+
+            const bigqueryConnectionOptions = {
+               projectId: connectionConfig.bigqueryConnection.defaultProjectId,
+               serviceAccountKeyPath: serviceAccountKeyPath,
+               location: connectionConfig.bigqueryConnection.location,
+               maximumBytesBilled:
+                  connectionConfig.bigqueryConnection.maximumBytesBilled,
+               timeoutMs:
+                  connectionConfig.bigqueryConnection.queryTimeoutMilliseconds,
+               billingProjectId:
+                  connectionConfig.bigqueryConnection.billingProjectId,
+            };
+            const bigqueryConnection = new BigQueryConnection(
+               "testConnection",
+               () => ({}),
+               bigqueryConnectionOptions,
+            );
+
+            await bigqueryConnection.test();
+            testResult = { status: "ok" };
+         } catch (error) {
+            if (error instanceof AxiosError) {
+               logAxiosError(error);
+            } else {
+               logger.error(error);
+            }
+            testResult = {
+               status: "failed",
+               errorMessage: (error as Error).message,
+            };
+         } finally {
+            try {
+               await fs.unlink(serviceAccountKeyPath);
+            } catch (cleanupError) {
+               logger.warn(
+                  `Failed to cleanup temporary file ${serviceAccountKeyPath}:`,
+                  cleanupError,
+               );
+            }
+         }
+         break;
+      }
+
+      case "trino": {
+         if (!connectionConfig.trinoConnection) {
+            throw new Error("Trino connection configuration is missing.");
+         }
+
+         const trinoConfig = connectionConfig.trinoConnection;
+         if (
+            !trinoConfig.server ||
+            !trinoConfig.port ||
+            !trinoConfig.catalog ||
+            !trinoConfig.schema ||
+            !trinoConfig.user ||
+            !trinoConfig.password
+         ) {
+            throw new Error(
+               "Trino connection requires: server, port, catalog, schema, user, and password",
+            );
+         }
+
+         const trinoConnectionOptions = {
+            server: trinoConfig.server,
+            port: trinoConfig.port,
+            catalog: trinoConfig.catalog,
+            schema: trinoConfig.schema,
+            user: trinoConfig.user,
+            password: trinoConfig.password,
+         };
+         const trinoConnection = new TrinoConnection(
+            "testConnection",
+            {},
+            trinoConnectionOptions,
+         );
+
+         try {
+            await trinoConnection.test();
+            testResult = { status: "ok" };
+         } catch (error) {
+            if (error instanceof AxiosError) {
+               logAxiosError(error);
+            } else {
+               logger.error(error);
+            }
+            testResult = {
+               status: "failed",
+               errorMessage: (error as Error).message,
+            };
+         }
+         break;
+      }
+
+      default:
+         throw new BadRequestError(
+            `Unsupported connection type: ${connectionConfig.type}`,
+         );
+   }
+
+   if (testResult.status === "failed") {
+      return {
+         status: "failed",
+         errorMessage: testResult.errorMessage || "Connection test failed",
+      };
+   }
+
+   return {
+      status: "ok",
+      errorMessage: "",
    };
 }
