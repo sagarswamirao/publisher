@@ -191,7 +191,7 @@ export class ConnectionController {
    }
 
    public async testConnectionConfiguration(
-      connectionConfig: any,
+      connectionConfig: ApiConnection,
    ): Promise<ApiConnectionStatus> {
       if (
          !connectionConfig ||
