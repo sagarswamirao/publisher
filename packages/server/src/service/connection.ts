@@ -11,7 +11,7 @@ import fs from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { components } from "../api";
-import { CONNECTIONS_MANIFEST_NAME } from "../constants";
+import { CONNECTIONS_MANIFEST_NAME, TEMP_DIR_PATH } from "../constants";
 import { AxiosError } from "axios";
 
 type ApiConnection = components["schemas"]["Connection"];
@@ -132,7 +132,7 @@ export async function createConnections(
             let serviceAccountKeyPath = undefined;
             if (connection.bigqueryConnection.serviceAccountKeyJson) {
                serviceAccountKeyPath = path.join(
-                  "/tmp",
+                  TEMP_DIR_PATH,
                   `${connection.name}-${uuidv4()}-service-account-key.json`,
                );
                await fs.writeFile(
@@ -391,7 +391,7 @@ export async function testConnectionConfig(
          }
 
          const serviceAccountKeyPath = path.join(
-            "/tmp",
+            TEMP_DIR_PATH,
             `test-${uuidv4()}-service-account-key.json`,
          );
 

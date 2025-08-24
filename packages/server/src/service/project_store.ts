@@ -473,29 +473,6 @@ export class ProjectStore {
       projectName: string,
       packageName: string,
    ) {
-      // Handle absolute paths
-      if (location.startsWith("/")) {
-         try {
-            logger.info(
-               `Mounting local directory at "${location}" to "${targetPath}"`,
-            );
-            await this.mountLocalDirectory(
-               location,
-               targetPath,
-               projectName,
-               packageName,
-            );
-            return;
-         } catch (error) {
-            logger.error(`Failed to mount local directory "${location}"`, {
-               error,
-            });
-            throw new PackageNotFoundError(
-               `Failed to mount local directory: ${location}`,
-            );
-         }
-      }
-
       // Handle GCS paths
       if (location.startsWith("gs://")) {
          try {
@@ -549,6 +526,29 @@ export class ProjectStore {
             });
             throw new PackageNotFoundError(
                `Failed to download S3 directory: ${location}`,
+            );
+         }
+      }
+
+      // Handle absolute paths
+      if (path.isAbsolute(location)) {
+         try {
+            logger.info(
+               `Mounting local directory at "${location}" to "${targetPath}"`,
+            );
+            await this.mountLocalDirectory(
+               location,
+               targetPath,
+               projectName,
+               packageName,
+            );
+            return;
+         } catch (error) {
+            logger.error(`Failed to mount local directory "${location}"`, {
+               error,
+            });
+            throw new PackageNotFoundError(
+               `Failed to mount local directory: ${location}`,
             );
          }
       }
