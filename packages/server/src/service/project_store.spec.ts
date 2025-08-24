@@ -6,10 +6,14 @@ import { components } from "../api";
 import { isPublisherConfigFrozen } from "../config";
 import { ProjectStore } from "./project_store";
 import { Project } from "./project";
+import { TEMP_DIR_PATH } from "../constants";
 
 type Connection = components["schemas"]["Connection"];
 
-const serverRootPath = "/tmp/pathways-worker-publisher-project-store-test";
+const serverRootPath = path.join(
+   TEMP_DIR_PATH,
+   "pathways-worker-publisher-project-store-test",
+);
 const projectName = "organizationName-projectName";
 const testConnections: Connection[] = [
    {
@@ -353,7 +357,10 @@ describe("ProjectStore Service", () => {
 describe("Project Service Error Recovery", () => {
    let sandbox: sinon.SinonSandbox;
    let projectStore: ProjectStore;
-   const serverRootPath = "/tmp/pathways-worker-publisher-error-recovery-test";
+   const serverRootPath = path.join(
+      TEMP_DIR_PATH,
+      "pathways-worker-publisher-error-recovery-test",
+   );
    const projectName = "organizationName-projectName-error-recovery";
    const testConnections: Connection[] = [
       {
