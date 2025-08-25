@@ -314,9 +314,7 @@ app.get(
 app.post(`${API_PREFIX}/connections/test`, async (req, res) => {
    try {
       const connectionStatus =
-         await connectionController.testConnectionConfiguration(
-            req.body,
-         );
+         await connectionController.testConnectionConfiguration(req.body);
       res.status(200).json(connectionStatus);
    } catch (error) {
       logger.error(error);
