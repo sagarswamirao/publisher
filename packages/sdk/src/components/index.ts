@@ -12,3 +12,4 @@ export type { ServerContextValue, ServerProviderProps } from "./ServerProvider";
 export { AnalyzePackageButton } from "./AnalyzePackageButton";
 export type { PackageContextProps } from "./Package";
 export type { WorkbookStorage } from "./Workbook";
+export * from "./RenderedResult";
