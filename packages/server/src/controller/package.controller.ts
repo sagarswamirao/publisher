@@ -1,3 +1,4 @@
+import fs from "fs";
 import { components } from "../api";
 import { publisherPath } from "../constants";
 import { BadRequestError, FrozenConfigError } from "../errors";
@@ -74,9 +75,6 @@ export class PackageController {
       packageLocation: string,
    ) {
       let absoluteTargetPath = `${publisherPath}/${projectName}/${packageName}`;
-      if (packageLocation.endsWith(".zip")) {
-         absoluteTargetPath += ".zip";
-      }
       if (
          packageLocation.startsWith("https://") ||
          packageLocation.startsWith("git@")
@@ -97,11 +95,19 @@ export class PackageController {
             projectName,
             absoluteTargetPath,
          );
-      } else if (packageLocation.startsWith("/")) {
-         if (packageLocation.endsWith(".zip")) {
-            packageLocation =
-               await this.projectStore.unzipProject(packageLocation);
-         }
+      }
+
+      // If we downloaded a zip from somewhere, we'll add the .zip extension to where it was downloaded,
+      // so that the same path but without an extension is available to become a new directory.
+      if (packageLocation.endsWith(".zip")) {
+         fs.renameSync(absoluteTargetPath, `${absoluteTargetPath}.zip`);
+         absoluteTargetPath =
+            await this.projectStore.unzipProject(absoluteTargetPath);
+      }
+
+      if (packageLocation.startsWith("/")) {
+         // Absolute paths from the publisher.config could be placed outside of /etc/publisher,
+         // so we need to mount them on the right place.
          await this.projectStore.mountLocalDirectory(
             packageLocation,
             absoluteTargetPath,
