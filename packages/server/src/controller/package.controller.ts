@@ -73,7 +73,10 @@ export class PackageController {
       packageName: string,
       packageLocation: string,
    ) {
-      const absoluteTargetPath = `${publisherPath}/${projectName}/${packageName}`;
+      let absoluteTargetPath = `${publisherPath}/${projectName}/${packageName}`;
+      if (packageLocation.endsWith(".zip")) {
+         absoluteTargetPath += ".zip";
+      }
       if (
          packageLocation.startsWith("https://") ||
          packageLocation.startsWith("git@")
