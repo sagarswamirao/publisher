@@ -1,4 +1,3 @@
-import fs from "fs";
 import { components } from "../api";
 import { publisherPath } from "../constants";
 import { BadRequestError, FrozenConfigError } from "../errors";
@@ -74,7 +73,8 @@ export class PackageController {
       packageName: string,
       packageLocation: string,
    ) {
-      let absoluteTargetPath = `${publisherPath}/${projectName}/${packageName}`;
+      const absoluteTargetPath = `${publisherPath}/${projectName}/${packageName}`;
+      const isCompressedFile = packageLocation.endsWith(".zip");
       if (
          packageLocation.startsWith("https://") ||
          packageLocation.startsWith("git@")
@@ -88,6 +88,7 @@ export class PackageController {
             packageLocation,
             projectName,
             absoluteTargetPath,
+            isCompressedFile,
          );
       } else if (packageLocation.startsWith("s3://")) {
          await this.projectStore.downloadS3Directory(
@@ -95,14 +96,6 @@ export class PackageController {
             projectName,
             absoluteTargetPath,
          );
-      }
-
-      // If we downloaded a zip from somewhere, we'll add the .zip extension to where it was downloaded,
-      // so that the same path but without an extension is available to become a new directory.
-      if (packageLocation.endsWith(".zip")) {
-         fs.renameSync(absoluteTargetPath, `${absoluteTargetPath}.zip`);
-         absoluteTargetPath =
-            await this.projectStore.unzipProject(absoluteTargetPath);
       }
 
       if (packageLocation.startsWith("/")) {

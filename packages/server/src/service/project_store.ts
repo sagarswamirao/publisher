@@ -473,13 +473,19 @@ export class ProjectStore {
       projectName: string,
       packageName: string,
    ) {
+      const isCompressedFile = location.endsWith(".zip");
       // Handle GCS paths
       if (location.startsWith("gs://")) {
          try {
             logger.info(
                `Downloading GCS directory from "${location}" to "${targetPath}"`,
             );
-            await this.downloadGcsDirectory(location, projectName, targetPath);
+            await this.downloadGcsDirectory(
+               location,
+               projectName,
+               targetPath,
+               isCompressedFile,
+            );
             return;
          } catch (error) {
             logger.error(`Failed to download GCS directory "${location}"`, {
@@ -591,6 +597,7 @@ export class ProjectStore {
       gcsPath: string,
       projectName: string,
       absoluteDirPath: string,
+      isCompressedFile: boolean,
    ) {
       const trimmedPath = gcsPath.slice(5);
       const [bucketName, ...prefixParts] = trimmedPath.split("/");
@@ -603,15 +610,21 @@ export class ProjectStore {
             `Project ${projectName} not found in ${gcsPath}`,
          );
       }
-      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
-      await fs.promises.mkdir(absoluteDirPath, { recursive: true });
+      if (!isCompressedFile) {
+         await fs.promises.rm(absoluteDirPath, {
+            recursive: true,
+            force: true,
+         });
+         await fs.promises.mkdir(absoluteDirPath, { recursive: true });
+      } else {
+         absoluteDirPath = `${absoluteDirPath}.zip`;
+      }
       await Promise.all(
          files.map(async (file) => {
             const relativeFilePath = file.name.replace(prefix, "");
-            const absoluteFilePath = path.join(
-               absoluteDirPath,
-               relativeFilePath,
-            );
+            const absoluteFilePath = isCompressedFile
+               ? absoluteDirPath
+               : path.join(absoluteDirPath, relativeFilePath);
             if (file.name.endsWith("/")) {
                return;
             }
@@ -624,6 +637,10 @@ export class ProjectStore {
             );
          }),
       );
+      if (isCompressedFile) {
+         await this.unzipProject(absoluteDirPath);
+      }
+      logger.info(`Downloaded GCS directory ${gcsPath} to ${absoluteDirPath}`);
    }
 
    async downloadS3Directory(
