@@ -74,6 +74,7 @@ export class PackageController {
       packageLocation: string,
    ) {
       const absoluteTargetPath = `${publisherPath}/${projectName}/${packageName}`;
+      const isCompressedFile = packageLocation.endsWith(".zip");
       if (
          packageLocation.startsWith("https://") ||
          packageLocation.startsWith("git@")
@@ -87,6 +88,7 @@ export class PackageController {
             packageLocation,
             projectName,
             absoluteTargetPath,
+            isCompressedFile,
          );
       } else if (packageLocation.startsWith("s3://")) {
          await this.projectStore.downloadS3Directory(
@@ -94,11 +96,11 @@ export class PackageController {
             projectName,
             absoluteTargetPath,
          );
-      } else if (packageLocation.startsWith("/")) {
-         if (packageLocation.endsWith(".zip")) {
-            packageLocation =
-               await this.projectStore.unzipProject(packageLocation);
-         }
+      }
+
+      if (packageLocation.startsWith("/")) {
+         // Absolute paths from the publisher.config could be placed outside of /etc/publisher,
+         // so we need to mount them on the right place.
          await this.projectStore.mountLocalDirectory(
             packageLocation,
             absoluteTargetPath,
