@@ -10,6 +10,7 @@ export const MODEL_FILE_SUFFIX = ".malloy";
 export const NOTEBOOK_FILE_SUFFIX = ".malloynb";
 export const ROW_LIMIT = 1000;
 export const TEMP_DIR_PATH = os.tmpdir();
+
 export let publisherPath: string;
 
 if (process.platform === "win32") {
@@ -17,16 +18,12 @@ if (process.platform === "win32") {
       process.env.PROGRAMDATA || "C:\\ProgramData",
       "publisher",
    );
-   try {
-      fs.accessSync(publisherPath, fs.constants.W_OK);
-   } catch {
-      publisherPath = path.join(os.tmpdir(), "publisher");
-   }
 } else {
    publisherPath = "/etc/publisher";
-   try {
-      fs.accessSync(publisherPath, fs.constants.W_OK);
-   } catch {
-      publisherPath = path.join(os.tmpdir(), "publisher");
-   }
+}
+
+try {
+   fs.accessSync(publisherPath, fs.constants.W_OK);
+} catch {
+   publisherPath = path.join(os.tmpdir(), "publisher");
 }
