@@ -191,24 +191,39 @@ Alternatively, you can start a container locally or self-host it with [Docker](h
 Once Docker is installed, in a new folder with your data, create a file called `publisher.config.json` with these contents:
 ```json
 {
-   "frozenConfig": false,
-   "projects": {
-      "malloy-samples": "/publisher/malloy-samples"
-   }
-}
+    "frozenConfig": false,
+    "projects": [
+      {
+        "name": "malloy-samples",
+        "packages": [
+            {
+            "name": "ecommerce",
+            "location": "https://github.com/ms2data/malloy-samples"
+          },
+          {
+            "name": "imdb",
+            "location": "https://github.com/ms2data/malloy-samples"
+          },
+          {
+            "name": "faa",
+            "location": "https://github.com/ms2data/malloy-samples"
+          },
+          {
+            "name": "bigquery-hackernews",
+            "location": "https://github.com/ms2data/malloy-samples"
+          }
+        ]
+      }
+    ]
+  }
+
 ```
 
-That file will tell the publisher where to look for the Malloy Samples, which you can clone into your new folder:
-```sh
-git clone https://github.com/ms2data/malloy-samples
-```
-
-and run the following command that will link the newly cloned samples with a Docker container:
+That file will tell the publisher where to look for the Malloy Samples, and you can now run the following command that will link the newly created file with a Docker container:
 ```sh
 docker run -p 4000:4000 \
-   -v ./publisher.config.json:/publisher/publisher.config.json \
-   -v ./malloy-samples:/publisher/malloy-samples \
-  publisher
+   -v ./publisher.config.json:/publisher/publisher.config.json
+  ms2data/malloy-publisher
 ```
 Then, open http://localhost:4000 in your browser to continue setup.
 
