@@ -137,7 +137,7 @@ export function NotebookCell({
                   }}
                >
                   {cell.newSources && cell.newSources.length > 0 && (
-                                          <CleanMetricCard
+                     <CleanMetricCard
                         sx={{
                            position: "relative",
                            padding: "0",
@@ -159,7 +159,7 @@ export function NotebookCell({
                                        ? `${highlightedMalloyCode.substring(0, 50)}...`
                                        : highlightedMalloyCode,
                               }}
-                              style={{ 
+                              style={{
                                  fontFamily: "monospace",
                                  fontSize: "14px",
                                  color: "#666666",

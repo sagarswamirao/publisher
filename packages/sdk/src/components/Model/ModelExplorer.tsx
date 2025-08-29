@@ -98,41 +98,45 @@ export function ModelExplorer({
                }}
             >
                {/* Render the tabs for source selection */}
-               {Array.isArray(data.sourceInfos) && data.sourceInfos.length > 0 && (
-                  <MultiRowTabBar>
-                     {data.sourceInfos.map((source, idx) => {
-                        let sourceInfo;
-                        try {
-                           sourceInfo = JSON.parse(source);
-                        } catch {
-                           sourceInfo = { name: String(idx) };
-                        }
-                        return (
-                           <MultiRowTab
-                              key={sourceInfo.name || idx}
-                              selected={selectedTab === idx}
-                              onClick={() => setSelectedTab(idx)}
-                           >
-                              {sourceInfo.name || `Source ${idx + 1}`}
-                           </MultiRowTab>
-                        );
-                     })}
-                  </MultiRowTabBar>
-               )}
+               {Array.isArray(data.sourceInfos) &&
+                  data.sourceInfos.length > 0 && (
+                     <MultiRowTabBar>
+                        {data.sourceInfos.map((source, idx) => {
+                           let sourceInfo;
+                           try {
+                              sourceInfo = JSON.parse(source);
+                           } catch {
+                              sourceInfo = { name: String(idx) };
+                           }
+                           return (
+                              <MultiRowTab
+                                 key={sourceInfo.name || idx}
+                                 selected={selectedTab === idx}
+                                 onClick={() => setSelectedTab(idx)}
+                              >
+                                 {sourceInfo.name || `Source ${idx + 1}`}
+                              </MultiRowTab>
+                           );
+                        })}
+                     </MultiRowTabBar>
+                  )}
             </Stack>
          </StyledCardContent>
          <StyledCardMedia>
             <Stack spacing={2} component="section">
                {/* Render the selected source info */}
-               {Array.isArray(data.sourceInfos) && data.sourceInfos.length > 0 && (
-                  <SourceExplorerComponent
-                     sourceAndPath={{
-                        modelPath,
-                        sourceInfo: JSON.parse(data.sourceInfos[selectedTab]),
-                     }}
-                     onChange={onChange}
-                  />
-               )}
+               {Array.isArray(data.sourceInfos) &&
+                  data.sourceInfos.length > 0 && (
+                     <SourceExplorerComponent
+                        sourceAndPath={{
+                           modelPath,
+                           sourceInfo: JSON.parse(
+                              data.sourceInfos[selectedTab],
+                           ),
+                        }}
+                        onChange={onChange}
+                     />
+                  )}
 
                {/* Render the named queries */}
                {data.queries?.length > 0 && (
@@ -141,7 +145,9 @@ export function ModelExplorer({
                      sx={{ padding: "0px 10px 0px 10px" }}
                   >
                      <StyledCardContent sx={{ p: "10px" }}>
-                        <Typography variant="subtitle1">Named Queries</Typography>
+                        <Typography variant="subtitle1">
+                           Named Queries
+                        </Typography>
                      </StyledCardContent>
 
                      <Stack spacing={1} component="section">
