@@ -17,11 +17,14 @@ import Markdown from "markdown-to-jsx";
 import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
-import { SourcesExplorer } from "../Model";
+import { ModelExplorer } from "../Model";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { CleanNotebookCell, CleanMetricCard } from "../styles";
 import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
+
+// Regex to extract model path from import statements like: import {flights} from 'flights.malloy'
+const IMPORT_REGEX = /import\s*\{[^}]*\}\s*from\s*['"`]([^'"`]+)['"`]/;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
@@ -50,6 +53,12 @@ export function NotebookCell({
    const [sourcesDialogOpen, setSourcesDialogOpen] =
       React.useState<boolean>(false);
    const { packageName, projectName } = usePackage();
+   
+   // Extract model path from import statement in cell text
+   const importMatch = cell.text.match(IMPORT_REGEX);
+   const modelPath = importMatch ? importMatch[1] : null;
+   const hasValidImport = !!importMatch;
+   
    const queryResultCodeSnippet = createEmbeddedQueryResult({
       modelPath: notebookPath,
       query: cell.text,
@@ -117,7 +126,7 @@ export function NotebookCell({
                      marginBottom: "16px",
                   }}
                >
-                  {cell.newSources && cell.newSources.length > 0 && (
+                  {cell.newSources && cell.newSources.length > 0 && hasValidImport && (
                      <CleanMetricCard
                         sx={{
                            position: "relative",
@@ -202,17 +211,13 @@ export function NotebookCell({
                   </IconButton>
                </DialogTitle>
                <DialogContent>
-                  <SourcesExplorer
-                     sourceAndPaths={cell.newSources.map((source) => {
-                        const sourceInfo = JSON.parse(
-                           source,
-                        ) as Malloy.SourceInfo;
-                        return {
-                           sourceInfo: sourceInfo,
-                           modelPath: notebookPath,
-                        };
-                     })}
-                  />
+                  {hasValidImport ? (
+                     <ModelExplorer
+                        modelPath={modelPath}
+                     />
+                  ) : (
+                     <div>No valid import statement found in cell</div>
+                  )}
                </DialogContent>
             </Dialog>
 
@@ -365,25 +370,6 @@ export function NotebookCell({
                   <Box
                      sx={{
                         paddingTop: "24px",
-                        "& *": {
-                           scrollbarWidth: "thin",
-                           scrollbarColor: "#c1c1c1 #f1f1f1",
-                           "&::-webkit-scrollbar": {
-                              width: "8px",
-                              height: "8px",
-                           },
-                           "&::-webkit-scrollbar-track": {
-                              background: "#f1f1f1",
-                              borderRadius: "4px",
-                           },
-                           "&::-webkit-scrollbar-thumb": {
-                              background: "#c1c1c1",
-                              borderRadius: "4px",
-                              "&:hover": {
-                                 background: "#a8a8a8",
-                              },
-                           },
-                        },
                      }}
                   >
                      <ResultContainer

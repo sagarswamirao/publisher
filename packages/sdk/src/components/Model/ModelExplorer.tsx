@@ -6,6 +6,7 @@ import { ModelCell } from "./ModelCell";
 import {
    QueryExplorerResult,
    SourceExplorerComponent,
+   SourcesExplorer,
 } from "./SourcesExplorer";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -15,27 +16,29 @@ import { useModelData } from "./useModelData";
 const MultiRowTabBar = styled(Box)(({ theme }) => ({
    display: "flex",
    flexWrap: "wrap",
-   gap: theme.spacing(0.5),
-   borderBottom: `1px solid ${theme.palette.divider}`,
-   minHeight: 36,
+   gap: theme.spacing(1),
+   borderBottom: "1px solid #f0f0f0",
+   minHeight: 48,
+   paddingBottom: "8px",
 }));
 
 const MultiRowTab = styled(Button)<{ selected?: boolean }>(
    ({ theme, selected }) => ({
-      minHeight: 36,
-      padding: theme.spacing(0.5, 2),
-      borderRadius: theme.shape.borderRadius,
-      background: selected ? theme.palette.action.selected : "none",
-      color: selected ? theme.palette.primary.main : theme.palette.text.primary,
-      fontWeight: selected ? 600 : 400,
+      minHeight: 32,
+      padding: theme.spacing(0.75, 2),
+      borderRadius: "6px",
+      background: selected ? "#f8f9fa" : "transparent",
+      color: selected ? "#495057" : "#666666",
+      fontWeight: selected ? 600 : 500,
       border: selected
-         ? `1px solid ${theme.palette.primary.main}`
-         : `1px solid transparent`,
-      boxShadow: selected ? theme.shadows[1] : "none",
-      textTransform: "uppercase",
+         ? "1px solid #e9ecef"
+         : "1px solid transparent",
+      boxShadow: "none",
+      textTransform: "none",
+      fontSize: "13px",
       "&:hover": {
-         background: theme.palette.action.hover,
-         border: `1px solid ${theme.palette.primary.light}`,
+         background: selected ? "#f8f9fa" : "#fafafa",
+         border: selected ? "1px solid #e9ecef" : "1px solid #f0f0f0",
       },
    }),
 );
@@ -123,14 +126,16 @@ export function ModelExplorer({
                {/* Render the selected source info */}
                {Array.isArray(data.sourceInfos) &&
                   data.sourceInfos.length > 0 && (
-                     <SourceExplorerComponent
-                        sourceAndPath={{
-                           modelPath,
-                           sourceInfo: JSON.parse(
-                              data.sourceInfos[selectedTab],
-                           ),
-                        }}
-                        onChange={onChange}
+                     <SourcesExplorer
+                        sourceAndPaths={data.sourceInfos.map((source) => {
+                           const sourceInfo = JSON.parse(source);
+                           return {
+                              sourceInfo: sourceInfo,
+                              modelPath: modelPath,
+                           };
+                        })}
+                        selectedSourceIndex={selectedTab}
+                        onQueryChange={onChange}
                      />
                   )}
 

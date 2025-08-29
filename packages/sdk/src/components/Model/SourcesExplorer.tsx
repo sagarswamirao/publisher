@@ -25,41 +25,12 @@ export interface SourceAndPath {
    sourceInfo: Malloy.SourceInfo;
 }
 
-// Add a styled component for the multi-row tab bar
-const MultiRowTabBar = styled(Box)(({ theme }) => ({
-   display: "flex",
-   flexWrap: "wrap",
-   gap: theme.spacing(0.5),
-   borderBottom: `1px solid ${theme.palette.divider}`,
-   minHeight: 36,
-}));
-
-const MultiRowTab = styled(Button)<{ selected?: boolean }>(
-   ({ theme, selected }) => ({
-      minHeight: 36,
-      padding: theme.spacing(0.5, 2),
-      borderRadius: theme.shape.borderRadius,
-      background: selected ? theme.palette.action.selected : "none",
-      color: selected ? theme.palette.primary.main : theme.palette.text.primary,
-      fontWeight: selected ? 600 : 400,
-      border: selected
-         ? `1px solid ${theme.palette.primary.main}`
-         : `1px solid transparent`,
-      boxShadow: selected ? theme.shadows[1] : "none",
-      textTransform: "uppercase",
-      "&:hover": {
-         background: theme.palette.action.hover,
-         border: `1px solid ${theme.palette.primary.light}`,
-      },
-   }),
-);
 
 export interface SourceExplorerProps {
    sourceAndPaths: SourceAndPath[];
+   selectedSourceIndex: number;
    existingQuery?: QueryExplorerResult;
-   existingSourceName?: string;
    onQueryChange?: (query: QueryExplorerResult) => void;
-   onSourceChange?: (index: number) => void;
 }
 
 /**
@@ -71,71 +42,30 @@ export interface SourceExplorerProps {
  */
 export function SourcesExplorer({
    sourceAndPaths,
+   selectedSourceIndex,
    existingQuery,
-   existingSourceName,
    onQueryChange,
-   onSourceChange,
 }: SourceExplorerProps) {
-   const [selectedTab, setSelectedTab] = React.useState(
-      existingSourceName
-         ? sourceAndPaths.findIndex(
-              (entry) => entry.sourceInfo.name === existingSourceName,
-           )
-         : 0,
-   );
-
    const [query, setQuery] = React.useState<QueryExplorerResult | undefined>(
       existingQuery || emptyQueryExplorerResult(),
    );
 
-   // Notify parent component when selected source changes
-   React.useEffect(() => {
-      if (onSourceChange) {
-         onSourceChange(selectedTab);
-      }
-   }, [selectedTab, onSourceChange]);
-
    return (
-      <StyledCard variant="outlined">
-         <StyledCardContent>
-            <Stack
-               sx={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
+      <StyledCardMedia>
+         <Stack spacing={2} component="section">
+            <SourceExplorerComponent
+               sourceAndPath={sourceAndPaths[selectedSourceIndex]}
+               existingQuery={query}
+               onChange={(query) => {
+                  setQuery(query);
+                  if (onQueryChange) {
+                     onQueryChange(query);
+                  }
                }}
-            >
-               {sourceAndPaths.length > 0 && (
-                  <MultiRowTabBar>
-                     {sourceAndPaths.map((sourceAndPath, idx) => (
-                        <MultiRowTab
-                           key={sourceAndPath.sourceInfo.name || idx}
-                           selected={selectedTab === idx}
-                           onClick={() => setSelectedTab(idx)}
-                        >
-                           {sourceAndPath.sourceInfo.name ||
-                              `Source ${idx + 1}`}
-                        </MultiRowTab>
-                     ))}
-                  </MultiRowTabBar>
-               )}
-            </Stack>
-         </StyledCardContent>
-         <StyledCardMedia>
-            <Stack spacing={2} component="section">
-               <SourceExplorerComponent
-                  sourceAndPath={sourceAndPaths[selectedTab]}
-                  existingQuery={query}
-                  onChange={(query) => {
-                     setQuery(query);
-                     if (onQueryChange) {
-                        onQueryChange(query);
-                     }
-                  }}
-               />
-               <Box height="5px" />
-            </Stack>
-         </StyledCardMedia>
-      </StyledCard>
+            />
+            <Box height="5px" />
+         </Stack>
+      </StyledCardMedia>
    );
 }
 
@@ -247,7 +177,14 @@ function SourceExplorerComponentInner({
       return <div>Loading...</div>;
    }
    return (
-      <StyledExplorerContent key={sourceAndPath.sourceInfo.name}>
+      <StyledExplorerContent 
+         key={sourceAndPath.sourceInfo.name}
+         sx={{
+            border: "1px solid #e0e0e0",
+            borderRadius: "8px",
+            overflow: "hidden",
+         }}
+      >
          <MalloyExplorerProvider
             source={sourceAndPath.sourceInfo}
             query={query?.malloyQuery}
