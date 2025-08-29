@@ -35,9 +35,6 @@ const modelsApi = new ModelsApi(new Configuration());
 
 interface WorkbookProps {
    workbookPath?: WorkbookLocator;
-   expandCodeCells?: boolean;
-   expandEmbeddings?: boolean;
-   hideEmbeddingIcons?: boolean;
    defaultProjectName?: string;
    defaultPackageName?: string;
 }
@@ -49,9 +46,6 @@ interface PathToSources {
 
 export default function Workbook({
    workbookPath,
-   expandCodeCells,
-   expandEmbeddings,
-   hideEmbeddingIcons,
    defaultProjectName,
    defaultPackageName,
 }: WorkbookProps) {
@@ -437,9 +431,6 @@ export default function Workbook({
                            plusButton(isMarkdown, index)
                         }
                         sourceAndPaths={getSourceList(sourceAndPaths)}
-                        expandCodeCell={expandCodeCells}
-                        expandEmbedding={expandEmbeddings}
-                        hideEmbeddingIcons={hideEmbeddingIcons}
                         editingMarkdown={editingMarkdownIndex === index}
                         editingMalloy={editingMalloyIndex === index}
                         onDelete={() => {

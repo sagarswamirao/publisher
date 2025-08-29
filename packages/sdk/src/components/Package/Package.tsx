@@ -52,10 +52,7 @@ export default function Package({ navigate }: PackageProps) {
                   <PackageCardContent>
                      <PackageSectionTitle>README</PackageSectionTitle>
                      <Box sx={{ mt: 1 }}>
-                        <Notebook
-                           notebookPath={README_NOTEBOOK}
-                           hideEmbeddingIcons={true}
-                        />
+                        <Notebook notebookPath={README_NOTEBOOK} />
                      </Box>
                   </PackageCardContent>
                </PackageCard>

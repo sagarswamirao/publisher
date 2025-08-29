@@ -31,9 +31,6 @@ import { EditableMalloyCell } from "./EditableMalloyCell";
 
 interface NotebookCellProps {
    cell: WorkbookCellValue;
-   expandCodeCell?: boolean;
-   expandEmbedding?: boolean;
-   hideEmbeddingIcons?: boolean;
    editingMalloy?: boolean;
    editingMarkdown?: boolean;
    sourceAndPaths: SourceAndPath[];
@@ -46,9 +43,6 @@ interface NotebookCellProps {
 
 export function MutableCell({
    cell,
-   expandCodeCell,
-   expandEmbedding,
-   hideEmbeddingIcons,
    editingMalloy,
    editingMarkdown,
    sourceAndPaths,
@@ -59,10 +53,9 @@ export function MutableCell({
    addButtonCallback,
 }: NotebookCellProps) {
    const [value, setValue] = useState(cell.value);
-   const [codeExpanded, setCodeExpanded] =
-      React.useState<boolean>(expandCodeCell);
+   const [codeExpanded, setCodeExpanded] = React.useState<boolean>(false);
    const [embeddingExpanded, setEmbeddingExpanded] =
-      React.useState<boolean>(expandEmbedding);
+      React.useState<boolean>(false);
    const [highlightedMalloyCode, setHighlightedMalloyCode] =
       React.useState<string>();
    const [highlightedEmbedCode] = React.useState<string>();
@@ -192,7 +185,7 @@ export function MutableCell({
                </IconButton>
             </Tooltip>
          )}
-         {!hideEmbeddingIcons && !editingMalloy && cell.result && (
+         {!editingMalloy && cell.result && (
             <Tooltip
                title={embeddingExpanded ? "Hide Embedding" : "View Embedding"}
             >
@@ -419,8 +412,10 @@ export function MutableCell({
                         onQueryChange={(query) => {
                            setQuery(query);
                         }}
+                        onSourceChange={(index) => {
+                           setSelectedSourceIndex(index);
+                        }}
                         cell={cell}
-                        onSourceChange={setSelectedSourceIndex}
                      />
                   ))}
                {!editingMalloy && cell.result && (

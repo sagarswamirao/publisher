@@ -26,6 +26,7 @@ export interface SourceExplorerProps {
    selectedSourceIndex: number;
    existingQuery?: QueryExplorerResult;
    onQueryChange?: (query: QueryExplorerResult) => void;
+   onSourceChange?: (index: number) => void;
 }
 
 /**
@@ -40,10 +41,18 @@ export function SourcesExplorer({
    selectedSourceIndex,
    existingQuery,
    onQueryChange,
+   onSourceChange,
 }: SourceExplorerProps) {
    const [query, setQuery] = React.useState<QueryExplorerResult | undefined>(
       existingQuery || emptyQueryExplorerResult(),
    );
+
+   // Notify parent component when selected source changes
+   React.useEffect(() => {
+      if (onSourceChange) {
+         onSourceChange(selectedSourceIndex);
+      }
+   }, [selectedSourceIndex, onSourceChange]);
 
    return (
       <StyledCardMedia>
