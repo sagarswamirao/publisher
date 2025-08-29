@@ -30,9 +30,7 @@ const MultiRowTab = styled(Button)<{ selected?: boolean }>(
       background: selected ? "#f8f9fa" : "transparent",
       color: selected ? "#495057" : "#666666",
       fontWeight: selected ? 600 : 500,
-      border: selected
-         ? "1px solid #e9ecef"
-         : "1px solid transparent",
+      border: selected ? "1px solid #e9ecef" : "1px solid transparent",
       boxShadow: "none",
       textTransform: "none",
       fontSize: "13px",
@@ -153,15 +151,15 @@ export function ModelExplorer({
 
                      <Stack spacing={1} component="section">
                         {data.queries.map((query) => (
-                                                   <ModelCell
-                           key={query.name}
-                           modelPath={modelPath}
-                           queryName={query.name}
-                           expandResult={expandResults}
-                           hideResultIcon={hideResultIcons}
-                           noView={true}
-                           annotations={query.annotations}
-                        />
+                           <ModelCell
+                              key={query.name}
+                              modelPath={modelPath}
+                              queryName={query.name}
+                              expandResult={expandResults}
+                              hideResultIcon={hideResultIcons}
+                              noView={true}
+                              annotations={query.annotations}
+                           />
                         ))}
                      </Stack>
                      <Box height="10px" />

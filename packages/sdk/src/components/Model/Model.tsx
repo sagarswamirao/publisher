@@ -16,11 +16,7 @@ interface ModelProps {
 // you must explicitly import the styles from the package:
 // import "@malloy-publisher/sdk/malloy-explorer.css";
 
-export default function Model({
-   modelPath,
-   versionId,
-   onChange,
-}: ModelProps) {
+export default function Model({ modelPath, versionId, onChange }: ModelProps) {
    const { isError, isLoading, error } = useModelData(modelPath, versionId);
 
    if (isLoading) {

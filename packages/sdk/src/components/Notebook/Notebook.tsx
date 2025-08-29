@@ -17,9 +17,7 @@ interface NotebookProps {
 }
 
 // Requires PackageProvider
-export default function Notebook({
-   notebookPath,
-}: NotebookProps) {
+export default function Notebook({ notebookPath }: NotebookProps) {
    const { projectName, packageName, versionId } = usePackage();
 
    const {

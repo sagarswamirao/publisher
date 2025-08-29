@@ -25,7 +25,6 @@ export interface SourceAndPath {
    sourceInfo: Malloy.SourceInfo;
 }
 
-
 export interface SourceExplorerProps {
    sourceAndPaths: SourceAndPath[];
    selectedSourceIndex: number;
@@ -177,7 +176,7 @@ function SourceExplorerComponentInner({
       return <div>Loading...</div>;
    }
    return (
-      <StyledExplorerContent 
+      <StyledExplorerContent
          key={sourceAndPath.sourceInfo.name}
          sx={{
             border: "1px solid #e0e0e0",
