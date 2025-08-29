@@ -9,10 +9,6 @@ import { useModelData } from "./useModelData";
 interface ModelProps {
    modelPath: string;
    versionId?: string;
-   expandResults?: boolean;
-   hideResultIcons?: boolean;
-   expandEmbeddings?: boolean;
-   hideEmbeddingIcons?: boolean;
    onChange?: (query: QueryExplorerResult) => void;
 }
 
@@ -23,10 +19,6 @@ interface ModelProps {
 export default function Model({
    modelPath,
    versionId,
-   expandResults,
-   hideResultIcons,
-   expandEmbeddings,
-   hideEmbeddingIcons,
    onChange,
 }: ModelProps) {
    const { isError, isLoading, error } = useModelData(modelPath, versionId);
@@ -43,10 +35,6 @@ export default function Model({
       <ModelExplorer
          modelPath={modelPath}
          versionId={versionId}
-         expandResults={expandResults}
-         hideResultIcons={hideResultIcons}
-         expandEmbeddings={expandEmbeddings}
-         hideEmbeddingIcons={hideEmbeddingIcons}
          onChange={onChange}
       />
    );

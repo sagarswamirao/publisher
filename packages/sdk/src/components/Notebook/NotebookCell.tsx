@@ -143,7 +143,6 @@ export function NotebookCell({
                               style={{
                                  fontFamily: "monospace",
                                  fontSize: "14px",
-                                 color: "#666666",
                                  flex: 1,
                                  whiteSpace: "nowrap",
                                  overflow: "hidden",
@@ -391,7 +390,6 @@ export function NotebookCell({
                         result={cell.result}
                         minHeight={300}
                         maxHeight={1000}
-                        hideToggle={true}
                      />
                   </Box>
 

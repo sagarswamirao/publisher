@@ -46,8 +46,6 @@ export interface ModelExplorerProps {
    /** Display options forwarded to ModelCell */
    expandResults?: boolean;
    hideResultIcons?: boolean;
-   expandEmbeddings?: boolean;
-   hideEmbeddingIcons?: boolean;
    /** Callback when the explorer changes (e.g. when a query is selected). */
    onChange?: (query: QueryExplorerResult) => void;
 }
@@ -63,8 +61,6 @@ export function ModelExplorer({
    versionId,
    expandResults,
    hideResultIcons,
-   expandEmbeddings,
-   hideEmbeddingIcons,
    onChange,
 }: ModelExplorerProps) {
    const [selectedTab, setSelectedTab] = React.useState(0);
@@ -152,17 +148,15 @@ export function ModelExplorer({
 
                      <Stack spacing={1} component="section">
                         {data.queries.map((query) => (
-                           <ModelCell
-                              key={query.name}
-                              modelPath={modelPath}
-                              queryName={query.name}
-                              expandResult={expandResults}
-                              hideResultIcon={hideResultIcons}
-                              expandEmbedding={expandEmbeddings}
-                              hideEmbeddingIcon={hideEmbeddingIcons}
-                              noView={true}
-                              annotations={query.annotations}
-                           />
+                                                   <ModelCell
+                           key={query.name}
+                           modelPath={modelPath}
+                           queryName={query.name}
+                           expandResult={expandResults}
+                           hideResultIcon={hideResultIcons}
+                           noView={true}
+                           annotations={query.annotations}
+                        />
                         ))}
                      </Stack>
                      <Box height="10px" />
