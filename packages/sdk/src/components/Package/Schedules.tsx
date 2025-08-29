@@ -1,6 +1,5 @@
 import {
    Box,
-   Divider,
    Paper,
    Table,
    TableBody,
@@ -8,7 +7,6 @@ import {
    TableContainer,
    TableHead,
    TableRow,
-   Typography,
 } from "@mui/material";
 import { Configuration, SchedulesApi } from "../../client";
 import {

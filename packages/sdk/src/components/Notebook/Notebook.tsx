@@ -1,17 +1,12 @@
 import "@malloydata/malloy-explorer/styles.css";
 import { Stack, Typography } from "@mui/material";
-import React, { useEffect } from "react";
 import { CompiledNotebook, Configuration, NotebooksApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 import { Loading } from "../Loading";
 import { usePackage } from "../Package/PackageProvider";
-import {
-   CleanNotebookContainer,
-   CleanNotebookHeader,
-   CleanNotebookSection,
-} from "../styles";
+import { CleanNotebookContainer, CleanNotebookSection } from "../styles";
 import { NotebookCell } from "./NotebookCell";
 
 const notebooksApi = new NotebooksApi(new Configuration());
@@ -23,19 +18,6 @@ interface NotebookProps {
    hideResultIcons?: boolean;
    expandEmbeddings?: boolean;
    hideEmbeddingIcons?: boolean;
-}
-
-// Helper function to get human-readable notebook name
-function getNotebookDisplayName(notebookPath: string): string {
-   // Extract the filename from the path
-   const filename = notebookPath.split("/").pop() || notebookPath;
-   // Remove the .malloynb extension
-   const nameWithoutExtension = filename.replace(/\.malloynb$/, "");
-   // Split by hyphens and underscores, then capitalize each word
-   return nameWithoutExtension
-      .split(/[-_]/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
 }
 
 // Requires PackageProvider

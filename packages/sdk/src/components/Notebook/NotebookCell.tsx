@@ -2,21 +2,15 @@ import * as Malloy from "@malloydata/malloy-interfaces";
 import CodeIcon from "@mui/icons-material/Code";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
-   CardActions,
-   Collapse,
    IconButton,
    Stack,
    Tooltip,
    Typography,
    Box,
-   Chip,
    Dialog,
    DialogTitle,
    DialogContent,
-   DialogActions,
-   Button,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Markdown from "markdown-to-jsx";
@@ -25,22 +19,9 @@ import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { SourcesExplorer } from "../Model";
 import ResultContainer from "../RenderedResult/ResultContainer";
-import {
-   CleanNotebookCell,
-   CleanMetricCard,
-   CleanCodeBlock,
-   CleanActionBar,
-} from "../styles";
+import { CleanNotebookCell, CleanMetricCard } from "../styles";
 import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
-
-// Add global style for code display
-const codeStyle = `
-  .code-display pre {
-    margin: 0;
-    padding: 0;
-  }
-`;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;

@@ -1,12 +1,5 @@
 import ErrorIcon from "@mui/icons-material/ErrorOutlined";
-import {
-   Box,
-   Divider,
-   List,
-   ListItem,
-   ListItemText,
-   Typography,
-} from "@mui/material";
+import { Box, List, ListItem, ListItemText } from "@mui/material";
 import { Configuration, PackagesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";

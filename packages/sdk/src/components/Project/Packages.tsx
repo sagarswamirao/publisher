@@ -3,11 +3,7 @@ import { Configuration, PackagesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import {
-   PackageCard,
-   PackageCardContent,
-   PackageSectionTitle,
-} from "../styles";
+import { PackageCard, PackageCardContent } from "../styles";
 import { useProject } from "./Project";
 
 const packagesApi = new PackagesApi(new Configuration());

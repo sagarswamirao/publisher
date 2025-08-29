@@ -1,4 +1,4 @@
-import { Typography, Box } from "@mui/material";
+import { Box } from "@mui/material";
 import Markdown from "markdown-to-jsx";
 import { Configuration, ProjectsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";

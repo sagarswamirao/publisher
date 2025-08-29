@@ -3,7 +3,6 @@ import {
    Dialog,
    DialogContent,
    DialogTitle,
-   Divider,
    Table,
    TableBody,
    TableCell,
