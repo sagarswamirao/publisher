@@ -1,6 +1,5 @@
 import {
    Box,
-   Divider,
    Table,
    TableBody,
    TableCell,
@@ -16,7 +15,11 @@ import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { StyledCard, StyledCardContent } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
@@ -84,12 +87,9 @@ export default function Connections() {
    return (
       // Connections are project-scoped, so we need to provide the project name to the ConnectionExplorer
       <ProjectProvider projectName={projectName}>
-         <StyledCard variant="outlined" sx={{ width: "100%" }}>
-            <StyledCardContent>
-               <Typography variant="overline" fontWeight="bold">
-                  Database Connections
-               </Typography>
-               <Divider />
+         <PackageCard>
+            <PackageCardContent>
+               <PackageSectionTitle>Database Connections</PackageSectionTitle>
                <Box
                   sx={{
                      maxHeight: "200px",
@@ -144,8 +144,8 @@ export default function Connections() {
                      />
                   )}
                </Box>
-            </StyledCardContent>
-         </StyledCard>
+            </PackageCardContent>
+         </PackageCard>
 
          {/* Connection Explorer Dialog */}
          <Dialog

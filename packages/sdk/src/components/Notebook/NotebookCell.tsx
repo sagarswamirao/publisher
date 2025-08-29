@@ -1,32 +1,27 @@
 import * as Malloy from "@malloydata/malloy-interfaces";
 import CodeIcon from "@mui/icons-material/Code";
+import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import {
-   CardActions,
-   Collapse,
    IconButton,
    Stack,
    Tooltip,
    Typography,
+   Box,
+   Dialog,
+   DialogTitle,
+   DialogContent,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import Markdown from "markdown-to-jsx";
 import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { SourcesExplorer } from "../Model";
 import ResultContainer from "../RenderedResult/ResultContainer";
-import { StyledCard, StyledCardContent } from "../styles";
+import { CleanNotebookCell, CleanMetricCard } from "../styles";
 import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
-
-// Add global style for code display
-const codeStyle = `
-  .code-display pre {
-    margin: 0;
-    padding: 0;
-  }
-`;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
@@ -40,20 +35,20 @@ interface NotebookCellProps {
 export function NotebookCell({
    cell,
    notebookPath,
-   expandCodeCell,
    hideCodeCellIcon,
-   expandEmbedding,
    hideEmbeddingIcon,
 }: NotebookCellProps) {
-   const [codeExpanded, setCodeExpanded] =
-      React.useState<boolean>(expandCodeCell);
-   const [embeddingExpanded, setEmbeddingExpanded] =
-      React.useState<boolean>(expandEmbedding);
+   const [codeDialogOpen, setCodeDialogOpen] = React.useState<boolean>(false);
+   const [embeddingDialogOpen, setEmbeddingDialogOpen] =
+      React.useState<boolean>(false);
+   const [resultsDialogOpen, setResultsDialogOpen] =
+      React.useState<boolean>(false);
    const [highlightedMalloyCode, setHighlightedMalloyCode] =
       React.useState<string>();
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
-   const [sourcesExpanded, setSourcesExpanded] = React.useState<boolean>(false);
+   const [sourcesDialogOpen, setSourcesDialogOpen] =
+      React.useState<boolean>(false);
    const { packageName, projectName } = usePackage();
    const queryResultCodeSnippet = createEmbeddedQueryResult({
       modelPath: notebookPath,
@@ -61,6 +56,7 @@ export function NotebookCell({
       optionalPackageName: packageName,
       optionalProjectName: projectName,
    });
+
    useEffect(() => {
       if (cell.type === "code")
          highlight(cell.text, "malloy").then((code) => {
@@ -76,185 +72,395 @@ export function NotebookCell({
 
    return (
       (cell.type === "markdown" && (
-         <StyledCard variant="outlined">
-            <StyledCardContent>
+         <CleanNotebookCell>
+            <Box
+               sx={{
+                  "& h1, & h2, & h3, & h4, & h5, & h6": {
+                     fontWeight: "600",
+                     color: "#1a1a1a",
+                     marginBottom: "8px",
+                     marginTop: "16px",
+                  },
+                  "& h1": { fontSize: "28px" },
+                  "& h2": { fontSize: "24px" },
+                  "& h3": { fontSize: "20px" },
+                  "& p": {
+                     color: "#333333",
+                     lineHeight: "1.7",
+                     marginBottom: "8px",
+                     fontSize: "16px",
+                  },
+                  "& ul, & ol": {
+                     color: "#333333",
+                     lineHeight: "1.7",
+                     marginBottom: "8px",
+                     fontSize: "16px",
+                  },
+                  "& li": {
+                     marginBottom: "4px",
+                  },
+               }}
+            >
                <Markdown>{cell.text}</Markdown>
-            </StyledCardContent>
-         </StyledCard>
+            </Box>
+         </CleanNotebookCell>
       )) ||
       (cell.type === "code" && (
-         <StyledCard variant="outlined" sx={{ height: "auto" }}>
-            {(!hideCodeCellIcon || (!hideEmbeddingIcon && cell.result)) && (
+         <CleanNotebookCell>
+            {(!hideCodeCellIcon ||
+               (!hideEmbeddingIcon && cell.result) ||
+               (cell.newSources && cell.newSources.length > 0)) && (
                <Stack
                   sx={{
-                     flexDirection: "row",
-                     justifyContent: "space-between",
-                     ml: "8px",
+                     flexDirection: "column",
+                     gap: "8px",
+                     marginBottom: "16px",
                   }}
                >
-                  <Stack sx={{ flexDirection: "row" }}>
-                     {cell.newSources && cell.newSources.length > 0 && (
-                        <Typography variant="overline">
-                           <b>Data source</b>
-                        </Typography>
-                     )}
-                     {cell.result && (
-                        <Typography variant="overline" fontWeight="bold">
-                           Results
-                        </Typography>
-                     )}
-                  </Stack>
-                  <Stack sx={{ flexDirection: "row" }}>
-                     <CardActions
+                  {cell.newSources && cell.newSources.length > 0 && (
+                     <CleanMetricCard
                         sx={{
-                           padding: "0px 8px 0px 8px",
-                           mb: "auto",
-                           mt: "auto",
+                           position: "relative",
+                           padding: "0",
                         }}
                      >
-                        {cell.newSources && cell.newSources.length > 0 && (
-                           <Tooltip title="Explore Data Sources">
-                              <IconButton
-                                 size="small"
-                                 onClick={() => {
-                                    setSourcesExpanded(!sourcesExpanded);
-                                    setEmbeddingExpanded(false);
-                                    setCodeExpanded(false);
-                                 }}
-                              >
-                                 <svg
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                 >
-                                    <path
-                                       d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h10v2H7v-2z"
-                                       fill="currentColor"
-                                    />
-                                 </svg>
-                              </IconButton>
-                           </Tooltip>
-                        )}
-                        {!hideCodeCellIcon && (
-                           <Tooltip
-                              title={codeExpanded ? "Hide Code" : "View Code"}
+                        <Box
+                           sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              paddingLeft: "24px",
+                              paddingRight: "8px",
+                           }}
+                        >
+                           <span
+                              dangerouslySetInnerHTML={{
+                                 __html:
+                                    cell.text.length > 50
+                                       ? `${highlightedMalloyCode.substring(0, 50)}...`
+                                       : highlightedMalloyCode,
+                              }}
+                              style={{
+                                 fontFamily: "monospace",
+                                 fontSize: "14px",
+                                 color: "#666666",
+                                 flex: 1,
+                                 whiteSpace: "nowrap",
+                                 overflow: "hidden",
+                                 textOverflow: "ellipsis",
+                                 marginRight: "8px",
+                              }}
+                           />
+                           <IconButton
+                              sx={{
+                                 backgroundColor: "rgba(255, 255, 255, 0.9)",
+                                 "&:hover": {
+                                    backgroundColor: "rgba(255, 255, 255, 1)",
+                                 },
+                                 width: "32px",
+                                 height: "32px",
+                                 flexShrink: 0,
+                              }}
+                              onClick={() => setSourcesDialogOpen(true)}
                            >
-                              <IconButton
-                                 size="small"
-                                 onClick={() => {
-                                    setCodeExpanded(!codeExpanded);
-                                 }}
-                              >
-                                 <CodeIcon />
-                              </IconButton>
-                           </Tooltip>
-                        )}
-                        {!hideEmbeddingIcon && cell.result && (
-                           <Tooltip
-                              title={
-                                 embeddingExpanded
-                                    ? "Hide Embedding"
-                                    : "View Embedding"
-                              }
-                           >
-                              <IconButton
-                                 size="small"
-                                 onClick={() => {
-                                    setEmbeddingExpanded(!embeddingExpanded);
-                                 }}
-                              >
-                                 <LinkOutlinedIcon />
-                              </IconButton>
-                           </Tooltip>
-                        )}
-                     </CardActions>
-                  </Stack>
+                              <SearchIcon
+                                 sx={{ fontSize: "18px", color: "#666666" }}
+                              />
+                           </IconButton>
+                        </Box>
+                     </CleanMetricCard>
+                  )}
                </Stack>
             )}
-            <Collapse in={embeddingExpanded} timeout="auto" unmountOnExit>
-               <Stack
+
+            {/* Data Sources Dialog */}
+            <Dialog
+               open={sourcesDialogOpen}
+               onClose={() => setSourcesDialogOpen(false)}
+               maxWidth={false}
+               fullWidth
+               sx={{
+                  "& .MuiDialog-paper": {
+                     width: "95vw",
+                     height: "95vh",
+                     maxWidth: "none",
+                  },
+               }}
+            >
+               <DialogTitle
                   sx={{
-                     p: "8px",
-                     borderRadius: 0,
-                     flexDirection: "row",
+                     display: "flex",
                      justifyContent: "space-between",
+                     alignItems: "center",
                   }}
                >
-                  <Typography
-                     component="div"
-                     sx={{
-                        fontSize: "12px",
-                        "& .line": { textWrap: "wrap" },
-                     }}
-                     dangerouslySetInnerHTML={{
-                        __html: highlightedEmbedCode,
-                     }}
+                  Data Sources
+                  <IconButton
+                     onClick={() => setSourcesDialogOpen(false)}
+                     sx={{ color: "#666666" }}
+                  >
+                     <CloseIcon />
+                  </IconButton>
+               </DialogTitle>
+               <DialogContent>
+                  <SourcesExplorer
+                     sourceAndPaths={cell.newSources.map((source) => {
+                        const sourceInfo = JSON.parse(
+                           source,
+                        ) as Malloy.SourceInfo;
+                        return {
+                           sourceInfo: sourceInfo,
+                           modelPath: notebookPath,
+                        };
+                     })}
                   />
-                  <Tooltip title="Copy Embeddable Code">
-                     <IconButton
-                        sx={{ width: "24px", height: "24px" }}
-                        onClick={() => {
-                           navigator.clipboard.writeText(
-                              queryResultCodeSnippet,
-                           );
-                        }}
-                     >
-                        <ContentCopyIcon />
-                     </IconButton>
-                  </Tooltip>
-               </Stack>
-            </Collapse>
-            <Collapse in={codeExpanded} timeout="auto" unmountOnExit>
-               <style>{codeStyle}</style>
-               <Stack
+               </DialogContent>
+            </Dialog>
+
+            {/* Code Dialog */}
+            <Dialog
+               open={codeDialogOpen}
+               onClose={() => setCodeDialogOpen(false)}
+               maxWidth="lg"
+               fullWidth
+            >
+               <DialogTitle
                   sx={{
-                     mx: "8px",
-                     borderRadius: 0,
-                     flexDirection: "row",
+                     display: "flex",
                      justifyContent: "space-between",
+                     alignItems: "center",
                   }}
                >
-                  <div
+                  Malloy Code
+                  <IconButton
+                     onClick={() => setCodeDialogOpen(false)}
+                     sx={{ color: "#666666" }}
+                  >
+                     <CloseIcon />
+                  </IconButton>
+               </DialogTitle>
+               <DialogContent>
+                  <pre
                      className="code-display"
-                     style={{
-                        fontSize: "12px",
-                        width: "800px",
-                        border: "1px solid rgb(220,220,220)",
-                     }}
                      dangerouslySetInnerHTML={{
                         __html: highlightedMalloyCode,
                      }}
                   />
-               </Stack>
-            </Collapse>
-            <Collapse
-               in={sourcesExpanded}
-               timeout="auto"
-               unmountOnExit
-               sx={{ p: "5px" }}
+               </DialogContent>
+            </Dialog>
+
+            {/* Embedding Dialog */}
+            <Dialog
+               open={embeddingDialogOpen}
+               onClose={() => setEmbeddingDialogOpen(false)}
+               maxWidth="lg"
+               fullWidth
             >
-               <SourcesExplorer
-                  sourceAndPaths={cell.newSources.map((source) => {
-                     const sourceInfo = JSON.parse(source) as Malloy.SourceInfo;
-                     return {
-                        sourceInfo: sourceInfo,
-                        modelPath: notebookPath,
-                     };
-                  })}
-               />
-            </Collapse>
-            {cell.result && !sourcesExpanded && (
-               <>
+               <DialogTitle
+                  sx={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
+                  }}
+               >
+                  Embeddable Code
+                  <IconButton
+                     onClick={() => setEmbeddingDialogOpen(false)}
+                     sx={{ color: "#666666" }}
+                  >
+                     <CloseIcon />
+                  </IconButton>
+               </DialogTitle>
+               <DialogContent>
+                  <Stack
+                     sx={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                     }}
+                  >
+                     <Typography
+                        component="div"
+                        sx={{
+                           fontSize: "12px",
+                           fontFamily: "monospace",
+                           "& .line": { textWrap: "wrap" },
+                           flex: 1,
+                        }}
+                        dangerouslySetInnerHTML={{
+                           __html: highlightedEmbedCode,
+                        }}
+                     />
+                     <Tooltip title="Copy Embeddable Code">
+                        <IconButton
+                           sx={{
+                              width: "24px",
+                              height: "24px",
+                              marginLeft: "8px",
+                              color: "#666666",
+                           }}
+                           onClick={() => {
+                              navigator.clipboard.writeText(
+                                 queryResultCodeSnippet,
+                              );
+                           }}
+                        >
+                           <ContentCopyIcon />
+                        </IconButton>
+                     </Tooltip>
+                  </Stack>
+               </DialogContent>
+            </Dialog>
+
+            {/* Results Dialog */}
+            <Dialog
+               open={resultsDialogOpen}
+               onClose={() => setResultsDialogOpen(false)}
+               maxWidth={false}
+               fullWidth
+               sx={{
+                  "& .MuiDialog-paper": {
+                     width: "95vw",
+                     height: "95vh",
+                     maxWidth: "none",
+                  },
+               }}
+            >
+               <DialogTitle
+                  sx={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
+                  }}
+               >
+                  Results
+                  <IconButton
+                     onClick={() => setResultsDialogOpen(false)}
+                     sx={{ color: "#666666" }}
+                  >
+                     <CloseIcon />
+                  </IconButton>
+               </DialogTitle>
+               <DialogContent
+                  sx={{
+                     height: "calc(95vh - 120px)",
+                     overflow: "auto",
+                     padding: "0 16px",
+                  }}
+               >
                   <ResultContainer
                      result={cell.result}
-                     minHeight={300}
-                     maxHeight={700}
+                     minHeight={800}
+                     maxHeight={800}
+                     hideToggle={true}
                   />
-               </>
+               </DialogContent>
+            </Dialog>
+
+            {cell.result && (
+               <CleanMetricCard
+                  sx={{
+                     position: "relative",
+                  }}
+               >
+                  <Box
+                     sx={{
+                        paddingTop: "24px",
+                        "& *": {
+                           scrollbarWidth: "thin",
+                           scrollbarColor: "#c1c1c1 #f1f1f1",
+                           "&::-webkit-scrollbar": {
+                              width: "8px",
+                              height: "8px",
+                           },
+                           "&::-webkit-scrollbar-track": {
+                              background: "#f1f1f1",
+                              borderRadius: "4px",
+                           },
+                           "&::-webkit-scrollbar-thumb": {
+                              background: "#c1c1c1",
+                              borderRadius: "4px",
+                              "&:hover": {
+                                 background: "#a8a8a8",
+                              },
+                           },
+                        },
+                     }}
+                  >
+                     <ResultContainer
+                        result={cell.result}
+                        minHeight={300}
+                        maxHeight={1000}
+                        hideToggle={true}
+                     />
+                  </Box>
+
+                  {/* Fade effect at bottom to indicate more content */}
+                  <Box
+                     sx={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: "40px",
+                        background:
+                           "linear-gradient(transparent, rgba(255, 255, 255, 0.9))",
+                        pointerEvents: "none",
+                        zIndex: 1,
+                     }}
+                  />
+
+                  {/* Top right corner controls */}
+                  <Stack
+                     sx={{
+                        position: "absolute",
+                        top: "8px",
+                        right: "8px",
+                        flexDirection: "row",
+                        gap: "8px",
+                        alignItems: "center",
+                        zIndex: 2,
+                     }}
+                  >
+                     {!hideCodeCellIcon && (
+                        <IconButton
+                           sx={{
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                 backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
+                              width: "32px",
+                              height: "32px",
+                           }}
+                           onClick={(e) => {
+                              e.stopPropagation();
+                              setCodeDialogOpen(true);
+                           }}
+                        >
+                           <CodeIcon
+                              sx={{ fontSize: "18px", color: "#666666" }}
+                           />
+                        </IconButton>
+                     )}
+                     <IconButton
+                        sx={{
+                           backgroundColor: "rgba(255, 255, 255, 0.9)",
+                           "&:hover": {
+                              backgroundColor: "rgba(255, 255, 255, 1)",
+                           },
+                           width: "32px",
+                           height: "32px",
+                        }}
+                        onClick={() => setResultsDialogOpen(true)}
+                     >
+                        <SearchIcon
+                           sx={{ fontSize: "18px", color: "#666666" }}
+                        />
+                     </IconButton>
+                  </Stack>
+               </CleanMetricCard>
             )}
-         </StyledCard>
+         </CleanNotebookCell>
       ))
    );
 }

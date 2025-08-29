@@ -3,7 +3,6 @@ import {
    Dialog,
    DialogContent,
    DialogTitle,
-   Divider,
    Table,
    TableBody,
    TableCell,
@@ -17,7 +16,11 @@ import { Configuration, Database, DatabasesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { StyledCard, StyledCardContent } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 
 const databasesApi = new DatabasesApi(new Configuration());
@@ -62,12 +65,9 @@ export default function Databases() {
    };
    return (
       <>
-         <StyledCard variant="outlined" sx={{ width: "100%" }}>
-            <StyledCardContent>
-               <Typography variant="overline" fontWeight="bold">
-                  Embedded Databases
-               </Typography>
-               <Divider />
+         <PackageCard>
+            <PackageCardContent>
+               <PackageSectionTitle>Embedded Databases</PackageSectionTitle>
                <Box
                   sx={{
                      maxHeight: "200px",
@@ -115,8 +115,8 @@ export default function Databases() {
                      </Typography>
                   )}
                </Box>
-            </StyledCardContent>
-         </StyledCard>
+            </PackageCardContent>
+         </PackageCard>
 
          <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
             <DialogTitle>{selectedDatabase?.path}</DialogTitle>

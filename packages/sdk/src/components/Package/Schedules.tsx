@@ -1,6 +1,5 @@
 import {
    Box,
-   Divider,
    Paper,
    Table,
    TableBody,
@@ -8,10 +7,13 @@ import {
    TableContainer,
    TableHead,
    TableRow,
-   Typography,
 } from "@mui/material";
 import { Configuration, SchedulesApi } from "../../client";
-import { StyledCard, StyledCardContent } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -51,15 +53,11 @@ export default function Schedules() {
    }
 
    return (
-      <StyledCard variant="outlined" sx={{ padding: "10px", width: "100%" }}>
-         <StyledCardContent>
-            <Typography variant="overline" fontWeight="bold">
-               Scheduler
-            </Typography>
-            <Divider />
+      <PackageCard>
+         <PackageCardContent>
+            <PackageSectionTitle>Scheduler</PackageSectionTitle>
             <Box
                sx={{
-                  mt: "10px",
                   maxHeight: "200px",
                   overflowY: "auto",
                }}
@@ -104,7 +102,7 @@ export default function Schedules() {
                   </Table>
                </TableContainer>
             </Box>
-         </StyledCardContent>
-      </StyledCard>
+         </PackageCardContent>
+      </PackageCard>
    );
 }

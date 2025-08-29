@@ -1,9 +1,13 @@
-import { Box, Divider, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Configuration, ModelsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { StyledCard, StyledCardContent } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 
@@ -24,12 +28,9 @@ export default function Models({ navigate }: ModelsProps) {
    });
 
    return (
-      <StyledCard variant="outlined" sx={{ width: "100%" }}>
-         <StyledCardContent>
-            <Typography variant="overline" fontWeight="bold">
-               Semantic Models
-            </Typography>
-            <Divider />
+      <PackageCard>
+         <PackageCardContent>
+            <PackageSectionTitle>Semantic Models</PackageSectionTitle>
             <Box
                sx={{
                   maxHeight: "200px",
@@ -56,7 +57,7 @@ export default function Models({ navigate }: ModelsProps) {
                   <Typography variant="body2">No models found</Typography>
                )}
             </Box>
-         </StyledCardContent>
-      </StyledCard>
+         </PackageCardContent>
+      </PackageCard>
    );
 }

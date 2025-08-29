@@ -1,10 +1,14 @@
-import { Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import Markdown from "markdown-to-jsx";
 import { Configuration, ProjectsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { StyledCard } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { useProject } from "./Project";
 
 const projectsApi = new ProjectsApi(new Configuration());
@@ -21,14 +25,14 @@ export default function About() {
       <>
          {!isSuccess && !isError && <Loading text="Fetching About..." />}
          {isSuccess && data.data?.readme && (
-            <StyledCard variant="outlined" sx={{ p: 2 }}>
-               <Typography variant="overline" fontWeight="bold" sx={{ mb: 1 }}>
-                  Readme
-               </Typography>
-               <StyledCard sx={{ p: 1 }}>
-                  <Markdown>{data.data.readme}</Markdown>
-               </StyledCard>
-            </StyledCard>
+            <PackageCard>
+               <PackageCardContent>
+                  <PackageSectionTitle>Readme</PackageSectionTitle>
+                  <Box sx={{ mt: 1 }}>
+                     <Markdown>{data.data.readme}</Markdown>
+                  </Box>
+               </PackageCardContent>
+            </PackageCard>
          )}
          {isError && (
             <ApiErrorDisplay error={error} context={`${projectName} > About`} />
