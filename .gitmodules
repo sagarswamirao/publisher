@@ -1,4 +1,4 @@
 [submodule "packages/server/malloy-samples"]
 	path = packages/server/malloy-samples
-	url = https://github.com/pathwaysdata/malloy-samples
+	url = https://github.com/ms2data/malloy-samples
 	branch = main
