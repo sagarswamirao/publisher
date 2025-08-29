@@ -6,7 +6,12 @@ import Databases from "./Databases";
 import Models from "./Models";
 import Notebooks from "./Notebooks";
 import Schedules from "./Schedules";
-import { PackageContainer, PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageContainer,
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 
 const README_NOTEBOOK = "README.malloynb";
 
@@ -42,21 +47,19 @@ export default function Package({ navigate }: PackageProps) {
             <Grid size={{ xs: 12, md: 12 }}>
                <Schedules />
             </Grid>
-                     <Grid size={{ xs: 12, md: 12 }}>
-            <PackageCard>
-               <PackageCardContent>
-                  <PackageSectionTitle>
-                     README
-                  </PackageSectionTitle>
-                  <Box sx={{ mt: 1 }}>
-                     <Notebook
-                        notebookPath={README_NOTEBOOK}
-                        hideEmbeddingIcons={true}
-                     />
-                  </Box>
-               </PackageCardContent>
-            </PackageCard>
-         </Grid>
+            <Grid size={{ xs: 12, md: 12 }}>
+               <PackageCard>
+                  <PackageCardContent>
+                     <PackageSectionTitle>README</PackageSectionTitle>
+                     <Box sx={{ mt: 1 }}>
+                        <Notebook
+                           notebookPath={README_NOTEBOOK}
+                           hideEmbeddingIcons={true}
+                        />
+                     </Box>
+                  </PackageCardContent>
+               </PackageCard>
+            </Grid>
          </Grid>
       </PackageContainer>
    );

@@ -16,7 +16,11 @@ import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
@@ -86,9 +90,7 @@ export default function Connections() {
       <ProjectProvider projectName={projectName}>
          <PackageCard>
             <PackageCardContent>
-               <PackageSectionTitle>
-                  Database Connections
-               </PackageSectionTitle>
+               <PackageSectionTitle>Database Connections</PackageSectionTitle>
                <Box
                   sx={{
                      maxHeight: "200px",

@@ -11,7 +11,11 @@ import {
    Typography,
 } from "@mui/material";
 import { Configuration, SchedulesApi } from "../../client";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -53,9 +57,7 @@ export default function Schedules() {
    return (
       <PackageCard>
          <PackageCardContent>
-            <PackageSectionTitle>
-               Scheduler
-            </PackageSectionTitle>
+            <PackageSectionTitle>Scheduler</PackageSectionTitle>
             <Box
                sx={{
                   maxHeight: "200px",

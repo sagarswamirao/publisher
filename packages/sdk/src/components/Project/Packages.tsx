@@ -3,7 +3,11 @@ import { Configuration, PackagesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { useProject } from "./Project";
 
 const packagesApi = new PackagesApi(new Configuration());
@@ -40,8 +44,7 @@ export default function Packages({ navigate }: PackagesProps) {
                                  cursor: "pointer",
                                  transition: "all 0.2s ease-in-out",
                                  "&:hover": {
-                                    boxShadow:
-                                       "0 4px 12px rgba(0, 0, 0, 0.1)",
+                                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
                                     transform: "translateY(-2px)",
                                  },
                               }}

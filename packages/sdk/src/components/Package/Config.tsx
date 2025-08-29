@@ -11,7 +11,11 @@ import { Configuration, PackagesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 
 const packagesApi = new PackagesApi(new Configuration());
@@ -34,9 +38,7 @@ export default function Config() {
    return (
       <PackageCard>
          <PackageCardContent>
-            <PackageSectionTitle>
-               Package Config
-            </PackageSectionTitle>
+            <PackageSectionTitle>Package Config</PackageSectionTitle>
             <Box
                sx={{
                   maxHeight: "200px",

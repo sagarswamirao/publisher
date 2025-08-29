@@ -3,7 +3,11 @@ import { Configuration, NotebooksApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 
@@ -32,9 +36,7 @@ export default function Notebooks({ navigate }: NotebooksProps) {
    return (
       <PackageCard>
          <PackageCardContent>
-            <PackageSectionTitle>
-               Notebooks
-            </PackageSectionTitle>
+            <PackageSectionTitle>Notebooks</PackageSectionTitle>
             <Box
                sx={{
                   maxHeight: "200px",

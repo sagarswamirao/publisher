@@ -17,7 +17,11 @@ import { Configuration, Database, DatabasesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 
 const databasesApi = new DatabasesApi(new Configuration());
@@ -64,9 +68,7 @@ export default function Databases() {
       <>
          <PackageCard>
             <PackageCardContent>
-               <PackageSectionTitle>
-                  Embedded Databases
-               </PackageSectionTitle>
+               <PackageSectionTitle>Embedded Databases</PackageSectionTitle>
                <Box
                   sx={{
                      maxHeight: "200px",

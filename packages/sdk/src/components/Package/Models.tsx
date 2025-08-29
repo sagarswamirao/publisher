@@ -3,7 +3,11 @@ import { Configuration, ModelsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 
@@ -26,9 +30,7 @@ export default function Models({ navigate }: ModelsProps) {
    return (
       <PackageCard>
          <PackageCardContent>
-            <PackageSectionTitle>
-               Semantic Models
-            </PackageSectionTitle>
+            <PackageSectionTitle>Semantic Models</PackageSectionTitle>
             <Box
                sx={{
                   maxHeight: "200px",

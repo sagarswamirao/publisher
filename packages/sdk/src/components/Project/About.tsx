@@ -4,7 +4,11 @@ import { Configuration, ProjectsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { useProject } from "./Project";
 
 const projectsApi = new ProjectsApi(new Configuration());
@@ -23,9 +27,7 @@ export default function About() {
          {isSuccess && data.data?.readme && (
             <PackageCard>
                <PackageCardContent>
-                  <PackageSectionTitle>
-                     Readme
-                  </PackageSectionTitle>
+                  <PackageSectionTitle>Readme</PackageSectionTitle>
                   <Box sx={{ mt: 1 }}>
                      <Markdown>{data.data.readme}</Markdown>
                   </Box>

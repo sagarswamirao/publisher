@@ -25,11 +25,11 @@ import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { SourcesExplorer } from "../Model";
 import ResultContainer from "../RenderedResult/ResultContainer";
-import { 
-   CleanNotebookCell, 
-   CleanMetricCard, 
-   CleanCodeBlock, 
-   CleanActionBar 
+import {
+   CleanNotebookCell,
+   CleanMetricCard,
+   CleanCodeBlock,
+   CleanActionBar,
 } from "../styles";
 import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
@@ -58,13 +58,16 @@ export function NotebookCell({
    hideEmbeddingIcon,
 }: NotebookCellProps) {
    const [codeDialogOpen, setCodeDialogOpen] = React.useState<boolean>(false);
-   const [embeddingDialogOpen, setEmbeddingDialogOpen] = React.useState<boolean>(false);
-   const [resultsDialogOpen, setResultsDialogOpen] = React.useState<boolean>(false);
+   const [embeddingDialogOpen, setEmbeddingDialogOpen] =
+      React.useState<boolean>(false);
+   const [resultsDialogOpen, setResultsDialogOpen] =
+      React.useState<boolean>(false);
    const [highlightedMalloyCode, setHighlightedMalloyCode] =
       React.useState<string>();
    const [highlightedEmbedCode, setHighlightedEmbedCode] =
       React.useState<string>();
-   const [sourcesDialogOpen, setSourcesDialogOpen] = React.useState<boolean>(false);
+   const [sourcesDialogOpen, setSourcesDialogOpen] =
+      React.useState<boolean>(false);
    const { packageName, projectName } = usePackage();
    const queryResultCodeSnippet = createEmbeddedQueryResult({
       modelPath: notebookPath,
@@ -86,45 +89,53 @@ export function NotebookCell({
       });
    }, [queryResultCodeSnippet]);
 
-
-
    return (
       (cell.type === "markdown" && (
          <CleanNotebookCell>
-            <Box sx={{ 
-               "& h1, & h2, & h3, & h4, & h5, & h6": {
-                  fontWeight: "600",
-                  color: "#1a1a1a",
-                  marginBottom: "8px",
-                  marginTop: "16px",
-               },
-               "& h1": { fontSize: "28px" },
-               "& h2": { fontSize: "24px" },
-               "& h3": { fontSize: "20px" },
-               "& p": {
-                  color: "#333333",
-                  lineHeight: "1.7",
-                  marginBottom: "8px",
-                  fontSize: "16px",
-               },
-               "& ul, & ol": {
-                  color: "#333333",
-                  lineHeight: "1.7",
-                  marginBottom: "8px",
-                  fontSize: "16px",
-               },
-               "& li": {
-                  marginBottom: "4px",
-               }
-            }}>
+            <Box
+               sx={{
+                  "& h1, & h2, & h3, & h4, & h5, & h6": {
+                     fontWeight: "600",
+                     color: "#1a1a1a",
+                     marginBottom: "8px",
+                     marginTop: "16px",
+                  },
+                  "& h1": { fontSize: "28px" },
+                  "& h2": { fontSize: "24px" },
+                  "& h3": { fontSize: "20px" },
+                  "& p": {
+                     color: "#333333",
+                     lineHeight: "1.7",
+                     marginBottom: "8px",
+                     fontSize: "16px",
+                  },
+                  "& ul, & ol": {
+                     color: "#333333",
+                     lineHeight: "1.7",
+                     marginBottom: "8px",
+                     fontSize: "16px",
+                  },
+                  "& li": {
+                     marginBottom: "4px",
+                  },
+               }}
+            >
                <Markdown>{cell.text}</Markdown>
             </Box>
          </CleanNotebookCell>
       )) ||
       (cell.type === "code" && (
          <CleanNotebookCell>
-            {(!hideCodeCellIcon || (!hideEmbeddingIcon && cell.result) || (cell.newSources && cell.newSources.length > 0)) && (
-               <Stack sx={{ flexDirection: "row", gap: "8px", marginBottom: "16px" }}>
+            {(!hideCodeCellIcon ||
+               (!hideEmbeddingIcon && cell.result) ||
+               (cell.newSources && cell.newSources.length > 0)) && (
+               <Stack
+                  sx={{
+                     flexDirection: "row",
+                     gap: "8px",
+                     marginBottom: "16px",
+                  }}
+               >
                   {cell.newSources && cell.newSources.length > 0 && (
                      <Box
                         onClick={() => setSourcesDialogOpen(true)}
@@ -148,23 +159,24 @@ export function NotebookCell({
                            "&:hover": {
                               backgroundColor: "#e9ecef",
                               borderColor: "#dee2e6",
-                           }
+                           },
                         }}
                      >
                         <span
                            dangerouslySetInnerHTML={{
-                              __html: cell.text.length > 50 ? 
-                                 `${highlightedMalloyCode.substring(0, 50)}...` : 
-                                 highlightedMalloyCode
+                              __html:
+                                 cell.text.length > 50
+                                    ? `${highlightedMalloyCode.substring(0, 50)}...`
+                                    : highlightedMalloyCode,
                            }}
                         />
-                        <SearchIcon sx={{ fontSize: "14px", color: "#6c757d" }} />
+                        <SearchIcon
+                           sx={{ fontSize: "14px", color: "#6c757d" }}
+                        />
                      </Box>
                   )}
                </Stack>
             )}
-
-
 
             {/* Data Sources Dialog */}
             <Dialog
@@ -177,10 +189,16 @@ export function NotebookCell({
                      width: "95vw",
                      height: "95vh",
                      maxWidth: "none",
-                  }
+                  },
                }}
             >
-               <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+               <DialogTitle
+                  sx={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
+                  }}
+               >
                   Data Sources
                   <IconButton
                      onClick={() => setSourcesDialogOpen(false)}
@@ -192,7 +210,9 @@ export function NotebookCell({
                <DialogContent>
                   <SourcesExplorer
                      sourceAndPaths={cell.newSources.map((source) => {
-                        const sourceInfo = JSON.parse(source) as Malloy.SourceInfo;
+                        const sourceInfo = JSON.parse(
+                           source,
+                        ) as Malloy.SourceInfo;
                         return {
                            sourceInfo: sourceInfo,
                            modelPath: notebookPath,
@@ -209,7 +229,13 @@ export function NotebookCell({
                maxWidth="lg"
                fullWidth
             >
-               <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+               <DialogTitle
+                  sx={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
+                  }}
+               >
                   Malloy Code
                   <IconButton
                      onClick={() => setCodeDialogOpen(false)}
@@ -235,7 +261,13 @@ export function NotebookCell({
                maxWidth="lg"
                fullWidth
             >
-               <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+               <DialogTitle
+                  sx={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
+                  }}
+               >
                   Embeddable Code
                   <IconButton
                      onClick={() => setEmbeddingDialogOpen(false)}
@@ -266,8 +298,8 @@ export function NotebookCell({
                      />
                      <Tooltip title="Copy Embeddable Code">
                         <IconButton
-                           sx={{ 
-                              width: "24px", 
+                           sx={{
+                              width: "24px",
                               height: "24px",
                               marginLeft: "8px",
                               color: "#666666",
@@ -296,10 +328,16 @@ export function NotebookCell({
                      width: "95vw",
                      height: "95vh",
                      maxWidth: "none",
-                  }
+                  },
                }}
             >
-               <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+               <DialogTitle
+                  sx={{
+                     display: "flex",
+                     justifyContent: "space-between",
+                     alignItems: "center",
+                  }}
+               >
                   Results
                   <IconButton
                      onClick={() => setResultsDialogOpen(false)}
@@ -308,7 +346,13 @@ export function NotebookCell({
                      <CloseIcon />
                   </IconButton>
                </DialogTitle>
-               <DialogContent sx={{ height: "calc(95vh - 120px)", overflow: "auto", padding: "0 16px" }}>
+               <DialogContent
+                  sx={{
+                     height: "calc(95vh - 120px)",
+                     overflow: "auto",
+                     padding: "0 16px",
+                  }}
+               >
                   <ResultContainer
                      result={cell.result}
                      minHeight={800}
@@ -318,42 +362,44 @@ export function NotebookCell({
                </DialogContent>
             </Dialog>
 
-                        {cell.result && (
+            {cell.result && (
                <CleanMetricCard
                   sx={{
                      position: "relative",
                   }}
                >
-                  <Box sx={{ 
-                     paddingTop: "24px",
-                     "& *": {
-                        scrollbarWidth: "thin",
-                        scrollbarColor: "#c1c1c1 #f1f1f1",
-                        "&::-webkit-scrollbar": {
-                           width: "8px",
-                           height: "8px",
-                        },
-                        "&::-webkit-scrollbar-track": {
-                           background: "#f1f1f1",
-                           borderRadius: "4px",
-                        },
-                        "&::-webkit-scrollbar-thumb": {
-                           background: "#c1c1c1",
-                           borderRadius: "4px",
-                           "&:hover": {
-                              background: "#a8a8a8",
+                  <Box
+                     sx={{
+                        paddingTop: "24px",
+                        "& *": {
+                           scrollbarWidth: "thin",
+                           scrollbarColor: "#c1c1c1 #f1f1f1",
+                           "&::-webkit-scrollbar": {
+                              width: "8px",
+                              height: "8px",
+                           },
+                           "&::-webkit-scrollbar-track": {
+                              background: "#f1f1f1",
+                              borderRadius: "4px",
+                           },
+                           "&::-webkit-scrollbar-thumb": {
+                              background: "#c1c1c1",
+                              borderRadius: "4px",
+                              "&:hover": {
+                                 background: "#a8a8a8",
+                              },
                            },
                         },
-                     }
-                  }}>
-                                       <ResultContainer
-                     result={cell.result}
-                     minHeight={300}
-                     maxHeight={1000}
-                     hideToggle={true}
-                  />
+                     }}
+                  >
+                     <ResultContainer
+                        result={cell.result}
+                        minHeight={300}
+                        maxHeight={1000}
+                        hideToggle={true}
+                     />
                   </Box>
-                  
+
                   {/* Fade effect at bottom to indicate more content */}
                   <Box
                      sx={{
@@ -362,15 +408,16 @@ export function NotebookCell({
                         left: 0,
                         right: 0,
                         height: "40px",
-                        background: "linear-gradient(transparent, rgba(255, 255, 255, 0.9))",
+                        background:
+                           "linear-gradient(transparent, rgba(255, 255, 255, 0.9))",
                         pointerEvents: "none",
                         zIndex: 1,
                      }}
                   />
-                  
+
                   {/* Top right corner controls */}
-                  <Stack 
-                     sx={{ 
+                  <Stack
+                     sx={{
                         position: "absolute",
                         top: "8px",
                         right: "8px",
@@ -401,7 +448,7 @@ export function NotebookCell({
                               },
                               "& .MuiChip-label": {
                                  padding: "0 8px",
-                              }
+                              },
                            }}
                         />
                      )}
@@ -416,7 +463,9 @@ export function NotebookCell({
                         }}
                         onClick={() => setResultsDialogOpen(true)}
                      >
-                        <SearchIcon sx={{ fontSize: "18px", color: "#666666" }} />
+                        <SearchIcon
+                           sx={{ fontSize: "18px", color: "#666666" }}
+                        />
                      </IconButton>
                   </Stack>
                </CleanMetricCard>
