@@ -131,49 +131,63 @@ export function NotebookCell({
                (cell.newSources && cell.newSources.length > 0)) && (
                <Stack
                   sx={{
-                     flexDirection: "row",
+                     flexDirection: "column",
                      gap: "8px",
                      marginBottom: "16px",
                   }}
                >
                   {cell.newSources && cell.newSources.length > 0 && (
-                     <Box
-                        onClick={() => setSourcesDialogOpen(true)}
+                                          <CleanMetricCard
                         sx={{
-                           display: "inline-flex",
-                           alignItems: "center",
-                           padding: "4px 8px",
-                           fontSize: "12px",
-                           height: "24px",
-                           backgroundColor: "#f8f9fa",
-                           border: "1px solid #e9ecef",
-                           color: "#495057",
-                           borderRadius: "4px",
-                           cursor: "pointer",
-                           fontFamily: "monospace",
-                           whiteSpace: "nowrap",
-                           overflow: "hidden",
-                           textOverflow: "ellipsis",
-                           maxWidth: "300px",
-                           gap: "8px",
-                           "&:hover": {
-                              backgroundColor: "#e9ecef",
-                              borderColor: "#dee2e6",
-                           },
+                           position: "relative",
+                           padding: "0",
                         }}
                      >
-                        <span
-                           dangerouslySetInnerHTML={{
-                              __html:
-                                 cell.text.length > 50
-                                    ? `${highlightedMalloyCode.substring(0, 50)}...`
-                                    : highlightedMalloyCode,
+                        <Box
+                           sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              paddingLeft: "24px",
+                              paddingRight: "8px",
                            }}
-                        />
-                        <SearchIcon
-                           sx={{ fontSize: "14px", color: "#6c757d" }}
-                        />
-                     </Box>
+                        >
+                           <span
+                              dangerouslySetInnerHTML={{
+                                 __html:
+                                    cell.text.length > 50
+                                       ? `${highlightedMalloyCode.substring(0, 50)}...`
+                                       : highlightedMalloyCode,
+                              }}
+                              style={{ 
+                                 fontFamily: "monospace",
+                                 fontSize: "14px",
+                                 color: "#666666",
+                                 flex: 1,
+                                 whiteSpace: "nowrap",
+                                 overflow: "hidden",
+                                 textOverflow: "ellipsis",
+                                 marginRight: "8px",
+                              }}
+                           />
+                           <IconButton
+                              sx={{
+                                 backgroundColor: "rgba(255, 255, 255, 0.9)",
+                                 "&:hover": {
+                                    backgroundColor: "rgba(255, 255, 255, 1)",
+                                 },
+                                 width: "32px",
+                                 height: "32px",
+                                 flexShrink: 0,
+                              }}
+                              onClick={() => setSourcesDialogOpen(true)}
+                           >
+                              <SearchIcon
+                                 sx={{ fontSize: "18px", color: "#666666" }}
+                              />
+                           </IconButton>
+                        </Box>
+                     </CleanMetricCard>
                   )}
                </Stack>
             )}
@@ -428,29 +442,24 @@ export function NotebookCell({
                      }}
                   >
                      {!hideCodeCellIcon && (
-                        <Chip
-                           label="Code"
-                           size="small"
-                           variant="outlined"
+                        <IconButton
+                           sx={{
+                              backgroundColor: "rgba(255, 255, 255, 0.9)",
+                              "&:hover": {
+                                 backgroundColor: "rgba(255, 255, 255, 1)",
+                              },
+                              width: "32px",
+                              height: "32px",
+                           }}
                            onClick={(e) => {
                               e.stopPropagation();
                               setCodeDialogOpen(true);
                            }}
-                           sx={{
-                              fontSize: "11px",
-                              height: "24px",
-                              backgroundColor: "#f8f9fa",
-                              border: "1px solid #e9ecef",
-                              color: "#495057",
-                              "&:hover": {
-                                 backgroundColor: "#e9ecef",
-                                 borderColor: "#dee2e6",
-                              },
-                              "& .MuiChip-label": {
-                                 padding: "0 8px",
-                              },
-                           }}
-                        />
+                        >
+                           <CodeIcon
+                              sx={{ fontSize: "18px", color: "#666666" }}
+                           />
+                        </IconButton>
                      )}
                      <IconButton
                         sx={{

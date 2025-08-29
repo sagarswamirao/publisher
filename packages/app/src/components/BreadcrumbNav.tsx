@@ -34,7 +34,7 @@ export default function BreadcrumbNav() {
                      color: "primary.main",
                      fontWeight: 500,
                      height: "32px",
-                     fontSize: "0.875rem",
+                     fontSize: "1rem",
                      cursor: "pointer",
                      "&:hover": {
                         backgroundColor: "primary.100",
@@ -58,7 +58,7 @@ export default function BreadcrumbNav() {
                      color: "primary.main",
                      fontWeight: 500,
                      height: "32px",
-                     fontSize: "0.875rem",
+                     fontSize: "1rem",
                      cursor: "pointer",
                      "&:hover": {
                         backgroundColor: "secondary.100",
@@ -82,7 +82,7 @@ export default function BreadcrumbNav() {
                      color: "primary.main",
                      fontWeight: 500,
                      height: "32px",
-                     fontSize: "0.875rem",
+                     fontSize: "1rem",
                      cursor: "pointer",
                      "&:hover": {
                         backgroundColor: "grey.200",

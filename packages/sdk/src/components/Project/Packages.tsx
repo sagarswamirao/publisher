@@ -44,8 +44,8 @@ export default function Packages({ navigate }: PackagesProps) {
                                  cursor: "pointer",
                                  transition: "all 0.2s ease-in-out",
                                  "&:hover": {
-                                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+                                    transform: "translateY(-1px)",
                                  },
                               }}
                               onClick={(event) => navigate(p.name, event)}
@@ -53,11 +53,10 @@ export default function Packages({ navigate }: PackagesProps) {
                               <PackageCardContent>
                                  <Typography
                                     variant="overline"
-                                    color="primary.main"
                                     sx={{
                                        fontSize: "12px",
                                        fontWeight: "600",
-                                       color: "#495057",
+                                       color: "primary.main",
                                        textTransform: "uppercase",
                                        letterSpacing: "0.5px",
                                        marginBottom: "8px",
