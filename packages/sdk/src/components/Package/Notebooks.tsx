@@ -3,7 +3,7 @@ import { Configuration, NotebooksApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { StyledCard, StyledCardContent } from "../styles";
+import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { usePackage } from "./PackageProvider";
 
@@ -30,12 +30,11 @@ export default function Notebooks({ navigate }: NotebooksProps) {
    });
 
    return (
-      <StyledCard variant="outlined" sx={{ width: "100%" }}>
-         <StyledCardContent>
-            <Typography variant="overline" fontWeight="bold">
+      <PackageCard>
+         <PackageCardContent>
+            <PackageSectionTitle>
                Notebooks
-            </Typography>
-            <Divider />
+            </PackageSectionTitle>
             <Box
                sx={{
                   maxHeight: "200px",
@@ -64,7 +63,7 @@ export default function Notebooks({ navigate }: NotebooksProps) {
                   <Typography variant="body2">No notebooks found</Typography>
                )}
             </Box>
-         </StyledCardContent>
-      </StyledCard>
+         </PackageCardContent>
+      </PackageCard>
    );
 }

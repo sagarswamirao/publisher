@@ -16,6 +16,7 @@ interface ResultContainerProps {
    result: string | undefined;
    minHeight: number;
    maxHeight: number;
+   hideToggle?: boolean;
 }
 
 // ResultContainer is a component that renders a result, with a toggle button to expand/collapse the result.
@@ -26,6 +27,7 @@ export default function ResultContainer({
    result,
    minHeight,
    maxHeight,
+   hideToggle = false,
 }: ResultContainerProps) {
    const [isExpanded, setIsExpanded] = useState(false);
    const [contentHeight, setContentHeight] = useState<number>(0);
@@ -56,6 +58,10 @@ export default function ResultContainer({
 
    // Determine if toggle should be shown based on content height vs container height
    useEffect(() => {
+      if (hideToggle) {
+         setShouldShowToggle(false);
+         return;
+      }
       if (isFillElement) {
          setShouldShowToggle(true);
          return;
@@ -74,7 +80,7 @@ export default function ResultContainer({
          setExplicitHeight(contentHeight + 20);
       }
       setShouldShowToggle(exceedsHeight);
-   }, [contentHeight, isFillElement, minHeight]);
+   }, [contentHeight, isFillElement, minHeight, hideToggle]);
 
    if (!result) {
       return null;
@@ -112,10 +118,27 @@ export default function ResultContainer({
                ref={contentRef}
                sx={{
                   flex: 1,
-                  overflow: isExpanded ? "auto" : "hidden",
+                  overflow: "scroll",
                   p: 0,
                   // Adjust bottom padding when toggle is shown to prevent content overlap
                   pb: shouldShowToggle ? "40px" : 1,
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#c1c1c1 #f1f1f1",
+                  "&::-webkit-scrollbar": {
+                     width: "8px",
+                     height: "8px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                     background: "#f1f1f1",
+                     borderRadius: "4px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                     background: "#c1c1c1",
+                     borderRadius: "4px",
+                     "&:hover": {
+                        background: "#a8a8a8",
+                     },
+                  },
                }}
             >
                {(result && (

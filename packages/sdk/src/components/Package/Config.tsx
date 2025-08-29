@@ -11,7 +11,7 @@ import { Configuration, PackagesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { StyledCard, StyledCardContent } from "../styles";
+import { PackageCard, PackageCardContent, PackageSectionTitle } from "../styles";
 import { usePackage } from "./PackageProvider";
 
 const packagesApi = new PackagesApi(new Configuration());
@@ -32,12 +32,11 @@ export default function Config() {
    });
 
    return (
-      <StyledCard variant="outlined" sx={{ width: "100%" }}>
-         <StyledCardContent>
-            <Typography variant="overline" fontWeight="bold">
+      <PackageCard>
+         <PackageCardContent>
+            <PackageSectionTitle>
                Package Config
-            </Typography>
-            <Divider />
+            </PackageSectionTitle>
             <Box
                sx={{
                   maxHeight: "200px",
@@ -91,7 +90,7 @@ export default function Config() {
                   )}
                </List>
             </Box>
-         </StyledCardContent>
-      </StyledCard>
+         </PackageCardContent>
+      </PackageCard>
    );
 }

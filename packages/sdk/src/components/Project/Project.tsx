@@ -2,6 +2,7 @@ import { Grid } from "@mui/material";
 import { createContext, ReactNode, useContext } from "react";
 import About from "./About";
 import Packages from "./Packages";
+import { PackageContainer } from "../styles";
 
 export interface ProjectContextProps {
    projectName: string;
@@ -41,13 +42,15 @@ interface ProjectProps {
 
 export default function Project({ navigate }: ProjectProps) {
    return (
-      <Grid container spacing={2} columns={12}>
-         <Grid size={{ xs: 12, md: 12 }}>
-            <Packages navigate={navigate} />
+      <PackageContainer>
+         <Grid container spacing={3} columns={12}>
+            <Grid size={{ xs: 12, md: 12 }}>
+               <Packages navigate={navigate} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 12 }}>
+               <About />
+            </Grid>
          </Grid>
-         <Grid size={{ xs: 12, md: 12 }}>
-            <About />
-         </Grid>
-      </Grid>
+      </PackageContainer>
    );
 }
