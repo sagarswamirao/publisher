@@ -3,11 +3,7 @@ import { Box, Stack, Typography, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { ModelCell } from "./ModelCell";
-import {
-   QueryExplorerResult,
-   SourceExplorerComponent,
-   SourcesExplorer,
-} from "./SourcesExplorer";
+import { QueryExplorerResult, SourcesExplorer } from "./SourcesExplorer";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useModelData } from "./useModelData";

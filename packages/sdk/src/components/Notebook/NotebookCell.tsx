@@ -1,4 +1,3 @@
-import * as Malloy from "@malloydata/malloy-interfaces";
 import CodeIcon from "@mui/icons-material/Code";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";

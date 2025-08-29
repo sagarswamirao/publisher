@@ -1,15 +1,11 @@
 import * as Malloy from "@malloydata/malloy-interfaces";
-import { Button } from "@mui/material";
 import { Box, Stack } from "@mui/system";
 import {
-   StyledCard,
-   StyledCardContent,
    StyledCardMedia,
    StyledExplorerContent,
    StyledExplorerPage,
 } from "../styles";
 
-import { styled } from "@mui/material/styles";
 import React, { useState, useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
