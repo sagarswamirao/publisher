@@ -617,7 +617,7 @@ const malloySQLTMGrammar = {
    },
 };
 
-const THEME = "catppuccin-latte";
+const THEME = "github-light";
 const HIGHLIGHTER = createHighlighter({
    themes: [THEME],
    langs: [

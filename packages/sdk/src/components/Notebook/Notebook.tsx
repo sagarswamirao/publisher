@@ -14,18 +14,10 @@ const notebooksApi = new NotebooksApi(new Configuration());
 interface NotebookProps {
    notebookPath: string;
    versionId?: string;
-   expandResults?: boolean;
-   hideResultIcons?: boolean;
-   expandEmbeddings?: boolean;
-   hideEmbeddingIcons?: boolean;
 }
 
 // Requires PackageProvider
-export default function Notebook({
-   notebookPath,
-   hideResultIcons,
-   hideEmbeddingIcons,
-}: NotebookProps) {
+export default function Notebook({ notebookPath }: NotebookProps) {
    const { projectName, packageName, versionId } = usePackage();
 
    const {
@@ -59,8 +51,6 @@ export default function Notebook({
                      <NotebookCell
                         cell={cell}
                         notebookPath={notebookPath}
-                        hideCodeCellIcon={hideResultIcons}
-                        hideEmbeddingIcon={hideEmbeddingIcons}
                         key={index}
                      />
                   ))}

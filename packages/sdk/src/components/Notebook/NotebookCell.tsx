@@ -1,4 +1,3 @@
-import * as Malloy from "@malloydata/malloy-interfaces";
 import CodeIcon from "@mui/icons-material/Code";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -17,11 +16,14 @@ import Markdown from "markdown-to-jsx";
 import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
-import { SourcesExplorer } from "../Model";
+import { ModelExplorer } from "../Model";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { CleanNotebookCell, CleanMetricCard } from "../styles";
 import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
+
+// Regex to extract model path from import statements like: import {flights} from 'flights.malloy'
+const IMPORT_REGEX = /import\s*\{[^}]*\}\s*from\s*['"`]([^'"`]+)['"`]/;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
@@ -50,6 +52,12 @@ export function NotebookCell({
    const [sourcesDialogOpen, setSourcesDialogOpen] =
       React.useState<boolean>(false);
    const { packageName, projectName } = usePackage();
+
+   // Extract model path from import statement in cell text
+   const importMatch = cell.text.match(IMPORT_REGEX);
+   const modelPath = importMatch ? importMatch[1] : null;
+   const hasValidImport = !!importMatch;
+
    const queryResultCodeSnippet = createEmbeddedQueryResult({
       modelPath: notebookPath,
       query: cell.text,
@@ -117,59 +125,61 @@ export function NotebookCell({
                      marginBottom: "16px",
                   }}
                >
-                  {cell.newSources && cell.newSources.length > 0 && (
-                     <CleanMetricCard
-                        sx={{
-                           position: "relative",
-                           padding: "0",
-                        }}
-                     >
-                        <Box
+                  {cell.newSources &&
+                     cell.newSources.length > 0 &&
+                     hasValidImport && (
+                        <CleanMetricCard
                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              paddingLeft: "24px",
-                              paddingRight: "8px",
+                              position: "relative",
+                              padding: "0",
                            }}
                         >
-                           <span
-                              dangerouslySetInnerHTML={{
-                                 __html:
-                                    cell.text.length > 50
-                                       ? `${highlightedMalloyCode.substring(0, 50)}...`
-                                       : highlightedMalloyCode,
-                              }}
-                              style={{
-                                 fontFamily: "monospace",
-                                 fontSize: "14px",
-                                 color: "#666666",
-                                 flex: 1,
-                                 whiteSpace: "nowrap",
-                                 overflow: "hidden",
-                                 textOverflow: "ellipsis",
-                                 marginRight: "8px",
-                              }}
-                           />
-                           <IconButton
+                           <Box
                               sx={{
-                                 backgroundColor: "rgba(255, 255, 255, 0.9)",
-                                 "&:hover": {
-                                    backgroundColor: "rgba(255, 255, 255, 1)",
-                                 },
-                                 width: "32px",
-                                 height: "32px",
-                                 flexShrink: 0,
+                                 display: "flex",
+                                 alignItems: "center",
+                                 justifyContent: "space-between",
+                                 paddingLeft: "24px",
+                                 paddingRight: "8px",
                               }}
-                              onClick={() => setSourcesDialogOpen(true)}
                            >
-                              <SearchIcon
-                                 sx={{ fontSize: "18px", color: "#666666" }}
+                              <span
+                                 dangerouslySetInnerHTML={{
+                                    __html:
+                                       cell.text.length > 50
+                                          ? `${highlightedMalloyCode.substring(0, 50)}...`
+                                          : highlightedMalloyCode,
+                                 }}
+                                 style={{
+                                    fontFamily: "monospace",
+                                    fontSize: "14px",
+                                    flex: 1,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    marginRight: "8px",
+                                 }}
                               />
-                           </IconButton>
-                        </Box>
-                     </CleanMetricCard>
-                  )}
+                              <IconButton
+                                 sx={{
+                                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                                    "&:hover": {
+                                       backgroundColor:
+                                          "rgba(255, 255, 255, 1)",
+                                    },
+                                    width: "32px",
+                                    height: "32px",
+                                    flexShrink: 0,
+                                 }}
+                                 onClick={() => setSourcesDialogOpen(true)}
+                              >
+                                 <SearchIcon
+                                    sx={{ fontSize: "18px", color: "#666666" }}
+                                 />
+                              </IconButton>
+                           </Box>
+                        </CleanMetricCard>
+                     )}
                </Stack>
             )}
 
@@ -203,17 +213,11 @@ export function NotebookCell({
                   </IconButton>
                </DialogTitle>
                <DialogContent>
-                  <SourcesExplorer
-                     sourceAndPaths={cell.newSources.map((source) => {
-                        const sourceInfo = JSON.parse(
-                           source,
-                        ) as Malloy.SourceInfo;
-                        return {
-                           sourceInfo: sourceInfo,
-                           modelPath: notebookPath,
-                        };
-                     })}
-                  />
+                  {hasValidImport ? (
+                     <ModelExplorer modelPath={modelPath} />
+                  ) : (
+                     <div>No valid import statement found in cell</div>
+                  )}
                </DialogContent>
             </Dialog>
 
@@ -366,32 +370,12 @@ export function NotebookCell({
                   <Box
                      sx={{
                         paddingTop: "24px",
-                        "& *": {
-                           scrollbarWidth: "thin",
-                           scrollbarColor: "#c1c1c1 #f1f1f1",
-                           "&::-webkit-scrollbar": {
-                              width: "8px",
-                              height: "8px",
-                           },
-                           "&::-webkit-scrollbar-track": {
-                              background: "#f1f1f1",
-                              borderRadius: "4px",
-                           },
-                           "&::-webkit-scrollbar-thumb": {
-                              background: "#c1c1c1",
-                              borderRadius: "4px",
-                              "&:hover": {
-                                 background: "#a8a8a8",
-                              },
-                           },
-                        },
                      }}
                   >
                      <ResultContainer
                         result={cell.result}
                         minHeight={300}
                         maxHeight={1000}
-                        hideToggle={true}
                      />
                   </Box>
 

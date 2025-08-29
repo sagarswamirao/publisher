@@ -22,7 +22,7 @@ export function ModelPage() {
             projectName={params.projectName}
             packageName={params.packageName}
          >
-            <Model modelPath={modelPath} hideEmbeddingIcons={true} />
+            <Model modelPath={modelPath} />
          </PackageProvider>
       );
    } else if (modelPath?.endsWith(".malloynb")) {
@@ -31,11 +31,7 @@ export function ModelPage() {
             projectName={params.projectName}
             packageName={params.packageName}
          >
-            <Notebook
-               notebookPath={modelPath}
-               hideEmbeddingIcons={true}
-               expandResults={false}
-            />
+            <Notebook notebookPath={modelPath} />
          </PackageProvider>
       );
    } else {

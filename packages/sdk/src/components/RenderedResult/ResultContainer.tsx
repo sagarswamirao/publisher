@@ -122,23 +122,6 @@ export default function ResultContainer({
                   p: 0,
                   // Adjust bottom padding when toggle is shown to prevent content overlap
                   pb: shouldShowToggle ? "40px" : 1,
-                  scrollbarWidth: "thin",
-                  scrollbarColor: "#c1c1c1 #f1f1f1",
-                  "&::-webkit-scrollbar": {
-                     width: "8px",
-                     height: "8px",
-                  },
-                  "&::-webkit-scrollbar-track": {
-                     background: "#f1f1f1",
-                     borderRadius: "4px",
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                     background: "#c1c1c1",
-                     borderRadius: "4px",
-                     "&:hover": {
-                        background: "#a8a8a8",
-                     },
-                  },
                }}
             >
                {(result && (

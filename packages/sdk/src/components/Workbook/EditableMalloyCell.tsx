@@ -19,14 +19,20 @@ export function EditableMalloyCell({
       query: cell.value,
       malloyResult: cell.result ? JSON.parse(cell.result) : undefined,
       malloyQuery: cell.queryInfo ? JSON.parse(cell.queryInfo) : undefined,
-      sourceName: cell.sourceName,
-      modelPath: cell.modelPath,
    };
+
+   // Find the selected source index based on the cell's source name
+   const selectedSourceIndex = sourceAndPaths.findIndex(
+      (sourceAndPath) => sourceAndPath.sourceInfo.name === cell.sourceName,
+   );
+
    return (
       <SourcesExplorer
          sourceAndPaths={sourceAndPaths}
+         selectedSourceIndex={
+            selectedSourceIndex >= 0 ? selectedSourceIndex : 0
+         }
          existingQuery={query}
-         existingSourceName={cell.sourceName}
          onQueryChange={onQueryChange}
          onSourceChange={onSourceChange}
       />
