@@ -47,7 +47,7 @@ export default function Model({ modelPath, versionId, onChange }: ModelProps) {
    };
    
    return (
-      <Box sx={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}>
+      <Box sx={{ position: "relative", maxWidth: "1200px", margin: "0 auto", paddingTop: "24px" }}>
          <ModelExplorer
             modelPath={modelPath}
             versionId={versionId}
@@ -61,7 +61,7 @@ export default function Model({ modelPath, versionId, onChange }: ModelProps) {
          <IconButton
             sx={{
                position: "absolute",
-               top: "8px",
+               top: "32px",
                right: "8px",
                backgroundColor: "rgba(255, 255, 255, 0.9)",
                "&:hover": {

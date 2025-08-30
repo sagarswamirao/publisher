@@ -24,7 +24,7 @@ import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
 
 // Regex to extract model path from import statements like: import {flights} from 'flights.malloy'
-const IMPORT_REGEX = /import\s*\{[^}]*\}\s*from\s*['"`]([^'"`]+)['"`]/;
+const IMPORT_REGEX = /import\s*(?:\{[^}]*\}\s*from\s*)?['"`]([^'"`]+)['"`]/;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
@@ -216,12 +216,29 @@ export function NotebookCell({
                   </IconButton>
                </DialogTitle>
                <DialogContent>
-                  <pre
-                     className="code-display"
-                     dangerouslySetInnerHTML={{
-                        __html: highlightedMalloyCode,
+                  <Box
+                     sx={{
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "8px",
+                        padding: "16px",
+                        fontFamily: "monospace",
+                        fontSize: "14px",
+                        lineHeight: "1.5",
+                        overflow: "auto",
+                        maxHeight: "70vh",
+                        backgroundColor: "#ffffff",
                      }}
-                  />
+                  >
+                     <pre
+                        className="code-display"
+                        style={{
+                           margin: 0,
+                        }}
+                        dangerouslySetInnerHTML={{
+                           __html: highlightedMalloyCode,
+                        }}
+                      />
+                  </Box>
                </DialogContent>
             </Dialog>
 

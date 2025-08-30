@@ -10,7 +10,9 @@ import {
    TableHead,
    TableRow,
    Typography,
+   IconButton,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import React from "react";
 import { Configuration, Database, DatabasesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -84,25 +86,66 @@ export default function Databases() {
                      />
                   )}
                   {isSuccess && data.data.length > 0 && (
-                     <Table size="small">
-                        <TableHead>
-                           <TableRow>
-                              <TableCell>Name</TableCell>
-                              <TableCell align="right">Rows</TableCell>
-                           </TableRow>
-                        </TableHead>
+                     <Table 
+                        size="small"
+                        sx={{
+                           borderCollapse: "collapse",
+                           "& .MuiTableCell-root": {
+                              borderBottom: "1px solid #e0e0e0",
+                           },
+                           "& .MuiTableRow-root:last-child .MuiTableCell-root": {
+                              borderBottom: "none",
+                           },
+                        }}
+                     >
                         <TableBody>
+                           <TableRow>
+                              <TableCell>
+                                 <Typography
+                                    variant="body2"
+                                    fontWeight="500"
+                                    color="text.secondary"
+                                 >
+                                    Name
+                                 </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                 <Typography
+                                    variant="body2"
+                                    fontWeight="500"
+                                    color="text.secondary"
+                                 >
+                                    Rows
+                                 </Typography>
+                              </TableCell>
+                           </TableRow>
                            {data.data.map((database) => (
                               <TableRow
                                  key={database.path}
                                  onClick={() => handleOpen(database)}
-                                 sx={{ cursor: "pointer" }}
+                                 sx={{
+                                    cursor: "pointer",
+                                    "&:hover": {
+                                       backgroundColor: "action.hover",
+                                    },
+                                 }}
                               >
                                  <TableCell component="th" scope="row">
-                                    {database.path}
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                       <Typography variant="body2">{database.path}</Typography>
+                                       <SearchIcon
+                                          sx={{
+                                             fontSize: "1rem",
+                                             color: "action.active",
+                                             opacity: 0.7,
+                                          }}
+                                       />
+                                    </Box>
                                  </TableCell>
                                  <TableCell align="right">
-                                    {formatRowSize(database.info.rowCount)}
+                                    <Typography variant="body2">
+                                       {formatRowSize(database.info.rowCount)}
+                                    </Typography>
                                  </TableCell>
                               </TableRow>
                            ))}
@@ -119,7 +162,26 @@ export default function Databases() {
          </PackageCard>
 
          <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-            <DialogTitle>{selectedDatabase?.path}</DialogTitle>
+            <DialogTitle>
+               {selectedDatabase?.path}
+               <IconButton
+                  aria-label="close"
+                  onClick={handleClose}
+                  sx={{ position: "absolute", right: 8, top: 8 }}
+               >
+                  <Box
+                     sx={{
+                        width: 24,
+                        height: 24,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                     }}
+                  >
+                     X
+                  </Box>
+               </IconButton>
+            </DialogTitle>
             <DialogContent>
                {selectedDatabase?.info?.columns && (
                   <TableContainer>
