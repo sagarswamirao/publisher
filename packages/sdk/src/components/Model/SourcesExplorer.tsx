@@ -59,7 +59,7 @@ export function SourcesExplorer({
          <Stack spacing={2} component="section">
             <SourceExplorerComponent
                sourceAndPath={sourceAndPaths[selectedSourceIndex]}
-               existingQuery={query}
+               existingQuery={existingQuery}
                onChange={(query) => {
                   setQuery(query);
                   if (onQueryChange) {
@@ -105,6 +105,13 @@ function SourceExplorerComponentInner({
    const [query, setQuery] = React.useState<QueryExplorerResult>(
       existingQuery || emptyQueryExplorerResult(),
    );
+
+   // Update query when existingQuery changes
+   React.useEffect(() => {
+      if (existingQuery) {
+         setQuery(existingQuery);
+      }
+   }, [existingQuery]);
    const [focusedNestViewPath, setFocusedNestViewPath] = React.useState<
       string[]
    >([]);

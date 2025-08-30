@@ -45,6 +45,12 @@ export interface ModelExplorerProps {
    hideResultIcons?: boolean;
    /** Callback when the explorer changes (e.g. when a query is selected). */
    onChange?: (query: QueryExplorerResult) => void;
+   /** Existing query to initialize the explorer with */
+   existingQuery?: QueryExplorerResult;
+   /** Initial selected source index */
+   initialSelectedSourceIndex?: number;
+   /** Callback when source selection changes */
+   onSourceChange?: (index: number) => void;
 }
 
 /**
@@ -59,13 +65,23 @@ export function ModelExplorer({
    expandResults,
    hideResultIcons,
    onChange,
+   existingQuery,
+   initialSelectedSourceIndex = 0,
+   onSourceChange,
 }: ModelExplorerProps) {
-   const [selectedTab, setSelectedTab] = React.useState(0);
+   const [selectedTab, setSelectedTab] = React.useState(initialSelectedSourceIndex);
+
+   // Update selectedTab when initialSelectedSourceIndex changes
+   React.useEffect(() => {
+      setSelectedTab(initialSelectedSourceIndex);
+   }, [initialSelectedSourceIndex]);
 
    const { data, isError, isLoading, error } = useModelData(
       modelPath,
       versionId,
    );
+
+
 
    if (isLoading) {
       return <Loading text="Fetching Model..." />;
@@ -105,7 +121,12 @@ export function ModelExplorer({
                               <MultiRowTab
                                  key={sourceInfo.name || idx}
                                  selected={selectedTab === idx}
-                                 onClick={() => setSelectedTab(idx)}
+                                 onClick={() => {
+                                    setSelectedTab(idx);
+                                    if (onSourceChange) {
+                                       onSourceChange(idx);
+                                    }
+                                 }}
                               >
                                  {sourceInfo.name || `Source ${idx + 1}`}
                               </MultiRowTab>
@@ -129,6 +150,7 @@ export function ModelExplorer({
                            };
                         })}
                         selectedSourceIndex={selectedTab}
+                        existingQuery={existingQuery}
                         onQueryChange={onChange}
                      />
                   )}

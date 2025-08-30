@@ -17,6 +17,7 @@ import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { ModelExplorer } from "../Model";
+import { ModelExplorerDialog } from "../Model/ModelExplorerDialog";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { CleanNotebookCell, CleanMetricCard } from "../styles";
 import { usePackage } from "../Package";
@@ -184,42 +185,13 @@ export function NotebookCell({
             )}
 
             {/* Data Sources Dialog */}
-            <Dialog
+            <ModelExplorerDialog
                open={sourcesDialogOpen}
                onClose={() => setSourcesDialogOpen(false)}
-               maxWidth={false}
-               fullWidth
-               sx={{
-                  "& .MuiDialog-paper": {
-                     width: "95vw",
-                     height: "95vh",
-                     maxWidth: "none",
-                  },
-               }}
-            >
-               <DialogTitle
-                  sx={{
-                     display: "flex",
-                     justifyContent: "space-between",
-                     alignItems: "center",
-                  }}
-               >
-                  Data Sources
-                  <IconButton
-                     onClick={() => setSourcesDialogOpen(false)}
-                     sx={{ color: "#666666" }}
-                  >
-                     <CloseIcon />
-                  </IconButton>
-               </DialogTitle>
-               <DialogContent>
-                  {hasValidImport ? (
-                     <ModelExplorer modelPath={modelPath} />
-                  ) : (
-                     <div>No valid import statement found in cell</div>
-                  )}
-               </DialogContent>
-            </Dialog>
+               modelPath={modelPath || ""}
+               title="Data Sources"
+               hasValidImport={hasValidImport}
+            />
 
             {/* Code Dialog */}
             <Dialog
