@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { QueryExplorerResult, SourcesExplorer } from "./SourcesExplorer";
@@ -74,10 +74,12 @@ export function ModelExplorer({
    }, [initialSelectedSourceIndex]);
 
    // If data is not provided, fetch it internally
-   const { data: fetchedData, isError, isLoading, error } = useModelData(
-      modelPath,
-      undefined,
-   );
+   const {
+      data: fetchedData,
+      isError,
+      isLoading,
+      error,
+   } = useModelData(modelPath, undefined);
 
    const effectiveData = data || fetchedData;
 
@@ -144,13 +146,15 @@ export function ModelExplorer({
                {Array.isArray(effectiveData.sourceInfos) &&
                   effectiveData.sourceInfos.length > 0 && (
                      <SourcesExplorer
-                        sourceAndPaths={effectiveData.sourceInfos.map((source) => {
-                           const sourceInfo = JSON.parse(source);
-                           return {
-                              sourceInfo: sourceInfo,
-                              modelPath: modelPath,
-                           };
-                        })}
+                        sourceAndPaths={effectiveData.sourceInfos.map(
+                           (source) => {
+                              const sourceInfo = JSON.parse(source);
+                              return {
+                                 sourceInfo: sourceInfo,
+                                 modelPath: modelPath,
+                              };
+                           },
+                        )}
                         selectedSourceIndex={selectedTab}
                         existingQuery={existingQuery}
                         onQueryChange={onChange}

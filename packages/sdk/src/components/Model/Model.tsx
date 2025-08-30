@@ -21,7 +21,10 @@ interface ModelProps {
 // import "@malloy-publisher/sdk/malloy-explorer.css";
 
 export default function Model({ modelPath, versionId, onChange }: ModelProps) {
-   const { data, isError, isLoading, error } = useModelData(modelPath, versionId);
+   const { data, isError, isLoading, error } = useModelData(
+      modelPath,
+      versionId,
+   );
    const [dialogOpen, setDialogOpen] = React.useState(false);
    const [sharedQuery, setSharedQuery] = React.useState<
       QueryExplorerResult | undefined
