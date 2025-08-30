@@ -3,11 +3,13 @@ import { Dialog, DialogTitle, DialogContent, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ModelExplorer } from "./ModelExplorer";
 import { QueryExplorerResult } from "./SourcesExplorer";
+import { CompiledModel } from "../../client";
 
 interface ModelExplorerDialogProps {
    open: boolean;
    onClose: () => void;
    modelPath: string;
+   data?: CompiledModel;
    title?: string;
    hasValidImport?: boolean;
    existingQuery?: QueryExplorerResult;
@@ -20,6 +22,7 @@ export function ModelExplorerDialog({
    open,
    onClose,
    modelPath,
+   data,
    title = "Data Sources",
    hasValidImport = true,
    existingQuery,
@@ -57,6 +60,7 @@ export function ModelExplorerDialog({
             {hasValidImport ? (
                <ModelExplorer
                   modelPath={modelPath}
+                  data={data}
                   existingQuery={existingQuery}
                   initialSelectedSourceIndex={initialSelectedSourceIndex}
                   onChange={onChange}

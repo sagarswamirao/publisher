@@ -1,12 +1,12 @@
 import React from "react";
-import { Box, Stack, Typography, Button } from "@mui/material";
+import { Box, Stack, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
-import { ModelCell } from "./ModelCell";
 import { QueryExplorerResult, SourcesExplorer } from "./SourcesExplorer";
-import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { Loading } from "../Loading";
+import { CompiledModel } from "../../client";
 import { useModelData } from "./useModelData";
+import { Loading } from "../Loading";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 // Add a styled component for the multi-row tab bar
 const MultiRowTabBar = styled(Box)(({ theme }) => ({
@@ -39,7 +39,7 @@ const MultiRowTab = styled(Button)<{ selected?: boolean }>(
 
 export interface ModelExplorerProps {
    modelPath: string;
-   versionId?: string;
+   data?: CompiledModel;
    /** Callback when the explorer changes (e.g. when a query is selected). */
    onChange?: (query: QueryExplorerResult) => void;
    /** Existing query to initialize the explorer with */
@@ -58,7 +58,7 @@ export interface ModelExplorerProps {
  */
 export function ModelExplorer({
    modelPath,
-   versionId,
+   data,
    onChange,
    existingQuery,
    initialSelectedSourceIndex = 0,
@@ -73,16 +73,21 @@ export function ModelExplorer({
       setSelectedTab(initialSelectedSourceIndex);
    }, [initialSelectedSourceIndex]);
 
-   const { data, isError, isLoading, error } = useModelData(
-      modelPath,
-      versionId,
-   );
+   // If data is not provided, fetch it internally
+   const {
+      data: fetchedData,
+      isError,
+      isLoading,
+      error,
+   } = useModelData(modelPath, undefined);
 
-   if (isLoading) {
+   const effectiveData = data || fetchedData;
+
+   if (isLoading && !data) {
       return <Loading text="Fetching Model..." />;
    }
 
-   if (isError) {
+   if (isError && !data) {
       console.log("error", error);
       return (
          <ApiErrorDisplay
@@ -92,27 +97,12 @@ export function ModelExplorer({
       );
    }
 
+   if (!effectiveData) {
+      return <Loading text="Loading..." />;
+   }
+
    return (
       <StyledCard variant="outlined">
-         {/* Sources Header */}
-         {Array.isArray(data.sourceInfos) && data.sourceInfos.length > 0 && (
-            <Box sx={{ padding: "0 0 16px 0" }}>
-               <Typography
-                  variant="h1"
-                  sx={{
-                     fontSize: "28px",
-                     fontWeight: "600",
-                     color: "#1a1a1a",
-                     marginBottom: "8px",
-                     marginTop: "0",
-                     paddingLeft: "0",
-                  }}
-               >
-                  Sources
-               </Typography>
-            </Box>
-         )}
-
          <StyledCardContent>
             <Stack
                sx={{
@@ -121,10 +111,10 @@ export function ModelExplorer({
                }}
             >
                {/* Render the tabs for source selection */}
-               {Array.isArray(data.sourceInfos) &&
-                  data.sourceInfos.length > 0 && (
+               {Array.isArray(effectiveData.sourceInfos) &&
+                  effectiveData.sourceInfos.length > 0 && (
                      <MultiRowTabBar>
-                        {data.sourceInfos.map((source, idx) => {
+                        {effectiveData.sourceInfos.map((source, idx) => {
                            let sourceInfo;
                            try {
                               sourceInfo = JSON.parse(source);
@@ -153,55 +143,24 @@ export function ModelExplorer({
          <StyledCardMedia>
             <Stack spacing={2} component="section">
                {/* Render the selected source info */}
-               {Array.isArray(data.sourceInfos) &&
-                  data.sourceInfos.length > 0 && (
+               {Array.isArray(effectiveData.sourceInfos) &&
+                  effectiveData.sourceInfos.length > 0 && (
                      <SourcesExplorer
-                        sourceAndPaths={data.sourceInfos.map((source) => {
-                           const sourceInfo = JSON.parse(source);
-                           return {
-                              sourceInfo: sourceInfo,
-                              modelPath: modelPath,
-                           };
-                        })}
+                        sourceAndPaths={effectiveData.sourceInfos.map(
+                           (source) => {
+                              const sourceInfo = JSON.parse(source);
+                              return {
+                                 sourceInfo: sourceInfo,
+                                 modelPath: modelPath,
+                              };
+                           },
+                        )}
                         selectedSourceIndex={selectedTab}
                         existingQuery={existingQuery}
                         onQueryChange={onChange}
                      />
                   )}
 
-               {/* Named Queries Header */}
-               {data.queries?.length > 0 && (
-                  <Box sx={{ padding: "0 0 16px 0" }}>
-                     <Typography
-                        variant="h2"
-                        sx={{
-                           fontSize: "24px",
-                           fontWeight: "600",
-                           color: "#1a1a1a",
-                           marginBottom: "0",
-                           marginTop: "8px",
-                           paddingLeft: "0",
-                        }}
-                     >
-                        Named Queries
-                     </Typography>
-                  </Box>
-               )}
-
-               {/* Render the named queries */}
-               {data.queries?.length > 0 && (
-                  <Stack spacing={2} component="section">
-                     {data.queries.map((query) => (
-                        <ModelCell
-                           key={query.name}
-                           modelPath={modelPath}
-                           queryName={query.name}
-                           noView={true}
-                           annotations={query.annotations}
-                        />
-                     ))}
-                  </Stack>
-               )}
                <Box height="5px" />
             </Stack>
          </StyledCardMedia>
