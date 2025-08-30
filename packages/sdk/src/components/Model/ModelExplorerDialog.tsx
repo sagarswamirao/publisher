@@ -1,10 +1,5 @@
 import React from "react";
-import {
-   Dialog,
-   DialogTitle,
-   DialogContent,
-   IconButton,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ModelExplorer } from "./ModelExplorer";
 import { QueryExplorerResult } from "./SourcesExplorer";
@@ -54,17 +49,14 @@ export function ModelExplorerDialog({
             }}
          >
             {title}
-            <IconButton
-               onClick={onClose}
-               sx={{ color: "#666666" }}
-            >
+            <IconButton onClick={onClose} sx={{ color: "#666666" }}>
                <CloseIcon />
             </IconButton>
          </DialogTitle>
          <DialogContent>
             {hasValidImport ? (
-               <ModelExplorer 
-                  modelPath={modelPath} 
+               <ModelExplorer
+                  modelPath={modelPath}
                   existingQuery={existingQuery}
                   initialSelectedSourceIndex={initialSelectedSourceIndex}
                   onChange={onChange}

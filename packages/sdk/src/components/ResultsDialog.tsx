@@ -1,10 +1,5 @@
 import React from "react";
-import {
-   Dialog,
-   DialogContent,
-   DialogTitle,
-   IconButton,
-} from "@mui/material";
+import { Dialog, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ResultContainer from "./RenderedResult/ResultContainer";
 

@@ -16,7 +16,6 @@ import Markdown from "markdown-to-jsx";
 import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
-import { ModelExplorer } from "../Model";
 import { ModelExplorerDialog } from "../Model/ModelExplorerDialog";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
@@ -238,7 +237,7 @@ export function NotebookCell({
                         dangerouslySetInnerHTML={{
                            __html: highlightedMalloyCode,
                         }}
-                      />
+                     />
                   </Box>
                </DialogContent>
             </Dialog>

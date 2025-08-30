@@ -102,16 +102,17 @@ export default function Connections() {
                      </Typography>
                   )}
                   {isSuccess && data.data.length > 0 && (
-                     <Table 
+                     <Table
                         size="small"
                         sx={{
                            borderCollapse: "collapse",
                            "& .MuiTableCell-root": {
                               borderBottom: "1px solid #e0e0e0",
                            },
-                           "& .MuiTableRow-root:last-child .MuiTableCell-root": {
-                              borderBottom: "none",
-                           },
+                           "& .MuiTableRow-root:last-child .MuiTableCell-root":
+                              {
+                                 borderBottom: "none",
+                              },
                         }}
                      >
                         <TableBody>

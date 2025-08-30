@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Stack, Typography, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { StyledCard, StyledCardContent, StyledCardMedia, CleanNotebookContainer, CleanNotebookSection } from "../styles";
+import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { ModelCell } from "./ModelCell";
 import { QueryExplorerResult, SourcesExplorer } from "./SourcesExplorer";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
@@ -64,7 +64,9 @@ export function ModelExplorer({
    initialSelectedSourceIndex = 0,
    onSourceChange,
 }: ModelExplorerProps) {
-   const [selectedTab, setSelectedTab] = React.useState(initialSelectedSourceIndex);
+   const [selectedTab, setSelectedTab] = React.useState(
+      initialSelectedSourceIndex,
+   );
 
    // Update selectedTab when initialSelectedSourceIndex changes
    React.useEffect(() => {
@@ -75,8 +77,6 @@ export function ModelExplorer({
       modelPath,
       versionId,
    );
-
-
 
    if (isLoading) {
       return <Loading text="Fetching Model..." />;
@@ -92,27 +92,26 @@ export function ModelExplorer({
       );
    }
 
-      return (
+   return (
       <StyledCard variant="outlined">
          {/* Sources Header */}
-         {Array.isArray(data.sourceInfos) &&
-            data.sourceInfos.length > 0 && (
-               <Box sx={{ padding: "0 0 16px 0" }}>
-                  <Typography
-                     variant="h1"
-                     sx={{
-                        fontSize: "28px",
-                        fontWeight: "600",
-                        color: "#1a1a1a",
-                        marginBottom: "8px",
-                        marginTop: "0",
-                        paddingLeft: "0",
-                     }}
-                  >
-                     Sources
-                  </Typography>
-               </Box>
-            )}
+         {Array.isArray(data.sourceInfos) && data.sourceInfos.length > 0 && (
+            <Box sx={{ padding: "0 0 16px 0" }}>
+               <Typography
+                  variant="h1"
+                  sx={{
+                     fontSize: "28px",
+                     fontWeight: "600",
+                     color: "#1a1a1a",
+                     marginBottom: "8px",
+                     marginTop: "0",
+                     paddingLeft: "0",
+                  }}
+               >
+                  Sources
+               </Typography>
+            </Box>
+         )}
 
          <StyledCardContent>
             <Stack
@@ -169,7 +168,6 @@ export function ModelExplorer({
                         onQueryChange={onChange}
                      />
                   )}
-
 
                {/* Named Queries Header */}
                {data.queries?.length > 0 && (

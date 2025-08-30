@@ -22,7 +22,9 @@ interface ModelProps {
 export default function Model({ modelPath, versionId, onChange }: ModelProps) {
    const { isError, isLoading, error } = useModelData(modelPath, versionId);
    const [dialogOpen, setDialogOpen] = React.useState(false);
-   const [sharedQuery, setSharedQuery] = React.useState<QueryExplorerResult | undefined>();
+   const [sharedQuery, setSharedQuery] = React.useState<
+      QueryExplorerResult | undefined
+   >();
    const [sharedSourceIndex, setSharedSourceIndex] = React.useState(0);
 
    if (isLoading) {
@@ -45,9 +47,16 @@ export default function Model({ modelPath, versionId, onChange }: ModelProps) {
    const handleSourceChange = (index: number) => {
       setSharedSourceIndex(index);
    };
-   
+
    return (
-      <Box sx={{ position: "relative", maxWidth: "1200px", margin: "0 auto", paddingTop: "24px" }}>
+      <Box
+         sx={{
+            position: "relative",
+            maxWidth: "1200px",
+            margin: "0 auto",
+            paddingTop: "24px",
+         }}
+      >
          <ModelExplorer
             modelPath={modelPath}
             versionId={versionId}
@@ -56,7 +65,7 @@ export default function Model({ modelPath, versionId, onChange }: ModelProps) {
             existingQuery={sharedQuery}
             initialSelectedSourceIndex={sharedSourceIndex}
          />
-         
+
          {/* Magnifying glass icon */}
          <IconButton
             sx={{
@@ -75,13 +84,13 @@ export default function Model({ modelPath, versionId, onChange }: ModelProps) {
          >
             <SearchIcon sx={{ fontSize: "18px", color: "#666666" }} />
          </IconButton>
-         
+
          {/* Model Explorer Dialog */}
          <ModelExplorerDialog
             open={dialogOpen}
             onClose={() => setDialogOpen(false)}
             modelPath={modelPath}
-            title={`Model: ${modelPath.split('/').pop()}`}
+            title={`Model: ${modelPath.split("/").pop()}`}
             existingQuery={sharedQuery}
             initialSelectedSourceIndex={sharedSourceIndex}
             onChange={handleQueryChange}

@@ -43,10 +43,6 @@ export function SourcesExplorer({
    onQueryChange,
    onSourceChange,
 }: SourceExplorerProps) {
-   const [query, setQuery] = React.useState<QueryExplorerResult | undefined>(
-      existingQuery || emptyQueryExplorerResult(),
-   );
-
    // Notify parent component when selected source changes
    React.useEffect(() => {
       if (onSourceChange) {
@@ -61,7 +57,6 @@ export function SourcesExplorer({
                sourceAndPath={sourceAndPaths[selectedSourceIndex]}
                existingQuery={existingQuery}
                onChange={(query) => {
-                  setQuery(query);
                   if (onQueryChange) {
                      onQueryChange(query);
                   }

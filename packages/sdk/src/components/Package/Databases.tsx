@@ -86,16 +86,17 @@ export default function Databases() {
                      />
                   )}
                   {isSuccess && data.data.length > 0 && (
-                     <Table 
+                     <Table
                         size="small"
                         sx={{
                            borderCollapse: "collapse",
                            "& .MuiTableCell-root": {
                               borderBottom: "1px solid #e0e0e0",
                            },
-                           "& .MuiTableRow-root:last-child .MuiTableCell-root": {
-                              borderBottom: "none",
-                           },
+                           "& .MuiTableRow-root:last-child .MuiTableCell-root":
+                              {
+                                 borderBottom: "none",
+                              },
                         }}
                      >
                         <TableBody>
@@ -131,8 +132,16 @@ export default function Databases() {
                                  }}
                               >
                                  <TableCell component="th" scope="row">
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                       <Typography variant="body2">{database.path}</Typography>
+                                    <Box
+                                       sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                       }}
+                                    >
+                                       <Typography variant="body2">
+                                          {database.path}
+                                       </Typography>
                                        <SearchIcon
                                           sx={{
                                              fontSize: "1rem",

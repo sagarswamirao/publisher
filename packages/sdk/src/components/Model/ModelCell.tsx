@@ -1,10 +1,4 @@
-
-import {
-   Box,
-   Typography,
-   IconButton,
-   Stack,
-} from "@mui/material";
+import { Box, Typography, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import React, { useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
@@ -25,9 +19,7 @@ interface ModelCellProps {
 
 export function ModelCell({
    modelPath,
-   sourceName,
    queryName,
-   noView,
    annotations,
 }: ModelCellProps) {
    const [highlightedAnnotations, setHighlightedAnnotations] =
@@ -38,7 +30,11 @@ export function ModelCell({
 
    const queryResultsApi = new QueryresultsApi(new Configuration());
 
-   const { data: queryData, isSuccess, isLoading } = useQueryWithApiError({
+   const {
+      data: queryData,
+      isSuccess,
+      isLoading,
+   } = useQueryWithApiError({
       queryKey: [
          "namedQueryResult",
          projectName,
@@ -59,10 +55,6 @@ export function ModelCell({
          ),
       enabled: true, // Always execute
    });
-
-
-
-
 
    useEffect(() => {
       if (annotations && annotations.length > 0) {
@@ -130,9 +122,7 @@ export function ModelCell({
                }}
                onClick={() => setResultsDialogOpen(true)}
             >
-               <SearchIcon
-                  sx={{ fontSize: "18px", color: "#666666" }}
-               />
+               <SearchIcon sx={{ fontSize: "18px", color: "#666666" }} />
             </IconButton>
          </Box>
 
