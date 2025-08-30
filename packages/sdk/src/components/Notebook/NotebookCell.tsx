@@ -19,6 +19,7 @@ import { highlight } from "../highlighter";
 import { ModelExplorer } from "../Model";
 import { ModelExplorerDialog } from "../Model/ModelExplorerDialog";
 import ResultContainer from "../RenderedResult/ResultContainer";
+import ResultsDialog from "../ResultsDialog";
 import { CleanNotebookCell, CleanMetricCard } from "../styles";
 import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
@@ -306,49 +307,12 @@ export function NotebookCell({
             </Dialog>
 
             {/* Results Dialog */}
-            <Dialog
+            <ResultsDialog
                open={resultsDialogOpen}
                onClose={() => setResultsDialogOpen(false)}
-               maxWidth={false}
-               fullWidth
-               sx={{
-                  "& .MuiDialog-paper": {
-                     width: "95vw",
-                     height: "95vh",
-                     maxWidth: "none",
-                  },
-               }}
-            >
-               <DialogTitle
-                  sx={{
-                     display: "flex",
-                     justifyContent: "space-between",
-                     alignItems: "center",
-                  }}
-               >
-                  Results
-                  <IconButton
-                     onClick={() => setResultsDialogOpen(false)}
-                     sx={{ color: "#666666" }}
-                  >
-                     <CloseIcon />
-                  </IconButton>
-               </DialogTitle>
-               <DialogContent
-                  sx={{
-                     height: "calc(95vh - 120px)",
-                     overflow: "auto",
-                     padding: "0 16px",
-                  }}
-               >
-                  <ResultContainer
-                     result={cell.result}
-                     minHeight={800}
-                     maxHeight={800}
-                     hideToggle={true}
-                  />
-               </DialogContent>
-            </Dialog>
+               result={cell.result || ""}
+               title="Results"
+            />
 
             {cell.result && (
                <CleanMetricCard

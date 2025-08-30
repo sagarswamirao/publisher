@@ -61,8 +61,8 @@ export default function Model({ modelPath, versionId, onChange }: ModelProps) {
          <IconButton
             sx={{
                position: "absolute",
-               top: "32px",
-               right: "8px",
+               top: "90px",
+               right: "4px",
                backgroundColor: "rgba(255, 255, 255, 0.9)",
                "&:hover": {
                   backgroundColor: "rgba(255, 255, 255, 1)",

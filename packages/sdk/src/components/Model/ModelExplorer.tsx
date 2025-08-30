@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Stack, Typography, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import { StyledCard, StyledCardContent, StyledCardMedia, CleanNotebookContainer, CleanNotebookSection } from "../styles";
 import { ModelCell } from "./ModelCell";
 import { QueryExplorerResult, SourcesExplorer } from "./SourcesExplorer";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
@@ -29,7 +29,7 @@ const MultiRowTab = styled(Button)<{ selected?: boolean }>(
       border: selected ? "1px solid #e9ecef" : "1px solid transparent",
       boxShadow: "none",
       textTransform: "none",
-      fontSize: "13px",
+      fontSize: "15px",
       "&:hover": {
          background: selected ? "#f8f9fa" : "#fafafa",
          border: selected ? "1px solid #e9ecef" : "1px solid #f0f0f0",
@@ -40,9 +40,6 @@ const MultiRowTab = styled(Button)<{ selected?: boolean }>(
 export interface ModelExplorerProps {
    modelPath: string;
    versionId?: string;
-   /** Display options forwarded to ModelCell */
-   expandResults?: boolean;
-   hideResultIcons?: boolean;
    /** Callback when the explorer changes (e.g. when a query is selected). */
    onChange?: (query: QueryExplorerResult) => void;
    /** Existing query to initialize the explorer with */
@@ -62,8 +59,6 @@ export interface ModelExplorerProps {
 export function ModelExplorer({
    modelPath,
    versionId,
-   expandResults,
-   hideResultIcons,
    onChange,
    existingQuery,
    initialSelectedSourceIndex = 0,
@@ -97,8 +92,28 @@ export function ModelExplorer({
       );
    }
 
-   return (
+      return (
       <StyledCard variant="outlined">
+         {/* Sources Header */}
+         {Array.isArray(data.sourceInfos) &&
+            data.sourceInfos.length > 0 && (
+               <Box sx={{ padding: "0 0 16px 0" }}>
+                  <Typography
+                     variant="h1"
+                     sx={{
+                        fontSize: "28px",
+                        fontWeight: "600",
+                        color: "#1a1a1a",
+                        marginBottom: "8px",
+                        marginTop: "0",
+                        paddingLeft: "0",
+                     }}
+                  >
+                     Sources
+                  </Typography>
+               </Box>
+            )}
+
          <StyledCardContent>
             <Stack
                sx={{
@@ -155,33 +170,39 @@ export function ModelExplorer({
                      />
                   )}
 
+
+               {/* Named Queries Header */}
+               {data.queries?.length > 0 && (
+                  <Box sx={{ padding: "0 0 16px 0" }}>
+                     <Typography
+                        variant="h2"
+                        sx={{
+                           fontSize: "24px",
+                           fontWeight: "600",
+                           color: "#1a1a1a",
+                           marginBottom: "0",
+                           marginTop: "8px",
+                           paddingLeft: "0",
+                        }}
+                     >
+                        Named Queries
+                     </Typography>
+                  </Box>
+               )}
+
                {/* Render the named queries */}
                {data.queries?.length > 0 && (
-                  <StyledCard
-                     variant="outlined"
-                     sx={{ padding: "0px 10px 0px 10px" }}
-                  >
-                     <StyledCardContent sx={{ p: "10px" }}>
-                        <Typography variant="subtitle1">
-                           Named Queries
-                        </Typography>
-                     </StyledCardContent>
-
-                     <Stack spacing={1} component="section">
-                        {data.queries.map((query) => (
-                           <ModelCell
-                              key={query.name}
-                              modelPath={modelPath}
-                              queryName={query.name}
-                              expandResult={expandResults}
-                              hideResultIcon={hideResultIcons}
-                              noView={true}
-                              annotations={query.annotations}
-                           />
-                        ))}
-                     </Stack>
-                     <Box height="10px" />
-                  </StyledCard>
+                  <Stack spacing={2} component="section">
+                     {data.queries.map((query) => (
+                        <ModelCell
+                           key={query.name}
+                           modelPath={modelPath}
+                           queryName={query.name}
+                           noView={true}
+                           annotations={query.annotations}
+                        />
+                     ))}
+                  </Stack>
                )}
                <Box height="5px" />
             </Stack>
