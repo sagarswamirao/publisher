@@ -43,10 +43,6 @@ export function SourcesExplorer({
    onQueryChange,
    onSourceChange,
 }: SourceExplorerProps) {
-   const [query, setQuery] = React.useState<QueryExplorerResult | undefined>(
-      existingQuery || emptyQueryExplorerResult(),
-   );
-
    // Notify parent component when selected source changes
    React.useEffect(() => {
       if (onSourceChange) {
@@ -59,9 +55,8 @@ export function SourcesExplorer({
          <Stack spacing={2} component="section">
             <SourceExplorerComponent
                sourceAndPath={sourceAndPaths[selectedSourceIndex]}
-               existingQuery={query}
+               existingQuery={existingQuery}
                onChange={(query) => {
-                  setQuery(query);
                   if (onQueryChange) {
                      onQueryChange(query);
                   }
@@ -105,6 +100,13 @@ function SourceExplorerComponentInner({
    const [query, setQuery] = React.useState<QueryExplorerResult>(
       existingQuery || emptyQueryExplorerResult(),
    );
+
+   // Update query when existingQuery changes
+   React.useEffect(() => {
+      if (existingQuery) {
+         setQuery(existingQuery);
+      }
+   }, [existingQuery]);
    const [focusedNestViewPath, setFocusedNestViewPath] = React.useState<
       string[]
    >([]);

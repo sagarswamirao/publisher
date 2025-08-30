@@ -10,7 +10,7 @@ import {
    DialogContent,
    IconButton,
 } from "@mui/material";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import SearchIcon from "@mui/icons-material/Search";
 import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -49,7 +49,7 @@ function Connection({
          <TableCell>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                <Typography variant="body2">{connection.name}</Typography>
-               <OpenInNewIcon
+               <SearchIcon
                   sx={{
                      fontSize: "1rem",
                      color: "action.active",
@@ -102,21 +102,35 @@ export default function Connections() {
                      </Typography>
                   )}
                   {isSuccess && data.data.length > 0 && (
-                     <Table size="small">
+                     <Table
+                        size="small"
+                        sx={{
+                           borderCollapse: "collapse",
+                           "& .MuiTableCell-root": {
+                              borderBottom: "1px solid #e0e0e0",
+                           },
+                           "& .MuiTableRow-root:last-child .MuiTableCell-root":
+                              {
+                                 borderBottom: "none",
+                              },
+                        }}
+                     >
                         <TableBody>
                            <TableRow>
                               <TableCell>
                                  <Typography
-                                    variant="subtitle2"
-                                    fontWeight="bold"
+                                    variant="body2"
+                                    fontWeight="500"
+                                    color="text.secondary"
                                  >
                                     Connection Name
                                  </Typography>
                               </TableCell>
                               <TableCell>
                                  <Typography
-                                    variant="subtitle2"
-                                    fontWeight="bold"
+                                    variant="body2"
+                                    fontWeight="500"
+                                    color="text.secondary"
                                  >
                                     Type
                                  </Typography>

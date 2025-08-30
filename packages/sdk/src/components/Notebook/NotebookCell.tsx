@@ -16,14 +16,15 @@ import Markdown from "markdown-to-jsx";
 import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
-import { ModelExplorer } from "../Model";
+import { ModelExplorerDialog } from "../Model/ModelExplorerDialog";
 import ResultContainer from "../RenderedResult/ResultContainer";
+import ResultsDialog from "../ResultsDialog";
 import { CleanNotebookCell, CleanMetricCard } from "../styles";
 import { usePackage } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
 
 // Regex to extract model path from import statements like: import {flights} from 'flights.malloy'
-const IMPORT_REGEX = /import\s*\{[^}]*\}\s*from\s*['"`]([^'"`]+)['"`]/;
+const IMPORT_REGEX = /import\s*(?:\{[^}]*\}\s*from\s*)?['"`]([^'"`]+)['"`]/;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
@@ -184,42 +185,13 @@ export function NotebookCell({
             )}
 
             {/* Data Sources Dialog */}
-            <Dialog
+            <ModelExplorerDialog
                open={sourcesDialogOpen}
                onClose={() => setSourcesDialogOpen(false)}
-               maxWidth={false}
-               fullWidth
-               sx={{
-                  "& .MuiDialog-paper": {
-                     width: "95vw",
-                     height: "95vh",
-                     maxWidth: "none",
-                  },
-               }}
-            >
-               <DialogTitle
-                  sx={{
-                     display: "flex",
-                     justifyContent: "space-between",
-                     alignItems: "center",
-                  }}
-               >
-                  Data Sources
-                  <IconButton
-                     onClick={() => setSourcesDialogOpen(false)}
-                     sx={{ color: "#666666" }}
-                  >
-                     <CloseIcon />
-                  </IconButton>
-               </DialogTitle>
-               <DialogContent>
-                  {hasValidImport ? (
-                     <ModelExplorer modelPath={modelPath} />
-                  ) : (
-                     <div>No valid import statement found in cell</div>
-                  )}
-               </DialogContent>
-            </Dialog>
+               modelPath={modelPath || ""}
+               title="Data Sources"
+               hasValidImport={hasValidImport}
+            />
 
             {/* Code Dialog */}
             <Dialog
@@ -244,12 +216,29 @@ export function NotebookCell({
                   </IconButton>
                </DialogTitle>
                <DialogContent>
-                  <pre
-                     className="code-display"
-                     dangerouslySetInnerHTML={{
-                        __html: highlightedMalloyCode,
+                  <Box
+                     sx={{
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "8px",
+                        padding: "16px",
+                        fontFamily: "monospace",
+                        fontSize: "14px",
+                        lineHeight: "1.5",
+                        overflow: "auto",
+                        maxHeight: "70vh",
+                        backgroundColor: "#ffffff",
                      }}
-                  />
+                  >
+                     <pre
+                        className="code-display"
+                        style={{
+                           margin: 0,
+                        }}
+                        dangerouslySetInnerHTML={{
+                           __html: highlightedMalloyCode,
+                        }}
+                     />
+                  </Box>
                </DialogContent>
             </Dialog>
 
@@ -317,49 +306,12 @@ export function NotebookCell({
             </Dialog>
 
             {/* Results Dialog */}
-            <Dialog
+            <ResultsDialog
                open={resultsDialogOpen}
                onClose={() => setResultsDialogOpen(false)}
-               maxWidth={false}
-               fullWidth
-               sx={{
-                  "& .MuiDialog-paper": {
-                     width: "95vw",
-                     height: "95vh",
-                     maxWidth: "none",
-                  },
-               }}
-            >
-               <DialogTitle
-                  sx={{
-                     display: "flex",
-                     justifyContent: "space-between",
-                     alignItems: "center",
-                  }}
-               >
-                  Results
-                  <IconButton
-                     onClick={() => setResultsDialogOpen(false)}
-                     sx={{ color: "#666666" }}
-                  >
-                     <CloseIcon />
-                  </IconButton>
-               </DialogTitle>
-               <DialogContent
-                  sx={{
-                     height: "calc(95vh - 120px)",
-                     overflow: "auto",
-                     padding: "0 16px",
-                  }}
-               >
-                  <ResultContainer
-                     result={cell.result}
-                     minHeight={800}
-                     maxHeight={800}
-                     hideToggle={true}
-                  />
-               </DialogContent>
-            </Dialog>
+               result={cell.result || ""}
+               title="Results"
+            />
 
             {cell.result && (
                <CleanMetricCard
