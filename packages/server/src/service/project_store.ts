@@ -434,26 +434,40 @@ export class ProjectStore {
                tempDownloadPath,
                CONNECTIONS_MANIFEST_NAME,
             );
+            const connectionsFileInServerRoot = path.join(
+               this.serverRootPath,
+               CONNECTIONS_MANIFEST_NAME,
+            );
             const connectionsFileInProject = path.join(
                absoluteTargetPath,
                CONNECTIONS_MANIFEST_NAME,
             );
 
-            try {
-               await fs.promises.access(
-                  connectionsFileInDownload,
-                  fs.constants.F_OK,
-               );
-               await fs.promises.cp(
-                  connectionsFileInDownload,
-                  connectionsFileInProject,
-               );
-               logger.info(
-                  `Copied ${CONNECTIONS_MANIFEST_NAME} to project directory`,
-               );
-            } catch (error) {
-               console.error(error);
-               logger.info(`No ${CONNECTIONS_MANIFEST_NAME} found`);
+            const sources = [
+               {
+                  path: connectionsFileInDownload,
+                  description: "projectLocation",
+               },
+               { path: connectionsFileInServerRoot, description: "serverRoot" },
+            ];
+
+            for (const source of sources) {
+               try {
+                  await fs.promises.access(source.path, fs.constants.F_OK);
+                  await fs.promises.cp(source.path, connectionsFileInProject);
+                  logger.info(
+                     `Copied ${CONNECTIONS_MANIFEST_NAME} from ${source.description} to project directory`,
+                  );
+                  break;
+               } catch (_error) {
+                  if (source.description === "projectLocation") {
+                     logger.info(
+                        `No ${CONNECTIONS_MANIFEST_NAME} found in downloaded location, checking in server root for ${CONNECTIONS_MANIFEST_NAME}`,
+                     );
+                  } else {
+                     logger.info(`No ${CONNECTIONS_MANIFEST_NAME} found`);
+                  }
+               }
             }
          } finally {
             // Clean up temporary download directory
@@ -536,25 +550,28 @@ export class ProjectStore {
          }
       }
 
-      // Handle absolute paths
-      if (path.isAbsolute(location)) {
+      // Handle absolute and relative paths
+      if (path.isAbsolute(location) || location.startsWith("./")) {
+         const packagePath: string = path.isAbsolute(location)
+            ? location
+            : path.join(this.serverRootPath, location);
          try {
             logger.info(
-               `Mounting local directory at "${location}" to "${targetPath}"`,
+               `Mounting local directory at "${packagePath}" to "${targetPath}"`,
             );
             await this.mountLocalDirectory(
-               location,
+               packagePath,
                targetPath,
                projectName,
                packageName,
             );
             return;
          } catch (error) {
-            logger.error(`Failed to mount local directory "${location}"`, {
+            logger.error(`Failed to mount local directory "${packagePath}"`, {
                error,
             });
             throw new PackageNotFoundError(
-               `Failed to mount local directory: ${location}`,
+               `Failed to mount local directory: ${packagePath}`,
             );
          }
       }
