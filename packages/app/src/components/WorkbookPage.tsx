@@ -35,7 +35,6 @@ export function WorkbookPage() {
                defaultProjectName={projectName}
                defaultPackageName={packageName}
                workbookPath={{ path: workbookPath, workspace: workspace }}
-               hideEmbeddingIcons={true}
             />
          </PackageProvider>
       );

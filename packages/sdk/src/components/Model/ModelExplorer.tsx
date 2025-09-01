@@ -1,25 +1,53 @@
 import React from "react";
-import { Box, Stack, Typography, Tabs, Tab } from "@mui/material";
-import { StyledCard, StyledCardContent } from "../styles";
-import { ModelCell } from "./ModelCell";
-import {
-   QueryExplorerResult,
-   SourceExplorerComponent,
-} from "./SourcesExplorer";
-import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { Loading } from "../Loading";
+import { Box, Stack, Button } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
+import { QueryExplorerResult, SourcesExplorer } from "./SourcesExplorer";
+import { CompiledModel } from "../../client";
 import { useModelData } from "./useModelData";
+import { Loading } from "../Loading";
+import { ApiErrorDisplay } from "../ApiErrorDisplay";
+
+// Add a styled component for the multi-row tab bar
+const MultiRowTabBar = styled(Box)(({ theme }) => ({
+   display: "flex",
+   flexWrap: "wrap",
+   gap: theme.spacing(1),
+   borderBottom: "1px solid #f0f0f0",
+   minHeight: 48,
+   paddingBottom: "8px",
+}));
+
+const MultiRowTab = styled(Button)<{ selected?: boolean }>(
+   ({ theme, selected }) => ({
+      minHeight: 32,
+      padding: theme.spacing(0.75, 2),
+      borderRadius: "6px",
+      background: selected ? "#f8f9fa" : "transparent",
+      color: selected ? "#495057" : "#666666",
+      fontWeight: selected ? 600 : 500,
+      border: selected ? "1px solid #e9ecef" : "1px solid transparent",
+      boxShadow: "none",
+      textTransform: "none",
+      fontSize: "15px",
+      "&:hover": {
+         background: selected ? "#f8f9fa" : "#fafafa",
+         border: selected ? "1px solid #e9ecef" : "1px solid #f0f0f0",
+      },
+   }),
+);
 
 export interface ModelExplorerProps {
    modelPath: string;
-   versionId?: string;
-   /** Display options forwarded to ModelCell */
-   expandResults?: boolean;
-   hideResultIcons?: boolean;
-   expandEmbeddings?: boolean;
-   hideEmbeddingIcons?: boolean;
+   data?: CompiledModel;
    /** Callback when the explorer changes (e.g. when a query is selected). */
    onChange?: (query: QueryExplorerResult) => void;
+   /** Existing query to initialize the explorer with */
+   existingQuery?: QueryExplorerResult;
+   /** Initial selected source index */
+   initialSelectedSourceIndex?: number;
+   /** Callback when source selection changes */
+   onSourceChange?: (index: number) => void;
 }
 
 /**
@@ -30,25 +58,36 @@ export interface ModelExplorerProps {
  */
 export function ModelExplorer({
    modelPath,
-   versionId,
-   expandResults,
-   hideResultIcons,
-   expandEmbeddings,
-   hideEmbeddingIcons,
+   data,
    onChange,
+   existingQuery,
+   initialSelectedSourceIndex = 0,
+   onSourceChange,
 }: ModelExplorerProps) {
-   const [selectedTab, setSelectedTab] = React.useState(0);
-
-   const { data, isError, isLoading, error } = useModelData(
-      modelPath,
-      versionId,
+   const [selectedTab, setSelectedTab] = React.useState(
+      initialSelectedSourceIndex,
    );
 
-   if (isLoading) {
+   // Update selectedTab when initialSelectedSourceIndex changes
+   React.useEffect(() => {
+      setSelectedTab(initialSelectedSourceIndex);
+   }, [initialSelectedSourceIndex]);
+
+   // If data is not provided, fetch it internally
+   const {
+      data: fetchedData,
+      isError,
+      isLoading,
+      error,
+   } = useModelData(modelPath, undefined);
+
+   const effectiveData = data || fetchedData;
+
+   if (isLoading && !data) {
       return <Loading text="Fetching Model..." />;
    }
 
-   if (isError) {
+   if (isError && !data) {
       console.log("error", error);
       return (
          <ApiErrorDisplay
@@ -58,81 +97,73 @@ export function ModelExplorer({
       );
    }
 
+   if (!effectiveData) {
+      return <Loading text="Loading..." />;
+   }
+
    return (
-      <Stack spacing={2} component="section">
-         {/* Render the tabs for source selection */}
-         {Array.isArray(data.sourceInfos) && data.sourceInfos.length > 0 && (
-            <Stack sx={{ flexDirection: "row", justifyContent: "flex-start" }}>
-               <Tabs
-                  value={selectedTab}
-                  onChange={(_, newValue) => setSelectedTab(newValue)}
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  sx={{
-                     borderBottom: 1,
-                     borderColor: "divider",
-                     minHeight: 36,
-                  }}
-               >
-                  {data.sourceInfos.map((source, idx) => {
-                     let sourceInfo;
-                     try {
-                        sourceInfo = JSON.parse(source);
-                     } catch {
-                        sourceInfo = { name: String(idx) };
-                     }
-                     return (
-                        <Tab
-                           key={sourceInfo.name || idx}
-                           label={sourceInfo.name || `Source ${idx + 1}`}
-                           sx={{ minHeight: 36 }}
-                        />
-                     );
-                  })}
-               </Tabs>
-            </Stack>
-         )}
-
-         {/* Render the selected source info */}
-         {Array.isArray(data.sourceInfos) && data.sourceInfos.length > 0 && (
-            <SourceExplorerComponent
-               sourceAndPath={{
-                  modelPath,
-                  sourceInfo: JSON.parse(data.sourceInfos[selectedTab]),
+      <StyledCard variant="outlined">
+         <StyledCardContent>
+            <Stack
+               sx={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
                }}
-               onChange={onChange}
-            />
-         )}
-
-         {/* Render the named queries */}
-         {data.queries?.length > 0 && (
-            <StyledCard
-               variant="outlined"
-               sx={{ padding: "0px 10px 0px 10px" }}
             >
-               <StyledCardContent sx={{ p: "10px" }}>
-                  <Typography variant="subtitle1">Named Queries</Typography>
-               </StyledCardContent>
-
-               <Stack spacing={1} component="section">
-                  {data.queries.map((query) => (
-                     <ModelCell
-                        key={query.name}
-                        modelPath={modelPath}
-                        queryName={query.name}
-                        expandResult={expandResults}
-                        hideResultIcon={hideResultIcons}
-                        expandEmbedding={expandEmbeddings}
-                        hideEmbeddingIcon={hideEmbeddingIcons}
-                        noView={true}
-                        annotations={query.annotations}
+               {/* Render the tabs for source selection */}
+               {Array.isArray(effectiveData.sourceInfos) &&
+                  effectiveData.sourceInfos.length > 0 && (
+                     <MultiRowTabBar>
+                        {effectiveData.sourceInfos.map((source, idx) => {
+                           let sourceInfo;
+                           try {
+                              sourceInfo = JSON.parse(source);
+                           } catch {
+                              sourceInfo = { name: String(idx) };
+                           }
+                           return (
+                              <MultiRowTab
+                                 key={sourceInfo.name || idx}
+                                 selected={selectedTab === idx}
+                                 onClick={() => {
+                                    setSelectedTab(idx);
+                                    if (onSourceChange) {
+                                       onSourceChange(idx);
+                                    }
+                                 }}
+                              >
+                                 {sourceInfo.name || `Source ${idx + 1}`}
+                              </MultiRowTab>
+                           );
+                        })}
+                     </MultiRowTabBar>
+                  )}
+            </Stack>
+         </StyledCardContent>
+         <StyledCardMedia>
+            <Stack spacing={2} component="section">
+               {/* Render the selected source info */}
+               {Array.isArray(effectiveData.sourceInfos) &&
+                  effectiveData.sourceInfos.length > 0 && (
+                     <SourcesExplorer
+                        sourceAndPaths={effectiveData.sourceInfos.map(
+                           (source) => {
+                              const sourceInfo = JSON.parse(source);
+                              return {
+                                 sourceInfo: sourceInfo,
+                                 modelPath: modelPath,
+                              };
+                           },
+                        )}
+                        selectedSourceIndex={selectedTab}
+                        existingQuery={existingQuery}
+                        onQueryChange={onChange}
                      />
-                  ))}
-               </Stack>
-               <Box height="10px" />
-            </StyledCard>
-         )}
-         <Box height="5px" />
-      </Stack>
+                  )}
+
+               <Box height="5px" />
+            </Stack>
+         </StyledCardMedia>
+      </StyledCard>
    );
 }

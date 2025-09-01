@@ -1,6 +1,5 @@
 import {
    Box,
-   Divider,
    Table,
    TableBody,
    TableCell,
@@ -11,12 +10,16 @@ import {
    DialogContent,
    IconButton,
 } from "@mui/material";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import SearchIcon from "@mui/icons-material/Search";
 import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { StyledCard, StyledCardContent } from "../styles";
+import {
+   PackageCard,
+   PackageCardContent,
+   PackageSectionTitle,
+} from "../styles";
 import { usePackage } from "./PackageProvider";
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
@@ -46,7 +49,7 @@ function Connection({
          <TableCell>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                <Typography variant="body2">{connection.name}</Typography>
-               <OpenInNewIcon
+               <SearchIcon
                   sx={{
                      fontSize: "1rem",
                      color: "action.active",
@@ -84,12 +87,9 @@ export default function Connections() {
    return (
       // Connections are project-scoped, so we need to provide the project name to the ConnectionExplorer
       <ProjectProvider projectName={projectName}>
-         <StyledCard variant="outlined" sx={{ width: "100%" }}>
-            <StyledCardContent>
-               <Typography variant="overline" fontWeight="bold">
-                  Database Connections
-               </Typography>
-               <Divider />
+         <PackageCard>
+            <PackageCardContent>
+               <PackageSectionTitle>Database Connections</PackageSectionTitle>
                <Box
                   sx={{
                      maxHeight: "200px",
@@ -102,21 +102,35 @@ export default function Connections() {
                      </Typography>
                   )}
                   {isSuccess && data.data.length > 0 && (
-                     <Table size="small">
+                     <Table
+                        size="small"
+                        sx={{
+                           borderCollapse: "collapse",
+                           "& .MuiTableCell-root": {
+                              borderBottom: "1px solid #e0e0e0",
+                           },
+                           "& .MuiTableRow-root:last-child .MuiTableCell-root":
+                              {
+                                 borderBottom: "none",
+                              },
+                        }}
+                     >
                         <TableBody>
                            <TableRow>
                               <TableCell>
                                  <Typography
-                                    variant="subtitle2"
-                                    fontWeight="bold"
+                                    variant="body2"
+                                    fontWeight="500"
+                                    color="text.secondary"
                                  >
                                     Connection Name
                                  </Typography>
                               </TableCell>
                               <TableCell>
                                  <Typography
-                                    variant="subtitle2"
-                                    fontWeight="bold"
+                                    variant="body2"
+                                    fontWeight="500"
+                                    color="text.secondary"
                                  >
                                     Type
                                  </Typography>
@@ -144,8 +158,8 @@ export default function Connections() {
                      />
                   )}
                </Box>
-            </StyledCardContent>
-         </StyledCard>
+            </PackageCardContent>
+         </PackageCard>
 
          {/* Connection Explorer Dialog */}
          <Dialog

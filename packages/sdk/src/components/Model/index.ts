@@ -1,5 +1,6 @@
 export { default as Model } from "./Model";
 export { ModelExplorer } from "./ModelExplorer";
+export { ModelExplorerDialog } from "./ModelExplorerDialog";
 export { SourcesExplorer } from "./SourcesExplorer";
 export { SourceExplorerComponent } from "./SourcesExplorer";
 export type { SourceAndPath } from "./SourcesExplorer";

@@ -22,6 +22,12 @@ export type PublisherConfig = {
 
 export const getPublisherConfig = (serverRoot: string): PublisherConfig => {
    const publisherConfigPath = path.join(serverRoot, PUBLISHER_CONFIG_NAME);
+   if (!fs.existsSync(publisherConfigPath)) {
+      return {
+         frozenConfig: false,
+         projects: [],
+      };
+   }
    const rawConfig = JSON.parse(fs.readFileSync(publisherConfigPath, "utf8"));
 
    if (

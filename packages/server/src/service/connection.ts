@@ -277,11 +277,10 @@ export async function testConnectionConfig(
             !postgresConfig.host ||
             !postgresConfig.port ||
             !postgresConfig.userName ||
-            !postgresConfig.password ||
             !postgresConfig.databaseName
          ) {
             throw new Error(
-               "PostgreSQL connection requires: host, port, userName, password, and databaseName",
+               "PostgreSQL connection requires: host, port, userName, and databaseName",
             );
          }
 
@@ -331,9 +330,7 @@ export async function testConnectionConfig(
             !snowflakeConfig.account ||
             !snowflakeConfig.username ||
             !snowflakeConfig.password ||
-            !snowflakeConfig.warehouse ||
-            !snowflakeConfig.database ||
-            !snowflakeConfig.schema
+            !snowflakeConfig.warehouse
          ) {
             throw new Error(
                "Snowflake connection requires: account, username, password, warehouse, database, and schema",
@@ -381,26 +378,18 @@ export async function testConnectionConfig(
          }
 
          const bigqueryConfig = connectionConfig.bigqueryConnection;
-         if (
-            !bigqueryConfig.serviceAccountKeyJson ||
-            !bigqueryConfig.defaultProjectId
-         ) {
-            throw new Error(
-               "BigQuery connection requires: serviceAccountKeyJson and defaultProjectId",
-            );
-         }
-
-         const serviceAccountKeyPath = path.join(
-            TEMP_DIR_PATH,
-            `test-${uuidv4()}-service-account-key.json`,
-         );
-
+         let serviceAccountKeyPath = undefined;
          try {
-            await fs.writeFile(
-               serviceAccountKeyPath,
-               connectionConfig.bigqueryConnection
-                  .serviceAccountKeyJson as string,
-            );
+            if (bigqueryConfig.serviceAccountKeyJson) {
+               serviceAccountKeyPath = path.join(
+                  TEMP_DIR_PATH,
+                  `test-${uuidv4()}-service-account-key.json`,
+               );
+               await fs.writeFile(
+                  serviceAccountKeyPath,
+                  bigqueryConfig.serviceAccountKeyJson as string,
+               );
+            }
 
             const bigqueryConnectionOptions = {
                projectId: connectionConfig.bigqueryConnection.defaultProjectId,
@@ -433,7 +422,9 @@ export async function testConnectionConfig(
             };
          } finally {
             try {
-               await fs.unlink(serviceAccountKeyPath);
+               if (serviceAccountKeyPath) {
+                  await fs.unlink(serviceAccountKeyPath);
+               }
             } catch (cleanupError) {
                logger.warn(
                   `Failed to cleanup temporary file ${serviceAccountKeyPath}:`,
@@ -455,11 +446,10 @@ export async function testConnectionConfig(
             !trinoConfig.port ||
             !trinoConfig.catalog ||
             !trinoConfig.schema ||
-            !trinoConfig.user ||
-            !trinoConfig.password
+            !trinoConfig.user
          ) {
             throw new Error(
-               "Trino connection requires: server, port, catalog, schema, user, and password",
+               "Trino connection requires: server, port, catalog, schema, and user",
             );
          }
 

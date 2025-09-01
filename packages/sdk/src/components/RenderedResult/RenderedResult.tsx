@@ -39,6 +39,9 @@ const createRenderer = async (onDrill?: (element: unknown) => void) => {
    const { MalloyRenderer } = await import("@malloydata/render");
    const renderer = new MalloyRenderer({
       onClick: onDrill,
+      onError: (error) => {
+         console.error("Error rendering visualization:", typeof error, error);
+      },
    });
    return renderer.createViz();
 };

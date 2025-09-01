@@ -1,7 +1,7 @@
 {
    "name": "@malloy-publisher/server",
    "description": "Malloy Publisher Server",
-   "version": "0.0.93",
+   "version": "0.0.102",
    "main": "dist/server.js",
    "bin": {
       "malloy-publisher": "dist/server.js"
@@ -23,15 +23,15 @@
    },
    "dependencies": {
       "@google-cloud/storage": "^7.16.0",
-      "@malloydata/db-bigquery": "^0.0.295",
-      "@malloydata/db-duckdb": "^0.0.295",
-      "@malloydata/db-mysql": "^0.0.295",
-      "@malloydata/db-postgres": "^0.0.295",
-      "@malloydata/db-snowflake": "^0.0.295",
-      "@malloydata/db-trino": "^0.0.295",
-      "@malloydata/malloy": "^0.0.295",
-      "@malloydata/malloy-sql": "^0.0.295",
-      "@malloydata/render": "^0.0.295",
+      "@malloydata/db-bigquery": "^0.0.307",
+      "@malloydata/db-duckdb": "^0.0.307",
+      "@malloydata/db-mysql": "^0.0.307",
+      "@malloydata/db-postgres": "^0.0.307",
+      "@malloydata/db-snowflake": "^0.0.307",
+      "@malloydata/db-trino": "^0.0.307",
+      "@malloydata/malloy": "^0.0.307",
+      "@malloydata/malloy-sql": "^0.0.307",
+      "@malloydata/render": "^0.0.307",
       "@modelcontextprotocol/sdk": "^1.13.2",
       "@opentelemetry/api": "^1.9.0",
       "@opentelemetry/auto-instrumentations-node": "^0.57.0",
