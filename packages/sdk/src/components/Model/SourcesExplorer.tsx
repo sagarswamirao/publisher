@@ -228,7 +228,14 @@ function SourceExplorerComponentInner({
                >
                   <QueryPanel
                      runQuery={() => {
-                        mutation.mutate();
+                        console.log(
+                           `running query with:  ${query?.malloyQuery}`,
+                        );
+                        try {
+                           mutation.mutate();
+                        } catch (error) {
+                           console.error("Error running query:", error);
+                        }
                      }}
                   />
                </ResizableCollapsiblePanel>

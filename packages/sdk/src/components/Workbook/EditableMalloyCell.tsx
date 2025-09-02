@@ -1,5 +1,8 @@
-import { SourceAndPath, SourcesExplorer } from "../Model";
-import { QueryExplorerResult } from "../Model/SourcesExplorer";
+import {
+   SourceAndPath,
+   QueryExplorerResult,
+   SourcesExplorer,
+} from "../Model/SourcesExplorer";
 import { WorkbookCellValue } from "./WorkbookManager";
 
 interface EditableMalloyCellProps {
