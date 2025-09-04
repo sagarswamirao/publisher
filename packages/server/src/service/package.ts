@@ -366,9 +366,10 @@ export class Package {
          connections: [new DuckDBConnection("duckdb")],
       });
       // Escape backslashes for Windows paths in the Malloy model string
-      const escapedPath = process.platform === 'win32' 
-         ? fullPath.replace(/\\/g, '\\\\') 
-         : fullPath;
+      const escapedPath =
+         process.platform === "win32"
+            ? fullPath.replace(/\\/g, "\\\\")
+            : fullPath;
       const model = runtime.loadModel(
          `source: temp is duckdb.table('${escapedPath}')`,
       );
