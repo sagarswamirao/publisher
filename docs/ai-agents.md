@@ -55,7 +55,7 @@ The easiest way to get started is to run the server directly using `npx`, pointi
 
 1.  First, clone the `malloy-samples` repository:
     ```bash
-    git clone https://github.com/ms2data/malloy-samples.git
+    git clone https://github.com/credibledata/malloy-samples.git
     ```
 2.  Navigate into the newly created directory:
     ```bash
