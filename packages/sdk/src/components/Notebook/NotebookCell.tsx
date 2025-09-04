@@ -147,7 +147,8 @@ export function NotebookCell({
                               <span
                                  dangerouslySetInnerHTML={{
                                     __html:
-                                       cell.text.length > 50
+                                       cell.text.length > 50 &&
+                                       highlightedMalloyCode
                                           ? `${highlightedMalloyCode.substring(0, 50)}...`
                                           : highlightedMalloyCode,
                                  }}
