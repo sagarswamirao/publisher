@@ -79,7 +79,7 @@ export function ModelExplorer({
       isError,
       isLoading,
       error,
-   } = useModelData(modelPath, undefined);
+   } = useModelData(modelPath, undefined, undefined, undefined);
 
    const effectiveData = data || fetchedData;
 
