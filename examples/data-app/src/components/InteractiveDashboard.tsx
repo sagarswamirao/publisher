@@ -15,22 +15,21 @@ import {
   Alert,
   SelectChangeEvent
 } from "@mui/material";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
-  Cell 
-} from 'recharts';
-import { PackageProvider, QueryResult } from "@malloy-publisher/sdk";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import Header from "./Header";
 
 // Custom hook to fetch raw query data using the existing API

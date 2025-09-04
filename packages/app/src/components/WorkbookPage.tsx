@@ -1,4 +1,4 @@
-import { Workbook } from "@malloy-publisher/sdk";
+import { encodeResourceUri, Workbook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function WorkbookPage() {
@@ -28,12 +28,17 @@ export function WorkbookPage() {
          </div>
       );
    } else {
+      const resourceUri = encodeResourceUri({
+         project: projectName,
+         package: packageName,
+      });
       return (
          <Workbook
             key={`${workbookPath}`}
             defaultProjectName={projectName}
             defaultPackageName={packageName}
             workbookPath={{ path: workbookPath, workspace: workspace }}
+            resourceUri={resourceUri}
          />
       );
    }

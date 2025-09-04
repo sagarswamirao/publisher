@@ -25,10 +25,12 @@ import "@malloydata/malloy-explorer/styles.css";
 export interface AddChartDialogProps {
   handleAddWidget: (newTitle: string, newQuery: string) => void;
   onClose: () => void;
+  resourceUri: string;
 }
 export default function AddChartDialog({
   handleAddWidget,
   onClose,
+  resourceUri,
 }: AddChartDialogProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showModelExplorer, setShowModelExplorer] = useState(false);
@@ -95,11 +97,11 @@ export default function AddChartDialog({
       setModelQuery("");
       return;
     }
+
     const queryResultString = createEmbeddedQueryResult({
       modelPath: selectedModel,
       query: queryResult.query || "",
-      optionalProjectName: projectName,
-      optionalPackageName: selectedPackage,
+      resourceUri: resourceUri,
     });
     setModelQuery(queryResultString);
   };
@@ -174,7 +176,7 @@ export default function AddChartDialog({
               }}
             >
               <Packages
-                projectName={projectName}
+                resourceUri={resourceUri}
                 navigate={handlePackageNavigate}
               />
             </Box>
@@ -193,8 +195,7 @@ export default function AddChartDialog({
               >
                 <Models
                   navigate={handleModelNavigate}
-                  projectName={projectName}
-                  packageName={selectedPackage}
+                  resourceUri={resourceUri}
                 />
               </Box>
             </Box>
@@ -221,10 +222,7 @@ export default function AddChartDialog({
               >
                 <ModelExplorer
                   modelPath={selectedModel}
-                  expandResults={true}
-                  hideResultIcons={false}
-                  expandEmbeddings={false}
-                  hideEmbeddingIcons={true}
+                  resourceUri={resourceUri}
                   onChange={handleModelQueryChange}
                 />
               </Box>

@@ -28,6 +28,7 @@ export default function MalloySamplesDashboard({
       storageKey="my-dashboard-widgets-malloy-samples"
       defaultWidgets={defaultWidgets}
       customizeWidgetsEffect={customizeWidgetsEffect}
+      resourceUri={`publisher://malloy-samples`}
     />
   );
 }
