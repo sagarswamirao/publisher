@@ -4,6 +4,7 @@ import React, {
    PropsWithChildren,
    useMemo,
 } from "react";
+import { parseResourceUri } from "../../utils/formatting";
 
 export interface PublisherResourceContextProps {
    projectName: string;
@@ -27,19 +28,10 @@ export const PublisherResourceProvider = ({
    resourceUri,
    children,
 }: PublisherResourceProviderProps) => {
-   const parsedResourceUri = useMemo(() => {
-      const resourceRegex =
-         /^publisher:\/\/(?<project>[^/]+)\/?(?<package>[^/]*)\/?(?<version>[^/]*)$/;
-      const match = resourceUri.match(resourceRegex);
-      if (!match) {
-         throw new Error(`Invalid resource URI: ${resourceUri}`);
-      }
-      return match.groups as {
-         project: string;
-         package: string | undefined;
-         version: string | undefined;
-      };
-   }, [resourceUri]);
+   const parsedResourceUri = useMemo(
+      () => parseResourceUri(resourceUri),
+      [resourceUri],
+   );
    return (
       <PublisherResourceContext.Provider
          value={{
