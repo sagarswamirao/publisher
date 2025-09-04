@@ -365,8 +365,12 @@ export class Package {
          urlReader: new EmptyURLReader(),
          connections: [new DuckDBConnection("duckdb")],
       });
+      // Escape backslashes for Windows paths in the Malloy model string
+      const escapedPath = process.platform === 'win32' 
+         ? fullPath.replace(/\\/g, '\\\\') 
+         : fullPath;
       const model = runtime.loadModel(
-         `source: temp is duckdb.table('${fullPath}')`,
+         `source: temp is duckdb.table('${escapedPath}')`,
       );
       const modelDef = await model.getModel();
       const fields = (modelDef._modelDef.contents["temp"] as SourceDef).fields;
