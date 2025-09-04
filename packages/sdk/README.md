@@ -9,22 +9,12 @@ To pull in CSS styling required by various SDK components do:
 import '@malloy-publisher/sdk/styles.css';
 ```
 
-## Providers
-The SDK components rely on a React Provider to supply context information.
-### Example Usage:
-**Providing context for a project**
+## Example Usage:
+**Rendering a project**
 ```react
-<PublisherResourceProvider
-    resourceUri={`publisher://${projectName}`}
->
-    <Project navigate={navigate} />
-</ProjectProvider>
+    <Project name="malloy-samples" navigate={navigate} />
 ``` 
-**Providing context for a package inside that project**
+**Rendering a package**
 ```react
-<PublisherResourceProvider
-    resourceUri={`publisher://${projectName}/${packageName}`}
->
-    <Package navigate={navigate} />
-</PublisherResourceProvider>
+    <Package name="ecommerce" projectName="malloy-samples" navigate={navigate} />
 ```

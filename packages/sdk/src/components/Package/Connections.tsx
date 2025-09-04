@@ -188,7 +188,10 @@ export default function Connections() {
             </DialogTitle>
             <DialogContent>
                {selectedConnection && (
-                  <ConnectionExplorer connectionName={selectedConnection} />
+                  <ConnectionExplorer
+                     connectionName={selectedConnection}
+                     projectName={projectName}
+                  />
                )}
             </DialogContent>
          </Dialog>

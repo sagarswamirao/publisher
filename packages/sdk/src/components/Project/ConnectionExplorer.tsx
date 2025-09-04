@@ -29,15 +29,15 @@ const connectionsApi = new ConnectionsApi(new Configuration());
 
 interface ConnectionExplorerProps {
    connectionName: string;
+   projectName: string;
    schema?: string;
 }
 
 export default function ConnectionExplorer({
    connectionName,
+   projectName,
    schema,
 }: ConnectionExplorerProps) {
-   const { projectName } = usePublisherResource();
-
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
    );

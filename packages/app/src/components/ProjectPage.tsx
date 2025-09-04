@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Project, PublisherResourceProvider } from "@malloy-publisher/sdk";
+import { Project } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 export function ProjectPage() {
@@ -12,10 +12,6 @@ export function ProjectPage() {
          </div>
       );
    } else {
-      return (
-         <PublisherResourceProvider resourceUri={`publisher://${projectName}`}>
-            <Project navigate={navigate} />
-         </PublisherResourceProvider>
-      );
+      return <Project navigate={navigate} name={projectName} />;
    }
 }

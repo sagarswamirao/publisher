@@ -4,24 +4,26 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { PackageCard, PackageCardContent } from "../styles";
-import { usePublisherResource } from "../Package";
+import { PublisherResourceProvider } from "../Package";
+import { encodeResourceUri } from "../../utils/formatting";
 
 const packagesApi = new PackagesApi(new Configuration());
 
 interface PackagesProps {
    navigate: (to: string, event?: React.MouseEvent) => void;
+   projectName: string;
 }
 
-export default function Packages({ navigate }: PackagesProps) {
-   const { projectName } = usePublisherResource();
-
+export default function Packages({ navigate, projectName }: PackagesProps) {
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["packages", projectName],
       queryFn: (config) => packagesApi.listPackages(projectName, config),
    });
 
+   const resourceUri = encodeResourceUri({ project: projectName });
+
    return (
-      <>
+      <PublisherResourceProvider resourceUri={resourceUri}>
          {!isSuccess && !isError && <Loading text="Fetching Packages..." />}
          {isSuccess && (
             <Grid container spacing={3} columns={12}>
@@ -86,6 +88,6 @@ export default function Packages({ navigate }: PackagesProps) {
                context={`${projectName} > Packages`}
             />
          )}
-      </>
+      </PublisherResourceProvider>
    );
 }

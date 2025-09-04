@@ -166,41 +166,38 @@ export default function AddChartDialog({
 
           {/* Package Selection Step */}
           {currentStep === "package" && (
-            <Box>
-              <PublisherResourceProvider
-                resourceUri={`publisher://${projectName}`}
-              >
-                <Box
-                  sx={{
-                    maxHeight: 500,
-                    overflow: "auto",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Packages navigate={handlePackageNavigate} />
-                </Box>
-              </PublisherResourceProvider>
+            <Box
+              sx={{
+                maxHeight: 500,
+                overflow: "auto",
+                border: "1px solid #e0e0e0",
+                borderRadius: 1,
+              }}
+            >
+              <Packages
+                projectName={projectName}
+                navigate={handlePackageNavigate}
+              />
             </Box>
           )}
 
           {/* Model Selection Step */}
           {currentStep === "model" && selectedPackage && (
             <Box>
-              <PublisherResourceProvider
-                resourceUri={`publisher://${projectName}/${selectedPackage}`}
+              <Box
+                sx={{
+                  maxHeight: 500,
+                  overflow: "auto",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 1,
+                }}
               >
-                <Box
-                  sx={{
-                    maxHeight: 500,
-                    overflow: "auto",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Models navigate={handleModelNavigate} />
-                </Box>
-              </PublisherResourceProvider>
+                <Models
+                  navigate={handleModelNavigate}
+                  projectName={projectName}
+                  packageName={selectedPackage}
+                />
+              </Box>
             </Box>
           )}
 
@@ -214,27 +211,24 @@ export default function AddChartDialog({
                 onChange={(e) => setNewTitle(e.target.value)}
                 sx={{ mb: 2 }}
               />
-              <PublisherResourceProvider
-                resourceUri={`publisher://${projectName}/${selectedPackage}`}
+
+              <Box
+                sx={{
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 2,
+                  minHeight: 400,
+                  overflow: "auto",
+                }}
               >
-                <Box
-                  sx={{
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 2,
-                    minHeight: 400,
-                    overflow: "auto",
-                  }}
-                >
-                  <ModelExplorer
-                    modelPath={selectedModel}
-                    expandResults={true}
-                    hideResultIcons={false}
-                    expandEmbeddings={false}
-                    hideEmbeddingIcons={true}
-                    onChange={handleModelQueryChange}
-                  />
-                </Box>
-              </PublisherResourceProvider>
+                <ModelExplorer
+                  modelPath={selectedModel}
+                  expandResults={true}
+                  hideResultIcons={false}
+                  expandEmbeddings={false}
+                  hideEmbeddingIcons={true}
+                  onChange={handleModelQueryChange}
+                />
+              </Box>
             </Box>
           )}
 
