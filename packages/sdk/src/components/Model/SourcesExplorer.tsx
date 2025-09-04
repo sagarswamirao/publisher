@@ -9,7 +9,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
-import { usePackage } from "../Package/PackageProvider";
+import { usePublisherResource } from "../Package";
 
 type ExplorerComponents = typeof import("@malloydata/malloy-explorer");
 type QueryBuilder = typeof import("@malloydata/malloy-query-builder");
@@ -124,7 +124,7 @@ function SourceExplorerComponentInner({
          onChange(query);
       }
    }, [onChange, query]);
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
    const mutation = useMutationWithApiError({
       mutationFn: (_, config) => {
          const malloy = new QueryBuilder.ASTQuery({

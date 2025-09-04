@@ -9,7 +9,7 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
-import { usePackage } from "./PackageProvider";
+import { usePublisherResource } from "./PublisherResourceProvider";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -20,7 +20,7 @@ interface ModelsProps {
 }
 
 export default function Models({ navigate }: ModelsProps) {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
       queryFn: (config) =>

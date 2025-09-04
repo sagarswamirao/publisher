@@ -1,5 +1,5 @@
 import { Configuration, ModelsApi, CompiledModel } from "../../client";
-import { usePackage } from "../Package/PackageProvider";
+import { usePublisherResource } from "../Package";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const modelsApi = new ModelsApi(new Configuration());
@@ -13,7 +13,7 @@ export function useModelData(modelPath: string, versionId?: string) {
       projectName,
       packageName,
       versionId: packageVersionId,
-   } = usePackage();
+   } = usePublisherResource();
    const effectiveVersionId = versionId || packageVersionId;
 
    return useQueryWithApiError<CompiledModel>({

@@ -23,12 +23,12 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
+import { usePublisherResource } from "./PublisherResourceProvider";
 
 const databasesApi = new DatabasesApi(new Configuration());
 
 export default function Databases() {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
 
    const [open, setOpen] = React.useState(false);
    const [selectedDatabase, setSelectedDatabase] =

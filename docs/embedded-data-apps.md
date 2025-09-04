@@ -43,17 +43,17 @@ You can embed any analysis cell from your published Malloy notebook directly int
 
    The code will look something like this:
    ```tsx
-   import { ServerProvider, PackageProvider, QueryResult } from "@malloy-publisher/sdk";
+   import { ServerProvider, PublisherResourceProvider, QueryResult } from "@malloy-publisher/sdk";
 
    export default function SingleEmbedDashboard() {
      return (
        <div className="dashboard">
          <ServerProvider server="https://localhost:4000/api/v0">
-            <PackageProvider projectName="malloy-samples" packageName="names">
+            <PublisherResourceProvider resourceUri="publisher://malloy-samples/names">
                <QueryResult 
                   modelPath="names1.malloynb"
                   query="run: names -> { aggregate: total_population }" />
-            </PackageProvider>
+            </PublisherResourceProvider>
          </ServerProvider>
        </div>
      );

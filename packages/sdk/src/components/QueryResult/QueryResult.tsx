@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
-import { usePackage } from "../Package/PackageProvider";
+import { usePublisherResource } from "../Package";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -80,7 +80,7 @@ export default function QueryResult({
    optionalVersionId,
 }: QueryResultProps) {
    // Always call usePackage - it should handle missing provider gracefully
-   const packageContext = usePackage(false);
+   const packageContext = usePublisherResource(false);
 
    // Use optional props if provided, otherwise fallback to hook values (with defaults)
    const projectName = optionalProjectName || packageContext?.projectName;

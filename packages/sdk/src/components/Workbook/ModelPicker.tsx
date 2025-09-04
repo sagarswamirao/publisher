@@ -13,7 +13,7 @@ import {
 import React from "react";
 import { Configuration, ModelsApi } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { usePackage } from "../Package/PackageProvider";
+import { usePublisherResource } from "../Package";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 
 const modelsApi = new ModelsApi(new Configuration());
@@ -31,7 +31,7 @@ export function ModelPicker({
    initialSelectedModels,
    onModelChange,
 }: ModelPickerProps) {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
    const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
       queryFn: (config) =>

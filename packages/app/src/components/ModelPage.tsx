@@ -1,4 +1,8 @@
-import { Model, PackageProvider, Notebook } from "@malloy-publisher/sdk";
+import {
+   Model,
+   Notebook,
+   PublisherResourceProvider,
+} from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function ModelPage() {
@@ -18,21 +22,19 @@ export function ModelPage() {
       );
    } else if (modelPath?.endsWith(".malloy")) {
       return (
-         <PackageProvider
-            projectName={params.projectName}
-            packageName={params.packageName}
+         <PublisherResourceProvider
+            resourceUri={`publisher://${params.projectName}/${params.packageName}`}
          >
             <Model modelPath={modelPath} />
-         </PackageProvider>
+         </PublisherResourceProvider>
       );
    } else if (modelPath?.endsWith(".malloynb")) {
       return (
-         <PackageProvider
-            projectName={params.projectName}
-            packageName={params.packageName}
+         <PublisherResourceProvider
+            resourceUri={`publisher://${params.projectName}/${params.packageName}`}
          >
             <Notebook notebookPath={modelPath} />
-         </PackageProvider>
+         </PublisherResourceProvider>
       );
    } else {
       return (

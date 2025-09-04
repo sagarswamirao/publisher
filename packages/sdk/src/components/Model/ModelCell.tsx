@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { highlight } from "../highlighter";
-import { usePackage } from "../Package";
+import { usePublisherResource } from "../Package";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
 import { CleanMetricCard, CleanNotebookCell } from "../styles";
@@ -26,7 +26,7 @@ export function ModelCell({
       React.useState<string>();
    const [resultsDialogOpen, setResultsDialogOpen] = React.useState(false);
 
-   const { packageName, projectName } = usePackage();
+   const { packageName, projectName } = usePublisherResource();
 
    const queryResultsApi = new QueryresultsApi(new Configuration());
 

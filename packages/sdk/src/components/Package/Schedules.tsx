@@ -14,7 +14,7 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
+import { usePublisherResource } from "./PublisherResourceProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
@@ -22,7 +22,7 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 const schedulesApi = new SchedulesApi(new Configuration());
 
 export default function Schedules() {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
 
    const { data, isError, isLoading, error } = useQueryWithApiError({
       queryKey: ["schedules", projectName, packageName, versionId],

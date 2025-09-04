@@ -4,7 +4,7 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { PackageCard, PackageCardContent } from "../styles";
-import { useProject } from "./Project";
+import { usePublisherResource } from "../Package";
 
 const packagesApi = new PackagesApi(new Configuration());
 
@@ -13,7 +13,7 @@ interface PackagesProps {
 }
 
 export default function Packages({ navigate }: PackagesProps) {
-   const { projectName } = useProject();
+   const { projectName } = usePublisherResource();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["packages", projectName],

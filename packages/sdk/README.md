@@ -10,22 +10,21 @@ import '@malloy-publisher/sdk/styles.css';
 ```
 
 ## Providers
-The SDK components rely on React Providers to supply context information.
-There are current 2 Providers, 1 for Packages, 1 for Project components.
+The SDK components rely on a React Provider to supply context information.
 ### Example Usage:
-**ProjectProvider**
+**Providing context for a project**
 ```react
- <ProjectProvider server={server} projectName={projectName}>
+<PublisherResourceProvider
+    resourceUri={`publisher://${projectName}`}
+>
     <Project navigate={navigate} />
 </ProjectProvider>
 ``` 
-**PackageProvider**
+**Providing context for a package inside that project**
 ```react
-<PackageProvider
-    server={server}
-    projectName={projectName}
-    packageName={packageName}
-    >
+<PublisherResourceProvider
+    resourceUri={`publisher://${projectName}/${packageName}`}
+>
     <Package navigate={navigate} />
-</PackageProvider>
+</PublisherResourceProvider>
 ```

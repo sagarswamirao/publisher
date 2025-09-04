@@ -20,7 +20,7 @@ import { ModelExplorerDialog } from "../Model/ModelExplorerDialog";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
 import { CleanNotebookCell, CleanMetricCard } from "../styles";
-import { usePackage } from "../Package";
+import { usePublisherResource } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
 
 // Regex to extract model path from import statements like: import {flights} from 'flights.malloy'
@@ -52,7 +52,7 @@ export function NotebookCell({
       React.useState<string>();
    const [sourcesDialogOpen, setSourcesDialogOpen] =
       React.useState<boolean>(false);
-   const { packageName, projectName } = usePackage();
+   const { packageName, projectName } = usePublisherResource();
 
    // Extract model path from import statement in cell text
    const importMatch = cell.text.match(IMPORT_REGEX);

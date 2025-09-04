@@ -5,7 +5,7 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 import { Loading } from "../Loading";
-import { usePackage } from "../Package/PackageProvider";
+import { usePublisherResource } from "../Package";
 import { CleanNotebookContainer, CleanNotebookSection } from "../styles";
 import { NotebookCell } from "./NotebookCell";
 
@@ -18,7 +18,7 @@ interface NotebookProps {
 
 // Requires PackageProvider
 export default function Notebook({ notebookPath }: NotebookProps) {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
 
    const {
       data: notebook,

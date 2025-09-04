@@ -20,10 +20,9 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
+import { usePublisherResource } from "./PublisherResourceProvider";
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
-import { ProjectProvider } from "../Project";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
@@ -66,7 +65,7 @@ function Connection({
 }
 
 export default function Connections() {
-   const { projectName } = usePackage();
+   const { projectName } = usePublisherResource();
    const [selectedConnection, setSelectedConnection] = useState<string | null>(
       null,
    );
@@ -85,8 +84,7 @@ export default function Connections() {
    };
 
    return (
-      // Connections are project-scoped, so we need to provide the project name to the ConnectionExplorer
-      <ProjectProvider projectName={projectName}>
+      <>
          <PackageCard>
             <PackageCardContent>
                <PackageSectionTitle>Database Connections</PackageSectionTitle>
@@ -194,6 +192,6 @@ export default function Connections() {
                )}
             </DialogContent>
          </Dialog>
-      </ProjectProvider>
+      </>
    );
 }

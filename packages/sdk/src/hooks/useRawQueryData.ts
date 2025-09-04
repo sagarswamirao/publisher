@@ -1,5 +1,5 @@
 import { Configuration, QueryresultsApi } from "../client";
-import { usePackage } from "../components/Package/PackageProvider";
+import { usePublisherResource } from "../components/Package";
 import { useQueryWithApiError } from "./useQueryWithApiError";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
@@ -19,7 +19,7 @@ export function useRawQueryData({
    queryName,
    enabled = true,
 }: UseRawQueryDataProps) {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [

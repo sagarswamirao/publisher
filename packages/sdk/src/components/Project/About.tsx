@@ -9,12 +9,12 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { useProject } from "./Project";
+import { usePublisherResource } from "../Package";
 
 const projectsApi = new ProjectsApi(new Configuration());
 
 export default function About() {
-   const { projectName } = useProject();
+   const { projectName } = usePublisherResource();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["about", projectName],

@@ -9,12 +9,12 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
+import { usePublisherResource } from "./PublisherResourceProvider";
 
 const packagesApi = new PackagesApi(new Configuration());
 
 export default function Config() {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["package", projectName, packageName, versionId],

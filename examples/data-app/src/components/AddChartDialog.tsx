@@ -14,11 +14,9 @@ import {
   Breadcrumbs,
 } from "@mui/material";
 import {
-  ProjectProvider,
-  PackageProvider,
+  PublisherResourceProvider,
   Models,
   Packages,
-  Model,
   createEmbeddedQueryResult,
   ModelExplorer,
 } from "@malloy-publisher/sdk";
@@ -169,7 +167,9 @@ export default function AddChartDialog({
           {/* Package Selection Step */}
           {currentStep === "package" && (
             <Box>
-              <ProjectProvider projectName={projectName}>
+              <PublisherResourceProvider
+                resourceUri={`publisher://${projectName}`}
+              >
                 <Box
                   sx={{
                     maxHeight: 500,
@@ -180,16 +180,15 @@ export default function AddChartDialog({
                 >
                   <Packages navigate={handlePackageNavigate} />
                 </Box>
-              </ProjectProvider>
+              </PublisherResourceProvider>
             </Box>
           )}
 
           {/* Model Selection Step */}
           {currentStep === "model" && selectedPackage && (
             <Box>
-              <PackageProvider
-                projectName={projectName}
-                packageName={selectedPackage}
+              <PublisherResourceProvider
+                resourceUri={`publisher://${projectName}/${selectedPackage}`}
               >
                 <Box
                   sx={{
@@ -201,7 +200,7 @@ export default function AddChartDialog({
                 >
                   <Models navigate={handleModelNavigate} />
                 </Box>
-              </PackageProvider>
+              </PublisherResourceProvider>
             </Box>
           )}
 
@@ -215,9 +214,8 @@ export default function AddChartDialog({
                 onChange={(e) => setNewTitle(e.target.value)}
                 sx={{ mb: 2 }}
               />
-              <PackageProvider
-                projectName={projectName}
-                packageName={selectedPackage}
+              <PublisherResourceProvider
+                resourceUri={`publisher://${projectName}/${selectedPackage}`}
               >
                 <Box
                   sx={{
@@ -236,7 +234,7 @@ export default function AddChartDialog({
                     onChange={handleModelQueryChange}
                   />
                 </Box>
-              </PackageProvider>
+              </PublisherResourceProvider>
             </Box>
           )}
 

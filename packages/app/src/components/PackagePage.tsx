@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Package, PackageProvider } from "@malloy-publisher/sdk";
+import { Package, PublisherResourceProvider } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 export function PackagePage() {
@@ -19,9 +19,11 @@ export function PackagePage() {
       );
    } else {
       return (
-         <PackageProvider projectName={projectName} packageName={packageName}>
+         <PublisherResourceProvider
+            resourceUri={`publisher://${projectName}/${packageName}`}
+         >
             <Package navigate={navigate} />
-         </PackageProvider>
+         </PublisherResourceProvider>
       );
    }
 }

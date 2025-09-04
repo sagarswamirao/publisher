@@ -20,10 +20,10 @@ import {
 } from "@mui/material";
 import { ConnectionsApi } from "../../client/api";
 import { Configuration } from "../../client/configuration";
-import { useProject } from "./Project";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { usePublisherResource } from "../Package";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
@@ -36,7 +36,7 @@ export default function ConnectionExplorer({
    connectionName,
    schema,
 }: ConnectionExplorerProps) {
-   const { projectName } = useProject();
+   const { projectName } = usePublisherResource();
 
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
@@ -194,7 +194,7 @@ function TableSchemaViewer({
    schemaName,
    tableName,
 }: TableSchemaViewerProps) {
-   const { projectName } = useProject();
+   const { projectName } = usePublisherResource();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
@@ -269,7 +269,7 @@ function TablesInSchema({
    schemaName,
    onTableClick,
 }: TablesInSchemaProps) {
-   const { projectName } = useProject();
+   const { projectName } = usePublisherResource();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: ["tablesInSchema", projectName, connectionName, schemaName],

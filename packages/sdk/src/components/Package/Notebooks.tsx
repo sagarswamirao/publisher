@@ -9,7 +9,7 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
-import { usePackage } from "./PackageProvider";
+import { usePublisherResource } from "./PublisherResourceProvider";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 
@@ -20,7 +20,7 @@ interface NotebooksProps {
 }
 
 export default function Notebooks({ navigate }: NotebooksProps) {
-   const { projectName, packageName, versionId } = usePackage();
+   const { projectName, packageName, versionId } = usePublisherResource();
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["notebooks", projectName, packageName, versionId],
