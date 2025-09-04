@@ -1,4 +1,5 @@
 export * from "./components";
+export * from "./utils/formatting";
 export { default as ConnectionExplorer } from "./components/Project/ConnectionExplorer";
 export { useRawQueryData } from "./hooks/useRawQueryData";
 import axios from "axios";

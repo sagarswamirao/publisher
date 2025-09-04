@@ -1,9 +1,9 @@
 import { Suspense, lazy } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
-import { usePublisherResource } from "../Package";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { parseResourceUri } from "../../utils/formatting";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
@@ -14,14 +14,12 @@ interface QueryResultProps {
    query?: string;
    sourceName?: string;
    queryName?: string;
-   // Optional props to override the value from usePackage hook
-   optionalProjectName?: string;
-   optionalPackageName?: string;
-   optionalVersionId?: string;
+   resourceUri?: string;
 }
 
 export function createEmbeddedQueryResult(props: QueryResultProps): string {
-   const { optionalProjectName, optionalPackageName } = props;
+   const { project: optionalProjectName, package: optionalPackageName } =
+      parseResourceUri(props.resourceUri);
    if (!optionalProjectName || !optionalPackageName) {
       throw new Error(
          "Project and Package name must be provided for query embedding.",
@@ -40,15 +38,9 @@ export function EmbeddedQueryResult({
 }: {
    embeddedQueryResult: string;
 }): React.ReactElement {
-   const {
-      modelPath,
-      query,
-      sourceName,
-      queryName,
-      optionalProjectName,
-      optionalPackageName,
-      optionalVersionId,
-   } = JSON.parse(embeddedQueryResult) as QueryResultProps;
+   const { modelPath, query, sourceName, queryName, resourceUri } = JSON.parse(
+      embeddedQueryResult,
+   ) as QueryResultProps;
 
    if (
       !modelPath ||
@@ -63,9 +55,7 @@ export function EmbeddedQueryResult({
          query={query}
          sourceName={sourceName}
          queryName={queryName}
-         optionalProjectName={optionalProjectName}
-         optionalPackageName={optionalPackageName}
-         optionalVersionId={optionalVersionId}
+         resourceUri={resourceUri}
       />
    );
 }
@@ -75,21 +65,16 @@ export default function QueryResult({
    query,
    sourceName,
    queryName,
-   optionalProjectName,
-   optionalPackageName,
-   optionalVersionId,
+   resourceUri,
 }: QueryResultProps) {
-   // Always call usePackage - it should handle missing provider gracefully
-   const packageContext = usePublisherResource(false);
-
-   // Use optional props if provided, otherwise fallback to hook values (with defaults)
-   const projectName = optionalProjectName || packageContext?.projectName;
-   const packageName = optionalPackageName || packageContext?.packageName;
-   const versionId = optionalVersionId || packageContext?.versionId;
+   const packageContext = parseResourceUri(resourceUri);
+   const projectName = packageContext?.project;
+   const packageName = packageContext?.package;
+   const versionId = packageContext?.version;
 
    if (!projectName || !packageName) {
       throw new Error(
-         "No project or package name provided. Must be set in props or via PackageProvider",
+         "No project or package name provided. A resource URI must be provided.",
       );
    }
 

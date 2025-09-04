@@ -9,7 +9,7 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
-import { usePublisherResource } from "./PublisherResourceProvider";
+import { parseResourceUri } from "../../utils/formatting";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 
@@ -17,10 +17,15 @@ const DEFAULT_EXPANDED_FOLDERS = ["notebooks/"];
 
 interface NotebooksProps {
    navigate: (to: string, event?: React.MouseEvent) => void;
+   resourceUri: string;
 }
 
-export default function Notebooks({ navigate }: NotebooksProps) {
-   const { projectName, packageName, versionId } = usePublisherResource();
+export default function Notebooks({ navigate, resourceUri }: NotebooksProps) {
+   const {
+      project: projectName,
+      package: packageName,
+      version: versionId,
+   } = parseResourceUri(resourceUri);
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["notebooks", projectName, packageName, versionId],

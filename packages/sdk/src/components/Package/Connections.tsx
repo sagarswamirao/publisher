@@ -20,20 +20,19 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePublisherResource } from "./PublisherResourceProvider";
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
+import { parseResourceUri } from "../../utils/formatting";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
-// TODO(jjs) - Move this UI to the ConnectionExplorer component
-function Connection({
-   connection,
-   onClick,
-}: {
+type ConnectionProps = {
    connection: ApiConnection;
    onClick: () => void;
-}) {
+};
+
+// TODO(jjs) - Move this UI to the ConnectionExplorer component
+function Connection({ connection, onClick }: ConnectionProps) {
    return (
       <TableRow
          key={connection.name}
@@ -64,8 +63,12 @@ function Connection({
    );
 }
 
-export default function Connections() {
-   const { projectName } = usePublisherResource();
+type ConnectionsProps = {
+   resourceUri: string;
+};
+
+export default function Connections({ resourceUri }: ConnectionsProps) {
+   const { project: projectName } = parseResourceUri(resourceUri);
    const [selectedConnection, setSelectedConnection] = useState<string | null>(
       null,
    );
@@ -189,8 +192,8 @@ export default function Connections() {
             <DialogContent>
                {selectedConnection && (
                   <ConnectionExplorer
+                     resourceUri={resourceUri}
                      connectionName={selectedConnection}
-                     projectName={projectName}
                   />
                )}
             </DialogContent>

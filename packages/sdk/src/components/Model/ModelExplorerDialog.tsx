@@ -9,6 +9,7 @@ interface ModelExplorerDialogProps {
    open: boolean;
    onClose: () => void;
    modelPath: string;
+   resourceUri: string;
    data?: CompiledModel;
    title?: string;
    hasValidImport?: boolean;
@@ -22,6 +23,7 @@ export function ModelExplorerDialog({
    open,
    onClose,
    modelPath,
+   resourceUri,
    data,
    title = "Data Sources",
    hasValidImport = true,
@@ -59,6 +61,7 @@ export function ModelExplorerDialog({
          <DialogContent>
             {hasValidImport ? (
                <ModelExplorer
+                  resourceUri={resourceUri}
                   modelPath={modelPath}
                   data={data}
                   existingQuery={existingQuery}

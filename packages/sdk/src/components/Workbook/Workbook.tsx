@@ -37,6 +37,7 @@ interface WorkbookProps {
    workbookPath?: WorkbookLocator;
    defaultProjectName?: string;
    defaultPackageName?: string;
+   resourceUri: string;
 }
 
 interface PathToSources {
@@ -48,6 +49,7 @@ export default function Workbook({
    workbookPath,
    defaultProjectName,
    defaultPackageName,
+   resourceUri,
 }: WorkbookProps) {
    const navigate = useRouterClickHandler();
    const { server, getAccessToken } = useServer();
@@ -393,6 +395,7 @@ export default function Workbook({
                         setWorkbookData(workbookData.setModels(models));
                         saveWorkbook();
                      }}
+                     resourceUri={resourceUri}
                   />
                </Box>
                <Box sx={{ flex: 1 }} />
@@ -427,6 +430,7 @@ export default function Workbook({
                      <MutableCell
                         key={`${index}-${cell.isMarkdown}-${workbookPath.workspace}-${workbookPath.path}`}
                         cell={cell}
+                        resourceUri={resourceUri}
                         addButtonCallback={(isMarkdown) =>
                            plusButton(isMarkdown, index)
                         }

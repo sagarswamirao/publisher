@@ -1,4 +1,4 @@
-import { PublisherResourceProvider, Workbook } from "@malloy-publisher/sdk";
+import { Workbook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function WorkbookPage() {
@@ -29,16 +29,12 @@ export function WorkbookPage() {
       );
    } else {
       return (
-         <PublisherResourceProvider
-            resourceUri={`publisher://${projectName}/${packageName}`}
-         >
-            <Workbook
-               key={`${workbookPath}`}
-               defaultProjectName={projectName}
-               defaultPackageName={packageName}
-               workbookPath={{ path: workbookPath, workspace: workspace }}
-            />
-         </PublisherResourceProvider>
+         <Workbook
+            key={`${workbookPath}`}
+            defaultProjectName={projectName}
+            defaultPackageName={packageName}
+            workbookPath={{ path: workbookPath, workspace: workspace }}
+         />
       );
    }
 }

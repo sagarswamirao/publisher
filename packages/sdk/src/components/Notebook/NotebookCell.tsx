@@ -20,7 +20,6 @@ import { ModelExplorerDialog } from "../Model/ModelExplorerDialog";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
 import { CleanNotebookCell, CleanMetricCard } from "../styles";
-import { usePublisherResource } from "../Package";
 import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
 
 // Regex to extract model path from import statements like: import {flights} from 'flights.malloy'
@@ -33,6 +32,7 @@ interface NotebookCellProps {
    hideCodeCellIcon?: boolean;
    expandEmbedding?: boolean;
    hideEmbeddingIcon?: boolean;
+   resourceUri: string;
 }
 
 export function NotebookCell({
@@ -40,6 +40,7 @@ export function NotebookCell({
    notebookPath,
    hideCodeCellIcon,
    hideEmbeddingIcon,
+   resourceUri,
 }: NotebookCellProps) {
    const [codeDialogOpen, setCodeDialogOpen] = React.useState<boolean>(false);
    const [embeddingDialogOpen, setEmbeddingDialogOpen] =
@@ -52,7 +53,6 @@ export function NotebookCell({
       React.useState<string>();
    const [sourcesDialogOpen, setSourcesDialogOpen] =
       React.useState<boolean>(false);
-   const { packageName, projectName } = usePublisherResource();
 
    // Extract model path from import statement in cell text
    const importMatch = cell.text.match(IMPORT_REGEX);
@@ -62,8 +62,7 @@ export function NotebookCell({
    const queryResultCodeSnippet = createEmbeddedQueryResult({
       modelPath: notebookPath,
       query: cell.text,
-      optionalPackageName: packageName,
-      optionalProjectName: projectName,
+      resourceUri: resourceUri,
    });
 
    useEffect(() => {
@@ -192,6 +191,7 @@ export function NotebookCell({
                modelPath={modelPath || ""}
                title="Data Sources"
                hasValidImport={hasValidImport}
+               resourceUri={resourceUri}
             />
 
             {/* Code Dialog */}

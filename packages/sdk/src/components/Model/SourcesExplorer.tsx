@@ -9,7 +9,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
-import { usePublisherResource } from "../Package";
+import { parseResourceUri } from "../../utils/formatting";
 
 type ExplorerComponents = typeof import("@malloydata/malloy-explorer");
 type QueryBuilder = typeof import("@malloydata/malloy-query-builder");
@@ -27,6 +27,7 @@ export interface SourceExplorerProps {
    existingQuery?: QueryExplorerResult;
    onQueryChange?: (query: QueryExplorerResult) => void;
    onSourceChange?: (index: number) => void;
+   resourceUri: string;
 }
 
 /**
@@ -42,6 +43,7 @@ export function SourcesExplorer({
    existingQuery,
    onQueryChange,
    onSourceChange,
+   resourceUri,
 }: SourceExplorerProps) {
    // Notify parent component when selected source changes
    React.useEffect(() => {
@@ -61,6 +63,7 @@ export function SourcesExplorer({
                      onQueryChange(query);
                   }
                }}
+               resourceUri={resourceUri}
             />
             <Box height="5px" />
          </Stack>
@@ -72,6 +75,7 @@ interface SourceExplorerComponentProps {
    sourceAndPath: SourceAndPath;
    existingQuery?: QueryExplorerResult;
    onChange?: (query: QueryExplorerResult) => void;
+   resourceUri: string;
 }
 
 export interface QueryExplorerResult {
@@ -93,9 +97,11 @@ function SourceExplorerComponentInner({
    existingQuery,
    explorerComponents,
    QueryBuilder,
+   resourceUri,
 }: SourceExplorerComponentProps & {
    explorerComponents: ExplorerComponents;
    QueryBuilder: QueryBuilder;
+   resourceUri: string;
 }) {
    const [query, setQuery] = React.useState<QueryExplorerResult>(
       existingQuery || emptyQueryExplorerResult(),
@@ -124,7 +130,11 @@ function SourceExplorerComponentInner({
          onChange(query);
       }
    }, [onChange, query]);
-   const { projectName, packageName, versionId } = usePublisherResource();
+   const {
+      project: projectName,
+      package: packageName,
+      version: versionId,
+   } = parseResourceUri(resourceUri);
    const mutation = useMutationWithApiError({
       mutationFn: (_, config) => {
          const malloy = new QueryBuilder.ASTQuery({
@@ -325,6 +335,7 @@ export function SourceExplorerComponent(props: SourceExplorerComponentProps) {
          {...props}
          explorerComponents={explorerComponents}
          QueryBuilder={QueryBuilder}
+         resourceUri={props.resourceUri}
       />
    );
 }

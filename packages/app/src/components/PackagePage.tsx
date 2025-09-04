@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Package } from "@malloy-publisher/sdk";
+import { encodeResourceUri, Package } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 export function PackagePage() {
@@ -18,12 +18,10 @@ export function PackagePage() {
          </div>
       );
    } else {
-      return (
-         <Package
-            navigate={navigate}
-            projectName={projectName}
-            name={packageName}
-         />
-      );
+      const resourceUri = encodeResourceUri({
+         project: projectName,
+         package: packageName,
+      });
+      return <Package navigate={navigate} resourceUri={resourceUri} />;
    }
 }

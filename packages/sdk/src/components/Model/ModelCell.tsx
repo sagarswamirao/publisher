@@ -4,10 +4,10 @@ import React, { useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { highlight } from "../highlighter";
-import { usePublisherResource } from "../Package";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
 import { CleanMetricCard, CleanNotebookCell } from "../styles";
+import { parseResourceUri } from "../../utils/formatting";
 
 interface ModelCellProps {
    modelPath: string;
@@ -15,18 +15,24 @@ interface ModelCellProps {
    queryName: string;
    noView?: boolean;
    annotations?: string[];
+   resourceUri: string;
 }
 
 export function ModelCell({
    modelPath,
    queryName,
    annotations,
+   resourceUri,
 }: ModelCellProps) {
    const [highlightedAnnotations, setHighlightedAnnotations] =
       React.useState<string>();
    const [resultsDialogOpen, setResultsDialogOpen] = React.useState(false);
 
-   const { packageName, projectName } = usePublisherResource();
+   const {
+      package: packageName,
+      project: projectName,
+      version: versionId,
+   } = parseResourceUri(resourceUri);
 
    const queryResultsApi = new QueryresultsApi(new Configuration());
 
@@ -50,7 +56,7 @@ export function ModelCell({
             undefined, // query
             undefined, // sourceName
             queryName, // queryName
-            undefined, // versionId
+            versionId, // versionId
             config,
          ),
       enabled: true, // Always execute

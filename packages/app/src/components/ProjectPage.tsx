@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Project } from "@malloy-publisher/sdk";
+import { encodeResourceUri, Project } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
 export function ProjectPage() {
@@ -12,6 +12,7 @@ export function ProjectPage() {
          </div>
       );
    } else {
-      return <Project navigate={navigate} name={projectName} />;
+      const resourceUri = encodeResourceUri({ project: projectName });
+      return <Project navigate={navigate} resourceUri={resourceUri} />;
    }
 }

@@ -48,6 +48,7 @@ export interface ModelExplorerProps {
    initialSelectedSourceIndex?: number;
    /** Callback when source selection changes */
    onSourceChange?: (index: number) => void;
+   resourceUri: string;
 }
 
 /**
@@ -63,6 +64,7 @@ export function ModelExplorer({
    existingQuery,
    initialSelectedSourceIndex = 0,
    onSourceChange,
+   resourceUri,
 }: ModelExplorerProps) {
    const [selectedTab, setSelectedTab] = React.useState(
       initialSelectedSourceIndex,
@@ -158,6 +160,7 @@ export function ModelExplorer({
                         selectedSourceIndex={selectedTab}
                         existingQuery={existingQuery}
                         onQueryChange={onChange}
+                        resourceUri={resourceUri}
                      />
                   )}
 

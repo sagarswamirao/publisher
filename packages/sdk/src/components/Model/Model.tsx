@@ -9,15 +9,12 @@ import { ModelExplorerDialog } from "./ModelExplorerDialog";
 import { ModelCell } from "./ModelCell";
 import { useModelData } from "./useModelData";
 import React from "react";
-import { encodeResourceUri } from "../../utils/formatting";
-import { PublisherResourceProvider } from "../Package/PublisherResourceProvider";
+import { parseResourceUri } from "../../utils/formatting";
 
 interface ModelProps {
    modelPath: string;
-   versionId?: string;
    onChange?: (query: QueryExplorerResult) => void;
-   projectName: string;
-   packageName: string;
+   resourceUri: string;
 }
 
 // Note: For this to properly render outside of publisher,
@@ -26,11 +23,14 @@ interface ModelProps {
 
 export default function Model({
    modelPath,
-   versionId,
    onChange,
-   projectName,
-   packageName,
+   resourceUri,
 }: ModelProps) {
+   const {
+      project: projectName,
+      package: packageName,
+      version: versionId,
+   } = parseResourceUri(resourceUri);
    const { data, isError, isLoading, error } = useModelData(
       modelPath,
       projectName,
@@ -64,14 +64,8 @@ export default function Model({
       setSharedSourceIndex(index);
    };
 
-   const resourceUri = encodeResourceUri({
-      project: projectName,
-      package: packageName,
-      version: versionId,
-   });
-
    return (
-      <PublisherResourceProvider resourceUri={resourceUri}>
+      <>
          <Box
             sx={{
                position: "relative",
@@ -108,6 +102,7 @@ export default function Model({
                         onSourceChange={handleSourceChange}
                         existingQuery={sharedQuery}
                         initialSelectedSourceIndex={sharedSourceIndex}
+                        resourceUri={resourceUri}
                      />
 
                      {/* Magnifying glass icon */}
@@ -164,6 +159,7 @@ export default function Model({
                         modelPath={modelPath}
                         queryName={query.name}
                         annotations={query.annotations}
+                        resourceUri={resourceUri}
                      />
                   ))}
                </Stack>
@@ -174,6 +170,7 @@ export default function Model({
                open={dialogOpen}
                onClose={() => setDialogOpen(false)}
                modelPath={modelPath}
+               resourceUri={resourceUri}
                data={data}
                title={`Model: ${modelPath.split("/").pop()}`}
                existingQuery={sharedQuery}
@@ -182,6 +179,6 @@ export default function Model({
                onSourceChange={handleSourceChange}
             />
          </Box>
-      </PublisherResourceProvider>
+      </>
    );
 }

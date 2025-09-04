@@ -14,7 +14,6 @@ import {
   Breadcrumbs,
 } from "@mui/material";
 import {
-  PublisherResourceProvider,
   Models,
   Packages,
   createEmbeddedQueryResult,

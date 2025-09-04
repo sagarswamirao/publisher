@@ -1,4 +1,4 @@
-import { Model, Notebook } from "@malloy-publisher/sdk";
+import { encodeResourceUri, Model, Notebook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
 export function ModelPage() {
@@ -18,21 +18,17 @@ export function ModelPage() {
          </div>
       );
    } else if (modelPath?.endsWith(".malloy")) {
-      return (
-         <Model
-            projectName={params.projectName}
-            packageName={params.packageName}
-            modelPath={modelPath}
-         />
-      );
+      const resourceUri = encodeResourceUri({
+         project: params.projectName,
+         package: params.packageName,
+      });
+      return <Model resourceUri={resourceUri} modelPath={modelPath} />;
    } else if (modelPath?.endsWith(".malloynb")) {
-      return (
-         <Notebook
-            notebookPath={modelPath}
-            projectName={params.projectName}
-            packageName={params.packageName}
-         />
-      );
+      const resourceUri = encodeResourceUri({
+         project: params.projectName,
+         package: params.packageName,
+      });
+      return <Notebook notebookPath={modelPath} resourceUri={resourceUri} />;
    } else {
       return (
          <div>

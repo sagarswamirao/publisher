@@ -11,59 +11,41 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { PublisherResourceProvider } from "./PublisherResourceProvider";
-import { encodeResourceUri } from "../../utils/formatting";
 
 const README_NOTEBOOK = "README.malloynb";
 
 interface PackageProps {
    navigate?: (to: string, event?: React.MouseEvent) => void;
-   projectName: string;
-   name: string;
-   versionId?: string;
+   resourceUri: string;
 }
 
-export default function Package({
-   navigate,
-   projectName,
-   name,
-   versionId,
-}: PackageProps) {
+export default function Package({ navigate, resourceUri }: PackageProps) {
    if (!navigate) {
       navigate = (to: string) => {
          window.location.href = to;
       };
    }
-   const resourceUri = encodeResourceUri({
-      project: projectName,
-      package: name,
-      version: versionId,
-   });
 
    return (
-      <PublisherResourceProvider resourceUri={resourceUri}>
+      <>
          <Grid container spacing={3} columns={12}>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Config />
+               <Config resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Notebooks navigate={navigate} />
+               <Notebooks navigate={navigate} resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Models
-                  navigate={navigate}
-                  projectName={projectName}
-                  packageName={name}
-               />
+               <Models navigate={navigate} resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-               <Databases />
+               <Databases resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-               <Connections />
+               <Connections resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 12 }}>
-               <Schedules />
+               <Schedules resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 12 }}>
                <PackageCard>
@@ -72,14 +54,13 @@ export default function Package({
                      <Box sx={{ mt: 1 }}>
                         <Notebook
                            notebookPath={README_NOTEBOOK}
-                           projectName={projectName}
-                           packageName={name}
+                           resourceUri={resourceUri}
                         />
                      </Box>
                   </PackageCardContent>
                </PackageCard>
             </Grid>
          </Grid>
-      </PublisherResourceProvider>
+      </>
    );
 }

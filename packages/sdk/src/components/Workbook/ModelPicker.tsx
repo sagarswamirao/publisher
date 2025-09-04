@@ -13,14 +13,15 @@ import {
 import React from "react";
 import { Configuration, ModelsApi } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
-import { usePublisherResource } from "../Package";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { parseResourceUri } from "../../utils/formatting";
 
 const modelsApi = new ModelsApi(new Configuration());
 
 interface ModelPickerProps {
    initialSelectedModels: string[];
    onModelChange: (models: string[]) => void;
+   resourceUri: string;
 }
 
 /**
@@ -30,8 +31,13 @@ interface ModelPickerProps {
 export function ModelPicker({
    initialSelectedModels,
    onModelChange,
+   resourceUri,
 }: ModelPickerProps) {
-   const { projectName, packageName, versionId } = usePublisherResource();
+   const {
+      project: projectName,
+      package: packageName,
+      version: versionId,
+   } = parseResourceUri(resourceUri);
    const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
       queryFn: (config) =>

@@ -1,5 +1,5 @@
 import { Configuration, QueryresultsApi } from "../client";
-import { usePublisherResource } from "../components/Package";
+import { parseResourceUri } from "../utils/formatting";
 import { useQueryWithApiError } from "./useQueryWithApiError";
 
 const queryResultsApi = new QueryresultsApi(new Configuration());
@@ -10,6 +10,7 @@ interface UseRawQueryDataProps {
    sourceName?: string;
    queryName?: string;
    enabled?: boolean;
+   resourceUri: string;
 }
 
 export function useRawQueryData({
@@ -18,8 +19,13 @@ export function useRawQueryData({
    sourceName,
    queryName,
    enabled = true,
+   resourceUri,
 }: UseRawQueryDataProps) {
-   const { projectName, packageName, versionId } = usePublisherResource();
+   const {
+      project: projectName,
+      package: packageName,
+      version: versionId,
+   } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
