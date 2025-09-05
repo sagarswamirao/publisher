@@ -180,7 +180,7 @@ npx @malloy-publisher/server --port 4000 --server_root /path/to/malloy_packages
 To run the server pointed to the Malloy samples:
 
 ```sh
-git clone https://github.com/ms2data/malloy-samples
+git clone https://github.com/credibledata/malloy-samples
 npx @malloy-publisher/server --port 4000 --server_root .
 ```
 
@@ -198,19 +198,19 @@ Once Docker is installed, in a new folder with your data, create a file called `
         "packages": [
             {
             "name": "ecommerce",
-            "location": "https://github.com/ms2data/malloy-samples"
+            "location": "https://github.com/credibledata/malloy-samples"
           },
           {
             "name": "imdb",
-            "location": "https://github.com/ms2data/malloy-samples"
+            "location": "https://github.com/credibledata/malloy-samples"
           },
           {
             "name": "faa",
-            "location": "https://github.com/ms2data/malloy-samples"
+            "location": "https://github.com/credibledata/malloy-samples"
           },
           {
             "name": "bigquery-hackernews",
-            "location": "https://github.com/ms2data/malloy-samples"
+            "location": "https://github.com/credibledata/malloy-samples"
           }
         ]
       }
