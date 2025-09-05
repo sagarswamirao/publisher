@@ -38,7 +38,7 @@ export default function ConnectionExplorer({
    resourceUri,
    schema,
 }: ConnectionExplorerProps) {
-   const { project: projectName } = parseResourceUri(resourceUri);
+   const { projectName: projectName } = parseResourceUri(resourceUri);
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
    );
@@ -199,7 +199,7 @@ function TableSchemaViewer({
    tableName,
    resourceUri,
 }: TableSchemaViewerProps) {
-   const { project: projectName } = parseResourceUri(resourceUri);
+   const { projectName: projectName } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
@@ -276,7 +276,7 @@ function TablesInSchema({
    onTableClick,
    resourceUri,
 }: TablesInSchemaProps) {
-   const { project: projectName } = parseResourceUri(resourceUri);
+   const { projectName: projectName } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: ["tablesInSchema", projectName, connectionName, schemaName],

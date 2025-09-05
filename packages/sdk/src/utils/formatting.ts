@@ -1,41 +1,57 @@
 export type ParsedResource = {
-   project: string;
-   package?: string | undefined;
-   version?: string | undefined;
+   projectName: string;
+   packageName?: string | undefined;
+   connectionName?: string | undefined;
+   versionId?: string | undefined;
+   modelPath?: string | undefined;
 };
 
 export const parseResourceUri = (resourceUri: string) => {
-   const resourceRegex =
-      /^publisher:\/\/(?<project>[^/]+)\/?(?<package>[^/]*)\/?(?<version>[^/]*)$/;
-   const match = resourceUri.match(resourceRegex);
-   if (!match) {
+   const parsedUri = new URL(resourceUri);
+   let parsedResource = {} as ParsedResource;
+   if (parsedUri.protocol !== "publisher:") {
       throw new Error(`Failed to parse resource URI: ${resourceUri}`);
    }
-   const parsedResource = match.groups as ParsedResource;
-   if (!parsedResource.project) {
-      throw new Error(
-         `Failed to parse resource URI, missing project name: ${resourceUri}`,
-      );
+   const pathParts = (parsedUri.hostname + parsedUri.pathname).split("/");
+   for (let i = 0; i < pathParts.length; i += 2) {
+      const part = pathParts[i];
+      if (part === "project") {
+         parsedResource.projectName = pathParts[i + 1] || undefined;
+      } else if (part === "package") {
+         parsedResource.packageName = pathParts[i + 1] || undefined;
+      } else if (part === "connection") {
+         parsedResource.connectionName = pathParts[i + 1] || undefined;
+      } else if (part === "model") {
+         parsedResource.modelPath = pathParts[i + 1] || undefined;
+      }
    }
-   return {
-      project: parsedResource.project,
-      package: parsedResource.package || undefined,
-      version: parsedResource.version || undefined,
-   };
+
+   parsedResource.versionId =
+      parsedUri.searchParams.get("versionId") || undefined;
+   if (!parsedResource.projectName) {
+      throw new Error(`Failed to parse resource URI: ${resourceUri}`);
+   }
+   return parsedResource;
 };
 
 export const encodeResourceUri = (resource: ParsedResource) => {
-   if (!resource.project) {
+   if (!resource.projectName) {
       throw new Error(
          `Failed to encode resource URI, missing project name: ${resource}`,
       );
    }
-   let uri = `publisher://${resource.project}`;
-   if (resource.package) {
-      uri += `/${resource.package}`;
+   let uri = `publisher://project/${resource.projectName}`;
+   if (resource.packageName) {
+      uri += `/package/${resource.packageName}`;
    }
-   if (resource.package && resource.version) {
-      uri += `/${resource.version}`;
+   if (resource.connectionName) {
+      uri += `/connection/${resource.connectionName}`;
+   }
+   if (resource.modelPath) {
+      uri += `/model/${resource.modelPath}`;
+   }
+   if (resource.packageName && resource.versionId) {
+      uri += `?versionId=${resource.versionId}`;
    }
    return uri;
 };

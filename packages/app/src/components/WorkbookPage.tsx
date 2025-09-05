@@ -29,14 +29,12 @@ export function WorkbookPage() {
       );
    } else {
       const resourceUri = encodeResourceUri({
-         project: projectName,
-         package: packageName,
+         projectName,
+         packageName,
       });
       return (
          <Workbook
             key={`${workbookPath}`}
-            defaultProjectName={projectName}
-            defaultPackageName={packageName}
             workbookPath={{ path: workbookPath, workspace: workspace }}
             resourceUri={resourceUri}
          />

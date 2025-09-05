@@ -19,8 +19,8 @@ export function PackagePage() {
       );
    } else {
       const resourceUri = encodeResourceUri({
-         project: projectName,
-         package: packageName,
+         projectName,
+         packageName,
       });
       return <Package navigate={navigate} resourceUri={resourceUri} />;
    }

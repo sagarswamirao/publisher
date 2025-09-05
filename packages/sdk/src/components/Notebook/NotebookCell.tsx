@@ -27,7 +27,6 @@ const IMPORT_REGEX = /import\s*(?:\{[^}]*\}\s*from\s*)?['"`]([^'"`]+)['"`]/;
 
 interface NotebookCellProps {
    cell: ClientNotebookCell;
-   notebookPath: string;
    expandCodeCell?: boolean;
    hideCodeCellIcon?: boolean;
    expandEmbedding?: boolean;
@@ -37,7 +36,6 @@ interface NotebookCellProps {
 
 export function NotebookCell({
    cell,
-   notebookPath,
    hideCodeCellIcon,
    hideEmbeddingIcon,
    resourceUri,
@@ -56,11 +54,9 @@ export function NotebookCell({
 
    // Extract model path from import statement in cell text
    const importMatch = cell.text.match(IMPORT_REGEX);
-   const modelPath = importMatch ? importMatch[1] : null;
    const hasValidImport = !!importMatch;
 
    const queryResultCodeSnippet = createEmbeddedQueryResult({
-      modelPath: notebookPath,
       query: cell.text,
       resourceUri: resourceUri,
    });
@@ -188,7 +184,6 @@ export function NotebookCell({
             <ModelExplorerDialog
                open={sourcesDialogOpen}
                onClose={() => setSourcesDialogOpen(false)}
-               modelPath={modelPath || ""}
                title="Data Sources"
                hasValidImport={hasValidImport}
                resourceUri={resourceUri}

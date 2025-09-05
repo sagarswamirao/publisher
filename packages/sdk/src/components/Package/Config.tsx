@@ -19,9 +19,9 @@ type Props = {
 
 export default function Config({ resourceUri }: Props) {
    const {
-      project: projectName,
-      package: packageName,
-      version: versionId,
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
    } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({

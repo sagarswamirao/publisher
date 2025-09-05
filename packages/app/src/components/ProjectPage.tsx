@@ -12,7 +12,7 @@ export function ProjectPage() {
          </div>
       );
    } else {
-      const resourceUri = encodeResourceUri({ project: projectName });
+      const resourceUri = encodeResourceUri({ projectName });
       return <Project navigate={navigate} resourceUri={resourceUri} />;
    }
 }

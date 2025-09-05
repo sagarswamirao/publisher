@@ -22,7 +22,7 @@ import {
 } from "../styles";
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
-import { parseResourceUri } from "../../utils/formatting";
+import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
@@ -68,11 +68,14 @@ type ConnectionsProps = {
 };
 
 export default function Connections({ resourceUri }: ConnectionsProps) {
-   const { project: projectName } = parseResourceUri(resourceUri);
+   const { projectName: projectName } = parseResourceUri(resourceUri);
    const [selectedConnection, setSelectedConnection] = useState<string | null>(
       null,
    );
-
+   const selectedConnectionResourceUri = encodeResourceUri({
+      projectName: projectName,
+      connectionName: selectedConnection,
+   });
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["connections", projectName],
       queryFn: (config) => connectionsApi.listConnections(projectName, config),
@@ -192,7 +195,7 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
             <DialogContent>
                {selectedConnection && (
                   <ConnectionExplorer
-                     resourceUri={resourceUri}
+                     resourceUri={selectedConnectionResourceUri}
                      connectionName={selectedConnection}
                   />
                )}

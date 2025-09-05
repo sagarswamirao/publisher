@@ -12,7 +12,6 @@ import React from "react";
 import { parseResourceUri } from "../../utils/formatting";
 
 interface ModelProps {
-   modelPath: string;
    onChange?: (query: QueryExplorerResult) => void;
    resourceUri: string;
 }
@@ -21,22 +20,9 @@ interface ModelProps {
 // you must explicitly import the styles from the package:
 // import "@malloy-publisher/sdk/malloy-explorer.css";
 
-export default function Model({
-   modelPath,
-   onChange,
-   resourceUri,
-}: ModelProps) {
-   const {
-      project: projectName,
-      package: packageName,
-      version: versionId,
-   } = parseResourceUri(resourceUri);
-   const { data, isError, isLoading, error } = useModelData(
-      modelPath,
-      projectName,
-      packageName,
-      versionId,
-   );
+export default function Model({ onChange, resourceUri }: ModelProps) {
+   const { modelPath } = parseResourceUri(resourceUri);
+   const { data, isError, isLoading, error } = useModelData(resourceUri);
    const [dialogOpen, setDialogOpen] = React.useState(false);
    const [sharedQuery, setSharedQuery] = React.useState<
       QueryExplorerResult | undefined
@@ -96,7 +82,6 @@ export default function Model({
                      </Box>
 
                      <ModelExplorer
-                        modelPath={modelPath}
                         data={data}
                         onChange={handleQueryChange}
                         onSourceChange={handleSourceChange}
@@ -156,7 +141,6 @@ export default function Model({
                   {data.queries.map((query) => (
                      <ModelCell
                         key={query.name}
-                        modelPath={modelPath}
                         queryName={query.name}
                         annotations={query.annotations}
                         resourceUri={resourceUri}
@@ -169,7 +153,6 @@ export default function Model({
             <ModelExplorerDialog
                open={dialogOpen}
                onClose={() => setDialogOpen(false)}
-               modelPath={modelPath}
                resourceUri={resourceUri}
                data={data}
                title={`Model: ${modelPath.split("/").pop()}`}

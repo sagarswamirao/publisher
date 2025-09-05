@@ -27,9 +27,9 @@ type Props = {
 
 export default function Schedules({ resourceUri }: Props) {
    const {
-      project: projectName,
-      package: packageName,
-      version: versionId,
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
    } = parseResourceUri(resourceUri);
 
    const { data, isError, isLoading, error } = useQueryWithApiError({

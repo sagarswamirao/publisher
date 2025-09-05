@@ -12,16 +12,16 @@ import { parseResourceUri } from "../../utils/formatting";
 const notebooksApi = new NotebooksApi(new Configuration());
 
 interface NotebookProps {
-   notebookPath: string;
    resourceUri: string;
 }
 
 // Requires PackageProvider
-export default function Notebook({ notebookPath, resourceUri }: NotebookProps) {
+export default function Notebook({ resourceUri }: NotebookProps) {
    const {
-      project: projectName,
-      package: packageName,
-      version: versionId,
+      projectName,
+      packageName,
+      versionId,
+      modelPath: notebookPath,
    } = parseResourceUri(resourceUri);
    const {
       data: notebook,
@@ -29,7 +29,7 @@ export default function Notebook({ notebookPath, resourceUri }: NotebookProps) {
       isError,
       error,
    } = useQueryWithApiError<CompiledNotebook>({
-      queryKey: ["notebook", projectName, packageName, notebookPath, versionId],
+      queryKey: [resourceUri],
       queryFn: async (config) => {
          const response = await notebooksApi.getNotebook(
             projectName,
@@ -53,7 +53,6 @@ export default function Notebook({ notebookPath, resourceUri }: NotebookProps) {
                   notebook.notebookCells?.map((cell, index) => (
                      <NotebookCell
                         cell={cell}
-                        notebookPath={notebookPath}
                         key={index}
                         resourceUri={resourceUri}
                      />

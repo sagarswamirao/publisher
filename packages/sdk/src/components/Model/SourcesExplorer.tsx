@@ -131,9 +131,9 @@ function SourceExplorerComponentInner({
       }
    }, [onChange, query]);
    const {
-      project: projectName,
-      package: packageName,
-      version: versionId,
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
    } = parseResourceUri(resourceUri);
    const mutation = useMutationWithApiError({
       mutationFn: (_, config) => {

@@ -34,9 +34,9 @@ export function ModelPicker({
    resourceUri,
 }: ModelPickerProps) {
    const {
-      project: projectName,
-      package: packageName,
-      version: versionId,
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
    } = parseResourceUri(resourceUri);
    const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],

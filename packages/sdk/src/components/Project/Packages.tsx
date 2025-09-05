@@ -14,7 +14,7 @@ interface PackagesProps {
 }
 
 export default function Packages({ navigate, resourceUri }: PackagesProps) {
-   const { project: projectName } = parseResourceUri(resourceUri);
+   const { projectName: projectName } = parseResourceUri(resourceUri);
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["packages", projectName],
       queryFn: (config) => packagesApi.listPackages(projectName, config),

@@ -10,7 +10,6 @@ const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 const queryResultsApi = new QueryresultsApi(new Configuration());
 
 interface QueryResultProps {
-   modelPath: string;
    query?: string;
    sourceName?: string;
    queryName?: string;
@@ -18,8 +17,10 @@ interface QueryResultProps {
 }
 
 export function createEmbeddedQueryResult(props: QueryResultProps): string {
-   const { project: optionalProjectName, package: optionalPackageName } =
-      parseResourceUri(props.resourceUri);
+   const {
+      projectName: optionalProjectName,
+      packageName: optionalPackageName,
+   } = parseResourceUri(props.resourceUri);
    if (!optionalProjectName || !optionalPackageName) {
       throw new Error(
          "Project and Package name must be provided for query embedding.",
@@ -38,10 +39,10 @@ export function EmbeddedQueryResult({
 }: {
    embeddedQueryResult: string;
 }): React.ReactElement {
-   const { modelPath, query, sourceName, queryName, resourceUri } = JSON.parse(
+   const { query, sourceName, queryName, resourceUri } = JSON.parse(
       embeddedQueryResult,
    ) as QueryResultProps;
-
+   const { modelPath } = parseResourceUri(resourceUri);
    if (
       !modelPath ||
       (!query && (!queryName || !sourceName)) ||
@@ -51,7 +52,6 @@ export function EmbeddedQueryResult({
    }
    return (
       <QueryResult
-         modelPath={modelPath}
          query={query}
          sourceName={sourceName}
          queryName={queryName}
@@ -61,16 +61,13 @@ export function EmbeddedQueryResult({
 }
 
 export default function QueryResult({
-   modelPath,
    query,
    sourceName,
    queryName,
    resourceUri,
 }: QueryResultProps) {
-   const packageContext = parseResourceUri(resourceUri);
-   const projectName = packageContext?.project;
-   const packageName = packageContext?.package;
-   const versionId = packageContext?.version;
+   const { modelPath, projectName, packageName, versionId } =
+      parseResourceUri(resourceUri);
 
    if (!projectName || !packageName) {
       throw new Error(
@@ -79,16 +76,7 @@ export default function QueryResult({
    }
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
-      queryKey: [
-         "queryResult",
-         projectName,
-         packageName,
-         modelPath,
-         versionId,
-         query,
-         sourceName,
-         queryName,
-      ],
+      queryKey: [resourceUri, query, sourceName, queryName],
       queryFn: (config) =>
          queryResultsApi.executeQuery(
             projectName,

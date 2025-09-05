@@ -10,7 +10,6 @@ import { CleanMetricCard, CleanNotebookCell } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
 
 interface ModelCellProps {
-   modelPath: string;
    sourceName?: string;
    queryName: string;
    noView?: boolean;
@@ -19,7 +18,6 @@ interface ModelCellProps {
 }
 
 export function ModelCell({
-   modelPath,
    queryName,
    annotations,
    resourceUri,
@@ -28,11 +26,8 @@ export function ModelCell({
       React.useState<string>();
    const [resultsDialogOpen, setResultsDialogOpen] = React.useState(false);
 
-   const {
-      package: packageName,
-      project: projectName,
-      version: versionId,
-   } = parseResourceUri(resourceUri);
+   const { packageName, projectName, versionId, modelPath } =
+      parseResourceUri(resourceUri);
 
    const queryResultsApi = new QueryresultsApi(new Configuration());
 
@@ -41,13 +36,7 @@ export function ModelCell({
       isSuccess,
       isLoading,
    } = useQueryWithApiError({
-      queryKey: [
-         "namedQueryResult",
-         projectName,
-         packageName,
-         modelPath,
-         queryName,
-      ],
+      queryKey: ["namedQueryResult", resourceUri, queryName],
       queryFn: (config) =>
          queryResultsApi.executeQuery(
             projectName,

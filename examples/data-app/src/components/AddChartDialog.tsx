@@ -18,6 +18,8 @@ import {
   Packages,
   createEmbeddedQueryResult,
   ModelExplorer,
+  encodeResourceUri,
+  parseResourceUri,
 } from "@malloy-publisher/sdk";
 import { QueryExplorerResult } from "@malloy-publisher/sdk/dist/components/Model/SourcesExplorer";
 import "@malloydata/malloy-explorer/styles.css";
@@ -32,13 +34,17 @@ export default function AddChartDialog({
   onClose,
   resourceUri,
 }: AddChartDialogProps) {
+  const defaultValues = parseResourceUri(resourceUri);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showModelExplorer, setShowModelExplorer] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<string>();
-  const [selectedModel, setSelectedModel] = useState<string>();
+  const [selectedPackage, setSelectedPackage] = useState<string>(
+    defaultValues.packageName || ""
+  );
+  const [selectedModel, setSelectedModel] = useState<string>(
+    defaultValues.modelPath || ""
+  );
   const [modelQuery, setModelQuery] = useState<string>("");
   const [newTitle, setNewTitle] = useState("");
-  const projectName = "malloy-samples";
 
   const [currentStep, setCurrentStep] = useState<
     "package" | "model" | "explorer"
@@ -98,10 +104,15 @@ export default function AddChartDialog({
       return;
     }
 
-    const queryResultString = createEmbeddedQueryResult({
+    const newResourceUri = encodeResourceUri({
+      projectName: defaultValues.projectName,
+      packageName: selectedPackage,
       modelPath: selectedModel,
+    });
+
+    const queryResultString = createEmbeddedQueryResult({
       query: queryResult.query || "",
-      resourceUri: resourceUri,
+      resourceUri: newResourceUri,
     });
     setModelQuery(queryResultString);
   };
@@ -221,7 +232,6 @@ export default function AddChartDialog({
                 }}
               >
                 <ModelExplorer
-                  modelPath={selectedModel}
                   resourceUri={resourceUri}
                   onChange={handleModelQueryChange}
                 />

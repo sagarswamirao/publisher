@@ -21,11 +21,8 @@ export function useRawQueryData({
    enabled = true,
    resourceUri,
 }: UseRawQueryDataProps) {
-   const {
-      project: projectName,
-      package: packageName,
-      version: versionId,
-   } = parseResourceUri(resourceUri);
+   const { projectName, packageName, versionId } =
+      parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [

@@ -18,7 +18,7 @@ interface AboutProps {
 }
 
 export default function About({ resourceUri }: AboutProps) {
-   const { project: projectName } = parseResourceUri(resourceUri);
+   const { projectName: projectName } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["about", projectName],

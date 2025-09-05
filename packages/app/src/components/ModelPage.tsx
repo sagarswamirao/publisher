@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 
 export function ModelPage() {
    const params = useParams();
-   console.log({ params });
    const modelPath = params["*"];
    if (!params.projectName) {
       return (
@@ -11,29 +10,29 @@ export function ModelPage() {
             <h2>Missing project name</h2>
          </div>
       );
-   } else if (!params.packageName) {
+   }
+   if (!params.packageName) {
       return (
          <div>
             <h2>Missing package name</h2>
          </div>
       );
-   } else if (modelPath?.endsWith(".malloy")) {
-      const resourceUri = encodeResourceUri({
-         project: params.projectName,
-         package: params.packageName,
-      });
-      return <Model resourceUri={resourceUri} modelPath={modelPath} />;
-   } else if (modelPath?.endsWith(".malloynb")) {
-      const resourceUri = encodeResourceUri({
-         project: params.projectName,
-         package: params.packageName,
-      });
-      return <Notebook notebookPath={modelPath} resourceUri={resourceUri} />;
-   } else {
-      return (
-         <div>
-            <h2>Unrecognized file type: {modelPath}</h2>
-         </div>
-      );
    }
+   const resourceUri = encodeResourceUri({
+      projectName: params.projectName,
+      packageName: params.packageName,
+      modelPath,
+   });
+
+   if (modelPath?.endsWith(".malloy")) {
+      return <Model resourceUri={resourceUri} />;
+   }
+   if (modelPath?.endsWith(".malloynb")) {
+      return <Notebook resourceUri={resourceUri} />;
+   }
+   return (
+      <div>
+         <h2>Unrecognized file type: {modelPath}</h2>
+      </div>
+   );
 }
