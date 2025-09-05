@@ -11,6 +11,7 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
+import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
 
 const README_NOTEBOOK = "README.malloynb";
 
@@ -25,6 +26,11 @@ export default function Package({ navigate, resourceUri }: PackageProps) {
          window.location.href = to;
       };
    }
+
+   const readmeResourceUri = encodeResourceUri({
+      ...parseResourceUri(resourceUri),
+      modelPath: README_NOTEBOOK,
+   });
 
    return (
       <>
@@ -52,10 +58,7 @@ export default function Package({ navigate, resourceUri }: PackageProps) {
                   <PackageCardContent>
                      <PackageSectionTitle>README</PackageSectionTitle>
                      <Box sx={{ mt: 1 }}>
-                        <Notebook
-                           notebookPath={README_NOTEBOOK}
-                           resourceUri={resourceUri}
-                        />
+                        <Notebook resourceUri={readmeResourceUri} />
                      </Box>
                   </PackageCardContent>
                </PackageCard>
