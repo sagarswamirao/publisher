@@ -28,6 +28,7 @@ export default function Dashboard({
   storageKey,
   defaultWidgets = [],
   customizeWidgetsEffect,
+  resourceUri,
 }: {
   selectedView:
     | "malloySamples"
@@ -37,6 +38,7 @@ export default function Dashboard({
   storageKey: string;
   defaultWidgets?: Widget[];
   customizeWidgetsEffect?: (widgets: Widget[]) => void;
+  resourceUri: string;
 }) {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -267,6 +269,7 @@ export default function Dashboard({
         <AddChartDialog
           onClose={() => setIsDialogOpen(false)}
           handleAddWidget={handleAddWidget}
+          resourceUri={resourceUri}
         />
       )}
     </Stack>

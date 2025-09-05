@@ -4,17 +4,17 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { PackageCard, PackageCardContent } from "../styles";
-import { useProject } from "./Project";
+import { parseResourceUri } from "../../utils/formatting";
 
 const packagesApi = new PackagesApi(new Configuration());
 
 interface PackagesProps {
    navigate: (to: string, event?: React.MouseEvent) => void;
+   resourceUri: string;
 }
 
-export default function Packages({ navigate }: PackagesProps) {
-   const { projectName } = useProject();
-
+export default function Packages({ navigate, resourceUri }: PackagesProps) {
+   const { projectName: projectName } = parseResourceUri(resourceUri);
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["packages", projectName],
       queryFn: (config) => packagesApi.listPackages(projectName, config),

@@ -34,6 +34,7 @@ interface NotebookCellProps {
    editingMalloy?: boolean;
    editingMarkdown?: boolean;
    sourceAndPaths: SourceAndPath[];
+   resourceUri: string;
    onCellChange: (cell: WorkbookCellValue) => void;
    onClose: () => void;
    onEdit: () => void;
@@ -46,6 +47,7 @@ export function MutableCell({
    editingMalloy,
    editingMarkdown,
    sourceAndPaths,
+   resourceUri,
    onCellChange,
    onClose,
    onEdit,
@@ -409,6 +411,7 @@ export function MutableCell({
                   ) : (
                      <EditableMalloyCell
                         sourceAndPaths={sourceAndPaths}
+                        resourceUri={resourceUri}
                         onQueryChange={(query) => {
                            setQuery(query);
                         }}

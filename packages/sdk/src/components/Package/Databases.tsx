@@ -23,12 +23,20 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
+import { parseResourceUri } from "../../utils/formatting";
 
 const databasesApi = new DatabasesApi(new Configuration());
 
-export default function Databases() {
-   const { projectName, packageName, versionId } = usePackage();
+type Props = {
+   resourceUri: string;
+};
+
+export default function Databases({ resourceUri }: Props) {
+   const {
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
+   } = parseResourceUri(resourceUri);
 
    const [open, setOpen] = React.useState(false);
    const [selectedDatabase, setSelectedDatabase] =

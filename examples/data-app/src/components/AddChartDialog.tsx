@@ -14,13 +14,12 @@ import {
   Breadcrumbs,
 } from "@mui/material";
 import {
-  ProjectProvider,
-  PackageProvider,
   Models,
   Packages,
-  Model,
   createEmbeddedQueryResult,
   ModelExplorer,
+  encodeResourceUri,
+  parseResourceUri,
 } from "@malloy-publisher/sdk";
 import { QueryExplorerResult } from "@malloy-publisher/sdk/dist/components/Model/SourcesExplorer";
 import "@malloydata/malloy-explorer/styles.css";
@@ -28,18 +27,24 @@ import "@malloydata/malloy-explorer/styles.css";
 export interface AddChartDialogProps {
   handleAddWidget: (newTitle: string, newQuery: string) => void;
   onClose: () => void;
+  resourceUri: string;
 }
 export default function AddChartDialog({
   handleAddWidget,
   onClose,
+  resourceUri,
 }: AddChartDialogProps) {
+  const defaultValues = parseResourceUri(resourceUri);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showModelExplorer, setShowModelExplorer] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<string>();
-  const [selectedModel, setSelectedModel] = useState<string>();
+  const [selectedPackage, setSelectedPackage] = useState<string>(
+    defaultValues.packageName || ""
+  );
+  const [selectedModel, setSelectedModel] = useState<string>(
+    defaultValues.modelPath || ""
+  );
   const [modelQuery, setModelQuery] = useState<string>("");
   const [newTitle, setNewTitle] = useState("");
-  const projectName = "malloy-samples";
 
   const [currentStep, setCurrentStep] = useState<
     "package" | "model" | "explorer"
@@ -98,11 +103,16 @@ export default function AddChartDialog({
       setModelQuery("");
       return;
     }
-    const queryResultString = createEmbeddedQueryResult({
+
+    const newResourceUri = encodeResourceUri({
+      projectName: defaultValues.projectName,
+      packageName: selectedPackage,
       modelPath: selectedModel,
+    });
+
+    const queryResultString = createEmbeddedQueryResult({
       query: queryResult.query || "",
-      optionalProjectName: projectName,
-      optionalPackageName: selectedPackage,
+      resourceUri: newResourceUri,
     });
     setModelQuery(queryResultString);
   };
@@ -168,40 +178,37 @@ export default function AddChartDialog({
 
           {/* Package Selection Step */}
           {currentStep === "package" && (
-            <Box>
-              <ProjectProvider projectName={projectName}>
-                <Box
-                  sx={{
-                    maxHeight: 500,
-                    overflow: "auto",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Packages navigate={handlePackageNavigate} />
-                </Box>
-              </ProjectProvider>
+            <Box
+              sx={{
+                maxHeight: 500,
+                overflow: "auto",
+                border: "1px solid #e0e0e0",
+                borderRadius: 1,
+              }}
+            >
+              <Packages
+                resourceUri={resourceUri}
+                navigate={handlePackageNavigate}
+              />
             </Box>
           )}
 
           {/* Model Selection Step */}
           {currentStep === "model" && selectedPackage && (
             <Box>
-              <PackageProvider
-                projectName={projectName}
-                packageName={selectedPackage}
+              <Box
+                sx={{
+                  maxHeight: 500,
+                  overflow: "auto",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 1,
+                }}
               >
-                <Box
-                  sx={{
-                    maxHeight: 500,
-                    overflow: "auto",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Models navigate={handleModelNavigate} />
-                </Box>
-              </PackageProvider>
+                <Models
+                  navigate={handleModelNavigate}
+                  resourceUri={resourceUri}
+                />
+              </Box>
             </Box>
           )}
 
@@ -215,28 +222,20 @@ export default function AddChartDialog({
                 onChange={(e) => setNewTitle(e.target.value)}
                 sx={{ mb: 2 }}
               />
-              <PackageProvider
-                projectName={projectName}
-                packageName={selectedPackage}
+
+              <Box
+                sx={{
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 2,
+                  minHeight: 400,
+                  overflow: "auto",
+                }}
               >
-                <Box
-                  sx={{
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 2,
-                    minHeight: 400,
-                    overflow: "auto",
-                  }}
-                >
-                  <ModelExplorer
-                    modelPath={selectedModel}
-                    expandResults={true}
-                    hideResultIcons={false}
-                    expandEmbeddings={false}
-                    hideEmbeddingIcons={true}
-                    onChange={handleModelQueryChange}
-                  />
-                </Box>
-              </PackageProvider>
+                <ModelExplorer
+                  resourceUri={resourceUri}
+                  onChange={handleModelQueryChange}
+                />
+              </Box>
             </Box>
           )}
 

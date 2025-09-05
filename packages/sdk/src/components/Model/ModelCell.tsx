@@ -4,29 +4,30 @@ import React, { useEffect } from "react";
 import { Configuration, QueryresultsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { highlight } from "../highlighter";
-import { usePackage } from "../Package";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
 import { CleanMetricCard, CleanNotebookCell } from "../styles";
+import { parseResourceUri } from "../../utils/formatting";
 
 interface ModelCellProps {
-   modelPath: string;
    sourceName?: string;
    queryName: string;
    noView?: boolean;
    annotations?: string[];
+   resourceUri: string;
 }
 
 export function ModelCell({
-   modelPath,
    queryName,
    annotations,
+   resourceUri,
 }: ModelCellProps) {
    const [highlightedAnnotations, setHighlightedAnnotations] =
       React.useState<string>();
    const [resultsDialogOpen, setResultsDialogOpen] = React.useState(false);
 
-   const { packageName, projectName } = usePackage();
+   const { packageName, projectName, versionId, modelPath } =
+      parseResourceUri(resourceUri);
 
    const queryResultsApi = new QueryresultsApi(new Configuration());
 
@@ -35,13 +36,7 @@ export function ModelCell({
       isSuccess,
       isLoading,
    } = useQueryWithApiError({
-      queryKey: [
-         "namedQueryResult",
-         projectName,
-         packageName,
-         modelPath,
-         queryName,
-      ],
+      queryKey: ["namedQueryResult", resourceUri, queryName],
       queryFn: (config) =>
          queryResultsApi.executeQuery(
             projectName,
@@ -50,7 +45,7 @@ export function ModelCell({
             undefined, // query
             undefined, // sourceName
             queryName, // queryName
-            undefined, // versionId
+            versionId, // versionId
             config,
          ),
       enabled: true, // Always execute

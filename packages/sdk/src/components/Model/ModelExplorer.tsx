@@ -7,6 +7,7 @@ import { CompiledModel } from "../../client";
 import { useModelData } from "./useModelData";
 import { Loading } from "../Loading";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import { parseResourceUri } from "../../utils/formatting";
 
 // Add a styled component for the multi-row tab bar
 const MultiRowTabBar = styled(Box)(({ theme }) => ({
@@ -38,7 +39,6 @@ const MultiRowTab = styled(Button)<{ selected?: boolean }>(
 );
 
 export interface ModelExplorerProps {
-   modelPath: string;
    data?: CompiledModel;
    /** Callback when the explorer changes (e.g. when a query is selected). */
    onChange?: (query: QueryExplorerResult) => void;
@@ -48,6 +48,7 @@ export interface ModelExplorerProps {
    initialSelectedSourceIndex?: number;
    /** Callback when source selection changes */
    onSourceChange?: (index: number) => void;
+   resourceUri: string;
 }
 
 /**
@@ -57,12 +58,12 @@ export interface ModelExplorerProps {
  * but has been extracted for easier reuse.
  */
 export function ModelExplorer({
-   modelPath,
    data,
    onChange,
    existingQuery,
    initialSelectedSourceIndex = 0,
    onSourceChange,
+   resourceUri,
 }: ModelExplorerProps) {
    const [selectedTab, setSelectedTab] = React.useState(
       initialSelectedSourceIndex,
@@ -79,7 +80,8 @@ export function ModelExplorer({
       isError,
       isLoading,
       error,
-   } = useModelData(modelPath, undefined);
+   } = useModelData(resourceUri);
+   const { modelPath } = parseResourceUri(resourceUri);
 
    const effectiveData = data || fetchedData;
 
@@ -158,6 +160,7 @@ export function ModelExplorer({
                         selectedSourceIndex={selectedTab}
                         existingQuery={existingQuery}
                         onQueryChange={onChange}
+                        resourceUri={resourceUri}
                      />
                   )}
 

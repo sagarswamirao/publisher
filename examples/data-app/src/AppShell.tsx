@@ -4,14 +4,11 @@ import {
   createTheme,
   CssBaseline,
   Box,
-  Typography,
   alpha,
 } from "@mui/material";
 import { useState, useMemo } from "react";
 import AppNavbar from "./components/AppNavbar";
 import SideMenu from "./components/SideMenu";
-import { Loader } from "./components/Loader";
-import { ErrorScreen } from "./components/ErrorScreen";
 import MalloySamplesDashboard from "./components/MalloySamplesDashboard";
 import SingleEmbedDashboard from "./components/SingleEmbedDashboard";
 import DynamicDashboard from "./components/DynamicDashboard";
@@ -35,7 +32,10 @@ export default function AppShell() {
           selectedView={selectedView}
           setSelectedView={setSelectedView}
         />
-        <AppNavbar selectedView={selectedView} setSelectedView={setSelectedView} />
+        <AppNavbar
+          selectedView={selectedView}
+          setSelectedView={setSelectedView}
+        />
         <Box
           component="main"
           sx={{
@@ -56,7 +56,10 @@ export default function AppShell() {
                 <SingleEmbedDashboard selectedView={selectedView} />
               )}
               {selectedView === "dynamicDashboard" && (
-                <DynamicDashboard selectedView={selectedView} />
+                <DynamicDashboard
+                  selectedView={selectedView}
+                  resourceUri={`publisher://projects/malloy-samples`}
+                />
               )}
               {selectedView === "interactive" && (
                 <InteractiveDashboard selectedView={selectedView} />

@@ -8,7 +8,7 @@ import { CompiledModel } from "../../client";
 interface ModelExplorerDialogProps {
    open: boolean;
    onClose: () => void;
-   modelPath: string;
+   resourceUri: string;
    data?: CompiledModel;
    title?: string;
    hasValidImport?: boolean;
@@ -21,7 +21,7 @@ interface ModelExplorerDialogProps {
 export function ModelExplorerDialog({
    open,
    onClose,
-   modelPath,
+   resourceUri,
    data,
    title = "Data Sources",
    hasValidImport = true,
@@ -59,7 +59,7 @@ export function ModelExplorerDialog({
          <DialogContent>
             {hasValidImport ? (
                <ModelExplorer
-                  modelPath={modelPath}
+                  resourceUri={resourceUri}
                   data={data}
                   existingQuery={existingQuery}
                   initialSelectedSourceIndex={initialSelectedSourceIndex}

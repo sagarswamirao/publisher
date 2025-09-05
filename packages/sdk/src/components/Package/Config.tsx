@@ -9,12 +9,20 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
+import { parseResourceUri } from "../../utils/formatting";
 
 const packagesApi = new PackagesApi(new Configuration());
 
-export default function Config() {
-   const { projectName, packageName, versionId } = usePackage();
+type Props = {
+   resourceUri: string;
+};
+
+export default function Config({ resourceUri }: Props) {
+   const {
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
+   } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["package", projectName, packageName, versionId],

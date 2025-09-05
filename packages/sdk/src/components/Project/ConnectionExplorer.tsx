@@ -20,24 +20,25 @@ import {
 } from "@mui/material";
 import { ConnectionsApi } from "../../client/api";
 import { Configuration } from "../../client/configuration";
-import { useProject } from "./Project";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { parseResourceUri } from "../../utils/formatting";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
 interface ConnectionExplorerProps {
    connectionName: string;
    schema?: string;
+   resourceUri: string;
 }
 
 export default function ConnectionExplorer({
    connectionName,
+   resourceUri,
    schema,
 }: ConnectionExplorerProps) {
-   const { projectName } = useProject();
-
+   const { projectName: projectName } = parseResourceUri(resourceUri);
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
    );
@@ -164,6 +165,7 @@ export default function ConnectionExplorer({
                      onTableClick={(tableName) => {
                         setSelectedTable(tableName);
                      }}
+                     resourceUri={resourceUri}
                   />
                </Paper>
             )}
@@ -175,6 +177,7 @@ export default function ConnectionExplorer({
                      connectionName={connectionName}
                      schemaName={selectedSchema}
                      tableName={selectedTable}
+                     resourceUri={resourceUri}
                   />
                </Paper>
             )}
@@ -187,14 +190,16 @@ type TableSchemaViewerProps = {
    connectionName: string;
    schemaName: string;
    tableName: string;
+   resourceUri: string;
 };
 
 function TableSchemaViewer({
    connectionName,
    schemaName,
    tableName,
+   resourceUri,
 }: TableSchemaViewerProps) {
-   const { projectName } = useProject();
+   const { projectName: projectName } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
@@ -262,14 +267,16 @@ interface TablesInSchemaProps {
    connectionName: string;
    schemaName: string;
    onTableClick: (tableName: string) => void;
+   resourceUri: string;
 }
 
 function TablesInSchema({
    connectionName,
    schemaName,
    onTableClick,
+   resourceUri,
 }: TablesInSchemaProps) {
-   const { projectName } = useProject();
+   const { projectName: projectName } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: ["tablesInSchema", projectName, connectionName, schemaName],

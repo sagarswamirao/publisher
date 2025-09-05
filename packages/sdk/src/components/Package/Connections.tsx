@@ -20,21 +20,19 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
-import { ProjectProvider } from "../Project";
+import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
 
 const connectionsApi = new ConnectionsApi(new Configuration());
 
-// TODO(jjs) - Move this UI to the ConnectionExplorer component
-function Connection({
-   connection,
-   onClick,
-}: {
+type ConnectionProps = {
    connection: ApiConnection;
    onClick: () => void;
-}) {
+};
+
+// TODO(jjs) - Move this UI to the ConnectionExplorer component
+function Connection({ connection, onClick }: ConnectionProps) {
    return (
       <TableRow
          key={connection.name}
@@ -65,12 +63,19 @@ function Connection({
    );
 }
 
-export default function Connections() {
-   const { projectName } = usePackage();
+type ConnectionsProps = {
+   resourceUri: string;
+};
+
+export default function Connections({ resourceUri }: ConnectionsProps) {
+   const { projectName: projectName } = parseResourceUri(resourceUri);
    const [selectedConnection, setSelectedConnection] = useState<string | null>(
       null,
    );
-
+   const selectedConnectionResourceUri = encodeResourceUri({
+      projectName: projectName,
+      connectionName: selectedConnection,
+   });
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["connections", projectName],
       queryFn: (config) => connectionsApi.listConnections(projectName, config),
@@ -85,8 +90,7 @@ export default function Connections() {
    };
 
    return (
-      // Connections are project-scoped, so we need to provide the project name to the ConnectionExplorer
-      <ProjectProvider projectName={projectName}>
+      <>
          <PackageCard>
             <PackageCardContent>
                <PackageSectionTitle>Database Connections</PackageSectionTitle>
@@ -190,10 +194,13 @@ export default function Connections() {
             </DialogTitle>
             <DialogContent>
                {selectedConnection && (
-                  <ConnectionExplorer connectionName={selectedConnection} />
+                  <ConnectionExplorer
+                     resourceUri={selectedConnectionResourceUri}
+                     connectionName={selectedConnection}
+                  />
                )}
             </DialogContent>
          </Dialog>
-      </ProjectProvider>
+      </>
    );
 }

@@ -5,28 +5,31 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
 import { Loading } from "../Loading";
-import { usePackage } from "../Package/PackageProvider";
 import { CleanNotebookContainer, CleanNotebookSection } from "../styles";
 import { NotebookCell } from "./NotebookCell";
+import { parseResourceUri } from "../../utils/formatting";
 
 const notebooksApi = new NotebooksApi(new Configuration());
 
 interface NotebookProps {
-   notebookPath: string;
-   versionId?: string;
+   resourceUri: string;
 }
 
 // Requires PackageProvider
-export default function Notebook({ notebookPath }: NotebookProps) {
-   const { projectName, packageName, versionId } = usePackage();
-
+export default function Notebook({ resourceUri }: NotebookProps) {
+   const {
+      projectName,
+      packageName,
+      versionId,
+      modelPath: notebookPath,
+   } = parseResourceUri(resourceUri);
    const {
       data: notebook,
       isSuccess,
       isError,
       error,
    } = useQueryWithApiError<CompiledNotebook>({
-      queryKey: ["notebook", projectName, packageName, notebookPath, versionId],
+      queryKey: [resourceUri],
       queryFn: async (config) => {
          const response = await notebooksApi.getNotebook(
             projectName,
@@ -50,8 +53,8 @@ export default function Notebook({ notebookPath }: NotebookProps) {
                   notebook.notebookCells?.map((cell, index) => (
                      <NotebookCell
                         cell={cell}
-                        notebookPath={notebookPath}
                         key={index}
+                        resourceUri={resourceUri}
                      />
                   ))}
                {isError && error.status === 404 && (

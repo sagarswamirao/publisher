@@ -7,57 +7,63 @@ import Models from "./Models";
 import Notebooks from "./Notebooks";
 import Schedules from "./Schedules";
 import {
-   PackageContainer,
    PackageCard,
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
+import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
 
 const README_NOTEBOOK = "README.malloynb";
 
 interface PackageProps {
    navigate?: (to: string, event?: React.MouseEvent) => void;
+   resourceUri: string;
 }
 
-export default function Package({ navigate }: PackageProps) {
+export default function Package({ navigate, resourceUri }: PackageProps) {
    if (!navigate) {
       navigate = (to: string) => {
          window.location.href = to;
       };
    }
 
+   const readmeResourceUri = encodeResourceUri({
+      ...parseResourceUri(resourceUri),
+      modelPath: README_NOTEBOOK,
+   });
+
    return (
-      <PackageContainer>
+      <>
          <Grid container spacing={3} columns={12}>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Config />
+               <Config resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Notebooks navigate={navigate} />
+               <Notebooks navigate={navigate} resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Models navigate={navigate} />
+               <Models navigate={navigate} resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-               <Databases />
+               <Databases resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-               <Connections />
+               <Connections resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 12 }}>
-               <Schedules />
+               <Schedules resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 12 }}>
                <PackageCard>
                   <PackageCardContent>
                      <PackageSectionTitle>README</PackageSectionTitle>
                      <Box sx={{ mt: 1 }}>
-                        <Notebook notebookPath={README_NOTEBOOK} />
+                        <Notebook resourceUri={readmeResourceUri} />
                      </Box>
                   </PackageCardContent>
                </PackageCard>
             </Grid>
          </Grid>
-      </PackageContainer>
+      </>
    );
 }

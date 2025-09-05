@@ -30,13 +30,13 @@ import { ModelPicker } from "./ModelPicker";
 import { getAxiosConfig } from "../../hooks";
 import { WorkbookLocator } from "./WorkbookStorage";
 import { useRouterClickHandler } from "../click_helper";
+import { parseResourceUri } from "../../utils/formatting";
 
 const modelsApi = new ModelsApi(new Configuration());
 
 interface WorkbookProps {
    workbookPath?: WorkbookLocator;
-   defaultProjectName?: string;
-   defaultPackageName?: string;
+   resourceUri: string;
 }
 
 interface PathToSources {
@@ -44,14 +44,11 @@ interface PathToSources {
    sourceInfos: Malloy.SourceInfo[];
 }
 
-export default function Workbook({
-   workbookPath,
-   defaultProjectName,
-   defaultPackageName,
-}: WorkbookProps) {
+export default function Workbook({ workbookPath, resourceUri }: WorkbookProps) {
    const navigate = useRouterClickHandler();
    const { server, getAccessToken } = useServer();
    const { workbookStorage } = useWorkbookStorage();
+   const { projectName, packageName } = parseResourceUri(resourceUri);
    const [success, setSuccess] = React.useState<string | undefined>(undefined);
    const [lastError, setLastError] = React.useState<string | undefined>(
       undefined,
@@ -119,7 +116,7 @@ export default function Workbook({
       }
       setDeleteDialogOpen(false);
       // TODO(jjs) - on delete event
-      navigate(`/${defaultProjectName}/${defaultPackageName}`);
+      navigate(`/${projectName}/${packageName}`);
    };
 
    const handleDeleteCancel = () => {
@@ -162,8 +159,8 @@ export default function Workbook({
                promises.push(
                   modelsApi
                      .getModel(
-                        defaultProjectName,
-                        defaultPackageName,
+                        projectName,
+                        packageName,
                         model,
                         undefined,
                         await getAxiosConfig(server, getAccessToken),
@@ -194,13 +191,7 @@ export default function Workbook({
       fetchModels();
       // This function cannot depend on sourceAndPaths because it would cause an infinite loop.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [
-      getAccessToken,
-      workbookData,
-      defaultPackageName,
-      defaultProjectName,
-      server,
-   ]);
+   }, [getAccessToken, workbookData, packageName, projectName, server]);
 
    React.useEffect(() => {
       if (!workbookPath) {
@@ -393,6 +384,7 @@ export default function Workbook({
                         setWorkbookData(workbookData.setModels(models));
                         saveWorkbook();
                      }}
+                     resourceUri={resourceUri}
                   />
                </Box>
                <Box sx={{ flex: 1 }} />
@@ -427,6 +419,7 @@ export default function Workbook({
                      <MutableCell
                         key={`${index}-${cell.isMarkdown}-${workbookPath.workspace}-${workbookPath.path}`}
                         cell={cell}
+                        resourceUri={resourceUri}
                         addButtonCallback={(isMarkdown) =>
                            plusButton(isMarkdown, index)
                         }

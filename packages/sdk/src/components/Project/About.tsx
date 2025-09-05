@@ -9,12 +9,16 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { useProject } from "./Project";
+import { parseResourceUri } from "../../utils/formatting";
 
 const projectsApi = new ProjectsApi(new Configuration());
 
-export default function About() {
-   const { projectName } = useProject();
+interface AboutProps {
+   resourceUri: string;
+}
+
+export default function About({ resourceUri }: AboutProps) {
+   const { projectName: projectName } = parseResourceUri(resourceUri);
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["about", projectName],

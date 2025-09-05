@@ -14,15 +14,23 @@ import {
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import { usePackage } from "./PackageProvider";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import { parseResourceUri } from "../../utils/formatting";
 
 const schedulesApi = new SchedulesApi(new Configuration());
 
-export default function Schedules() {
-   const { projectName, packageName, versionId } = usePackage();
+type Props = {
+   resourceUri: string;
+};
+
+export default function Schedules({ resourceUri }: Props) {
+   const {
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
+   } = parseResourceUri(resourceUri);
 
    const { data, isError, isLoading, error } = useQueryWithApiError({
       queryKey: ["schedules", projectName, packageName, versionId],

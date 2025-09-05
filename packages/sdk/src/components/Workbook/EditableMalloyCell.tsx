@@ -8,6 +8,7 @@ import { WorkbookCellValue } from "./WorkbookManager";
 interface EditableMalloyCellProps {
    cell: WorkbookCellValue;
    sourceAndPaths: SourceAndPath[];
+   resourceUri: string;
    onQueryChange: (query: QueryExplorerResult) => void;
    onSourceChange?: (index: number) => void;
 }
@@ -15,6 +16,7 @@ interface EditableMalloyCellProps {
 export function EditableMalloyCell({
    cell,
    sourceAndPaths,
+   resourceUri,
    onQueryChange,
    onSourceChange,
 }: EditableMalloyCellProps) {
@@ -31,6 +33,7 @@ export function EditableMalloyCell({
 
    return (
       <SourcesExplorer
+         resourceUri={resourceUri}
          sourceAndPaths={sourceAndPaths}
          selectedSourceIndex={
             selectedSourceIndex >= 0 ? selectedSourceIndex : 0

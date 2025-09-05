@@ -24,9 +24,7 @@ When adding a panel to the "Dynamic Dashboard", your embed snippet should look l
 
 ```tsx
 <QueryResult
-  projectName="malloy-samples"
-  packageName="names"
-  modelPath="names1.malloynb"
+  resourceUri="publisher://projects/malloy-samples/packages/names/models/names1.malloynb"
   query="run: names -> { aggregate: total_population }"
 />
 ```
@@ -43,17 +41,16 @@ You can embed any analysis cell from your published Malloy notebook directly int
 
    The code will look something like this:
    ```tsx
-   import { ServerProvider, PackageProvider, QueryResult } from "@malloy-publisher/sdk";
+   import { ServerProvider, QueryResult } from "@malloy-publisher/sdk";
 
    export default function SingleEmbedDashboard() {
      return (
        <div className="dashboard">
          <ServerProvider server="https://localhost:4000/api/v0">
-            <PackageProvider projectName="malloy-samples" packageName="names">
-               <QueryResult 
-                  modelPath="names1.malloynb"
-                  query="run: names -> { aggregate: total_population }" />
-            </PackageProvider>
+            <QueryResult
+               resourceUri="publisher://projects/malloy-samples/packages/names/models/names1.malloynb"
+               query="run: names -> { aggregate: total_population }"
+            />
          </ServerProvider>
        </div>
      );

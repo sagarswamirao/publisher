@@ -9,7 +9,7 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
-import { usePackage } from "./PackageProvider";
+import { parseResourceUri } from "../../utils/formatting";
 
 const modelsApi = new ModelsApi(new Configuration());
 
@@ -17,10 +17,15 @@ const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
 
 interface ModelsProps {
    navigate: (to: string, event?: React.MouseEvent) => void;
+   resourceUri: string;
 }
 
-export default function Models({ navigate }: ModelsProps) {
-   const { projectName, packageName, versionId } = usePackage();
+export default function Models({ navigate, resourceUri }: ModelsProps) {
+   const {
+      projectName: projectName,
+      packageName: packageName,
+      versionId: versionId,
+   } = parseResourceUri(resourceUri);
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
       queryFn: (config) =>

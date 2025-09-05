@@ -9,22 +9,20 @@ import { ModelExplorerDialog } from "./ModelExplorerDialog";
 import { ModelCell } from "./ModelCell";
 import { useModelData } from "./useModelData";
 import React from "react";
+import { parseResourceUri } from "../../utils/formatting";
 
 interface ModelProps {
-   modelPath: string;
-   versionId?: string;
    onChange?: (query: QueryExplorerResult) => void;
+   resourceUri: string;
 }
 
 // Note: For this to properly render outside of publisher,
 // you must explicitly import the styles from the package:
 // import "@malloy-publisher/sdk/malloy-explorer.css";
 
-export default function Model({ modelPath, versionId, onChange }: ModelProps) {
-   const { data, isError, isLoading, error } = useModelData(
-      modelPath,
-      versionId,
-   );
+export default function Model({ onChange, resourceUri }: ModelProps) {
+   const { modelPath } = parseResourceUri(resourceUri);
+   const { data, isError, isLoading, error } = useModelData(resourceUri);
    const [dialogOpen, setDialogOpen] = React.useState(false);
    const [sharedQuery, setSharedQuery] = React.useState<
       QueryExplorerResult | undefined
@@ -53,108 +51,117 @@ export default function Model({ modelPath, versionId, onChange }: ModelProps) {
    };
 
    return (
-      <Box
-         sx={{
-            position: "relative",
-            maxWidth: "1200px",
-            margin: "0 auto",
-            paddingTop: "24px",
-         }}
-      >
-         {/* Sources Section */}
-         {Array.isArray(data?.sourceInfos) && data.sourceInfos.length > 0 && (
-            <Stack spacing={2} component="section">
-               {/* Sources Header */}
-               <Box sx={{ padding: "0 0 16px 0" }}>
-                  <Typography
-                     variant="h1"
-                     sx={{
-                        fontSize: "28px",
-                        fontWeight: "600",
-                        color: "#1a1a1a",
-                        marginBottom: "8px",
-                        marginTop: "0",
-                        paddingLeft: "0",
-                     }}
-                  >
-                     Sources
-                  </Typography>
-               </Box>
+      <>
+         <Box
+            sx={{
+               position: "relative",
+               maxWidth: "1200px",
+               margin: "0 auto",
+               paddingTop: "24px",
+            }}
+         >
+            {/* Sources Section */}
+            {Array.isArray(data?.sourceInfos) &&
+               data.sourceInfos.length > 0 && (
+                  <Stack spacing={2} component="section">
+                     {/* Sources Header */}
+                     <Box sx={{ padding: "0 0 16px 0" }}>
+                        <Typography
+                           variant="h1"
+                           sx={{
+                              fontSize: "28px",
+                              fontWeight: "600",
+                              color: "#1a1a1a",
+                              marginBottom: "8px",
+                              marginTop: "0",
+                              paddingLeft: "0",
+                           }}
+                        >
+                           Sources
+                        </Typography>
+                     </Box>
 
-               <ModelExplorer
-                  modelPath={modelPath}
-                  data={data}
-                  onChange={handleQueryChange}
-                  onSourceChange={handleSourceChange}
-                  existingQuery={sharedQuery}
-                  initialSelectedSourceIndex={sharedSourceIndex}
-               />
+                     <ModelExplorer
+                        data={data}
+                        onChange={handleQueryChange}
+                        onSourceChange={handleSourceChange}
+                        existingQuery={sharedQuery}
+                        initialSelectedSourceIndex={sharedSourceIndex}
+                        resourceUri={resourceUri}
+                     />
 
-               {/* Magnifying glass icon */}
-               <IconButton
-                  sx={{
-                     position: "absolute",
-                     top: "90px",
-                     right: "4px",
-                     backgroundColor: "rgba(255, 255, 255, 0.9)",
-                     "&:hover": {
-                        backgroundColor: "rgba(255, 255, 255, 1)",
-                     },
-                     width: "32px",
-                     height: "32px",
-                     zIndex: 2,
-                  }}
-                  onClick={() => setDialogOpen(true)}
+                     {/* Magnifying glass icon */}
+                     <IconButton
+                        sx={{
+                           position: "absolute",
+                           top: "90px",
+                           right: "4px",
+                           backgroundColor: "rgba(255, 255, 255, 0.9)",
+                           "&:hover": {
+                              backgroundColor: "rgba(255, 255, 255, 1)",
+                           },
+                           width: "32px",
+                           height: "32px",
+                           zIndex: 2,
+                        }}
+                        onClick={() => setDialogOpen(true)}
+                     >
+                        <SearchIcon
+                           sx={{ fontSize: "18px", color: "#666666" }}
+                        />
+                     </IconButton>
+                  </Stack>
+               )}
+
+            {/* Named Queries Section */}
+            {data?.queries?.length > 0 && (
+               <Stack
+                  spacing={2}
+                  component="section"
+                  sx={{ marginTop: "24px" }}
                >
-                  <SearchIcon sx={{ fontSize: "18px", color: "#666666" }} />
-               </IconButton>
-            </Stack>
-         )}
+                  {/* Named Queries Header */}
+                  <Box sx={{ padding: "0 0 16px 0" }}>
+                     <Typography
+                        variant="h2"
+                        sx={{
+                           fontSize: "24px",
+                           fontWeight: "600",
+                           color: "#1a1a1a",
+                           marginBottom: "0",
+                           marginTop: "8px",
+                           paddingLeft: "0",
+                        }}
+                     >
+                        Named Queries
+                     </Typography>
+                  </Box>
 
-         {/* Named Queries Section */}
-         {data?.queries?.length > 0 && (
-            <Stack spacing={2} component="section" sx={{ marginTop: "24px" }}>
-               {/* Named Queries Header */}
-               <Box sx={{ padding: "0 0 16px 0" }}>
-                  <Typography
-                     variant="h2"
-                     sx={{
-                        fontSize: "24px",
-                        fontWeight: "600",
-                        color: "#1a1a1a",
-                        marginBottom: "0",
-                        marginTop: "8px",
-                        paddingLeft: "0",
-                     }}
-                  >
-                     Named Queries
-                  </Typography>
-               </Box>
+                  {/* Render the named queries */}
+                  {data.queries.map((query) => (
+                     <ModelCell
+                        key={query.name}
+                        queryName={query.name}
+                        annotations={query.annotations}
+                        resourceUri={resourceUri}
+                     />
+                  ))}
+               </Stack>
+            )}
 
-               {/* Render the named queries */}
-               {data.queries.map((query) => (
-                  <ModelCell
-                     key={query.name}
-                     modelPath={modelPath}
-                     queryName={query.name}
-                     annotations={query.annotations}
-                  />
-               ))}
-            </Stack>
-         )}
-
-         {/* Model Explorer Dialog */}
-         <ModelExplorerDialog
-            open={dialogOpen}
-            onClose={() => setDialogOpen(false)}
-            modelPath={modelPath}
-            data={data}
-            title={`Model: ${modelPath.split("/").pop()}`}
-            existingQuery={sharedQuery}
-            initialSelectedSourceIndex={sharedSourceIndex}
-            onChange={handleQueryChange}
-            onSourceChange={handleSourceChange}
-         />
-      </Box>
+            {/* Model Explorer Dialog */}
+            <ModelExplorerDialog
+               open={dialogOpen}
+               onClose={() => setDialogOpen(false)}
+               resourceUri={resourceUri}
+               data={data}
+               title={`Model: ${modelPath.split("/").pop()}`}
+               existingQuery={sharedQuery}
+               initialSelectedSourceIndex={sharedSourceIndex}
+               onChange={handleQueryChange}
+               onSourceChange={handleSourceChange}
+            />
+         </Box>
+      </>
    );
 }
