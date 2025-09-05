@@ -3,7 +3,7 @@ import { encodeResourceUri, parseResourceUri } from "./formatting";
 
 describe("parseResourceUri", () => {
    it("should parse a package URI", () => {
-      const resourceUri = "publisher://project/malloy-samples/package/names";
+      const resourceUri = "publisher://projects/malloy-samples/packages/names";
       const parsedResource = parseResourceUri(resourceUri);
       expect(parsedResource).toEqual({
          projectName: "malloy-samples",
@@ -15,7 +15,7 @@ describe("parseResourceUri", () => {
    });
    it("should parse a connection URI", () => {
       const resourceUri =
-         "publisher://project/malloy-samples/connection/bigquery";
+         "publisher://projects/malloy-samples/connections/bigquery";
       const parsedResource = parseResourceUri(resourceUri);
       expect(parsedResource).toEqual({
          projectName: "malloy-samples",
@@ -28,7 +28,7 @@ describe("parseResourceUri", () => {
 
    it("should parse a modelPath URI", () => {
       const resourceUri =
-         "publisher://project/malloy-samples/package/names/model/names1.malloynb";
+         "publisher://projects/malloy-samples/packages/names/models/names1.malloynb";
       const parsedResource = parseResourceUri(resourceUri);
       expect(parsedResource).toEqual({
          projectName: "malloy-samples",
@@ -41,7 +41,7 @@ describe("parseResourceUri", () => {
 
    it("should throw an error if the resource URI has the wrong protocol", () => {
       const resourceUri =
-         "http://project/malloy-samples/package/names/model/names1.malloynb";
+         "http://projects/malloy-samples/packages/names/models/names1.malloynb";
       expect(() => parseResourceUri(resourceUri)).toThrow(
          `Failed to parse resource URI: ${resourceUri}`,
       );
@@ -56,7 +56,7 @@ describe("parseResourceUri", () => {
 
    it("should parse the optional versionId parameter if present", () => {
       const resourceUri =
-         "publisher://project/malloy-samples/package/names?versionId=1.0.0";
+         "publisher://projects/malloy-samples/packages/names?versionId=1.0.0";
       const parsedResource = parseResourceUri(resourceUri);
       expect(parsedResource).toEqual({
          projectName: "malloy-samples",
@@ -78,7 +78,7 @@ describe("encodeResourceUri", () => {
          versionId: undefined,
       });
       expect(resourceUri).toEqual(
-         "publisher://project/malloy-samples/package/names",
+         "publisher://projects/malloy-samples/packages/names",
       );
    });
 
@@ -91,7 +91,7 @@ describe("encodeResourceUri", () => {
          modelPath: undefined,
       });
       expect(resourceUri).toEqual(
-         "publisher://project/malloy-samples/package/names?versionId=1.0.0",
+         "publisher://projects/malloy-samples/packages/names?versionId=1.0.0",
       );
    });
 
@@ -104,7 +104,7 @@ describe("encodeResourceUri", () => {
          versionId: undefined,
       });
       expect(resourceUri).toEqual(
-         "publisher://project/malloy-samples/connection/bigquery",
+         "publisher://projects/malloy-samples/connections/bigquery",
       );
    });
 
@@ -117,7 +117,7 @@ describe("encodeResourceUri", () => {
          versionId: undefined,
       });
       expect(resourceUri).toEqual(
-         "publisher://project/malloy-samples/package/names/model/names1.malloynb",
+         "publisher://projects/malloy-samples/packages/names/models/names1.malloynb",
       );
    });
 

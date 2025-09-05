@@ -58,7 +58,7 @@ export default function AppShell() {
               {selectedView === "dynamicDashboard" && (
                 <DynamicDashboard
                   selectedView={selectedView}
-                  resourceUri={`publisher://malloy-samples`}
+                  resourceUri={`publisher://projects/malloy-samples`}
                 />
               )}
               {selectedView === "interactive" && (

@@ -15,13 +15,13 @@ export const parseResourceUri = (resourceUri: string) => {
    const pathParts = (parsedUri.hostname + parsedUri.pathname).split("/");
    for (let i = 0; i < pathParts.length; i += 2) {
       const part = pathParts[i];
-      if (part === "project") {
+      if (part === "projects") {
          parsedResource.projectName = pathParts[i + 1] || undefined;
-      } else if (part === "package") {
+      } else if (part === "packages") {
          parsedResource.packageName = pathParts[i + 1] || undefined;
-      } else if (part === "connection") {
+      } else if (part === "connections") {
          parsedResource.connectionName = pathParts[i + 1] || undefined;
-      } else if (part === "model") {
+      } else if (part === "models") {
          parsedResource.modelPath = pathParts[i + 1] || undefined;
       }
    }
@@ -40,15 +40,15 @@ export const encodeResourceUri = (resource: ParsedResource) => {
          `Failed to encode resource URI, missing project name: ${resource}`,
       );
    }
-   let uri = `publisher://project/${resource.projectName}`;
+   let uri = `publisher://projects/${resource.projectName}`;
    if (resource.packageName) {
-      uri += `/package/${resource.packageName}`;
+      uri += `/packages/${resource.packageName}`;
    }
    if (resource.connectionName) {
-      uri += `/connection/${resource.connectionName}`;
+      uri += `/connections/${resource.connectionName}`;
    }
    if (resource.modelPath) {
-      uri += `/model/${resource.modelPath}`;
+      uri += `/models/${resource.modelPath}`;
    }
    if (resource.packageName && resource.versionId) {
       uri += `?versionId=${resource.versionId}`;
