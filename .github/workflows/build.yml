@@ -65,6 +65,9 @@ jobs:
         run: curl -fsSL https://bun.sh/install | bash && echo "$HOME/.bun/bin" >> $GITHUB_PATH
       - name: build server
         run: bun install && bun run build
+      - name: Link local package
+        run: |
+          cd packages/server && npm link
       - name: Start npx server
         run: |
           cd packages/server && npx malloy-publisher --port 4002 --server_root ./ &
