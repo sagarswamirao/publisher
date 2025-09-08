@@ -281,7 +281,7 @@ describe("ProjectStore Service", () => {
       expect(projects).toEqual([]);
    });
 
-   it.only("should handle concurrent project access", async () => {
+   it("should handle concurrent project access", async () => {
       // Create a project directory
       const projectPath = path.join(serverRootPath, projectName);
       mkdirSync(projectPath, { recursive: true });
