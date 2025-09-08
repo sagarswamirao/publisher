@@ -6,13 +6,13 @@ import * as path from "path";
 import simpleGit from "simple-git";
 import { Writable } from "stream";
 import { components } from "../api";
-import { getPublisherConfig, isPublisherConfigFrozen } from "../config";
 import {
-   API_PREFIX,
-   CONNECTIONS_MANIFEST_NAME,
-   PUBLISHER_CONFIG_NAME,
-   publisherPath,
-} from "../constants";
+   getProcessedPublisherConfig,
+   isPublisherConfigFrozen,
+   ProcessedPublisherConfig,
+   ProcessedProject,
+} from "../config";
+import { API_PREFIX, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
 import {
    FrozenConfigError,
    PackageNotFoundError,
@@ -57,6 +57,7 @@ export class ProjectStore {
                   {
                      name: project.name,
                      resource: `${API_PREFIX}/projects/${project.name}`,
+                     connections: project.connections,
                   },
                   true,
                );
@@ -154,6 +155,7 @@ export class ProjectStore {
          project = await this.addProject({
             name: projectName,
             resource: `${API_PREFIX}/projects/${projectName}`,
+            connections: projectConfig?.connections || [],
          });
       }
       return project;
@@ -213,6 +215,7 @@ export class ProjectStore {
          projectName,
          absoluteProjectPath,
          project.connections || [],
+         this.serverRootPath,
       );
       this.projects.set(projectName, newProject);
       return newProject;
@@ -266,29 +269,25 @@ export class ProjectStore {
       return project;
    }
 
-   public static async reloadProjectManifest(serverRootPath: string) {
+   public static async reloadProjectManifest(
+      serverRootPath: string,
+   ): Promise<ProcessedPublisherConfig> {
       try {
-         return getPublisherConfig(serverRootPath);
+         return getProcessedPublisherConfig(serverRootPath);
       } catch (error) {
          if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
             logger.error(
                `Error reading ${PUBLISHER_CONFIG_NAME}. Generating from directory`,
                { error },
             );
-            return { projects: [] };
+            return { frozenConfig: false, projects: [] };
          } else {
             // If publisher.config.json is missing, generate the manifest from directories
             try {
                const entries = await fs.promises.readdir(serverRootPath, {
                   withFileTypes: true,
                });
-               const projects: {
-                  name: string;
-                  packages: {
-                     name: string;
-                     location: string;
-                  }[];
-               }[] = [];
+               const projects: ProcessedProject[] = [];
                for (const entry of entries) {
                   if (entry.isDirectory()) {
                      projects.push({
@@ -296,18 +295,19 @@ export class ProjectStore {
                         packages: [
                            {
                               name: entry.name,
-                              location: entry.name,
+                              location: `./${entry.name}` as const,
                            },
                         ],
+                        connections: [],
                      });
                   }
                }
-               return { projects };
+               return { frozenConfig: false, projects };
             } catch (lsError) {
                logger.error(`Error listing directories in ${serverRootPath}`, {
                   error: lsError,
                });
-               return { projects: [] };
+               return { frozenConfig: false, projects: [] };
             }
          }
       }
@@ -429,52 +429,27 @@ export class ProjectStore {
                   );
                }
             }
-
-            const connectionsFileInDownload = path.join(
-               tempDownloadPath,
-               CONNECTIONS_MANIFEST_NAME,
+         } catch (error) {
+            logger.error(`Failed to download or mount location "${location}"`, {
+               error,
+            });
+            throw new PackageNotFoundError(
+               `Failed to download or mount location: ${location}`,
             );
-            const connectionsFileInServerRoot = path.join(
-               this.serverRootPath,
-               CONNECTIONS_MANIFEST_NAME,
-            );
-            const connectionsFileInProject = path.join(
-               absoluteTargetPath,
-               CONNECTIONS_MANIFEST_NAME,
-            );
-
-            const sources = [
-               {
-                  path: connectionsFileInDownload,
-                  description: "projectLocation",
-               },
-               { path: connectionsFileInServerRoot, description: "serverRoot" },
-            ];
-
-            for (const source of sources) {
-               try {
-                  await fs.promises.access(source.path, fs.constants.F_OK);
-                  await fs.promises.cp(source.path, connectionsFileInProject);
-                  logger.info(
-                     `Copied ${CONNECTIONS_MANIFEST_NAME} from ${source.description} to project directory`,
-                  );
-                  break;
-               } catch (_error) {
-                  if (source.description === "projectLocation") {
-                     logger.info(
-                        `No ${CONNECTIONS_MANIFEST_NAME} found in downloaded location, checking in server root for ${CONNECTIONS_MANIFEST_NAME}`,
-                     );
-                  } else {
-                     logger.info(`No ${CONNECTIONS_MANIFEST_NAME} found`);
-                  }
-               }
-            }
-         } finally {
+         }
+         try {
             // Clean up temporary download directory
             await fs.promises.rm(tempDownloadPath, {
                recursive: true,
                force: true,
             });
+         } catch (error) {
+            logger.warn(
+               `Failed to clean up temporary download directory "${tempDownloadPath}"`,
+               {
+                  error,
+               },
+            );
          }
       }
 

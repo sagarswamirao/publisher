@@ -15,19 +15,6 @@ const serverRootPath = path.join(
    "pathways-worker-publisher-project-store-test",
 );
 const projectName = "organizationName-projectName";
-const testConnections: Connection[] = [
-   {
-      name: "testConnection",
-      type: "postgres",
-      postgresConnection: {
-         host: "host",
-         port: 1234,
-         databaseName: "databaseName",
-         userName: "userName",
-         password: "password",
-      },
-   },
-];
 
 let sandbox: sinon.SinonSandbox;
 
@@ -72,13 +59,6 @@ describe("ProjectStore Service", () => {
       const projectPath = path.join(serverRootPath, projectName);
       mkdirSync(projectPath, { recursive: true });
 
-      // Create connections file
-      const connectionsPath = path.join(
-         projectPath,
-         "publisher.connections.json",
-      );
-      writeFileSync(connectionsPath, JSON.stringify(testConnections));
-
       // Create publisher config
       const publisherConfigPath = path.join(
          serverRootPath,
@@ -87,6 +67,7 @@ describe("ProjectStore Service", () => {
       writeFileSync(
          publisherConfigPath,
          JSON.stringify({
+            frozenConfig: false,
             projects: [
                {
                   name: projectName,
@@ -94,6 +75,12 @@ describe("ProjectStore Service", () => {
                      {
                         name: projectName,
                         location: projectPath,
+                     },
+                  ],
+                  connections: [
+                     {
+                        name: "testConnection",
+                        type: "postgres",
                      },
                   ],
                },
@@ -117,16 +104,6 @@ describe("ProjectStore Service", () => {
       mkdirSync(projectPath1, { recursive: true });
       mkdirSync(projectPath2, { recursive: true });
 
-      // Create connections files
-      writeFileSync(
-         path.join(projectPath1, "publisher.connections.json"),
-         JSON.stringify(testConnections),
-      );
-      writeFileSync(
-         path.join(projectPath2, "publisher.connections.json"),
-         JSON.stringify(testConnections),
-      );
-
       // Create publisher config
       const publisherConfigPath = path.join(
          serverRootPath,
@@ -135,6 +112,7 @@ describe("ProjectStore Service", () => {
       writeFileSync(
          publisherConfigPath,
          JSON.stringify({
+            frozenConfig: false,
             projects: [
                {
                   name: projectName1,
@@ -144,6 +122,12 @@ describe("ProjectStore Service", () => {
                         location: projectPath1,
                      },
                   ],
+                  connections: [
+                     {
+                        name: "testConnection",
+                        type: "postgres",
+                     },
+                  ],
                },
                {
                   name: projectName2,
@@ -151,6 +135,13 @@ describe("ProjectStore Service", () => {
                      {
                         name: projectName2,
                         location: projectPath2,
+                     },
+                  ],
+                  connections: [
+                     {
+                        name: "testConnection2",
+                        type: "bigquery",
+                        bigqueryConnection: {},
                      },
                   ],
                },
@@ -174,14 +165,6 @@ describe("ProjectStore Service", () => {
       // Create a project directory
       const projectPath = path.join(serverRootPath, projectName);
       mkdirSync(projectPath, { recursive: true });
-
-      // Create connections file
-      const connectionsPath = path.join(
-         projectPath,
-         "publisher.connections.json",
-      );
-      writeFileSync(connectionsPath, JSON.stringify(testConnections));
-
       // Create publisher config
       const publisherConfigPath = path.join(
          serverRootPath,
@@ -220,13 +203,6 @@ describe("ProjectStore Service", () => {
       // Create a project directory
       const projectPath = path.join(serverRootPath, projectName);
       mkdirSync(projectPath, { recursive: true });
-
-      // Create connections file
-      const connectionsPath = path.join(
-         projectPath,
-         "publisher.connections.json",
-      );
-      writeFileSync(connectionsPath, JSON.stringify(testConnections));
 
       // Create publisher config
       const publisherConfigPath = path.join(
@@ -310,14 +286,6 @@ describe("ProjectStore Service", () => {
       const projectPath = path.join(serverRootPath, projectName);
       mkdirSync(projectPath, { recursive: true });
 
-      // Create connections file
-      const connectionsPath = path.join(
-         projectPath,
-         "publisher.connections.json",
-      );
-      writeFileSync(connectionsPath, JSON.stringify(testConnections));
-
-      // Create publisher config
       const publisherConfigPath = path.join(
          serverRootPath,
          "publisher.config.json",
@@ -325,6 +293,7 @@ describe("ProjectStore Service", () => {
       writeFileSync(
          publisherConfigPath,
          JSON.stringify({
+            frozenConfig: false,
             projects: [
                {
                   name: projectName,
@@ -334,10 +303,18 @@ describe("ProjectStore Service", () => {
                         location: projectPath,
                      },
                   ],
+                  connections: [
+                     {
+                        name: "testConnection",
+                        type: "postgres",
+                     },
+                  ],
                },
             ],
          }),
       );
+
+      await projectStore.finishedInitialization;
 
       // Test concurrent access to the same project
       const promises = Array.from({ length: 5 }, () =>

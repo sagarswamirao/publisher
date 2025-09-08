@@ -38,6 +38,7 @@ export class Project {
    private internalConnections: InternalConnection[];
    private projectPath: string;
    private projectName: string;
+   private serverRootPath: string;
    public metadata: ApiProject;
 
    constructor(
@@ -46,9 +47,11 @@ export class Project {
       malloyConnections: Map<string, BaseConnection>,
       internalConnections: InternalConnection[],
       apiConnections: InternalConnection[],
+      serverRootPath: string,
    ) {
       this.projectName = projectName;
       this.projectPath = projectPath;
+      this.serverRootPath = serverRootPath;
       this.malloyConnections = malloyConnections;
       // InternalConnections have full connection details for doing schema inspection
       this.internalConnections = internalConnections;
@@ -101,6 +104,7 @@ export class Project {
       projectName: string,
       projectPath: string,
       defaultConnections: ApiConnection[],
+      serverRootPath?: string,
    ): Promise<Project> {
       if (!(await fs.promises.stat(projectPath)).isDirectory()) {
          throw new ProjectNotFoundError(
@@ -112,7 +116,12 @@ export class Project {
       let apiConnections: InternalConnection[] = [];
 
       logger.info(`Creating project with connection configuration`);
-      const result = await createConnections(projectPath, defaultConnections);
+      const result = await createConnections(
+         projectPath,
+         defaultConnections,
+         projectName,
+         serverRootPath,
+      );
       malloyConnections = result.malloyConnections;
       apiConnections = result.apiConnections;
 
@@ -140,6 +149,7 @@ export class Project {
                resource: internalConnection.resource,
             };
          }),
+         serverRootPath || "",
       );
    }
 
@@ -290,6 +300,7 @@ export class Project {
                packageName,
                path.join(this.projectPath, packageName),
                this.malloyConnections,
+               this.serverRootPath,
             );
             this.packages.set(packageName, _package);
 
@@ -334,6 +345,7 @@ export class Project {
                packageName,
                packagePath,
                this.malloyConnections,
+               this.serverRootPath,
             ),
          );
       } catch (error) {

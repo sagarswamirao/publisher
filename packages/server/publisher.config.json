@@ -20,17 +20,14 @@
           "name": "bigquery-hackernews",
           "location": "https://github.com/credibledata/malloy-samples"
         }
+      ],
+      "connections": [
+        {
+          "name": "bigquery",
+          "type": "bigquery",
+          "bigqueryConnection": {}
+        }
       ]
-    }
-  ],
-  "connections": [
-    {
-      "name": "bigquery",
-      "type": "bigquery",
-      "bigqueryConnection": {
-        "defaultProjectId": "my-gcp-project-id",
-        "serviceAccountKeyJson": "{\"sensitive\": true }"
-      }
     }
   ]
 }

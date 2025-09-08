@@ -4,18 +4,13 @@ import { join } from "path";
 import sinon from "sinon";
 import { PackageNotFoundError } from "../errors";
 import { readConnectionConfig } from "./connection";
-import { ApiConnection, Model } from "./model";
+import { Model } from "./model";
 import { Package } from "./package";
 import { Scheduler } from "./scheduler";
 import { Stats } from "fs";
 
 // Minimal partial types for mocking
 type PartialScheduler = Pick<Scheduler, "list">;
-
-const connectionMocks: ApiConnection[] = [
-   { name: "conn1", type: "postgres", postgresConnection: {} },
-   { name: "conn2", type: "bigquery", bigqueryConnection: {} },
-];
 
 describe("service/package", () => {
    const testPackageDirectory = "testPackage";
@@ -29,11 +24,6 @@ describe("service/package", () => {
       await fs.writeFile(
          join(testPackageDirectory, "database.csv"),
          parquetBuffer,
-      );
-      const content = JSON.stringify(connectionMocks);
-      await fs.writeFile(
-         join(testPackageDirectory, "publisher.connections.json"),
-         content,
       );
       const publisherContent = JSON.stringify({ description: "Test package" });
       await fs.writeFile(
@@ -85,6 +75,7 @@ describe("service/package", () => {
                   "testPackage",
                   testPackageDirectory,
                   new Map(),
+                  "/server/root",
                ),
             ).rejects.toThrowError(
                new PackageNotFoundError(
@@ -124,6 +115,7 @@ describe("service/package", () => {
                   "testPackage",
                   testPackageDirectory,
                   new Map(),
+                  "/server/root",
                );
 
                expect(packageInstance).toBeInstanceOf(Package);
@@ -232,23 +224,76 @@ describe("service/package", () => {
       });
 
       describe("readConnectionConfig", () => {
-         it("should return an empty array if the connection manifest does not exist", async () => {
-            await fs.rm(
-               join(testPackageDirectory, "publisher.connections.json"),
-            );
-
-            sinon.stub(fs, "stat").rejects(new Error("File not found"));
-
+         it("should return an empty array if no project name or server root path is provided", async () => {
             const config = await readConnectionConfig(testPackageDirectory);
             expect(Array.isArray(config)).toBe(true);
             expect(config).toHaveLength(0);
          });
 
-         it("should return the parsed connection config if it exists", async () => {
-            sinon.stub(fs, "stat").resolves();
-            const config = await readConnectionConfig(testPackageDirectory);
+         it("should return an empty array if project name or server root path is missing", async () => {
+            const config1 = await readConnectionConfig(
+               testPackageDirectory,
+               "testProject",
+            );
+            expect(Array.isArray(config1)).toBe(true);
+            expect(config1).toHaveLength(0);
 
-            expect(config).toEqual(connectionMocks);
+            const config2 = await readConnectionConfig(
+               testPackageDirectory,
+               undefined,
+               "/server/root",
+            );
+            expect(Array.isArray(config2)).toBe(true);
+            expect(config2).toHaveLength(0);
+         });
+
+         it("should return connections from publisher config when project name and server root are provided", async () => {
+            const tempServerRoot = "/tmp/test-server-root";
+            const tempConfigPath = join(
+               tempServerRoot,
+               "publisher.config.json",
+            );
+
+            // Create temp directory and config file
+            await fs.mkdir(tempServerRoot, { recursive: true });
+            await fs.writeFile(
+               tempConfigPath,
+               JSON.stringify({
+                  frozenConfig: false,
+                  projects: [
+                     {
+                        name: "testProject",
+                        packages: [],
+                        connections: [
+                           { name: "test-conn", type: "postgres" },
+                           { name: "test-conn2", type: "bigquery" },
+                        ],
+                     },
+                  ],
+               }),
+            );
+
+            const config = await readConnectionConfig(
+               testPackageDirectory,
+               "testProject",
+               tempServerRoot,
+            );
+
+            expect(Array.isArray(config)).toBe(true);
+            expect(config).toHaveLength(2);
+            expect(config[0]).toMatchObject({
+               name: "test-conn",
+               type: "postgres",
+               resource: "/api/v0/connections/test-conn",
+            });
+            expect(config[1]).toMatchObject({
+               name: "test-conn2",
+               type: "bigquery",
+               resource: "/api/v0/connections/test-conn2",
+            });
+
+            // Clean up
+            await fs.rm(tempServerRoot, { recursive: true, force: true });
          });
       });
    });
