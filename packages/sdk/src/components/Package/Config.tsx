@@ -1,6 +1,5 @@
 import ErrorIcon from "@mui/icons-material/ErrorOutlined";
 import { Box, List, ListItem, ListItemText } from "@mui/material";
-import { Configuration, PackagesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -10,14 +9,14 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-
-const packagesApi = new PackagesApi(new Configuration());
+import { useApiClients } from "../ServerProvider";
 
 type Props = {
    resourceUri: string;
 };
 
 export default function Config({ resourceUri }: Props) {
+   const { packages } = useApiClients();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -26,14 +25,8 @@ export default function Config({ resourceUri }: Props) {
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["package", projectName, packageName, versionId],
-      queryFn: (config) =>
-         packagesApi.getPackage(
-            projectName,
-            packageName,
-            versionId,
-            false,
-            config,
-         ),
+      queryFn: () =>
+         packages.getPackage(projectName, packageName, versionId, false),
    });
 
    return (

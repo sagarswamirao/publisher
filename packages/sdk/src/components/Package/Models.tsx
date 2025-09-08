@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import { Configuration, ModelsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -10,8 +9,7 @@ import {
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { parseResourceUri } from "../../utils/formatting";
-
-const modelsApi = new ModelsApi(new Configuration());
+import { useApiClients } from "../ServerProvider";
 
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
 
@@ -26,10 +24,11 @@ export default function Models({ navigate, resourceUri }: ModelsProps) {
       packageName: packageName,
       versionId: versionId,
    } = parseResourceUri(resourceUri);
+   const { models } = useApiClients();
+
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
-      queryFn: (config) =>
-         modelsApi.listModels(projectName, packageName, versionId, config),
+      queryFn: () => models.listModels(projectName, packageName, versionId),
    });
 
    return (

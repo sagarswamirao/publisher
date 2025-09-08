@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import React from "react";
-import { Configuration, Database, DatabasesApi } from "../../client";
+import { Database } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -24,14 +24,14 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-
-const databasesApi = new DatabasesApi(new Configuration());
+import { useApiClients } from "../ServerProvider";
 
 type Props = {
    resourceUri: string;
 };
 
 export default function Databases({ resourceUri }: Props) {
+   const { databases } = useApiClients();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -54,13 +54,8 @@ export default function Databases({ resourceUri }: Props) {
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["databases", projectName, packageName, versionId],
-      queryFn: (config) =>
-         databasesApi.listDatabases(
-            projectName,
-            packageName,
-            versionId,
-            config,
-         ),
+      queryFn: () =>
+         databases.listDatabases(projectName, packageName, versionId),
    });
    const formatRowSize = (size: number) => {
       if (size >= 1024 * 1024 * 1024 * 1024) {

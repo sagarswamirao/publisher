@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import { Configuration, NotebooksApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -10,8 +9,7 @@ import {
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { parseResourceUri } from "../../utils/formatting";
-
-const notebooksApi = new NotebooksApi(new Configuration());
+import { useApiClients } from "../ServerProvider";
 
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/"];
 
@@ -21,6 +19,7 @@ interface NotebooksProps {
 }
 
 export default function Notebooks({ navigate, resourceUri }: NotebooksProps) {
+   const { notebooks } = useApiClients();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -29,13 +28,8 @@ export default function Notebooks({ navigate, resourceUri }: NotebooksProps) {
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["notebooks", projectName, packageName, versionId],
-      queryFn: (config) =>
-         notebooksApi.listNotebooks(
-            projectName,
-            packageName,
-            versionId,
-            config,
-         ),
+      queryFn: () =>
+         notebooks.listNotebooks(projectName, packageName, versionId),
    });
 
    return (

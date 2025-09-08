@@ -7,14 +7,12 @@ import {
 } from "../styles";
 
 import React, { useState, useEffect } from "react";
-import { Configuration, QueryresultsApi } from "../../client";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
+import { useApiClients } from "../ServerProvider";
 
 type ExplorerComponents = typeof import("@malloydata/malloy-explorer");
 type QueryBuilder = typeof import("@malloydata/malloy-query-builder");
-
-const queryResultsApi = new QueryresultsApi(new Configuration());
 
 export interface SourceAndPath {
    modelPath: string;
@@ -135,8 +133,10 @@ function SourceExplorerComponentInner({
       packageName: packageName,
       versionId: versionId,
    } = parseResourceUri(resourceUri);
+   const { queryResults } = useApiClients();
+
    const mutation = useMutationWithApiError({
-      mutationFn: (_, config) => {
+      mutationFn: () => {
          const malloy = new QueryBuilder.ASTQuery({
             source: sourceAndPath.sourceInfo,
             query: query?.malloyQuery,
@@ -145,7 +145,7 @@ function SourceExplorerComponentInner({
             ...query,
             query: malloy,
          });
-         return queryResultsApi.executeQuery(
+         return queryResults.executeQuery(
             projectName,
             packageName,
             sourceAndPath.modelPath,
@@ -154,7 +154,6 @@ function SourceExplorerComponentInner({
             // sourceInfo.name,
             undefined,
             versionId,
-            config,
          );
       },
       onSuccess: (data) => {

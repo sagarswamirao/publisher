@@ -1,8 +1,6 @@
-import { Configuration, QueryresultsApi } from "../client";
 import { parseResourceUri } from "../utils/formatting";
 import { useQueryWithApiError } from "./useQueryWithApiError";
-
-const queryResultsApi = new QueryresultsApi(new Configuration());
+import { useApiClients } from "../components/ServerProvider";
 
 interface UseRawQueryDataProps {
    modelPath: string;
@@ -23,6 +21,7 @@ export function useRawQueryData({
 }: UseRawQueryDataProps) {
    const { projectName, packageName, versionId } =
       parseResourceUri(resourceUri);
+   const { queryResults } = useApiClients();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
@@ -35,8 +34,8 @@ export function useRawQueryData({
          sourceName,
          queryName,
       ],
-      queryFn: (config) =>
-         queryResultsApi.executeQuery(
+      queryFn: () =>
+         queryResults.executeQuery(
             projectName,
             packageName,
             modelPath,
@@ -44,7 +43,6 @@ export function useRawQueryData({
             sourceName,
             queryName,
             versionId,
-            config,
          ),
       enabled,
    });

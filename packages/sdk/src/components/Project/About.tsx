@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
 import Markdown from "markdown-to-jsx";
-import { Configuration, ProjectsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
@@ -10,8 +9,7 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-
-const projectsApi = new ProjectsApi(new Configuration());
+import { useApiClients } from "../ServerProvider";
 
 interface AboutProps {
    resourceUri: string;
@@ -19,10 +17,11 @@ interface AboutProps {
 
 export default function About({ resourceUri }: AboutProps) {
    const { projectName: projectName } = parseResourceUri(resourceUri);
+   const { projects } = useApiClients();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["about", projectName],
-      queryFn: (config) => projectsApi.getProject(projectName, false, config),
+      queryFn: () => projects.getProject(projectName, false),
    });
 
    return (
