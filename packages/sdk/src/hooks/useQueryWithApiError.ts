@@ -78,7 +78,6 @@ export function useMutationWithApiError<
       mutationFn: (variables: TVariables) => Promise<TData>;
    },
 ): UseMutationResult<TData, TError, TVariables> {
-   const { server } = useServer();
    const enhancedOptions: UseMutationOptions<TData, TError, TVariables> = {
       ...options,
       mutationFn: async (variables: TVariables) => {
