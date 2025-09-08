@@ -8,7 +8,7 @@ export type ParsedResource = {
 
 export const parseResourceUri = (resourceUri: string) => {
    const parsedUri = new URL(resourceUri);
-   let parsedResource = {} as ParsedResource;
+   const parsedResource = {} as ParsedResource;
    if (parsedUri.protocol !== "publisher:") {
       throw new Error(`Failed to parse resource URI: ${resourceUri}`);
    }

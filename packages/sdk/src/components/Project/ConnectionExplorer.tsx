@@ -18,8 +18,6 @@ import {
    TableRow,
    Tooltip,
 } from "@mui/material";
-import { ConnectionsApi } from "../../client/api";
-import { Configuration } from "../../client/configuration";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
