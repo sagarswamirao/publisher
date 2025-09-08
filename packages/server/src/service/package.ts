@@ -72,6 +72,7 @@ export class Package {
       packageName: string,
       packagePath: string,
       projectConnections: Map<string, Connection>,
+      serverRootPath: string,
    ): Promise<Package> {
       const startTime = performance.now();
       await Package.validatePackageManifestExistsOrThrowError(packagePath);
@@ -107,7 +108,12 @@ export class Package {
          });
          // Package connections override project connections.
          const { malloyConnections: packageConnections } =
-            await createConnections(packagePath);
+            await createConnections(
+               packagePath,
+               [],
+               projectName,
+               serverRootPath,
+            );
          const connectionsTime = performance.now();
          logger.info("Package connections created", {
             packageName,

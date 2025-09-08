@@ -11,7 +11,11 @@ import fs from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { components } from "../api";
-import { CONNECTIONS_MANIFEST_NAME, TEMP_DIR_PATH } from "../constants";
+import { TEMP_DIR_PATH } from "../constants";
+import {
+   convertConnectionsToApiConnections,
+   getConnectionsFromPublisherConfig,
+} from "../config";
 import { AxiosError } from "axios";
 
 type ApiConnection = components["schemas"]["Connection"];
@@ -29,32 +33,38 @@ export type InternalConnection = ApiConnection & {
 };
 
 export async function readConnectionConfig(
-   basePath: string,
-): Promise<InternalConnection[]> {
-   const fullPath = path.join(basePath, CONNECTIONS_MANIFEST_NAME);
-
-   try {
-      await fs.stat(fullPath);
-   } catch {
-      // If there's no connection manifest, it's no problem.  Just return an
-      // empty array.
-      return new Array<InternalConnection>();
+   _basePath: string,
+   projectName?: string,
+   serverRootPath?: string,
+): Promise<ApiConnection[]> {
+   // If no project name is provided, return empty array for backward compatibility
+   if (!projectName || !serverRootPath) {
+      return new Array<ApiConnection>();
    }
 
-   const connectionFileContents = await fs.readFile(fullPath);
-   // TODO: Validate connection manifest.  Define manifest type in public API.
-   return JSON.parse(connectionFileContents.toString()) as ApiConnection[];
+   // Get connections from publisher config
+   const connections = getConnectionsFromPublisherConfig(
+      serverRootPath,
+      projectName,
+   );
+   return convertConnectionsToApiConnections(connections);
 }
 
 export async function createConnections(
    basePath: string,
    defaultConnections: ApiConnection[] = [],
+   projectName?: string,
+   serverRootPath?: string,
 ): Promise<{
    malloyConnections: Map<string, BaseConnection>;
    apiConnections: InternalConnection[];
 }> {
    const connectionMap = new Map<string, BaseConnection>();
-   const connectionConfig = await readConnectionConfig(basePath);
+   const connectionConfig = await readConnectionConfig(
+      basePath,
+      projectName,
+      serverRootPath,
+   );
 
    const allConnections = [...defaultConnections, ...connectionConfig];
 

@@ -302,25 +302,19 @@ Publisher uses configuration files on the local filesystem to manage server sett
 - **Server Configuration (`publisher.config.json`):**
 
   - **Location:** Stored at the `SERVER_ROOT` directory (the directory from which the `publisher-server` command is run or where the server package is located).
-  - **Purpose:** Defines the overall server environment, primarily by listing the available "projects" and their relative paths. A project represents a distinct environment or collection of packages.
+  - **Purpose:** Defines the overall server environment, primarily by listing the available "projects" and their relative paths. A project represents a distinct environment or collection of packages. It also contains the database connection configurations (credentials, database names, types like BigQuery/Postgres/DuckDB, etc.) required by the Malloy models within that project's packages.
   - **Example:** See [`packages/server/publisher.config.json`](packages/server/publisher.config.json) for the basic structure.
-
-- **Project Configuration (`publisher.connections.json`):**
-
-  - **Location:** Stored at the root of each individual project directory defined in the server configuration.
-  - **Purpose:** Contains project-specific settings, most importantly the database connection configurations (credentials, database names, types like BigQuery/Postgres/DuckDB, etc.) required by the Malloy models within that project's packages.
-  - **Example:** See [`malloy-samples/publisher.connections.json`](packages/server/malloy-samples/publisher.connections.json) for an example.
 
 - **Environment Management:**
 
   - This two-tiered configuration structure (server-level listing projects, project-level defining connections) allows for standard environment separation (e.g., `dev`, `staging`, `prod`), a common practice in cloud development.
-  - You can create separate project directories for each environment. Each project directory would contain its own `publisher.connections.json` with the appropriate credentials for that environment.
+  - You can create separate project directories for each environment.
   - Crucially, these environment-specific project directories can reference the _same_ underlying Malloy packages (containing the models and notebooks) using symbolic links.
 
   - **Example File Structure:**
     ```
     SERVER_ROOT/
-    ├── publisher.config.json       # Lists 'staging' and 'prod' projects
+    ├── publisher.config.json       # Lists 'staging' and 'prod' projects with their connections
     │
     ├── packages/                   # Contains the actual Malloy packages
     │   ├── package1/
@@ -329,12 +323,10 @@ Publisher uses configuration files on the local filesystem to manage server sett
     │   └── ...
     │
     ├── staging/                    # Staging environment project
-    │   ├── publisher.connections.json # Staging DB credentials
     │   ├── package1 -> ../packages/package1  # Symbolic link
     │   └── package2 -> ../packages/package2  # Symbolic link
     │
     └── prod/                       # Production environment project
-        ├── publisher.connections.json  # Production DB credentials
         ├── package1 -> ../packages/package1   # Symbolic link
         └── package2 -> ../packages/package2   # Symbolic link
     ```
