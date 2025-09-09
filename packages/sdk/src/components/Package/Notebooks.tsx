@@ -14,11 +14,14 @@ import { useServer } from "../ServerProvider";
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/"];
 
 interface NotebooksProps {
-   navigate: (to: string, event?: React.MouseEvent) => void;
+   onClickNotebookFile: (to: string, event?: React.MouseEvent) => void;
    resourceUri: string;
 }
 
-export default function Notebooks({ navigate, resourceUri }: NotebooksProps) {
+export default function Notebooks({
+   onClickNotebookFile,
+   resourceUri,
+}: NotebooksProps) {
    const { apiClients } = useServer();
    const {
       projectName: projectName,
@@ -61,7 +64,7 @@ export default function Notebooks({ navigate, resourceUri }: NotebooksProps) {
                         return a.path.localeCompare(b.path);
                      })}
                      defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
-                     navigate={navigate}
+                     onClickTreeNode={onClickNotebookFile}
                   />
                )}
                {isSuccess && data.data.length === 0 && (

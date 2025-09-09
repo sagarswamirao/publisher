@@ -7,11 +7,14 @@ import { parseResourceUri } from "../../utils/formatting";
 import { useServer } from "../ServerProvider";
 
 interface PackagesProps {
-   navigate: (to: string, event?: React.MouseEvent) => void;
+   onSelectPackage: (to: string, event?: React.MouseEvent) => void;
    resourceUri: string;
 }
 
-export default function Packages({ navigate, resourceUri }: PackagesProps) {
+export default function Packages({
+   onSelectPackage,
+   resourceUri,
+}: PackagesProps) {
    const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
    const { data, isSuccess, isError, error } = useQueryWithApiError({
@@ -43,7 +46,9 @@ export default function Packages({ navigate, resourceUri }: PackagesProps) {
                                     transform: "translateY(-1px)",
                                  },
                               }}
-                              onClick={(event) => navigate(p.name, event)}
+                              onClick={(event) =>
+                                 onSelectPackage(p.name, event)
+                              }
                            >
                               <PackageCardContent>
                                  <Typography

@@ -188,7 +188,7 @@ export default function AddChartDialog({
             >
               <Packages
                 resourceUri={resourceUri}
-                navigate={handlePackageNavigate}
+                onSelectPackage={handlePackageNavigate}
               />
             </Box>
           )}
@@ -205,7 +205,7 @@ export default function AddChartDialog({
                 }}
               >
                 <Models
-                  navigate={handleModelNavigate}
+                  onClickModelFile={handleModelNavigate}
                   resourceUri={resourceUri}
                 />
               </Box>

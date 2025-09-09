@@ -23,7 +23,7 @@ import { Loading } from "../Loading";
 import { useServer } from "../ServerProvider";
 
 interface HomeProps {
-   navigate?: (to: string, event?: React.MouseEvent) => void;
+   onClickProject?: (to: string, event?: React.MouseEvent) => void;
 }
 
 // Helper function to extract a brief description from README content
@@ -56,7 +56,7 @@ const getProjectDescription = (readme: string | undefined): string => {
    return truncated.join(" ") + "...";
 };
 
-export default function Home({ navigate }: HomeProps) {
+export default function Home({ onClickProject }: HomeProps) {
    const { apiClients } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
@@ -310,7 +310,7 @@ export default function Home({ navigate }: HomeProps) {
                                  },
                               }}
                               onClick={(event) =>
-                                 navigate(`/${project.name}/`, event)
+                                 onClickProject(`/${project.name}/`, event)
                               }
                            >
                               <CardContent sx={{ p: 3, textAlign: "center" }}>

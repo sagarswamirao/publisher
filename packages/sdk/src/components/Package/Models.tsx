@@ -14,11 +14,11 @@ import { useServer } from "../ServerProvider";
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
 
 interface ModelsProps {
-   navigate: (to: string, event?: React.MouseEvent) => void;
+   onClickModelFile: (to: string, event?: React.MouseEvent) => void;
    resourceUri: string;
 }
 
-export default function Models({ navigate, resourceUri }: ModelsProps) {
+export default function Models({ onClickModelFile, resourceUri }: ModelsProps) {
    const {
       projectName: projectName,
       packageName: packageName,
@@ -54,7 +54,7 @@ export default function Models({ navigate, resourceUri }: ModelsProps) {
                      items={data.data.sort((a, b) => {
                         return a.path.localeCompare(b.path);
                      })}
-                     navigate={navigate}
+                     onClickTreeNode={onClickModelFile}
                      defaultExpandedItems={DEFAULT_EXPANDED_FOLDERS}
                   />
                )}

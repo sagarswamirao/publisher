@@ -22,6 +22,8 @@ export function PackagePage() {
          projectName,
          packageName,
       });
-      return <Package navigate={navigate} resourceUri={resourceUri} />;
+      return (
+         <Package onClickPackageFile={navigate} resourceUri={resourceUri} />
+      );
    }
 }
