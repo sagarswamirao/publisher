@@ -58,68 +58,6 @@ The Publisher's default server configuraiton serves the <a href="https://github.
   <br>
 </center>
 
-Once your model is served, it becomes the foundation for a wide variety of data experiences — no-code analysis, notebooks, AI agents, and more. The sections below showcase how those experiences work in practice:
-
-## Ad Hoc Data Analysis
-
-Once a model is published, analysts can open it in **Explorer**, a visual query builder built into the Publisher app. Explorer allows analysts to:
-
-- Browse semantic sources, dimensions, and measures
-- Click to build queries and run nested logic
-- Inspect and understand the underlying Malloy and SQL
-- Save and share reusable views — all without writing code
-
-🎥 **Demo Video:** <a href="https://www.loom.com/share/8a1438201da64f1b867a8a6a4a10e66b?sid=29dd7f2a-218e-4f94-95e5-a97456447621" target="_blank" rel="noopener noreferrer">Watch Explorer in action →</a>  
-📖 **Docs:** <a href="docs/explorer.md" target="_blank" rel="noopener noreferrer">Explorer Documentation →</a>
-
-## Notebook-based Dashboards
-
-Use Malloy notebooks (`.malloynb` files) to create shareable, code-first dashboards directly from your semantic models. These dashboards are versioned alongside your models and can include text, charts, and reusable views — all rendered via Publisher.
-
-- Great for technical stakeholders who want reproducibility and transparency
-- Supports live queries and chart rendering
-- Notebooks are readable, inspectable, and easy to iterate on
-
-🎥 **Demo Video:** <a href="https://www.loom.com/share/efb54cf6c7444fdc8eaa7da509059a78?sid=a925eafb-76e0-476b-8237-c6375ad5679d" target="_blank" rel="noopener noreferrer">Notebook walkthrough →</a>  
-📖 **Docs:** <a href="https://docs.malloydata.dev/blog/2023-03-10-malloy-data-notebooks" target="_blank" rel="noopener noreferrer">Malloy Notebooks →</a>
-
-## MCP-based AI Data Agents
-
-Publisher exposes your semantic models via the **Model Context Protocol (MCP)**, making it possible for AI agents to:
-
-- Discover available sources, dimensions, and views
-- Ask well-formed questions grounded in the model
-- Get meaningful responses with full metadata, queries, and diagnostics
-
-This enables tools like Claude, Cursor, or custom agents to generate accurate, interpretable queries using your definitions — not guesses.
-
-🎥 **Demo Video:** <a href="https://www.loom.com/share/fcc5112ac1ca4bf78bee0985f1cd31be" target="_blank" rel="noopener noreferrer">MCP + AI Agent walkthrough →</a>  
-📖 **Docs:** <a href="docs/ai-agents.md" target="_blank" rel="noopener noreferrer">AI Agents & MCP Guide →</a>
-
-## Embedded Data Applications
-
-Using the <a href="packages/sdk/" target="_blank" rel="noopener noreferrer">Publisher SDK</a>, you can build rich data applications — without rebuilding your query engine or rewriting business logic. The Publisher App itself is built from this SDK, and you can remix it to:
-
-- Create internal tools or customer-facing dashboards
-- Build custom UI with governed data access
-- Embed charts or explorers into any React app
-
-🎥 **Demo Video:** <a href="docs/coming-soon.md" target="_blank" rel="noopener noreferrer">Building an app with the SDK →</a>  
-📖 **Docs:** <a href="docs/embedded-data-apps.md" target="_blank" rel="noopener noreferrer">Embedded Data Apps Guide →</a>
-
-## Legacy BI Tools (Coming Soon)
-
-Publisher will soon support a SQL-compatible interface (e.g., Postgres wire protocol), allowing you to connect legacy BI tools like:
-
-- Tableau
-- Power BI
-- Metabase
-- Superset
-
-These tools will be able to query your semantic models directly — gaining consistency and reducing duplicated logic, all without changing how your team works.
-
-📖 **Docs (early draft):** <a href="docs/legacy-bi.md" target="_blank" rel="noopener noreferrer">Traditional BI Dashboards →</a>
-
 # Architecture Overview
 
 Publisher consists of three main components: the Publisher Server (APIs & backend, now including MCP support), the Publisher SDK (UI components), and the Publisher App (a reference data app implementation).
@@ -141,7 +79,9 @@ The image below illustrates the composition of the Publisher's components and th
     - **Purpose:** Used by the web frontend (Publisher App/SDK) for browsing packages, models, and executing queries.
     - **Specification:** Defined in [`api-doc.yaml`](api-doc.yaml).
   - **Model Context Protocol (MCP) API:**
-    - **Purpose:** Allows AI agents and other MCP clients (like the <a href="https://github.com/modelcontextprotocol/inspector" target="_blank" rel="noopener noreferrer">MCP Inspector</a> or compatible applications) to interact with Malloy resources (projects, packages, models, sources, views, notebooks) and execute queries programmatically.
+    - **Purpose:** Allows AI agents and other MCP clients to interact with Malloy resources (projects, packages, models, sources, views, notebooks) and execute queries programmatically.
+    - **Demo Video:** <a href="https://www.loom.com/share/fcc5112ac1ca4bf78bee0985f1cd31be" target="_blank" rel="noopener noreferrer">MCP + AI Agent walkthrough →</a>  
+    - **Docs:** <a href="docs/ai-agents.md" target="_blank" rel="noopener noreferrer">AI Agents & MCP Guide →</a>
     - **Specification:** Adheres to the <a href="https://modelcontextprotocol.io/specification/2025-03-26/" target="_blank" rel="noopener noreferrer">MCP `2025-03-26` specification revision</a>. This includes providing resource metadata and detailed error messages with suggestions.
   - **SQL API (coming soon):**
     - **Purpose:** Connect to you existing tools.
@@ -347,7 +287,6 @@ bun install # This updates node_modules
 
 We are actively developing Publisher and plan to introduce several exciting features:
 
-- **Enhanced Developer Mode:** A streamlined local development experience where changes to your `.malloy` or `.malloynb` files automatically trigger recompilation of models and hot-reloading of the Publisher App/SDK, enabling faster iteration and testing.
 - **Scheduled Transform Pipelines:** Extend Publisher to orchestrate the execution of Malloy transformations on a schedule. Define pipelines within your Malloy packages to update materialized views, create summary tables, or perform other routine data preparation tasks directly managed by Publisher.
 - **DBT Integration:** Bridge the gap with the popular dbt ecosystem. Potential integration points include referencing Malloy models within dbt and triggering Malloy transformations as part of dbt workflows.
 - **Airflow Integration:** Enable seamless integration with Apache Airflow. This could involve custom Airflow operators to trigger Publisher actions like model refreshes or scheduled pipeline runs, allowing Malloy/Publisher tasks to be incorporated into larger, complex data orchestration DAGs.
