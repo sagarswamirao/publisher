@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { encodeResourceUri, Package } from "@malloy-publisher/sdk";
 import { useRouterClickHandler } from "@malloy-publisher/sdk";
 
-export function PackagePage() {
+function PackagePage() {
    const { projectName, packageName } = useParams();
    const navigate = useRouterClickHandler();
    if (!projectName) {
@@ -25,3 +25,4 @@ export function PackagePage() {
       return <Package navigate={navigate} resourceUri={resourceUri} />;
    }
 }
+export default PackagePage;

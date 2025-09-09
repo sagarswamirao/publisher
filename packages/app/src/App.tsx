@@ -9,15 +9,21 @@ import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { HeaderProps } from "./components/Header";
-import HomePage from "./components/HomePage";
-import MainPage from "./components/MainPage";
-import { ModelPage } from "./components/ModelPage";
-import { PackagePage } from "./components/PackagePage";
-import { ProjectPage } from "./components/ProjectPage";
-import { RouteError } from "./components/RouteError";
-import { WorkbookPage } from "./components/WorkbookPage";
 import theme from "./theme";
 import "@malloy-publisher/sdk/styles.css";
+
+/**
+ * Vite automatically handles code splitting and chunking when using
+ * React.lazy and dynamic import() statements for lazy loading React
+ * components.
+ */
+const HomePage = React.lazy(() => import("./components/HomePage"));
+const MainPage = React.lazy(() => import("./components/MainPage"));
+const ModelPage = React.lazy(() => import("./components/ModelPage"));
+const PackagePage = React.lazy(() => import("./components/PackagePage"));
+const ProjectPage = React.lazy(() => import("./components/ProjectPage"));
+const RouteError = React.lazy(() => import("./components/RouteError"));
+const WorkbookPage = React.lazy(() => import("./components/WorkbookPage"));
 
 // Create router configuration function
 export const createMalloyRouter = (

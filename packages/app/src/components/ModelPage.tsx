@@ -1,7 +1,7 @@
 import { encodeResourceUri, Model, Notebook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
-export function ModelPage() {
+function ModelPage() {
    const params = useParams();
    const modelPath = params["*"];
    if (!params.projectName) {
@@ -36,3 +36,5 @@ export function ModelPage() {
       </div>
    );
 }
+
+export default ModelPage;

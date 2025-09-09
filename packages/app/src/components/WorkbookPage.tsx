@@ -1,7 +1,7 @@
 import { encodeResourceUri, Workbook } from "@malloy-publisher/sdk";
 import { useParams } from "react-router-dom";
 
-export function WorkbookPage() {
+function WorkbookPage() {
    const { workspace, workbookPath, projectName, packageName } = useParams();
    if (!workspace) {
       return (
@@ -41,3 +41,4 @@ export function WorkbookPage() {
       );
    }
 }
+export default WorkbookPage;

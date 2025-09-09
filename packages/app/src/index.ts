@@ -7,11 +7,4 @@ export { default as theme } from "./theme";
 export * from "./components";
 // Additional component exports for advanced usage
 export { default as BreadcrumbNav } from "./components/BreadcrumbNav";
-export { default as HomePage } from "./components/HomePage";
-export { default as MainPage } from "./components/MainPage";
-export { ModelPage } from "./components/ModelPage";
-export { PackagePage } from "./components/PackagePage";
-export { ProjectPage } from "./components/ProjectPage";
-export { RouteError } from "./components/RouteError";
-export { WorkbookPage } from "./components/WorkbookPage";
 export { default as ToggleColorMode } from "./components/ToggleColorMode";
