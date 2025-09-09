@@ -13,7 +13,7 @@ function ProjectPage() {
       );
    } else {
       const resourceUri = encodeResourceUri({ projectName });
-      return <Project navigate={navigate} resourceUri={resourceUri} />;
+      return <Project onSelectPackage={navigate} resourceUri={resourceUri} />;
    }
 }
 export default ProjectPage;

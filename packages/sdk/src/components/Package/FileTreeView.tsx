@@ -27,17 +27,17 @@ import { Typography, Tooltip } from "@mui/material";
 interface FiieTreeViewProps {
    items: Model[] | Database[];
    defaultExpandedItems: string[];
-   navigate?: (to: string, event?: React.MouseEvent) => void;
+   onClickTreeNode?: (to: string, event?: React.MouseEvent) => void;
 }
 
 export function FileTreeView({
    items,
    defaultExpandedItems,
-   navigate,
+   onClickTreeNode,
 }: FiieTreeViewProps) {
    return (
       <RichTreeView
-         items={getTreeView(items, navigate)}
+         items={getTreeView(items, onClickTreeNode)}
          defaultExpandedItems={defaultExpandedItems}
          slots={{ item: CustomTreeItem }}
       />
@@ -174,7 +174,7 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 
 function getTreeView(
    metadataEntries: Model[] | Database[],
-   navigate: (to: string, event?: React.MouseEvent) => void,
+   onClickTreeNode: (to: string, event?: React.MouseEvent) => void,
 ): TreeViewBaseItem<ExtendedTreeItemProps>[] {
    const tree = new Map<string, unknown>();
    metadataEntries.map((entry: Model | Database) => {
@@ -191,13 +191,13 @@ function getTreeView(
          }
       });
    });
-   return getTreeViewRecursive(tree, "", navigate);
+   return getTreeViewRecursive(tree, "", onClickTreeNode);
 }
 
 function getTreeViewRecursive(
    node: Map<string, unknown>,
    path: string,
-   navigate: (to: string, event?: React.MouseEvent) => void,
+   onClickNode: (to: string, event?: React.MouseEvent) => void,
 ): TreeViewBaseItem<ExtendedTreeItemProps>[] {
    const treeViewItems: TreeViewBaseItem<ExtendedTreeItemProps>[] = [];
    node.forEach((value, key) => {
@@ -215,7 +215,7 @@ function getTreeViewRecursive(
             fileType: fileType,
             link:
                fileType === "model" || fileType === "notebook"
-                  ? (event) => navigate(path + key, event)
+                  ? (event) => onClickNode(path + key, event)
                   : undefined,
             selectable: fileType === "model" || fileType === "notebook",
             error: "error" in entry ? entry.error : undefined,
@@ -232,7 +232,7 @@ function getTreeViewRecursive(
             children: getTreeViewRecursive(
                value as Map<string, unknown>,
                path,
-               navigate,
+               onClickNode,
             ),
          });
       }

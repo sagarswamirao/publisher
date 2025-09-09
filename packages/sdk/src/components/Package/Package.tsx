@@ -16,13 +16,16 @@ import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
 const README_NOTEBOOK = "README.malloynb";
 
 interface PackageProps {
-   navigate?: (to: string, event?: React.MouseEvent) => void;
+   onClickPackageFile?: (to: string, event?: React.MouseEvent) => void;
    resourceUri: string;
 }
 
-export default function Package({ navigate, resourceUri }: PackageProps) {
-   if (!navigate) {
-      navigate = (to: string) => {
+export default function Package({
+   onClickPackageFile,
+   resourceUri,
+}: PackageProps) {
+   if (!onClickPackageFile) {
+      onClickPackageFile = (to: string) => {
          window.location.href = to;
       };
    }
@@ -39,10 +42,16 @@ export default function Package({ navigate, resourceUri }: PackageProps) {
                <Config resourceUri={resourceUri} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Notebooks navigate={navigate} resourceUri={resourceUri} />
+               <Notebooks
+                  onClickNotebookFile={onClickPackageFile}
+                  resourceUri={resourceUri}
+               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-               <Models navigate={navigate} resourceUri={resourceUri} />
+               <Models
+                  onClickModelFile={onClickPackageFile}
+                  resourceUri={resourceUri}
+               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
                <Databases resourceUri={resourceUri} />

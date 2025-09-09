@@ -2,5 +2,5 @@ import { Home, useRouterClickHandler } from "@malloy-publisher/sdk";
 
 export default function HomePage() {
    const navigate = useRouterClickHandler();
-   return <Home navigate={navigate} />;
+   return <Home onClickProject={navigate} />;
 }
