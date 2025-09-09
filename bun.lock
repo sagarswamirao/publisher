@@ -22,7 +22,7 @@
     },
     "packages/app": {
       "name": "@malloy-publisher/app",
-      "version": "0.0.104",
+      "version": "0.0.105",
       "dependencies": {
         "@malloy-publisher/sdk": "workspace:*",
         "@mui/icons-material": "^7.0.2",
@@ -36,8 +36,8 @@
         "@typescript-eslint/eslint-plugin": "^8.31.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
-        "vite": "^6.0.1",
-        "vite-plugin-dts": "^4.5.4",
+        "vite": "^6.3.2",
+        "vite-plugin-dts": "^4.5.3",
       },
       "peerDependencies": {
         "react": "^19.1.0",
@@ -94,7 +94,7 @@
     },
     "packages/server": {
       "name": "@malloy-publisher/server",
-      "version": "0.0.104",
+      "version": "0.0.105",
       "bin": {
         "malloy-publisher": "dist/server.js",
       },

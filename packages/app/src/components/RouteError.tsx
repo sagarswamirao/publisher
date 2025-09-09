@@ -2,7 +2,7 @@ import { useRouteError } from "react-router-dom";
 import { Box, Stack, Typography } from "@mui/material";
 import Container from "@mui/material/Container";
 
-export function RouteError() {
+function RouteError() {
    const error = useRouteError();
    console.error(error);
    return (
@@ -31,3 +31,4 @@ export function RouteError() {
       </Container>
    );
 }
+export default RouteError;

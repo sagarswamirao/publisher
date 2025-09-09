@@ -8,30 +8,55 @@ export default ({ mode }) => {
    const isDev = mode === "development";
    // In Dev, Resolve the SDK locally as src, not /dist so it can hot reload
    // But for CSS files, we need to point to dist since they're only generated during build
-   const resolve = isDev
-      ? {
-           alias: {
-              // CSS files must come BEFORE the general SDK alias
-              "@malloy-publisher/sdk/styles.css": path.resolve(
-                 __dirname,
-                 "../sdk/dist/styles.css",
-              ),
-              "@malloy-publisher/sdk/malloy-explorer.css": path.resolve(
-                 __dirname,
-                 "../sdk/dist/malloy-explorer.css",
-              ),
-              "@malloy-publisher/sdk/markdown-editor.css": path.resolve(
-                 __dirname,
-                 "../sdk/dist/markdown-editor.css",
-              ),
-              // General SDK alias for everything else
-              "@malloy-publisher/sdk": path.resolve(__dirname, "../sdk/src"),
-           },
-        }
-      : undefined;
+   const resolve = {
+      alias: {
+         // CSS files must come BEFORE the general SDK alias
+         "@malloy-publisher/sdk/styles.css": path.resolve(
+            __dirname,
+            "../sdk/dist/styles.css",
+         ),
+         "@malloy-publisher/sdk/malloy-explorer.css": path.resolve(
+            __dirname,
+            "../sdk/dist/malloy-explorer.css",
+         ),
+         "@malloy-publisher/sdk/markdown-editor.css": path.resolve(
+            __dirname,
+            "../sdk/dist/markdown-editor.css",
+         ),
+         "@malloy-publisher/sdk": isDev
+            ? // General SDK alias for everything else
+              path.resolve(__dirname, "../sdk/src")
+            : // In production, use the built SDK to avoid duplicate dependencies
+              path.resolve(__dirname, "../sdk/dist/index.es.js"),
+      },
+   };
 
    // Check if we're building as a library
    const isLibraryBuild = process.env.BUILD_MODE === "library";
+   const manualChunks = {
+      // React core
+      "react-vendor": [
+         "react",
+         "react-dom",
+         "react/jsx-runtime",
+         "react-dom/client",
+      ],
+
+      // MUI Ecosystem
+      "mui-core": ["@mui/material", "@mui/system"],
+      "mui-icons": ["@mui/icons-material"],
+      "mui-tree": ["@mui/x-tree-view"],
+
+      // Utilities
+      "emotion-vendor": ["@emotion/react", "@emotion/styled"],
+
+      // Editor
+      "editor-vendor": ["@uiw/react-md-editor", "markdown-to-jsx"],
+
+      // Other large libraries
+      "spring-vendor": ["@react-spring/web"],
+      "query-vendor": ["@tanstack/react-query"],
+   };
 
    if (isLibraryBuild) {
       return defineConfig({
@@ -59,41 +84,15 @@ export default ({ mode }) => {
                   }
                   warn(warning);
                },
-               // Externalize ALL React ecosystem and large dependencies for library build
                external: [
-                  // React core
-                  "react",
-                  "react-dom",
-                  "react/jsx-runtime",
-                  "react-dom/client",
-
-                  // React ecosystem
-                  "@emotion/react",
-                  "@emotion/styled",
-
-                  // MUI (Material-UI) - these are huge
-                  "@mui/material",
-                  "@mui/icons-material",
-                  "@mui/system",
-                  "@mui/x-tree-view",
-
-                  // Other large React libraries
-                  "@react-spring/web",
-                  "@tanstack/react-query",
-                  "@uiw/react-md-editor",
-
                   // Malloy dependencies (should be provided by host)
                   "@malloydata/malloy-explorer",
                   "@malloydata/malloy-interfaces",
                   "@malloydata/malloy-query-builder",
                   "@malloydata/render",
 
-                  // Utility libraries
-                  "axios",
-                  "markdown-to-jsx",
-
                   // All peer dependencies
-                  ...Object.keys(peerDependencies),
+                  // ...Object.keys(peerDependencies),
                ],
                output: {
                   // Provide global variable names for externalized dependencies
@@ -107,6 +106,7 @@ export default ({ mode }) => {
                      "@mui/icons-material": "MaterialUIIcons",
                      "@mui/system": "MaterialUISystem",
                   },
+                  manualChunks,
                },
             },
             sourcemap: mode !== "production",
@@ -138,11 +138,7 @@ export default ({ mode }) => {
          reportCompressedSize: false, // Disable size reporting for faster builds
          rollupOptions: {
             output: {
-               manualChunks: {
-                  // Split vendor chunks for better caching
-                  vendor: ["react", "react-dom"],
-                  mui: ["@mui/material", "@mui/icons-material"],
-               },
+               manualChunks,
             },
          },
       },
