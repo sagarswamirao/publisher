@@ -9,7 +9,7 @@ import {
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/"];
 
@@ -19,7 +19,7 @@ interface NotebooksProps {
 }
 
 export default function Notebooks({ navigate, resourceUri }: NotebooksProps) {
-   const { notebooks } = useApiClients();
+   const { apiClients } = useServer();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -29,7 +29,11 @@ export default function Notebooks({ navigate, resourceUri }: NotebooksProps) {
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["notebooks", projectName, packageName, versionId],
       queryFn: () =>
-         notebooks.listNotebooks(projectName, packageName, versionId),
+         apiClients.notebooks.listNotebooks(
+            projectName,
+            packageName,
+            versionId,
+         ),
    });
 
    return (

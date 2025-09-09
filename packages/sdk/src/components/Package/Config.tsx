@@ -9,14 +9,14 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 type Props = {
    resourceUri: string;
 };
 
 export default function Config({ resourceUri }: Props) {
-   const { packages } = useApiClients();
+   const { apiClients } = useServer();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -26,7 +26,12 @@ export default function Config({ resourceUri }: Props) {
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["package", projectName, packageName, versionId],
       queryFn: () =>
-         packages.getPackage(projectName, packageName, versionId, false),
+         apiClients.packages.getPackage(
+            projectName,
+            packageName,
+            versionId,
+            false,
+         ),
    });
 
    return (

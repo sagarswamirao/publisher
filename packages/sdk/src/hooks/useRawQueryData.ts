@@ -1,6 +1,6 @@
 import { parseResourceUri } from "../utils/formatting";
 import { useQueryWithApiError } from "./useQueryWithApiError";
-import { useApiClients } from "../components/ServerProvider";
+import { useServer } from "../components/ServerProvider";
 
 interface UseRawQueryDataProps {
    modelPath: string;
@@ -21,7 +21,7 @@ export function useRawQueryData({
 }: UseRawQueryDataProps) {
    const { projectName, packageName, versionId } =
       parseResourceUri(resourceUri);
-   const { queryResults } = useApiClients();
+   const { apiClients } = useServer();
 
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
@@ -35,7 +35,7 @@ export function useRawQueryData({
          queryName,
       ],
       queryFn: () =>
-         queryResults.executeQuery(
+         apiClients.queryResults.executeQuery(
             projectName,
             packageName,
             modelPath,

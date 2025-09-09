@@ -19,7 +19,7 @@ import Stack from "@mui/material/Stack";
 import React from "react";
 import { SourceAndPath } from "../Model/SourcesExplorer";
 import { WorkbookManager } from "./WorkbookManager";
-import { useServer, useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 import { StyledCard, StyledCardContent, StyledCardMedia } from "../styles";
 import { MutableCell } from "./MutableCell";
 import { useWorkbookStorage } from "./WorkbookStorageProvider";
@@ -43,7 +43,7 @@ interface PathToSources {
 export default function Workbook({ workbookPath, resourceUri }: WorkbookProps) {
    const navigate = useRouterClickHandler();
    const { server, getAccessToken } = useServer();
-   const { models } = useApiClients();
+   const { apiClients } = useServer();
    const { workbookStorage } = useWorkbookStorage();
    const { projectName, packageName } = parseResourceUri(resourceUri);
    const [success, setSuccess] = React.useState<string | undefined>(undefined);
@@ -154,7 +154,7 @@ export default function Workbook({ workbookPath, resourceUri }: WorkbookProps) {
             if (!modelPathToSourceInfo.has(model)) {
                console.log("Fetching model from Publisher", model);
                promises.push(
-                  models
+                  apiClients.models
                      .getModel(projectName, packageName, model, undefined)
                      .then((data) => ({
                         modelPath: model,

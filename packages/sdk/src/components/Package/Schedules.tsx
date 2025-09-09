@@ -17,14 +17,14 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 type Props = {
    resourceUri: string;
 };
 
 export default function Schedules({ resourceUri }: Props) {
-   const { schedules } = useApiClients();
+   const { apiClients } = useServer();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -34,7 +34,11 @@ export default function Schedules({ resourceUri }: Props) {
    const { data, isError, isLoading, error } = useQueryWithApiError({
       queryKey: ["schedules", projectName, packageName, versionId],
       queryFn: () =>
-         schedules.listSchedules(projectName, packageName, versionId),
+         apiClients.schedules.listSchedules(
+            projectName,
+            packageName,
+            versionId,
+         ),
    });
 
    if (isLoading) {

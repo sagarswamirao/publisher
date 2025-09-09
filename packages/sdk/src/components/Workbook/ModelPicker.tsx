@@ -14,7 +14,7 @@ import React from "react";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 interface ModelPickerProps {
    initialSelectedModels: string[];
@@ -36,11 +36,12 @@ export function ModelPicker({
       packageName: packageName,
       versionId: versionId,
    } = parseResourceUri(resourceUri);
-   const { models } = useApiClients();
+   const { apiClients } = useServer();
 
    const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
-      queryFn: () => models.listModels(projectName, packageName, versionId),
+      queryFn: () =>
+         apiClients.models.listModels(projectName, packageName, versionId),
    });
    const [selectedModels, setSelectedModels] = React.useState<string[]>(
       initialSelectedModels || [],

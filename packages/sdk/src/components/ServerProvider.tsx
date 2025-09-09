@@ -23,21 +23,37 @@ const ServerContext = createContext<ServerContextValue | undefined>(undefined);
 
 export interface ServerProviderProps {
    children: ReactNode;
+   /** An optional alternative base URL of the Publisher server. */
+   baseURL?: string;
+   /** An optional function to get an access token.
+    *
+    * @example
+    * ```ts
+    * <ServerProvider getAccessToken={async () => "Bearer 123"}>
+    * ```
+    * Will send "Bearer 123" in the Authorization header.
+    */
+   getAccessToken?: () => Promise<string>;
 }
 
-const getApiClients = () => {
+const getApiClients = (
+   baseURL?: string,
+   accessToken?: () => Promise<string>,
+) => {
    const basePath = `${window.location.protocol}//${window.location.host}/api/v0`;
 
    // Create a custom axios instance with proper configuration
    const axiosInstance = axios.create({
-      baseURL: basePath,
+      baseURL: baseURL || basePath,
       withCredentials: true,
    });
 
-   const config = new Configuration({
-      basePath,
-      accessToken: () => "",
+   axiosInstance.interceptors.request.use(async (config) => {
+      config.headers.Authorization = (await accessToken?.()) ?? "";
+      return config;
    });
+
+   const config = new Configuration({ basePath });
 
    return {
       queryResults: new QueryresultsApi(config, basePath, axiosInstance),
@@ -54,12 +70,21 @@ const getApiClients = () => {
 
 export type ApiClients = ReturnType<typeof getApiClients>;
 
-export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
-   const apiClients = useMemo(getApiClients, []);
+export const ServerProvider: React.FC<ServerProviderProps> = ({
+   children,
+   getAccessToken,
+   baseURL,
+}) => {
+   const apiClients = useMemo(
+      () => getApiClients(baseURL, getAccessToken),
+      [baseURL, getAccessToken],
+   );
 
    const value: ServerContextValue = {
-      server: `${window.location.protocol}//${window.location.host}/api/v0`,
-      getAccessToken: () => Promise.resolve(""),
+      server:
+         baseURL ||
+         `${window.location.protocol}//${window.location.host}/api/v0`,
+      getAccessToken,
       apiClients,
    };
 
@@ -74,9 +99,4 @@ export const useServer = (): ServerContextValue => {
       throw new Error("useServer must be used within a ServerProvider");
    }
    return context;
-};
-
-export const useApiClients = (): ApiClients => {
-   const { apiClients } = useServer();
-   return apiClients;
 };

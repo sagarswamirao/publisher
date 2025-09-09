@@ -7,7 +7,7 @@ import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
 import { CleanMetricCard, CleanNotebookCell } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 interface ModelCellProps {
    sourceName?: string;
@@ -28,7 +28,7 @@ export function ModelCell({
 
    const { packageName, projectName, versionId, modelPath } =
       parseResourceUri(resourceUri);
-   const { queryResults } = useApiClients();
+   const { apiClients } = useServer();
 
    const {
       data: queryData,
@@ -37,7 +37,7 @@ export function ModelCell({
    } = useQueryWithApiError({
       queryKey: ["namedQueryResult", resourceUri, queryName],
       queryFn: () =>
-         queryResults.executeQuery(
+         apiClients.queryResults.executeQuery(
             projectName,
             packageName,
             modelPath,

@@ -4,7 +4,7 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { PackageCard, PackageCardContent } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 interface PackagesProps {
    navigate: (to: string, event?: React.MouseEvent) => void;
@@ -12,11 +12,11 @@ interface PackagesProps {
 }
 
 export default function Packages({ navigate, resourceUri }: PackagesProps) {
-   const { packages } = useApiClients();
+   const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["packages", projectName],
-      queryFn: () => packages.listPackages(projectName),
+      queryFn: () => apiClients.packages.listPackages(projectName),
    });
 
    return (

@@ -2,7 +2,7 @@ export * from "./components";
 export * from "./utils/formatting";
 export { default as ConnectionExplorer } from "./components/Project/ConnectionExplorer";
 export { useRawQueryData } from "./hooks/useRawQueryData";
-export { useApiClients } from "./components/ServerProvider";
+export { useServer } from "./components/ServerProvider";
 import axios from "axios";
 
 // There's a bug in the OpenAPI generator that causes it to ignore baseURL in the

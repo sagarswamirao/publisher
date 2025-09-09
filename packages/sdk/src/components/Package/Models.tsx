@@ -9,7 +9,7 @@ import {
 } from "../styles";
 import { FileTreeView } from "./FileTreeView";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 const DEFAULT_EXPANDED_FOLDERS = ["notebooks/", "models/"];
 
@@ -24,11 +24,12 @@ export default function Models({ navigate, resourceUri }: ModelsProps) {
       packageName: packageName,
       versionId: versionId,
    } = parseResourceUri(resourceUri);
-   const { models } = useApiClients();
+   const { apiClients } = useServer();
 
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
-      queryFn: () => models.listModels(projectName, packageName, versionId),
+      queryFn: () =>
+         apiClients.models.listModels(projectName, packageName, versionId),
    });
 
    return (

@@ -9,7 +9,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 type ExplorerComponents = typeof import("@malloydata/malloy-explorer");
 type QueryBuilder = typeof import("@malloydata/malloy-query-builder");
@@ -133,7 +133,7 @@ function SourceExplorerComponentInner({
       packageName: packageName,
       versionId: versionId,
    } = parseResourceUri(resourceUri);
-   const { queryResults } = useApiClients();
+   const { apiClients } = useServer();
 
    const mutation = useMutationWithApiError({
       mutationFn: () => {
@@ -145,7 +145,7 @@ function SourceExplorerComponentInner({
             ...query,
             query: malloy,
          });
-         return queryResults.executeQuery(
+         return apiClients.queryResults.executeQuery(
             projectName,
             packageName,
             sourceAndPath.modelPath,

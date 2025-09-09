@@ -22,7 +22,7 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 interface ConnectionExplorerProps {
    connectionName: string;
@@ -35,7 +35,7 @@ export default function ConnectionExplorer({
    resourceUri,
    schema,
 }: ConnectionExplorerProps) {
-   const { connections } = useApiClients();
+   const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
@@ -46,7 +46,8 @@ export default function ConnectionExplorer({
    const [showHiddenSchemas, setShowHiddenSchemas] = React.useState(false);
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: ["tablePath", projectName, connectionName],
-      queryFn: () => connections.listSchemas(projectName, connectionName),
+      queryFn: () =>
+         apiClients.connections.listSchemas(projectName, connectionName),
    });
 
    return (
@@ -196,7 +197,7 @@ function TableSchemaViewer({
    tableName,
    resourceUri,
 }: TableSchemaViewerProps) {
-   const { connections } = useApiClients();
+   const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
@@ -207,7 +208,7 @@ function TableSchemaViewer({
          tableName,
       ],
       queryFn: () =>
-         connections.getTablesource(
+         apiClients.connections.getTablesource(
             projectName,
             connectionName,
             tableName,
@@ -273,11 +274,15 @@ function TablesInSchema({
    resourceUri,
 }: TablesInSchemaProps) {
    const { projectName: projectName } = parseResourceUri(resourceUri);
-   const { connections } = useApiClients();
+   const { apiClients } = useServer();
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: ["tablesInSchema", projectName, connectionName, schemaName],
       queryFn: () =>
-         connections.listTables(projectName, connectionName, schemaName),
+         apiClients.connections.listTables(
+            projectName,
+            connectionName,
+            schemaName,
+         ),
    });
 
    return (

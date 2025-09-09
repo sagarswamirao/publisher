@@ -24,14 +24,14 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 type Props = {
    resourceUri: string;
 };
 
 export default function Databases({ resourceUri }: Props) {
-   const { databases } = useApiClients();
+   const { apiClients } = useServer();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -55,7 +55,11 @@ export default function Databases({ resourceUri }: Props) {
    const { data, isError, error, isSuccess } = useQueryWithApiError({
       queryKey: ["databases", projectName, packageName, versionId],
       queryFn: () =>
-         databases.listDatabases(projectName, packageName, versionId),
+         apiClients.databases.listDatabases(
+            projectName,
+            packageName,
+            versionId,
+         ),
    });
    const formatRowSize = (size: number) => {
       if (size >= 1024 * 1024 * 1024 * 1024) {

@@ -3,7 +3,7 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
@@ -66,7 +66,7 @@ export default function QueryResult({
 }: QueryResultProps) {
    const { modelPath, projectName, packageName, versionId } =
       parseResourceUri(resourceUri);
-   const { queryResults } = useApiClients();
+   const { apiClients } = useServer();
 
    if (!projectName || !packageName) {
       throw new Error(
@@ -77,7 +77,7 @@ export default function QueryResult({
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: [resourceUri, query, sourceName, queryName],
       queryFn: () =>
-         queryResults.executeQuery(
+         apiClients.queryResults.executeQuery(
             projectName,
             packageName,
             modelPath,

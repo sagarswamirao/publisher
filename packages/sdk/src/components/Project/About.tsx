@@ -9,7 +9,7 @@ import {
    PackageSectionTitle,
 } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 interface AboutProps {
    resourceUri: string;
@@ -17,11 +17,11 @@ interface AboutProps {
 
 export default function About({ resourceUri }: AboutProps) {
    const { projectName: projectName } = parseResourceUri(resourceUri);
-   const { projects } = useApiClients();
+   const { apiClients } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["about", projectName],
-      queryFn: () => projects.getProject(projectName, false),
+      queryFn: () => apiClients.projects.getProject(projectName, false),
    });
 
    return (

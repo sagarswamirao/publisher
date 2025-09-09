@@ -20,7 +20,7 @@ import {
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 interface HomeProps {
    navigate?: (to: string, event?: React.MouseEvent) => void;
@@ -57,11 +57,11 @@ const getProjectDescription = (readme: string | undefined): string => {
 };
 
 export default function Home({ navigate }: HomeProps) {
-   const { projects } = useApiClients();
+   const { apiClients } = useServer();
 
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["projects"],
-      queryFn: () => projects.listProjects(),
+      queryFn: () => apiClients.projects.listProjects(),
    });
 
    if (isError) {

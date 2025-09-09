@@ -8,7 +8,7 @@ import { Loading } from "../Loading";
 import { CleanNotebookContainer, CleanNotebookSection } from "../styles";
 import { NotebookCell } from "./NotebookCell";
 import { parseResourceUri } from "../../utils/formatting";
-import { useApiClients } from "../ServerProvider";
+import { useServer } from "../ServerProvider";
 
 interface NotebookProps {
    resourceUri: string;
@@ -16,7 +16,7 @@ interface NotebookProps {
 
 // Requires PackageProvider
 export default function Notebook({ resourceUri }: NotebookProps) {
-   const { notebooks } = useApiClients();
+   const { apiClients } = useServer();
    const {
       projectName,
       packageName,
@@ -31,7 +31,7 @@ export default function Notebook({ resourceUri }: NotebookProps) {
    } = useQueryWithApiError<CompiledNotebook>({
       queryKey: [resourceUri],
       queryFn: async () => {
-         const response = await notebooks.getNotebook(
+         const response = await apiClients.notebooks.getNotebook(
             projectName,
             packageName,
             notebookPath,
