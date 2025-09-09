@@ -18,14 +18,11 @@ import {
    TableRow,
    Tooltip,
 } from "@mui/material";
-import { ConnectionsApi } from "../../client/api";
-import { Configuration } from "../../client/configuration";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-
-const connectionsApi = new ConnectionsApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 interface ConnectionExplorerProps {
    connectionName: string;
@@ -38,6 +35,7 @@ export default function ConnectionExplorer({
    resourceUri,
    schema,
 }: ConnectionExplorerProps) {
+   const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
    const [selectedTable, setSelectedTable] = React.useState<string | undefined>(
       undefined,
@@ -48,8 +46,8 @@ export default function ConnectionExplorer({
    const [showHiddenSchemas, setShowHiddenSchemas] = React.useState(false);
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: ["tablePath", projectName, connectionName],
-      queryFn: (config) =>
-         connectionsApi.listSchemas(projectName, connectionName, config),
+      queryFn: () =>
+         apiClients.connections.listSchemas(projectName, connectionName),
    });
 
    return (
@@ -199,8 +197,8 @@ function TableSchemaViewer({
    tableName,
    resourceUri,
 }: TableSchemaViewerProps) {
+   const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
-
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: [
          "tablePathSchema",
@@ -209,13 +207,12 @@ function TableSchemaViewer({
          schemaName,
          tableName,
       ],
-      queryFn: (config) =>
-         connectionsApi.getTablesource(
+      queryFn: () =>
+         apiClients.connections.getTablesource(
             projectName,
             connectionName,
             tableName,
             `${schemaName}.${tableName}`,
-            config,
          ),
    });
 
@@ -277,15 +274,14 @@ function TablesInSchema({
    resourceUri,
 }: TablesInSchemaProps) {
    const { projectName: projectName } = parseResourceUri(resourceUri);
-
+   const { apiClients } = useServer();
    const { data, isSuccess, isError, error, isLoading } = useQueryWithApiError({
       queryKey: ["tablesInSchema", projectName, connectionName, schemaName],
-      queryFn: (config) =>
-         connectionsApi.listTables(
+      queryFn: () =>
+         apiClients.connections.listTables(
             projectName,
             connectionName,
             schemaName,
-            config,
          ),
    });
 

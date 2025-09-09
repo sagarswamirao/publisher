@@ -1,8 +1,7 @@
-import { Configuration, ModelsApi, CompiledModel } from "../../client";
+import { CompiledModel } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-
-const modelsApi = new ModelsApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 /**
  * Custom hook for fetching model data. Combines usePackage context with
@@ -11,15 +10,16 @@ const modelsApi = new ModelsApi(new Configuration());
 export function useModelData(resourceUri: string) {
    const { modelPath, projectName, packageName, versionId } =
       parseResourceUri(resourceUri);
+   const { apiClients } = useServer();
+
    return useQueryWithApiError<CompiledModel>({
       queryKey: ["package", projectName, packageName, modelPath, versionId],
-      queryFn: async (config) => {
-         const response = await modelsApi.getModel(
+      queryFn: async () => {
+         const response = await apiClients.models.getModel(
             projectName,
             packageName,
             modelPath,
             versionId,
-            config,
          );
          return response.data;
       },

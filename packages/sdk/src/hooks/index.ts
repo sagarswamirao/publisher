@@ -1,1 +1,0 @@
-export { getAxiosConfig } from "./useQueryWithApiError";

@@ -17,7 +17,6 @@ import {
 } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import React from "react";
-import { Configuration, ModelsApi } from "../../client";
 import { SourceAndPath } from "../Model/SourcesExplorer";
 import { WorkbookManager } from "./WorkbookManager";
 import { useServer } from "../ServerProvider";
@@ -27,12 +26,9 @@ import { useWorkbookStorage } from "./WorkbookStorageProvider";
 
 import * as Malloy from "@malloydata/malloy-interfaces";
 import { ModelPicker } from "./ModelPicker";
-import { getAxiosConfig } from "../../hooks";
 import { WorkbookLocator } from "./WorkbookStorage";
 import { useRouterClickHandler } from "../click_helper";
 import { parseResourceUri } from "../../utils/formatting";
-
-const modelsApi = new ModelsApi(new Configuration());
 
 interface WorkbookProps {
    workbookPath?: WorkbookLocator;
@@ -47,6 +43,7 @@ interface PathToSources {
 export default function Workbook({ workbookPath, resourceUri }: WorkbookProps) {
    const navigate = useRouterClickHandler();
    const { server, getAccessToken } = useServer();
+   const { apiClients } = useServer();
    const { workbookStorage } = useWorkbookStorage();
    const { projectName, packageName } = parseResourceUri(resourceUri);
    const [success, setSuccess] = React.useState<string | undefined>(undefined);
@@ -157,14 +154,8 @@ export default function Workbook({ workbookPath, resourceUri }: WorkbookProps) {
             if (!modelPathToSourceInfo.has(model)) {
                console.log("Fetching model from Publisher", model);
                promises.push(
-                  modelsApi
-                     .getModel(
-                        projectName,
-                        packageName,
-                        model,
-                        undefined,
-                        await getAxiosConfig(server, getAccessToken),
-                     )
+                  apiClients.models
+                     .getModel(projectName, packageName, model, undefined)
                      .then((data) => ({
                         modelPath: model,
                         sourceInfos: data.data.sourceInfos.map((source) =>

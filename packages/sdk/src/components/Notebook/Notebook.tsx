@@ -1,6 +1,6 @@
 import "@malloydata/malloy-explorer/styles.css";
 import { Stack, Typography } from "@mui/material";
-import { CompiledNotebook, Configuration, NotebooksApi } from "../../client";
+import { CompiledNotebook } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 
@@ -8,8 +8,7 @@ import { Loading } from "../Loading";
 import { CleanNotebookContainer, CleanNotebookSection } from "../styles";
 import { NotebookCell } from "./NotebookCell";
 import { parseResourceUri } from "../../utils/formatting";
-
-const notebooksApi = new NotebooksApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 interface NotebookProps {
    resourceUri: string;
@@ -17,6 +16,7 @@ interface NotebookProps {
 
 // Requires PackageProvider
 export default function Notebook({ resourceUri }: NotebookProps) {
+   const { apiClients } = useServer();
    const {
       projectName,
       packageName,
@@ -30,13 +30,12 @@ export default function Notebook({ resourceUri }: NotebookProps) {
       error,
    } = useQueryWithApiError<CompiledNotebook>({
       queryKey: [resourceUri],
-      queryFn: async (config) => {
-         const response = await notebooksApi.getNotebook(
+      queryFn: async () => {
+         const response = await apiClients.notebooks.getNotebook(
             projectName,
             packageName,
             notebookPath,
             versionId,
-            config,
          );
          return response.data;
       },

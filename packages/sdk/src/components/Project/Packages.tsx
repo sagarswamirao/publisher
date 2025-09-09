@@ -1,12 +1,10 @@
 import { Box, Grid, Typography, Divider } from "@mui/material";
-import { Configuration, PackagesApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { PackageCard, PackageCardContent } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-
-const packagesApi = new PackagesApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 interface PackagesProps {
    navigate: (to: string, event?: React.MouseEvent) => void;
@@ -14,10 +12,11 @@ interface PackagesProps {
 }
 
 export default function Packages({ navigate, resourceUri }: PackagesProps) {
+   const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["packages", projectName],
-      queryFn: (config) => packagesApi.listPackages(projectName, config),
+      queryFn: () => apiClients.packages.listPackages(projectName),
    });
 
    return (

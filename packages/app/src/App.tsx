@@ -24,14 +24,12 @@ export const createMalloyRouter = (
    basePath: string = "/",
    workbookStorage: WorkbookStorage,
    headerProps?: HeaderProps,
-   server?: string,
-   getAccessToken?: () => Promise<string>,
 ) => {
    return createBrowserRouter([
       {
          path: basePath,
          element: (
-            <ServerProvider server={server} getAccessToken={getAccessToken}>
+            <ServerProvider>
                <WorkbookStorageProvider workbookStorage={workbookStorage}>
                   <ThemeProvider theme={theme}>
                      <CssBaseline />
@@ -68,26 +66,16 @@ export const createMalloyRouter = (
 };
 
 export interface MalloyPublisherAppProps {
-   server?: string;
-   getAccessToken?: () => Promise<string>;
    basePath?: string;
    headerProps: HeaderProps;
    workbookStorage: WorkbookStorage;
 }
 
 export const MalloyPublisherApp: React.FC<MalloyPublisherAppProps> = ({
-   server,
-   getAccessToken,
    workbookStorage,
    basePath = "/",
    headerProps,
 }) => {
-   const router = createMalloyRouter(
-      basePath,
-      workbookStorage,
-      headerProps,
-      server,
-      getAccessToken,
-   );
+   const router = createMalloyRouter(basePath, workbookStorage, headerProps);
    return <RouterProvider router={router} />;
 };

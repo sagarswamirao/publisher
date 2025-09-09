@@ -11,7 +11,6 @@ import {
    IconButton,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { Configuration, ConnectionsApi } from "../../client";
 import { Connection as ApiConnection } from "../../client/api";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
@@ -23,8 +22,7 @@ import {
 import ConnectionExplorer from "../Project/ConnectionExplorer";
 import { useState } from "react";
 import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
-
-const connectionsApi = new ConnectionsApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 type ConnectionProps = {
    connection: ApiConnection;
@@ -68,6 +66,7 @@ type ConnectionsProps = {
 };
 
 export default function Connections({ resourceUri }: ConnectionsProps) {
+   const { apiClients } = useServer();
    const { projectName: projectName } = parseResourceUri(resourceUri);
    const [selectedConnection, setSelectedConnection] = useState<string | null>(
       null,
@@ -78,7 +77,7 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
    });
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["connections", projectName],
-      queryFn: (config) => connectionsApi.listConnections(projectName, config),
+      queryFn: () => apiClients.connections.listConnections(projectName),
    });
 
    const handleConnectionClick = (connectionName: string) => {

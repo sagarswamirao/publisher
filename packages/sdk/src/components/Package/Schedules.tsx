@@ -8,7 +8,6 @@ import {
    TableHead,
    TableRow,
 } from "@mui/material";
-import { Configuration, SchedulesApi } from "../../client";
 import {
    PackageCard,
    PackageCardContent,
@@ -18,14 +17,14 @@ import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-
-const schedulesApi = new SchedulesApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 type Props = {
    resourceUri: string;
 };
 
 export default function Schedules({ resourceUri }: Props) {
+   const { apiClients } = useServer();
    const {
       projectName: projectName,
       packageName: packageName,
@@ -34,12 +33,11 @@ export default function Schedules({ resourceUri }: Props) {
 
    const { data, isError, isLoading, error } = useQueryWithApiError({
       queryKey: ["schedules", projectName, packageName, versionId],
-      queryFn: (config) =>
-         schedulesApi.listSchedules(
+      queryFn: () =>
+         apiClients.schedules.listSchedules(
             projectName,
             packageName,
             versionId,
-            config,
          ),
    });
 

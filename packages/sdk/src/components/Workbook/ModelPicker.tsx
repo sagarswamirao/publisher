@@ -11,12 +11,10 @@ import {
    Typography,
 } from "@mui/material";
 import React from "react";
-import { Configuration, ModelsApi } from "../../client";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
-
-const modelsApi = new ModelsApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 interface ModelPickerProps {
    initialSelectedModels: string[];
@@ -38,10 +36,12 @@ export function ModelPicker({
       packageName: packageName,
       versionId: versionId,
    } = parseResourceUri(resourceUri);
+   const { apiClients } = useServer();
+
    const { data, isLoading, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["models", projectName, packageName, versionId],
-      queryFn: (config) =>
-         modelsApi.listModels(projectName, packageName, versionId, config),
+      queryFn: () =>
+         apiClients.models.listModels(projectName, packageName, versionId),
    });
    const [selectedModels, setSelectedModels] = React.useState<string[]>(
       initialSelectedModels || [],

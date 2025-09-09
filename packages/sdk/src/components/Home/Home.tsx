@@ -17,12 +17,10 @@ import {
    Stack,
    Typography,
 } from "@mui/material";
-import { Configuration, ProjectsApi } from "../../client";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
-
-const projectsApi = new ProjectsApi(new Configuration());
+import { useServer } from "../ServerProvider";
 
 interface HomeProps {
    navigate?: (to: string, event?: React.MouseEvent) => void;
@@ -59,9 +57,11 @@ const getProjectDescription = (readme: string | undefined): string => {
 };
 
 export default function Home({ navigate }: HomeProps) {
+   const { apiClients } = useServer();
+
    const { data, isSuccess, isError, error } = useQueryWithApiError({
       queryKey: ["projects"],
-      queryFn: (config) => projectsApi.listProjects(config),
+      queryFn: () => apiClients.projects.listProjects(),
    });
 
    if (isError) {
