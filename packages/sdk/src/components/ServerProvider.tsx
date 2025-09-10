@@ -12,6 +12,8 @@ import {
    WatchModeApi,
 } from "../client";
 import axios from "axios";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { globalQueryClient } from "../hooks/useQueryWithApiError";
 
 export interface ServerContextValue {
    server: string;
@@ -89,7 +91,11 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
    };
 
    return (
-      <ServerContext.Provider value={value}>{children}</ServerContext.Provider>
+      <QueryClientProvider client={globalQueryClient}>
+         <ServerContext.Provider value={value}>
+            {children}
+         </ServerContext.Provider>
+      </QueryClientProvider>
    );
 };
 

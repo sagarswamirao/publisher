@@ -7,14 +7,24 @@ import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import Typography from "@mui/material/Typography";
-import { ListItemIcon, ListItemText, MenuItem } from "@mui/material";
+import { ListItemIcon, ListItemText, MenuItem, Snackbar } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { Project } from "../../client";
+import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
+import { useServer } from "../ServerProvider";
+import { useQueryClient } from "@tanstack/react-query";
 
-
-export default function DeleteProjectDialog({ project, onCloseDialog }: { project: Project, onCloseDialog: () => void }) {
+export default function DeleteProjectDialog({
+   project,
+   onCloseDialog,
+}: {
+   project: Project;
+   onCloseDialog: () => void;
+}) {
    const [open, setOpen] = useState(false);
-
+   const { apiClients } = useServer();
+   const queryClient = useQueryClient();
+   const [notificationMessage, setNotificationMessage] = useState("");
    const handleClickOpen = () => {
       setOpen(true);
    };
@@ -22,6 +32,22 @@ export default function DeleteProjectDialog({ project, onCloseDialog }: { projec
       setOpen(false);
       onCloseDialog();
    };
+
+   const deleteProject = useMutationWithApiError({
+      mutationFn: () => apiClients.projects.deleteProject(project.name),
+      onSuccess() {
+         handleClose();
+         queryClient.invalidateQueries({ queryKey: ["projects"] });
+         setNotificationMessage("Project deleted successfully");
+      },
+      onError(error) {
+         setNotificationMessage(
+            error instanceof Error
+               ? error.message
+               : "An unknown error occurred",
+         );
+      },
+   });
 
    return (
       <React.Fragment>
@@ -53,14 +79,26 @@ export default function DeleteProjectDialog({ project, onCloseDialog }: { projec
             </IconButton>
             <DialogContent dividers>
                <Typography gutterBottom>
-                    Are you sure you want to delete "{project.name}"? This action cannot be undone.
+                  Are you sure you want to delete "{project.name}"? This action
+                  cannot be undone.
                </Typography>
             </DialogContent>
             <DialogActions>
-               <Button variant="contained" autoFocus onClick={handleClose} color="error">
+               <Button
+                  variant="contained"
+                  autoFocus
+                  onClick={() => deleteProject.mutate()}
+                  color="error"
+               >
                   Delete
                </Button>
             </DialogActions>
+            <Snackbar
+               open={notificationMessage !== ""}
+               autoHideDuration={6000}
+               onClose={() => setNotificationMessage("")}
+               message={notificationMessage}
+            />
          </Dialog>
       </React.Fragment>
    );
