@@ -14,10 +14,7 @@ import {
    Container,
    Divider,
    Grid,
-   ListItemIcon,
-   ListItemText,
    Menu,
-   MenuItem,
    IconButton,
    Stack,
    Typography,
@@ -26,7 +23,7 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useServer } from "../ServerProvider";
-import { Delete, MoreVert } from "@mui/icons-material";
+import { MoreVert } from "@mui/icons-material";
 import { Project } from "../../client";
 import { useState } from "react";
 import AddProjectDialog from "./AddProjectDialog";
@@ -456,4 +453,3 @@ function ProjectCard({
       </div>
    );
 }
-

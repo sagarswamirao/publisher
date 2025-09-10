@@ -79,8 +79,8 @@ export default function DeleteProjectDialog({
             </IconButton>
             <DialogContent dividers>
                <Typography gutterBottom>
-                  Are you sure you want to delete "{project.name}"? This action
-                  cannot be undone.
+                  Are you sure you want to delete &quot;{project.name}&quot;?
+                  This action cannot be undone.
                </Typography>
             </DialogContent>
             <DialogActions>
