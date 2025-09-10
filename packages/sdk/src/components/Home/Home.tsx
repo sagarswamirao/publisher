@@ -14,6 +14,11 @@ import {
    Container,
    Divider,
    Grid,
+   ListItemIcon,
+   ListItemText,
+   Menu,
+   MenuItem,
+   IconButton,
    Stack,
    Typography,
 } from "@mui/material";
@@ -21,40 +26,17 @@ import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import { useServer } from "../ServerProvider";
+import { Delete, MoreVert } from "@mui/icons-material";
+import { Project } from "../../client";
+import { useState } from "react";
+import AddProjectDialog from "./AddProjectDialog";
+import EditProjectDialog from "./EditProjectDialog";
+import { getProjectDescription } from "../../utils/parsing";
+import DeleteProjectDialog from "./DeleteProjectDialog";
 
 interface HomeProps {
    onClickProject?: (to: string, event?: React.MouseEvent) => void;
 }
-
-// Helper function to extract a brief description from README content
-const getProjectDescription = (readme: string | undefined): string => {
-   if (!readme) {
-      return "Explore semantic models, run queries, and build dashboards";
-   }
-
-   // Remove markdown formatting and get first paragraph
-   const cleanText = readme
-      .replace(/^#+\s+/gm, "") // Remove headers
-      .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold
-      .replace(/\*(.*?)\*/g, "$1") // Remove italic
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Remove links
-      .replace(/`([^`]+)`/g, "$1") // Remove code
-      .trim();
-
-   // Get first paragraph (split by double newlines)
-   const paragraphs = cleanText.split(/\n\s*\n/);
-   const firstParagraph = paragraphs[0] || cleanText;
-
-   // Limit to ~120 characters
-   if (firstParagraph.length <= 120) {
-      return firstParagraph;
-   }
-
-   // Truncate at word boundary
-   const truncated = firstParagraph.substring(0, 120).split(" ");
-   truncated.pop(); // Remove last partial word
-   return truncated.join(" ") + "...";
-};
 
 export default function Home({ onClickProject }: HomeProps) {
    const { apiClients } = useServer();
@@ -290,6 +272,7 @@ export default function Home({ onClickProject }: HomeProps) {
                         Choose a project to explore its semantic models and
                         start analyzing your data
                      </Typography>
+                     <AddProjectDialog />
                   </Box>
                   <Grid container spacing={3} justifyContent="center">
                      {data.data.map((project) => (
@@ -297,54 +280,10 @@ export default function Home({ onClickProject }: HomeProps) {
                            size={{ xs: 12, sm: 6, md: 4 }}
                            key={project.name}
                         >
-                           <Card
-                              variant="outlined"
-                              sx={{
-                                 height: "100%",
-                                 cursor: "pointer",
-                                 transition: "all 0.2s ease",
-                                 "&:hover": {
-                                    transform: "translateY(-2px)",
-                                    boxShadow: 2,
-                                    borderColor: "primary.main",
-                                 },
-                              }}
-                              onClick={(event) =>
-                                 onClickProject(`/${project.name}/`, event)
-                              }
-                           >
-                              <CardContent sx={{ p: 3, textAlign: "center" }}>
-                                 <ExploreRoundedIcon
-                                    sx={{
-                                       fontSize: 48,
-                                       color: "primary.main",
-                                       mb: 2,
-                                    }}
-                                 />
-                                 <Typography
-                                    variant="h6"
-                                    fontWeight={600}
-                                    gutterBottom
-                                 >
-                                    {project.name}
-                                 </Typography>
-                                 <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{ mb: 2 }}
-                                 >
-                                    {getProjectDescription(project.readme)}
-                                 </Typography>
-                                 <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    endIcon={<ArrowForwardRoundedIcon />}
-                                    fullWidth
-                                 >
-                                    Open Project
-                                 </Button>
-                              </CardContent>
-                           </Card>
+                           <ProjectCard
+                              project={project}
+                              onClickProject={onClickProject}
+                           />
                         </Grid>
                      ))}
                   </Grid>
@@ -422,3 +361,99 @@ export default function Home({ onClickProject }: HomeProps) {
       return <Loading text="Loading projects..." />;
    }
 }
+function ProjectCard({
+   project,
+   onClickProject,
+}: {
+   project: Project;
+   onClickProject: (to: string, event?: React.MouseEvent) => void;
+}) {
+   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+   const isMenuOpen = Boolean(menuAnchorEl);
+   const openMenu = (event: React.MouseEvent<HTMLElement>) => {
+      setMenuAnchorEl(event.currentTarget);
+   };
+   const closeMenu = () => {
+      setMenuAnchorEl(null);
+   };
+   return (
+      <div>
+         <Card
+            variant="outlined"
+            sx={{
+               height: "100%",
+               transition: "all 0.2s ease",
+               "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: 2,
+                  borderColor: "primary.main",
+               },
+            }}
+         >
+            <IconButton
+               aria-controls={isMenuOpen ? "project-menu" : undefined}
+               aria-haspopup="true"
+               aria-expanded={isMenuOpen ? "true" : undefined}
+               onClick={openMenu}
+               sx={{ position: "absolute", top: 8, right: 8 }}
+            >
+               <MoreVert fontSize="small" />
+            </IconButton>
+            <Menu
+               id="project-menu"
+               aria-haspopup="true"
+               aria-expanded={isMenuOpen ? "true" : undefined}
+               open={isMenuOpen}
+               anchorEl={menuAnchorEl}
+               onClose={closeMenu}
+               disableRestoreFocus
+               anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "left",
+               }}
+               transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+               }}
+            >
+               <EditProjectDialog project={project} onCloseDialog={closeMenu} />
+               <DeleteProjectDialog
+                  project={project}
+                  onCloseDialog={closeMenu}
+               />
+            </Menu>
+            <CardContent sx={{ p: 3, textAlign: "center" }}>
+               <ExploreRoundedIcon
+                  sx={{
+                     fontSize: 48,
+                     color: "primary.main",
+                     mb: 2,
+                  }}
+               />
+               <Typography variant="h6" fontWeight={600} gutterBottom>
+                  {project.name}
+               </Typography>
+               <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+               >
+                  {getProjectDescription(project.readme)}
+               </Typography>
+               <Button
+                  variant="contained"
+                  color="secondary"
+                  endIcon={<ArrowForwardRoundedIcon />}
+                  fullWidth
+                  onClick={(event) =>
+                     onClickProject(`/${project.name}/`, event)
+                  }
+               >
+                  Open Project
+               </Button>
+            </CardContent>
+         </Card>
+      </div>
+   );
+}
+
