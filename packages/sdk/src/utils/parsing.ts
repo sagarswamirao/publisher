@@ -40,7 +40,7 @@ export const generateProjectReadme = (
       readmeLines.push(`# ${project.name}`);
       readmeLines.push("");
    }
-   if (project.readme?.length > 0 && description) {
+   if ((project.readme?.length ?? 0) > 0 && description) {
       readmeLines.splice(2, 1, description);
    } else if (description) {
       readmeLines.push(description);
