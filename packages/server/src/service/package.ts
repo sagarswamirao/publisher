@@ -303,6 +303,7 @@ export class Package {
       try {
          await fs.stat(packageConfigPath);
       } catch {
+         logger.error(`Can't find ${packageConfigPath}`);
          throw new PackageNotFoundError(
             `Package manifest for ${packagePath} does not exist.`,
          );

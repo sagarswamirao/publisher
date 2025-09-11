@@ -81,7 +81,12 @@ const isDevelopment = process.env["NODE_ENV"] === "development";
 
 const app = express();
 app.use(loggerMiddleware);
-app.use(cors());
+app.use(
+   cors({
+      origin: "http://localhost:5173",
+      credentials: true,
+   }),
+);
 
 const projectStore = new ProjectStore(SERVER_ROOT);
 const watchModeController = new WatchModeController(projectStore);
@@ -205,7 +210,12 @@ const setVersionIdError = (res: express.Response) => {
    res.status(status).json(json);
 };
 
-app.use(cors());
+app.use(
+   cors({
+      origin: "http://localhost:5173",
+      credentials: true,
+   }),
+);
 app.use(bodyParser.json());
 
 app.get(`${API_PREFIX}/status`, async (_req, res) => {

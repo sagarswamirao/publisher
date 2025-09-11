@@ -6,19 +6,19 @@
       "packages": [
         {
           "name": "ecommerce",
-          "location": "https://github.com/credibledata/malloy-samples"
+          "location": "https://github.com/credibledata/malloy-samples/ecommerce"
         },
         {
           "name": "imdb",
-          "location": "https://github.com/credibledata/malloy-samples"
+          "location": "https://github.com/credibledata/malloy-samples/imdb"
         },
         {
           "name": "faa",
-          "location": "https://github.com/credibledata/malloy-samples"
+          "location": "https://github.com/credibledata/malloy-samples/faa"
         },
         {
           "name": "bigquery-hackernews",
-          "location": "https://github.com/credibledata/malloy-samples"
+          "location": "https://github.com/credibledata/malloy-samples/bigquery-hackernews"
         }
       ],
       "connections": [
