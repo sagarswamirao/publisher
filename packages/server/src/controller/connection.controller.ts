@@ -46,7 +46,7 @@ export class ConnectionController {
       connectionName: string,
    ): Promise<ApiSchemaName[]> {
       const project = await this.projectStore.getProject(projectName, false);
-      const connection = project.getInternalConnection(connectionName);
+      const connection = project.getApiConnection(connectionName);
       return getSchemasForConnection(connection);
    }
 
@@ -57,7 +57,7 @@ export class ConnectionController {
       schemaName: string,
    ): Promise<string[]> {
       const project = await this.projectStore.getProject(projectName, false);
-      const connection = project.getInternalConnection(connectionName);
+      const connection = project.getApiConnection(connectionName);
       return getTablesForSchema(connection, schemaName);
    }
 
