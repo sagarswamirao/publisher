@@ -9,7 +9,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import Typography from "@mui/material/Typography";
 import { ListItemIcon, ListItemText, MenuItem, Snackbar } from "@mui/material";
 import { Delete } from "@mui/icons-material";
-import { Package } from "../../client";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 import { useServer } from "../ServerProvider";
 import { useQueryClient } from "@tanstack/react-query";

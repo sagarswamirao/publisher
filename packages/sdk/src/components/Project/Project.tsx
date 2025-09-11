@@ -1,9 +1,8 @@
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import About from "./About";
 import Packages from "./Packages";
 import { PackageContainer } from "../styles";
 import { parseResourceUri } from "../../utils/formatting";
-import { Add } from "@mui/icons-material";
 import AddPackageDialog from "./AddPackageDialog";
 
 interface ProjectProps {
