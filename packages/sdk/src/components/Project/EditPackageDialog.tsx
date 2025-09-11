@@ -26,7 +26,6 @@ export default function EditPackageDialog({
    resourceUri,
    onCloseDialog,
 }: EditPackageDialogProps) {
-   console.log({ _package, resourceUri });
    const [open, setOpen] = useState(false);
    const { apiClients } = useServer();
    const queryClient = useQueryClient();

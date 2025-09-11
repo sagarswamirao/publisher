@@ -36,7 +36,8 @@ export default function DeletePackageDialog({
    const { projectName, packageName } = parseResourceUri(resourceUri);
 
    const deletePackage = useMutationWithApiError({
-      mutationFn: () => apiClients.packages.deletePackage(projectName, packageName),
+      mutationFn: () =>
+         apiClients.packages.deletePackage(projectName, packageName),
       onSuccess() {
          handleClose();
          queryClient.invalidateQueries({ queryKey: ["packages"] });

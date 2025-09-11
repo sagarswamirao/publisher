@@ -136,9 +136,13 @@ export default function AddPackageDialog({
                </form>
             </DialogContent>
             <DialogActions>
-               <Button disabled={addPackage.isPending} onClick={handleClose}>Cancel</Button>
-               <Button type="submit" form="package-form"
-               loading={addPackage.isPending}
+               <Button disabled={addPackage.isPending} onClick={handleClose}>
+                  Cancel
+               </Button>
+               <Button
+                  type="submit"
+                  form="package-form"
+                  loading={addPackage.isPending}
                >
                   Save Changes
                </Button>
