@@ -3,7 +3,6 @@ import * as bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 import * as http from "http";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import { AddressInfo } from "net";
 import * as path from "path";
 import { ConnectionController } from "./controller/connection.controller";
@@ -81,7 +80,6 @@ const isDevelopment = process.env["NODE_ENV"] === "development";
 
 const app = express();
 app.use(loggerMiddleware);
-app.use(cors());
 
 const projectStore = new ProjectStore(SERVER_ROOT);
 const watchModeController = new WatchModeController(projectStore);
@@ -186,16 +184,6 @@ if (!isDevelopment) {
    // In development mode, proxy requests to React dev server
    // Handle API routes first
    app.use(`${API_PREFIX}`, loggerMiddleware);
-
-   // Proxy everything else to Vite
-   app.use(
-      createProxyMiddleware({
-         target: "http://localhost:5173",
-         changeOrigin: true,
-         ws: true,
-         pathFilter: (path) => !path.startsWith("/api/"),
-      }),
-   );
 }
 
 const setVersionIdError = (res: express.Response) => {
@@ -205,7 +193,12 @@ const setVersionIdError = (res: express.Response) => {
    res.status(status).json(json);
 };
 
-app.use(cors());
+app.use(
+   cors({
+      origin: "http://localhost:5173",
+      credentials: true,
+   }),
+);
 app.use(bodyParser.json());
 
 app.get(`${API_PREFIX}/status`, async (_req, res) => {

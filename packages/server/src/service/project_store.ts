@@ -691,23 +691,80 @@ export class ProjectStore {
    }
 
    async downloadGitHubDirectory(githubUrl: string, absoluteDirPath: string) {
-      await fs.promises.rm(absoluteDirPath, { recursive: true, force: true });
+      // First we'll clone the repo without the additional path
+      // E.g. we're removing `/tree/main/imdb` from https://github.com/credibledata/malloy-samples/tree/main/imdb
+      const githubRepoRegex =
+         /github\.com\/(?<owner>[^/]+)\/(?<repoName>[^/]+)(?<packagePath>\/[^/]+)*/;
+      const match = githubUrl.match(githubRepoRegex);
+      if (!match) {
+         throw new Error(`Invalid GitHub URL: ${githubUrl}`);
+      }
+      const { owner, repoName, packagePath } = match.groups!;
+      const cleanPackagePath = packagePath.replace("/tree/main", "");
+      // We'll make sure whatever was in absoluteDirPath is removed,
+      // so we have a nice a clean directory where we can clone the repo
+      await fs.promises.rm(absoluteDirPath, {
+         recursive: true,
+         force: true,
+      });
       await fs.promises.mkdir(absoluteDirPath, { recursive: true });
-
+      const repoUrl = `https://github.com/${owner}/${repoName}`;
+      // We'll clone the repo into absoluteDirPath
       await new Promise<void>((resolve, reject) => {
-         simpleGit().clone(githubUrl, absoluteDirPath, {}, (err) => {
+         simpleGit().clone(repoUrl, absoluteDirPath, {}, (err) => {
             if (err) {
                console.error(err);
-               logger.error(
-                  `Failed to clone GitHub repository "${githubUrl}"`,
-                  {
-                     error: err,
-                  },
-               );
+               logger.error(`Failed to clone GitHub repository "${repoUrl}"`, {
+                  error: err,
+               });
                reject(err);
             }
             resolve();
          });
       });
+      // After cloning, we'll replace all contents of absoluteDirPath with the contents of absoluteDirPath/cleanPackagePath
+      // E.g. we're moving /var/publisher/asd123/imdb/publisher.json into /var/publisher/asd123/publisher.json
+
+      // Remove all contents of absoluteDirPath (/var/publisher/asd123)
+      // except for the cleanPackagePath directory (/var/publisher/asd123/imdb)
+      const packageFullPath = path.join(absoluteDirPath, cleanPackagePath);
+
+      // Check if the cleanPackagePath (/var/publisher/asd123/imdb) exists
+      const packageExists = await fs.promises
+         .access(packageFullPath)
+         .then(() => true)
+         .catch(() => false);
+
+      if (!packageExists) {
+         throw new Error(
+            `Package path "${cleanPackagePath}" does not exist in the cloned repository.`,
+         );
+      }
+
+      // Remove everything in absoluteDirPath (/var/publisher/asd123)
+      const dirContents = await fs.promises.readdir(absoluteDirPath);
+      for (const entry of dirContents) {
+         // Don't remove the cleanPackagePath directory itself (/var/publisher/asd123/imdb)
+         if (entry !== cleanPackagePath.replace(/^\/+/, "").split("/")[0]) {
+            await fs.promises.rm(path.join(absoluteDirPath, entry), {
+               recursive: true,
+               force: true,
+            });
+         }
+      }
+
+      // Now, move the contents of packageFullPath (/var/publisher/asd123/imdb) up to absoluteDirPath (/var/publisher/asd123)
+      const packageContents = await fs.promises.readdir(packageFullPath);
+      for (const entry of packageContents) {
+         await fs.promises.rename(
+            path.join(packageFullPath, entry),
+            path.join(absoluteDirPath, entry),
+         );
+      }
+
+      // Remove the now-empty cleanPackagePath directory (/var/publisher/asd123/imdb)
+      await fs.promises.rm(packageFullPath, { recursive: true, force: true });
+
+      // https://github.com/credibledata/malloy-samples/imdb/publisher.json -> ${absoluteDirPath}/publisher.json
    }
 }
