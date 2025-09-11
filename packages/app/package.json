@@ -24,7 +24,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "BUILD_MODE=library bunx vite build",
+    "build": "bunx vite build",
     "build:server": "bunx vite build --mode production",
     "dev": "bunx vite --host",
     "preview": "bunx vite preview",
