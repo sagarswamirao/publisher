@@ -118,8 +118,14 @@ export default function EditProjectDialog({
                </form>
             </DialogContent>
             <DialogActions>
-               <Button onClick={handleClose}>Cancel</Button>
-               <Button type="submit" form="project-form">
+               <Button disabled={editProject.isPending} onClick={handleClose}>
+                  Cancel
+               </Button>
+               <Button
+                  type="submit"
+                  form="project-form"
+                  loading={editProject.isPending}
+               >
                   Save Changes
                </Button>
             </DialogActions>

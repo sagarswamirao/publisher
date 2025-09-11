@@ -7,42 +7,52 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
-import { AddCircleRounded } from "@mui/icons-material";
-import { generateProjectReadme } from "../../utils/parsing";
-import { useServer } from "../ServerProvider";
-import Snackbar from "@mui/material/Snackbar";
-import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
+import { Edit } from "@mui/icons-material";
+import { MenuItem, ListItemIcon, ListItemText, Snackbar } from "@mui/material";
+import { Package } from "../../client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
+import { useServer } from "../ServerProvider";
+import { parseResourceUri } from "../../utils/formatting";
 
-export default function AddProjectDialog() {
+interface EditPackageDialogProps {
+   package: Package;
+   resourceUri: string;
+   onCloseDialog: () => void;
+}
+
+export default function EditPackageDialog({
+   package: _package,
+   resourceUri,
+   onCloseDialog,
+}: EditPackageDialogProps) {
+   console.log({ _package, resourceUri });
    const [open, setOpen] = useState(false);
    const { apiClients } = useServer();
+   const queryClient = useQueryClient();
    const [notificationMessage, setNotificationMessage] = useState("");
+
    const handleClickOpen = () => {
       setOpen(true);
    };
 
    const handleClose = () => {
       setOpen(false);
+      onCloseDialog();
    };
-   const queryClient = useQueryClient();
-   const addProject = useMutationWithApiError({
-      async mutationFn(variables: { name: string; description: string }) {
-         return apiClients.projects.createProject({
-            name: variables.name,
-            readme: generateProjectReadme(
-               {
-                  name: variables.name,
-                  readme: "",
-               },
-               variables.description,
-            ),
+
+   const { packageName, projectName } = parseResourceUri(resourceUri);
+   const editPackage = useMutationWithApiError({
+      async mutationFn(variables: { description: string }) {
+         return apiClients.packages.updatePackage(projectName, packageName, {
+            name: packageName,
+            description: variables.description,
          });
       },
       onSuccess() {
          handleClose();
-         queryClient.invalidateQueries({ queryKey: ["projects"] });
-         setNotificationMessage("Project created successfully");
+         setNotificationMessage("Package updated successfully");
+         queryClient.invalidateQueries({ queryKey: ["packages", projectName] });
       },
       onError(error) {
          setNotificationMessage(
@@ -53,69 +63,64 @@ export default function AddProjectDialog() {
       },
    });
 
-   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-
       const formData = new FormData(event.currentTarget);
-      const name = formData.get("name")?.toString();
       const description = formData.get("description")?.toString();
-      if (!name) {
-         throw new Error("Name is required");
-      }
-      addProject.mutate({ name, description });
+      editPackage.mutate({ description });
    };
 
    return (
       <React.Fragment>
-         <Button
-            variant="contained"
-            onClick={handleClickOpen}
-            startIcon={<AddCircleRounded />}
-            sx={{ mt: 2, color: "white" }}
-         >
-            Create New Project
-         </Button>
+         <MenuItem onClick={handleClickOpen}>
+            <ListItemIcon>
+               <Edit fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Edit</ListItemText>
+         </MenuItem>
+
          <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle>Edit Package</DialogTitle>
             <DialogContent>
                <DialogContentText>
-                  Add a new project to start exploring semantic models and
-                  analyzing data.
+                  Update the details for &quot;{_package.name}&quot;.
                </DialogContentText>
-               <form onSubmit={handleSubmit} id="project-form">
+               <form onSubmit={handleSubmit} id="package-form">
                   <TextField
                      autoFocus
                      required
                      margin="dense"
                      id="name"
                      name="name"
-                     label="Project Name"
+                     label="Package Name"
+                     disabled
                      type="text"
                      fullWidth
                      variant="standard"
+                     defaultValue={_package.name}
                   />
                   <TextField
-                     margin="dense"
                      id="description"
                      name="description"
-                     label="Project Description"
-                     defaultValue="Explore semantic models, run queries, and build dashboards"
-                     type="text"
+                     label="Description"
+                     multiline
                      fullWidth
+                     rows={4}
+                     defaultValue={_package.description}
                      variant="standard"
                   />
                </form>
             </DialogContent>
             <DialogActions>
-               <Button disabled={addProject.isPending} onClick={handleClose}>
+               <Button disabled={editPackage.isPending} onClick={handleClose}>
                   Cancel
                </Button>
                <Button
                   type="submit"
-                  form="project-form"
-                  loading={addProject.isPending}
+                  form="package-form"
+                  loading={editPackage.isPending}
                >
-                  Create Project
+                  Save Changes
                </Button>
             </DialogActions>
          </Dialog>
