@@ -692,7 +692,7 @@ export class ProjectStore {
 
    async downloadGitHubDirectory(githubUrl: string, absoluteDirPath: string) {
       // First we'll clone the repo without the additional path
-      // E.g. we're removing `/imdb` from https://github.com/credibledata/malloy-samples/imdb
+      // E.g. we're removing `/tree/main/imdb` from https://github.com/credibledata/malloy-samples/tree/main/imdb
       const githubRepoRegex =
          /github\.com\/(?<owner>[^/]+)\/(?<repoName>[^/]+)(?<packagePath>\/[^/]+)*/;
       const match = githubUrl.match(githubRepoRegex);
@@ -700,6 +700,7 @@ export class ProjectStore {
          throw new Error(`Invalid GitHub URL: ${githubUrl}`);
       }
       const { owner, repoName, packagePath } = match.groups!;
+      const cleanPackagePath = packagePath.replace("/tree/main", "");
       // We'll make sure whatever was in absoluteDirPath is removed,
       // so we have a nice a clean directory where we can clone the repo
       await fs.promises.rm(absoluteDirPath, {
@@ -721,14 +722,14 @@ export class ProjectStore {
             resolve();
          });
       });
-      // After cloning, we'll replace all contents of absoluteDirPath with the contents of absoluteDirPath/packagePath
+      // After cloning, we'll replace all contents of absoluteDirPath with the contents of absoluteDirPath/cleanPackagePath
       // E.g. we're moving /var/publisher/asd123/imdb/publisher.json into /var/publisher/asd123/publisher.json
 
       // Remove all contents of absoluteDirPath (/var/publisher/asd123)
-      // except for the packagePath directory (/var/publisher/asd123/imdb)
-      const packageFullPath = path.join(absoluteDirPath, packagePath);
+      // except for the cleanPackagePath directory (/var/publisher/asd123/imdb)
+      const packageFullPath = path.join(absoluteDirPath, cleanPackagePath);
 
-      // Check if the packagePath (/var/publisher/asd123/imdb) exists
+      // Check if the cleanPackagePath (/var/publisher/asd123/imdb) exists
       const packageExists = await fs.promises
          .access(packageFullPath)
          .then(() => true)
@@ -736,15 +737,15 @@ export class ProjectStore {
 
       if (!packageExists) {
          throw new Error(
-            `Package path "${packagePath}" does not exist in the cloned repository.`,
+            `Package path "${cleanPackagePath}" does not exist in the cloned repository.`,
          );
       }
 
       // Remove everything in absoluteDirPath (/var/publisher/asd123)
       const dirContents = await fs.promises.readdir(absoluteDirPath);
       for (const entry of dirContents) {
-         // Don't remove the packagePath directory itself (/var/publisher/asd123/imdb)
-         if (entry !== packagePath.replace(/^\/+/, "").split("/")[0]) {
+         // Don't remove the cleanPackagePath directory itself (/var/publisher/asd123/imdb)
+         if (entry !== cleanPackagePath.replace(/^\/+/, "").split("/")[0]) {
             await fs.promises.rm(path.join(absoluteDirPath, entry), {
                recursive: true,
                force: true,
@@ -761,7 +762,7 @@ export class ProjectStore {
          );
       }
 
-      // Remove the now-empty packagePath directory (/var/publisher/asd123/imdb)
+      // Remove the now-empty cleanPackagePath directory (/var/publisher/asd123/imdb)
       await fs.promises.rm(packageFullPath, { recursive: true, force: true });
 
       // https://github.com/credibledata/malloy-samples/imdb/publisher.json -> ${absoluteDirPath}/publisher.json
