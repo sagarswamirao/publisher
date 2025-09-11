@@ -1,7 +1,6 @@
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
-import dts from "vite-plugin-dts";
 
 export default ({ mode }) => {
    const isDev = mode === "development";
@@ -66,7 +65,7 @@ export default ({ mode }) => {
               },
            }
          : {},
-      plugins: [react(), dts()],
+      plugins: [react()],
       define: {
          // This is REQUIRED for React and other libraries to eliminate debug code
          "process.env.NODE_ENV": JSON.stringify(mode),
@@ -91,16 +90,6 @@ export default ({ mode }) => {
                }
                warn(warning);
             },
-            external: [
-               // Malloy dependencies (should be provided by host)
-               "@malloydata/malloy-explorer",
-               "@malloydata/malloy-interfaces",
-               "@malloydata/malloy-query-builder",
-               "@malloydata/render",
-
-               // All peer dependencies
-               // ...Object.keys(peerDependencies),
-            ],
             output: {
                // Provide global variable names for externalized dependencies
                globals: {
