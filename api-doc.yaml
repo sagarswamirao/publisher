@@ -322,7 +322,6 @@ paths:
       tags:
         - connections
       operationId: post-sqlsource
-      deprecated: true
       summary: Returns a SQL source.
       parameters:
         - name: projectName
