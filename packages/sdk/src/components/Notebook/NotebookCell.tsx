@@ -1,26 +1,26 @@
-import CodeIcon from "@mui/icons-material/Code";
 import CloseIcon from "@mui/icons-material/Close";
+import CodeIcon from "@mui/icons-material/Code";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import SearchIcon from "@mui/icons-material/Search";
 import {
+   Box,
+   Dialog,
+   DialogContent,
+   DialogTitle,
    IconButton,
    Stack,
    Tooltip,
    Typography,
-   Box,
-   Dialog,
-   DialogTitle,
-   DialogContent,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import Markdown from "markdown-to-jsx";
 import React, { useEffect } from "react";
 import { NotebookCell as ClientNotebookCell } from "../../client";
 import { highlight } from "../highlighter";
 import { ModelExplorerDialog } from "../Model/ModelExplorerDialog";
+import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import ResultsDialog from "../ResultsDialog";
-import { CleanNotebookCell, CleanMetricCard } from "../styles";
-import { createEmbeddedQueryResult } from "../QueryResult/QueryResult";
+import { CleanMetricCard, CleanNotebookCell } from "../styles";
 
 // Regex to extract model path from import statements like: import {flights} from 'flights.malloy'
 const IMPORT_REGEX = /import\s*(?:\{[^}]*\}\s*from\s*)?['"`]([^'"`]+)['"`]/;
@@ -53,7 +53,7 @@ export function NotebookCell({
       React.useState<boolean>(false);
 
    // Extract model path from import statement in cell text
-   const importMatch = cell.text.match(IMPORT_REGEX);
+   const importMatch = cell.text && cell.text.match(IMPORT_REGEX);
    const hasValidImport = !!importMatch;
 
    const queryResultCodeSnippet = createEmbeddedQueryResult({
@@ -139,24 +139,27 @@ export function NotebookCell({
                                  paddingRight: "8px",
                               }}
                            >
-                              <span
-                                 dangerouslySetInnerHTML={{
-                                    __html:
-                                       cell.text.length > 50 &&
-                                       highlightedMalloyCode
-                                          ? `${highlightedMalloyCode.substring(0, 50)}...`
-                                          : highlightedMalloyCode,
-                                 }}
-                                 style={{
-                                    fontFamily: "monospace",
-                                    fontSize: "14px",
-                                    flex: 1,
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    marginRight: "8px",
-                                 }}
-                              />
+                              {/* This shouldn't be needed but there's a compiler bug */}
+                              {highlightedMalloyCode && (
+                                 <span
+                                    dangerouslySetInnerHTML={{
+                                       __html:
+                                          cell.text.length > 50 &&
+                                          highlightedMalloyCode
+                                             ? `${highlightedMalloyCode.substring(0, 50)}...`
+                                             : highlightedMalloyCode,
+                                    }}
+                                    style={{
+                                       fontFamily: "monospace",
+                                       fontSize: "14px",
+                                       flex: 1,
+                                       whiteSpace: "nowrap",
+                                       overflow: "hidden",
+                                       textOverflow: "ellipsis",
+                                       marginRight: "8px",
+                                    }}
+                                 />
+                              )}
                               <IconButton
                                  sx={{
                                     backgroundColor: "rgba(255, 255, 255, 0.9)",
