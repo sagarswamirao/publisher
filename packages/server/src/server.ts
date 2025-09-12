@@ -456,14 +456,15 @@ app.get(
 );
 
 app.post(
-   `${API_PREFIX}/projects/:projectName/connections/:connectionName/temporaryTable`,
+   `${API_PREFIX}/projects/:projectName/connections/:connectionName/queryData`,
    async (req, res) => {
       try {
          res.status(200).json(
-            await connectionController.getConnectionTemporaryTable(
+            await connectionController.getConnectionQueryData(
                req.params.projectName,
                req.params.connectionName,
                req.body.sqlStatement as string,
+               req.query.options as string,
             ),
          );
       } catch (error) {
