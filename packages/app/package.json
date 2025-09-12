@@ -24,11 +24,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "BUILD_MODE=library bunx vite build",
+    "build": "bunx vite build",
     "build:server": "bunx vite build --mode production",
     "dev": "bunx vite --host",
     "preview": "bunx vite preview",
-    "lint": "bunx eslint ./src --ext .ts,.tsx --ignore-path .gitignore --fix",
+    "lint": "bunx eslint ./src --fix",
     "format": "bunx prettier --write --parser typescript '**/*.{ts,tsx}'",
     "analyze": "bunx vite-bundle-visualizer",
     "generate-api-types": ""

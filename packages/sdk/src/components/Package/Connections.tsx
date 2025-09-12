@@ -1,49 +1,76 @@
+import SearchIcon from "@mui/icons-material/Search";
 import {
    Box,
+   Dialog,
+   DialogContent,
+   DialogTitle,
+   IconButton,
+   Snackbar,
    Table,
    TableBody,
    TableCell,
    TableRow,
    Typography,
-   Dialog,
-   DialogTitle,
-   DialogContent,
-   IconButton,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Connection as ApiConnection } from "../../client/api";
-import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
+import {
+   useMutationWithApiError,
+   useQueryWithApiError,
+} from "../../hooks/useQueryWithApiError";
+import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
+import AddConnectionDialog from "../Connections/AddConnectionDialog";
+import DeleteConnectionDialog from "../Connections/DeleteConnectionDialog";
+import EditConnectionDialog from "../Connections/EditConnectionDialog";
+import ConnectionExplorer from "../Project/ConnectionExplorer";
+import { useServer } from "../ServerProvider";
 import {
    PackageCard,
    PackageCardContent,
    PackageSectionTitle,
 } from "../styles";
-import ConnectionExplorer from "../Project/ConnectionExplorer";
-import { useState } from "react";
-import { encodeResourceUri, parseResourceUri } from "../../utils/formatting";
-import { useServer } from "../ServerProvider";
 
 type ConnectionProps = {
    connection: ApiConnection;
    onClick: () => void;
+   onEdit: (connection: ApiConnection) => Promise<unknown>;
+   onDelete: (connection: ApiConnection) => Promise<unknown>;
+   isMutating: boolean;
 };
 
 // TODO(jjs) - Move this UI to the ConnectionExplorer component
-function Connection({ connection, onClick }: ConnectionProps) {
+function Connection({
+   connection,
+   onClick,
+   onEdit,
+   onDelete,
+   isMutating,
+}: ConnectionProps) {
    return (
       <TableRow
          key={connection.name}
-         onClick={onClick}
          sx={{
-            cursor: "pointer",
             "&:hover": {
                backgroundColor: "action.hover",
             },
          }}
       >
-         <TableCell>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+         <TableCell
+            sx={{
+               cursor: "pointer",
+               flexGrow: 1,
+            }}
+            onClick={onClick}
+         >
+            <Box
+               sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+               }}
+            >
                <Typography variant="body2">{connection.name}</Typography>
                <SearchIcon
                   sx={{
@@ -54,8 +81,21 @@ function Connection({ connection, onClick }: ConnectionProps) {
                />
             </Box>
          </TableCell>
-         <TableCell>
+         <TableCell sx={{ minWidth: "120px" }}>
             <Typography variant="body2">{connection.type}</Typography>
+         </TableCell>
+         <TableCell sx={{ minWidth: "120px" }}>
+            <EditConnectionDialog
+               connection={connection}
+               onSubmit={onEdit}
+               isSubmitting={isMutating}
+            />
+            <DeleteConnectionDialog
+               connection={connection}
+               onCloseDialog={() => {}}
+               isMutating={isMutating}
+               onDelete={() => onDelete(connection)}
+            />
          </TableCell>
       </TableRow>
    );
@@ -67,7 +107,9 @@ type ConnectionsProps = {
 
 export default function Connections({ resourceUri }: ConnectionsProps) {
    const { apiClients } = useServer();
+   const queryClient = useQueryClient();
    const { projectName: projectName } = parseResourceUri(resourceUri);
+   const [notificationMessage, setNotificationMessage] = useState("");
    const [selectedConnection, setSelectedConnection] = useState<string | null>(
       null,
    );
@@ -88,6 +130,66 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
       setSelectedConnection(null);
    };
 
+   const addConnection = useMutationWithApiError({
+      mutationFn: (payload: ApiConnection) => {
+         return apiClients.projects.updateProject(projectName, {
+            name: projectName,
+            connections: [...data.data, payload],
+         });
+      },
+      onSuccess() {
+         setNotificationMessage("Connection added successfully");
+         queryClient.invalidateQueries({
+            queryKey: ["connections", projectName],
+         });
+      },
+      onError(error) {
+         setNotificationMessage(error.message);
+      },
+   });
+
+   const updateConnection = useMutationWithApiError({
+      mutationFn: (payload: ApiConnection) => {
+         return apiClients.projects.updateProject(projectName, {
+            name: projectName,
+            connections: data.data.map((conn) =>
+               conn.name === payload.name ? payload : conn,
+            ),
+         });
+      },
+      onSuccess(_data, variables) {
+         setNotificationMessage(
+            `Connection ${variables.name} updated successfully`,
+         );
+         queryClient.invalidateQueries({
+            queryKey: ["connections", projectName],
+         });
+      },
+      onError(error) {
+         setNotificationMessage(error.message);
+      },
+   });
+
+   const deleteConnection = useMutationWithApiError({
+      mutationFn: (payload: ApiConnection) => {
+         return apiClients.projects.updateProject(projectName, {
+            name: projectName,
+            connections: data.data.filter((conn) => conn.name !== payload.name),
+         });
+      },
+      onSuccess(_data, variables) {
+         setNotificationMessage(
+            `Connection ${variables.name} deleted successfully`,
+         );
+         queryClient.invalidateQueries({
+            queryKey: ["connections", projectName],
+         });
+      },
+      onError(error) {
+         setNotificationMessage(error.message);
+      },
+   });
+
    return (
       <>
          <PackageCard>
@@ -95,6 +197,7 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
                <PackageSectionTitle>Database Connections</PackageSectionTitle>
                <Box
                   sx={{
+                     mb: 1,
                      maxHeight: "200px",
                      overflowY: "auto",
                   }}
@@ -109,8 +212,14 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
                         size="small"
                         sx={{
                            borderCollapse: "collapse",
+                           "& .MuiTableRow-root": {
+                              display: "flex",
+                              width: "100%",
+                           },
                            "& .MuiTableCell-root": {
                               borderBottom: "1px solid #e0e0e0",
+                              display: "flex",
+                              alignItems: "center",
                            },
                            "& .MuiTableRow-root:last-child .MuiTableCell-root":
                               {
@@ -120,7 +229,7 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
                      >
                         <TableBody>
                            <TableRow>
-                              <TableCell>
+                              <TableCell sx={{ flexGrow: 1 }}>
                                  <Typography
                                     variant="body2"
                                     fontWeight="500"
@@ -129,13 +238,23 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
                                     Connection Name
                                  </Typography>
                               </TableCell>
-                              <TableCell>
+                              <TableCell sx={{ minWidth: "120px" }}>
                                  <Typography
                                     variant="body2"
                                     fontWeight="500"
                                     color="text.secondary"
                                  >
                                     Type
+                                 </Typography>
+                              </TableCell>
+                              <TableCell sx={{ minWidth: "120px" }}>
+                                 <Typography
+                                    variant="body2"
+                                    fontWeight="500"
+                                    color="text.secondary"
+                                    sx={{ mx: "auto" }}
+                                 >
+                                    Actions
                                  </Typography>
                               </TableCell>
                            </TableRow>
@@ -145,6 +264,16 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
                                  connection={conn}
                                  onClick={() =>
                                     handleConnectionClick(conn.name)
+                                 }
+                                 onEdit={(payload) =>
+                                    updateConnection.mutateAsync(payload)
+                                 }
+                                 onDelete={(payload) =>
+                                    deleteConnection.mutateAsync(payload)
+                                 }
+                                 isMutating={
+                                    updateConnection.isPending ||
+                                    deleteConnection.isPending
                                  }
                               />
                            ))}
@@ -161,8 +290,21 @@ export default function Connections({ resourceUri }: ConnectionsProps) {
                      />
                   )}
                </Box>
+               <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                  <AddConnectionDialog
+                     onSubmit={(payload) => addConnection.mutateAsync(payload)}
+                     isSubmitting={addConnection.isPending}
+                  />
+               </Box>
             </PackageCardContent>
          </PackageCard>
+
+         <Snackbar
+            open={notificationMessage !== ""}
+            autoHideDuration={6000}
+            onClose={() => setNotificationMessage("")}
+            message={notificationMessage}
+         />
 
          {/* Connection Explorer Dialog */}
          <Dialog

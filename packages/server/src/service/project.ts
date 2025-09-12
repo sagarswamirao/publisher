@@ -35,7 +35,6 @@ export class Project {
    private packageStatuses: Map<string, PackageInfo> = new Map();
    private malloyConnections: Map<string, BaseConnection>;
    private apiConnections: ApiConnection[];
-   private internalConnections: InternalConnection[];
    private projectPath: string;
    private projectName: string;
    private serverRootPath: string;
@@ -45,7 +44,6 @@ export class Project {
       projectName: string,
       projectPath: string,
       malloyConnections: Map<string, BaseConnection>,
-      internalConnections: InternalConnection[],
       apiConnections: InternalConnection[],
       serverRootPath: string,
    ) {
@@ -53,8 +51,6 @@ export class Project {
       this.projectPath = projectPath;
       this.serverRootPath = serverRootPath;
       this.malloyConnections = malloyConnections;
-      // InternalConnections have full connection details for doing schema inspection
-      this.internalConnections = internalConnections;
       this.apiConnections = apiConnections;
       this.metadata = {
          resource: `${API_PREFIX}/projects/${this.projectName}`,
@@ -85,7 +81,6 @@ export class Project {
          // Update the project's connection maps
          this.malloyConnections = malloyConnections;
          this.apiConnections = apiConnections;
-         this.internalConnections = apiConnections;
 
          logger.info(
             `Successfully updated connections for project ${this.projectName}`,
@@ -138,17 +133,6 @@ export class Project {
          projectPath,
          malloyConnections,
          apiConnections,
-         apiConnections.map((internalConnection) => {
-            // Create a new ApiConnection object from each InternalConnection
-            // by excluding the internal connection details
-            // We don't want to send passwords and connection strings to the client
-            return {
-               name: internalConnection.name,
-               type: internalConnection.type,
-               attributes: internalConnection.attributes,
-               resource: internalConnection.resource,
-            };
-         }),
          serverRootPath || "",
       );
    }
@@ -176,20 +160,6 @@ export class Project {
 
    public getApiConnection(connectionName: string): ApiConnection {
       const connection = this.apiConnections.find(
-         (connection) => connection.name === connectionName,
-      );
-      if (!connection) {
-         throw new ConnectionNotFoundError(
-            `Connection ${connectionName} not found`,
-         );
-      }
-      return connection;
-   }
-
-   // Returns a connection with full connection details for doing schema inspection
-   // Don't send this to the client as it contains sensitive information
-   public getInternalConnection(connectionName: string): InternalConnection {
-      const connection = this.internalConnections.find(
          (connection) => connection.name === connectionName,
       );
       if (!connection) {
