@@ -284,6 +284,7 @@ paths:
       tags:
         - connections
       operationId: get-sqlsource
+      deprecated: true
       summary: Returns a SQL source.
       parameters:
         - name: projectName
@@ -304,6 +305,47 @@ paths:
           required: false
           schema:
             type: string
+      responses:
+        "200":
+          description: A SQL source.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SqlSource"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags:
+        - connections
+      operationId: post-sqlsource
+      summary: Returns a SQL source.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: SQL statement to fetch the SQL source
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sqlStatement:
+                  type: string
       responses:
         "200":
           description: A SQL source.
@@ -444,6 +486,7 @@ paths:
       tags:
         - connections
       operationId: get-querydata
+      deprecated: true
       summary: Returns a query and its results.
       parameters:
         - name: projectName
@@ -482,6 +525,53 @@ paths:
         "404":
           $ref: "#/components/responses/NotFoundError"
         "500":
+              $ref: "#/components/responses/InternalServerError"
+    post:
+      tags:
+        - connections
+      operationId: post-querydata
+      summary: Returns a query and its results.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+        - name: options
+          in: query
+          description: Options
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: SQL statement to execute
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sqlStatement:
+                  type: string
+      responses:
+        "200":
+          description: A query and its results.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryData"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
           $ref: "#/components/responses/InternalServerError"
 
   /projects/{projectName}/connections/{connectionName}/temporaryTable:
@@ -489,6 +579,7 @@ paths:
       tags:
         - connections
       operationId: get-temporarytable
+      deprecated: true
       summary: Returns a temporary table.
       parameters:
         - name: projectName
@@ -522,6 +613,48 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "500":
           $ref: "#/components/responses/InternalServerError"
+    post:
+      tags:
+        - connections
+      operationId: post-temporarytable
+      summary: Returns a temporary table.
+      parameters:
+        - name: projectName
+          in: path
+          description: Name of project
+          required: true
+          schema:
+            type: string
+        - name: connectionName
+          in: path
+          description: Name of connection
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: SQL statement to create the temporary table
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sqlStatement:
+                  type: string
+      responses:
+        "200":
+          description: A temporary table.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemporaryTable"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
 
   /projects/{projectName}/packages:
     get:

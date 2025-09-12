@@ -371,6 +371,9 @@ app.get(
    },
 );
 
+/**
+ * @deprecated Use /projects/:projectName/connections/:connectionName/sqlSource POST method instead
+ */
 app.get(
    `${API_PREFIX}/projects/:projectName/connections/:connectionName/sqlSource`,
    async (req, res) => {
@@ -380,6 +383,25 @@ app.get(
                req.params.projectName,
                req.params.connectionName,
                req.query.sqlStatement as string,
+            ),
+         );
+      } catch (error) {
+         logger.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.post(
+   `${API_PREFIX}/projects/:projectName/connections/:connectionName/sqlSource`,
+   async (req, res) => {
+      try {
+         res.status(200).json(
+            await connectionController.getConnectionSqlSource(
+               req.params.projectName,
+               req.params.connectionName,
+               req.body.sqlStatement as string,
             ),
          );
       } catch (error) {
@@ -410,6 +432,9 @@ app.get(
    },
 );
 
+/**
+ * @deprecated Use /projects/:projectName/connections/:connectionName/queryData POST method instead
+ */
 app.get(
    `${API_PREFIX}/projects/:projectName/connections/:connectionName/queryData`,
    async (req, res) => {
@@ -430,6 +455,29 @@ app.get(
    },
 );
 
+app.post(
+   `${API_PREFIX}/projects/:projectName/connections/:connectionName/queryData`,
+   async (req, res) => {
+      try {
+         res.status(200).json(
+            await connectionController.getConnectionQueryData(
+               req.params.projectName,
+               req.params.connectionName,
+               req.body.sqlStatement as string,
+               req.query.options as string,
+            ),
+         );
+      } catch (error) {
+         logger.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+/**
+ * @deprecated Use /projects/:projectName/connections/:connectionName/temporaryTable POST method instead
+ */
 app.get(
    `${API_PREFIX}/projects/:projectName/connections/:connectionName/temporaryTable`,
    async (req, res) => {
@@ -439,6 +487,25 @@ app.get(
                req.params.projectName,
                req.params.connectionName,
                req.query.sqlStatement as string,
+            ),
+         );
+      } catch (error) {
+         logger.error(error);
+         const { json, status } = internalErrorToHttpError(error as Error);
+         res.status(status).json(json);
+      }
+   },
+);
+
+app.post(
+   `${API_PREFIX}/projects/:projectName/connections/:connectionName/temporaryTable`,
+   async (req, res) => {
+      try {
+         res.status(200).json(
+            await connectionController.getConnectionTemporaryTable(
+               req.params.projectName,
+               req.params.connectionName,
+               req.body.sqlStatement as string,
             ),
          );
       } catch (error) {
