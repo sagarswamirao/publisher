@@ -29,30 +29,8 @@ export default ({ mode }) => {
       },
    };
 
-   const manualChunks = {
-      // React core
-      "react-vendor": [
-         "react",
-         "react-dom",
-         "react/jsx-runtime",
-         "react-dom/client",
-      ],
-
-      // MUI Ecosystem
-      "mui-core": ["@mui/material", "@mui/system"],
-      "mui-icons": ["@mui/icons-material"],
-      "mui-tree": ["@mui/x-tree-view"],
-
-      // Utilities
-      "emotion-vendor": ["@emotion/react", "@emotion/styled"],
-
-      // Editor
-      "editor-vendor": ["@uiw/react-md-editor", "markdown-to-jsx"],
-
-      // Other large libraries
-      "spring-vendor": ["@react-spring/web"],
-      "query-vendor": ["@tanstack/react-query"],
-   };
+   // Disable chunking entirely to avoid initialization order issues
+   const manualChunks = undefined;
 
    return defineConfig({
       server: isDev
@@ -112,9 +90,13 @@ export default ({ mode }) => {
          include: [
             "react",
             "react-dom",
+            "@emotion/react",
+            "@emotion/styled",
             "@mui/material",
             "@mui/icons-material",
+            "@mui/system",
          ],
+         exclude: [],
       },
    });
 };
