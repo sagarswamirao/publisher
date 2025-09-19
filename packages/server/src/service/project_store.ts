@@ -9,8 +9,8 @@ import { components } from "../api";
 import {
    getProcessedPublisherConfig,
    isPublisherConfigFrozen,
-   ProcessedPublisherConfig,
    ProcessedProject,
+   ProcessedPublisherConfig,
 } from "../config";
 import { API_PREFIX, PUBLISHER_CONFIG_NAME, publisherPath } from "../constants";
 import {
@@ -329,6 +329,30 @@ export class ProjectStore {
       return absoluteProjectPath;
    }
 
+   private isLocalPath(location: string) {
+      return (
+         location.startsWith("./") ||
+         location.startsWith("~/") ||
+         location.startsWith("/") ||
+         path.isAbsolute(location)
+      );
+   }
+
+   private isGitHubURL(location: string) {
+      return (
+         location.startsWith("https://github.com/") ||
+         location.startsWith("git@github.com:")
+      );
+   }
+
+   private isGCSURL(location: string) {
+      return location.startsWith("gs://");
+   }
+
+   private isS3URL(location: string) {
+      return location.startsWith("s3://");
+   }
+
    private async loadProjectIntoDisk(
       projectName: string,
       projectPath: string,
@@ -359,65 +383,96 @@ export class ProjectStore {
             );
          }
 
-         const location = _package.location;
-         const packageName = _package.name;
-
-         if (!locationGroups.has(location)) {
-            locationGroups.set(location, []);
+         // For GitHub URLs, group by base repository URL to optimize downloads
+         let locationKey = _package.location;
+         if (this.isGitHubURL(_package.location)) {
+            const githubInfo = this.parseGitHubUrl(_package.location);
+            if (githubInfo) {
+               // Always use HTTPS format for grouping to ensure consistency
+               locationKey = `https://github.com/${githubInfo.owner}/${githubInfo.repoName}`;
+            }
          }
-         locationGroups.get(location)!.push({ name: packageName, location });
+
+         if (!locationGroups.has(locationKey)) {
+            locationGroups.set(locationKey, []);
+         }
+         locationGroups.get(locationKey)!.push({
+            name: _package.name,
+            location: _package.location,
+         });
       }
 
       // Processing by each unique location
-      for (const [location, packagesForLocation] of locationGroups) {
+      for (const [groupedLocation, packagesForLocation] of locationGroups) {
          // Create a temporary directory for the shared download
          const tempDownloadPath = `${absoluteTargetPath}/.temp_${Buffer.from(
-            location,
+            groupedLocation,
          )
             .toString("base64")
             .replace(/[^a-zA-Z0-9]/g, "")}`;
          await fs.promises.mkdir(tempDownloadPath, { recursive: true });
-
+         logger.info(`Created temporary directory: ${tempDownloadPath}`);
          try {
-            // Download the entire location once
+            // Use the existing download method for all locations
             await this.downloadOrMountLocation(
-               location,
+               groupedLocation,
                tempDownloadPath,
                projectName,
                "shared",
             );
-
             // Extract each package from the downloaded content
             for (const _package of packagesForLocation) {
                const packageDir = _package.name;
                const absolutePackagePath = `${absoluteTargetPath}/${packageDir}`;
+               // For GitHub URLs, extract the subdirectory path from the original location
+               let sourcePath: string;
+               if (this.isGitHubURL(_package.location)) {
+                  const githubInfo = this.parseGitHubUrl(_package.location);
+                  if (githubInfo && githubInfo.packagePath) {
+                     // Extract subdirectory from the original GitHub URL
+                     // Handle both /tree/main/subdir and /tree/branch/subdir cases
+                     const subPathMatch =
+                        _package.location.match(/\/tree\/[^/]+\/(.+)$/);
+                     if (subPathMatch) {
+                        sourcePath = path.join(
+                           tempDownloadPath,
+                           subPathMatch[1],
+                        );
+                     } else {
+                        // If no subdirectory after /tree/branch, the repo itself is the package
+                        sourcePath = tempDownloadPath;
+                     }
+                  } else {
+                     // No packagePath means the repo itself is the package
+                     sourcePath = tempDownloadPath;
+                  }
+               } else {
+                  // For non-GitHub locations, use package name
+                  if (this.isLocalPath(_package.location)) {
+                     sourcePath = _package.location;
+                  } else {
+                     sourcePath = path.join(tempDownloadPath, groupedLocation);
+                  }
+               }
 
-               // Check if the package directory exists in the downloaded content
-               const packagePathInDownload = path.join(
-                  tempDownloadPath,
-                  packageDir,
-               );
-               const packageExists = await fs.promises
-                  .access(packagePathInDownload)
+               const sourceExists = await fs.promises
+                  .access(sourcePath)
                   .then(() => true)
                   .catch(() => false);
 
-               if (packageExists) {
-                  // Copy the specific package directory
+               if (sourceExists) {
+                  // Copy the specific directory
                   await fs.promises.mkdir(absolutePackagePath, {
                      recursive: true,
                   });
-                  await fs.promises.cp(
-                     packagePathInDownload,
-                     absolutePackagePath,
-                     { recursive: true },
-                  );
+                  await fs.promises.cp(sourcePath, absolutePackagePath, {
+                     recursive: true,
+                  });
                   logger.info(
-                     `Extracted package "${packageDir}" from shared download`,
+                     `Extracted package "${packageDir}" from ${groupedLocation.startsWith("https://github.com/") && _package.location.includes("/tree/") ? "GitHub subdirectory" : "shared download"}`,
                   );
                } else {
-                  // If package directory doesn't exist, copy the entire download as the package
-                  // This handles cases where the location itself is the package
+                  // If source doesn't exist, copy the entire download as the package
                   await fs.promises.mkdir(absolutePackagePath, {
                      recursive: true,
                   });
@@ -430,11 +485,14 @@ export class ProjectStore {
                }
             }
          } catch (error) {
-            logger.error(`Failed to download or mount location "${location}"`, {
-               error,
-            });
+            logger.error(
+               `Failed to download or mount location "${groupedLocation}"`,
+               {
+                  error,
+               },
+            );
             throw new PackageNotFoundError(
-               `Failed to download or mount location: ${location}`,
+               `Failed to download or mount location: ${groupedLocation}`,
             );
          }
          try {
@@ -464,7 +522,7 @@ export class ProjectStore {
    ) {
       const isCompressedFile = location.endsWith(".zip");
       // Handle GCS paths
-      if (location.startsWith("gs://")) {
+      if (this.isGCSURL(location)) {
          try {
             logger.info(
                `Downloading GCS directory from "${location}" to "${targetPath}"`,
@@ -487,10 +545,7 @@ export class ProjectStore {
       }
 
       // Handle GitHub URLs
-      if (
-         location.startsWith("https://github.com/") ||
-         location.startsWith("git@")
-      ) {
+      if (this.isGitHubURL(location)) {
          try {
             logger.info(
                `Cloning GitHub repository from "${location}" to "${targetPath}"`,
@@ -508,7 +563,7 @@ export class ProjectStore {
       }
 
       // Handle S3 paths
-      if (location.startsWith("s3://")) {
+      if (this.isS3URL(location)) {
          try {
             logger.info(
                `Downloading S3 directory from "${location}" to "${targetPath}"`,
@@ -526,7 +581,7 @@ export class ProjectStore {
       }
 
       // Handle absolute and relative paths
-      if (path.isAbsolute(location) || location.startsWith("./")) {
+      if (this.isLocalPath(location)) {
          const packagePath: string = path.isAbsolute(location)
             ? location
             : path.join(this.serverRootPath, location);
@@ -690,17 +745,40 @@ export class ProjectStore {
       );
    }
 
+   private parseGitHubUrl(
+      githubUrl: string,
+   ): { owner: string; repoName: string; packagePath?: string } | null {
+      // Handle HTTPS format: https://github.com/owner/repo/tree/branch/subdir
+      const httpsRegex =
+         /github\.com\/(?<owner>[^/]+)\/(?<repoName>[^/]+)(?<packagePath>\/[^/]+)*/;
+      const httpsMatch = githubUrl.match(httpsRegex);
+      if (httpsMatch) {
+         const { owner, repoName, packagePath } = httpsMatch.groups!;
+         return { owner, repoName, packagePath };
+      }
+
+      // Handle SSH format: git@github.com:owner/repo.git or git@github.com:owner/repo
+      const sshRegex =
+         /git@github\.com:(?<owner>[^/]+)\/(?<repoName>[^/\s]+?)(?:\.git)?(?<packagePath>\/[^/]+)*$/;
+      const sshMatch = githubUrl.match(sshRegex);
+      if (sshMatch) {
+         const { owner, repoName, packagePath } = sshMatch.groups!;
+         return { owner, repoName, packagePath };
+      }
+
+      return null;
+   }
+
    async downloadGitHubDirectory(githubUrl: string, absoluteDirPath: string) {
       // First we'll clone the repo without the additional path
       // E.g. we're removing `/tree/main/imdb` from https://github.com/credibledata/malloy-samples/tree/main/imdb
-      const githubRepoRegex =
-         /github\.com\/(?<owner>[^/]+)\/(?<repoName>[^/]+)(?<packagePath>\/[^/]+)*/;
-      const match = githubUrl.match(githubRepoRegex);
-      if (!match) {
+      const githubInfo = this.parseGitHubUrl(githubUrl);
+      if (!githubInfo) {
          throw new Error(`Invalid GitHub URL: ${githubUrl}`);
       }
-      const { owner, repoName, packagePath } = match.groups!;
-      const cleanPackagePath = packagePath.replace("/tree/main", "");
+      const { owner, repoName, packagePath } = githubInfo;
+      const cleanPackagePath = packagePath?.replace("/tree/main", "") || "";
+
       // We'll make sure whatever was in absoluteDirPath is removed,
       // so we have a nice a clean directory where we can clone the repo
       await fs.promises.rm(absoluteDirPath, {
@@ -709,6 +787,7 @@ export class ProjectStore {
       });
       await fs.promises.mkdir(absoluteDirPath, { recursive: true });
       const repoUrl = `https://github.com/${owner}/${repoName}`;
+
       // We'll clone the repo into absoluteDirPath
       await new Promise<void>((resolve, reject) => {
          simpleGit().clone(repoUrl, absoluteDirPath, {}, (err) => {
@@ -722,6 +801,16 @@ export class ProjectStore {
             resolve();
          });
       });
+
+      // If there's no specific package path, we're done (for grouped downloads)
+      if (!cleanPackagePath) {
+         logger.info(
+            `Successfully cloned entire repository to: ${absoluteDirPath}`,
+         );
+         return;
+      }
+
+      // For single package downloads, extract the specific subdirectory
       // After cloning, we'll replace all contents of absoluteDirPath with the contents of absoluteDirPath/cleanPackagePath
       // E.g. we're moving /var/publisher/asd123/imdb/publisher.json into /var/publisher/asd123/publisher.json
 
