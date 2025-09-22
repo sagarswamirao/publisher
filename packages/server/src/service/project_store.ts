@@ -19,7 +19,7 @@ import {
    ProjectNotFoundError,
 } from "../errors";
 import { logger } from "../logger";
-import { Project } from "./project";
+import { PackageStatus, Project } from "./project";
 type ApiProject = components["schemas"]["Project"];
 
 export class ProjectStore {
@@ -49,6 +49,7 @@ export class ProjectStore {
          const projectManifest = await ProjectStore.reloadProjectManifest(
             this.serverRootPath,
          );
+         await this.cleanupAndCreatePublisherPath();
          logger.info(`Initializing project store.`);
          await Promise.all(
             projectManifest.projects.map(async (project) => {
@@ -73,6 +74,22 @@ export class ProjectStore {
          console.error(error);
          process.exit(1);
       }
+   }
+
+   private async cleanupAndCreatePublisherPath() {
+      logger.info(`Cleaning up publisher path ${publisherPath}`);
+      try {
+         await fs.promises.rm(publisherPath, { recursive: true, force: true });
+      } catch (error) {
+         if ((error as NodeJS.ErrnoException).code === "EACCES") {
+            logger.warn(
+               `Permission denied, skipping cleanup of publisher path ${publisherPath}`,
+            );
+         } else {
+            throw error;
+         }
+      }
+      await fs.promises.mkdir(publisherPath, { recursive: true });
    }
 
    public async listProjects(skipInitializationCheck: boolean = false) {
@@ -218,6 +235,9 @@ export class ProjectStore {
          this.serverRootPath,
       );
       this.projects.set(projectName, newProject);
+      projectConfig?.packages.forEach((_package) => {
+         newProject.setPackageStatus(_package.name, PackageStatus.SERVING);
+      });
       return newProject;
    }
 
