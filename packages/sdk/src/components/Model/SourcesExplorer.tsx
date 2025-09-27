@@ -6,7 +6,7 @@ import {
    StyledExplorerPage,
 } from "../styles";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutationWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
 import { useServer } from "../ServerProvider";
@@ -78,7 +78,7 @@ interface SourceExplorerComponentProps {
 
 export interface QueryExplorerResult {
    query: string | undefined;
-   malloyQuery: Malloy.Query | undefined;
+   malloyQuery: Malloy.Query | string | undefined;
    malloyResult: Malloy.Result | undefined;
 }
 
@@ -104,6 +104,18 @@ function SourceExplorerComponentInner({
    const [query, setQuery] = React.useState<QueryExplorerResult>(
       existingQuery || emptyQueryExplorerResult(),
    );
+   const [submittedQuery, setSubmittedQuery] = React.useState<
+      | {
+           executionState: "running" | "finished";
+           response: {
+              result: Malloy.Result;
+           };
+           query: Malloy.Query | string;
+           queryResolutionStartMillis: number;
+           onCancel: () => void;
+        }
+      | undefined
+   >(undefined);
 
    // Update query when existingQuery changes
    React.useEffect(() => {
@@ -137,10 +149,26 @@ function SourceExplorerComponentInner({
 
    const mutation = useMutationWithApiError({
       mutationFn: () => {
-         const malloy = new QueryBuilder.ASTQuery({
-            source: sourceAndPath.sourceInfo,
+         // If malloyQuery is a string, we can use it directly, otherwise convert to Malloy
+         const malloy =
+            typeof query?.malloyQuery === "string"
+               ? query.malloyQuery
+               : new QueryBuilder.ASTQuery({
+                    source: sourceAndPath.sourceInfo,
+                    query: query?.malloyQuery,
+                 }).toMalloy();
+
+         // Set submitted query when execution starts
+         setSubmittedQuery({
+            executionState: "running",
             query: query?.malloyQuery,
-         }).toMalloy();
+            queryResolutionStartMillis: Date.now(),
+            onCancel: mutation.reset,
+            response: {
+               result: {} as Malloy.Result, // placeholder
+            },
+         });
+
          setQuery({
             ...query,
             query: malloy,
@@ -163,6 +191,18 @@ function SourceExplorerComponentInner({
                ...query,
                malloyResult: parsedResult as Malloy.Result,
             });
+            // Update submitted query with results
+            setSubmittedQuery((prev) =>
+               prev
+                  ? {
+                       ...prev,
+                       executionState: "finished",
+                       response: {
+                          result: parsedResult as Malloy.Result,
+                       },
+                    }
+                  : undefined,
+            );
          }
       },
    });
@@ -178,11 +218,12 @@ function SourceExplorerComponentInner({
       if (oldSourceInfo !== sourceAndPath.sourceInfo.name) {
          setOldSourceInfo(sourceAndPath.sourceInfo.name);
          setQuery(emptyQueryExplorerResult());
+         setSubmittedQuery(undefined);
       }
    }, [sourceAndPath, oldSourceInfo]);
 
    const onQueryChange = React.useCallback(
-      (malloyQuery: Malloy.Query) => {
+      (malloyQuery: Malloy.Query | string | undefined) => {
          setQuery({ ...query, malloyQuery, malloyResult: undefined });
       },
       [query],
@@ -203,12 +244,10 @@ function SourceExplorerComponentInner({
          <MalloyExplorerProvider
             source={sourceAndPath.sourceInfo}
             query={query?.malloyQuery}
-            onQueryChange={onQueryChange}
-            focusedNestViewPath={focusedNestViewPath}
+            topValues={[]}
             onFocusedNestViewPathChange={setFocusedNestViewPath}
-            onDrill={(params) => {
-               console.info(params);
-            }}
+            focusedNestViewPath={focusedNestViewPath}
+            onQueryChange={onQueryChange}
          >
             <div
                style={{
@@ -254,21 +293,7 @@ function SourceExplorerComponentInner({
                   setDraftQuery={(malloyQuery) =>
                      setQuery({ ...query, malloyQuery: malloyQuery })
                   }
-                  submittedQuery={
-                     query?.malloyQuery
-                        ? {
-                             executionState: mutation.isPending
-                                ? "running"
-                                : "finished",
-                             response: {
-                                result: query.malloyResult,
-                             },
-                             query: query.malloyQuery,
-                             queryResolutionStartMillis: Date.now(),
-                             onCancel: mutation.reset,
-                          }
-                        : undefined
-                  }
+                  submittedQuery={submittedQuery}
                   options={{ showRawQuery: true }}
                />
             </div>
