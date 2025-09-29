@@ -182,8 +182,8 @@ const theme = createTheme({
                   background: malloyColors.grey[100],
                },
             },
-            'div[data-radix-popper-content-wrapper]': {
-               zIndex: '1300 !important',
+            "div[data-radix-popper-content-wrapper]": {
+               zIndex: "1300 !important",
             },
          },
       },
