@@ -1464,19 +1464,16 @@ components:
       type: string
       pattern: '^[a-zA-Z0-9_-]+$'
       description: Standard identifier pattern for resource names
-      example: "my-project"
     
     VersionIdPattern:
       type: string
       pattern: '^[a-zA-Z0-9_.-]+$'
       description: Version identifier pattern supporting dots and dashes
-      example: "v1.0.0"
     
     PathPattern:
       type: string
       pattern: '^[a-zA-Z0-9_/.-]+$'
       description: Path pattern supporting slashes, dots, and dashes
-      example: "models/sales.malloy"
 
     ServerStatus:
       type: object
@@ -1485,7 +1482,6 @@ components:
         timestamp:
           type: number
           description: Unix timestamp of the status check
-          example: 1640995200000
         projects:
           type: array
           description: List of available projects
@@ -1494,7 +1490,6 @@ components:
         initialized:
           type: boolean
           description: Whether the server is fully initialized and ready to serve requests
-          example: true
 
     Project:
       type: object
@@ -1503,19 +1498,15 @@ components:
         resource:
           type: string
           description: Resource path to the project
-          example: "/projects/my-sales-project"
         name:
           type: string
           description: Project name
-          example: "my-sales-project"
         readme:
           type: string
           description: Project README content
-          example: "# Sales Analytics Project\nThis project contains sales data models and dashboards."
         location:
           type: string
           description: Project location, can be an absolute path or URI (e.g. github, s3, gcs, etc.)
-          example: "/path/to/project"
         connections:
           type: array
           description: List of database connections configured for this project
@@ -1534,19 +1525,15 @@ components:
         resource:
           type: string
           description: Resource path to the package
-          example: "/projects/my-project/packages/sales-package"
         name:
           type: string
           description: Package name
-          example: "sales-package"
         description:
           type: string
           description: Package description
-          example: "Sales analytics package with models and dashboards"
         location:
           type: string
           description: Package location, can be an absolute path or URI (e.g. github, s3, gcs, etc.)
-          example: "/path/to/package"
 
     Model:
       type: object
@@ -1555,19 +1542,15 @@ components:
         resource:
           type: string
           description: Resource path to the model
-          example: "/projects/my-project/packages/sales-package/models/sales.malloy"
         packageName:
           type: string
           description: Name of the package containing this model
-          example: "sales-package"
         path:
           type: string
           description: Relative path to the model file within its package directory
-          example: "models/sales.malloy"
         error:
           type: string
           description: Error message if the model failed to compile or load
-          example: "Syntax error at line 15: unexpected token '}'"
 
     Notebook:
       type: object
@@ -1576,19 +1559,15 @@ components:
         resource:
           type: string
           description: Resource path to the notebook
-          example: "/projects/my-project/packages/sales-package/notebooks/analysis.malloynb"
         packageName:
           type: string
           description: Name of the package containing this notebook
-          example: "sales-package"
         path:
           type: string
           description: Relative path to the notebook file within its package directory
-          example: "notebooks/analysis.malloynb"
         error:
           type: string
           description: Error message if the notebook failed to compile or load
-          example: "Cell 3 failed to execute: connection not found"
 
     CompiledNotebook:
       type: object
@@ -1597,19 +1576,15 @@ components:
         resource:
           type: string
           description: Resource path to the notebook
-          example: "/projects/my-project/packages/sales-package/notebooks/analysis.malloynb"
         packageName:
           type: string
           description: Name of the package containing this notebook
-          example: "sales-package"
         path:
           type: string
           description: Relative path to the notebook file within its package directory
-          example: "notebooks/analysis.malloynb"
         malloyVersion:
           type: string
           description: Version of the Malloy compiler used to generate the notebook data
-          example: "0.4.0"
         notebookCells:
           type: array
           description: Array of notebook cells containing code, markdown, and execution results
@@ -1623,29 +1598,23 @@ components:
         resource:
           type: string
           description: Resource path to the model
-          example: "/projects/my-project/packages/sales-package/models/sales.malloy"
         packageName:
           type: string
           description: Name of the package containing this model
-          example: "sales-package"
         path:
           type: string
           description: Relative path to the model file within its package directory
-          example: "models/sales.malloy"
         malloyVersion:
           type: string
           description: Version of the Malloy compiler used to generate the model data
-          example: "0.4.0"
         modelInfo:
           type: string
           description: JSON string containing model metadata and structure information
-          example: '{"name": "sales_model", "sources": ["sales_data"]}'
         sourceInfos:
           type: array
           description: Array of JSON strings containing source information for each data source
           items:
             type: string
-          example: ['{"name": "sales_data", "type": "table"}']
         queries:
           type: array
           description: Array of named queries defined in the model
@@ -1659,13 +1628,11 @@ components:
         name:
           type: string
           description: Name of the view
-          example: "sales_summary"
         annotations:
           type: array
           description: Annotations attached to the view
           items:
             type: string
-          example: ["@description('Sales summary view')"]
 
     Query:
       type: object
@@ -1674,17 +1641,14 @@ components:
         name:
           type: string
           description: Name of the query
-          example: "top_customers"
         sourceName:
           type: string
           description: Name of the source this query operates on
-          example: "customers"
         annotations:
           type: array
           description: Annotations attached to the query
           items:
             type: string
-          example: ["@description('Top 10 customers by revenue')"]
 
     NotebookCell:
       type: object
@@ -1694,21 +1658,17 @@ components:
           type: string
           enum: ["markdown", "code"]
           description: Type of notebook cell
-          example: "code"
         text:
           type: string
           description: Text contents of the notebook cell
-          example: "run: sales -> { group_by: region; aggregate: total_sales }"
         result:
           type: string
           description: JSON string containing the execution result for this cell
-          example: '{"data": [], "schema": {}}'
         newSources:
           type: array
           description: Array of JSON strings containing SourceInfo objects made available in this cell
           items:
             type: string
-          example: ['{"name": "sales_data", "type": "table"}']
 
     QueryResult:
       type: object
@@ -1717,11 +1677,9 @@ components:
         result:
           type: string
           description: JSON string containing the query results, metadata, and execution information
-          example: '{"data": [], "schema": {}, "totalRows": 1000}'
         resource:
           type: string
           description: Resource path to the query result
-          example: "/projects/my-project/packages/sales-package/queryResults/sales_summary"
 
     Database:
       type: object
@@ -1730,18 +1688,15 @@ components:
         resource:
           type: string
           description: Resource path to the database
-          example: "/projects/my-project/packages/sales-package/databases/sample_data"
         path:
           type: string
           description: Relative path to the database file within its package directory
-          example: "data/sample_data.parquet"
         info:
           $ref: "#/components/schemas/TableDescription"
         type:
           type: string
           description: Type of embedded database
           enum: ["embedded", "materialized"]
-          example: "embedded"
 
     Schedule:
       type: object
@@ -1750,27 +1705,21 @@ components:
         resource:
           type: string
           description: Resource path in the package that the schedule is attached to
-          example: "/projects/my-project/packages/sales-package/schedules/daily-refresh"
         schedule:
           type: string
           description: Schedule expression in cron format for executing the task
-          example: "0 2 * * *"
         action:
           type: string
           description: Action to execute when the schedule triggers
-          example: "refresh_data"
         connection:
           type: string
           description: Name of the connection to perform the action on
-          example: "production-db"
         lastRunTime:
           type: number
           description: Unix timestamp in milliseconds of the last execution
-          example: 1640995200000
         lastRunStatus:
           type: string
           description: Status of the last execution
-          example: "success"
 
     SchemaName:
       description: A schema name in a Connection.
@@ -1796,16 +1745,13 @@ components:
         resource:
           type: string
           description: Resource path to the connection
-          example: "/projects/my-project/connections/production-db"
         name:
           type: string
           description: Name of the connection
-          example: "production-db"
         type:
           type: string
           description: Type of database connection
           enum: [postgres, bigquery, snowflake, trino, mysql]
-          example: "postgres"
         attributes:
           $ref: "#/components/schemas/ConnectionAttributes"
         postgresConnection:
@@ -1826,19 +1772,15 @@ components:
         dialectName:
           type: string
           description: SQL dialect name for the connection
-          example: "postgresql"
         isPool:
           type: boolean
           description: Whether the connection uses connection pooling
-          example: true
         canPersist:
           type: boolean
           description: Whether the connection supports persistent storage operations
-          example: true
         canStream:
           type: boolean
           description: Whether the connection supports streaming query results
-          example: false
 
     PostgresConnection:
       type: object
@@ -1847,27 +1789,21 @@ components:
         host:
           type: string
           description: PostgreSQL server hostname or IP address
-          example: "localhost"
         port:
           type: integer
           description: PostgreSQL server port number
-          example: 5432
         databaseName:
           type: string
           description: Name of the PostgreSQL database
-          example: "sales_db"
         userName:
           type: string
           description: PostgreSQL username for authentication
-          example: "malloy_user"
         password:
           type: string
           description: PostgreSQL password for authentication
-          example: "secure_password"
         connectionString:
           type: string
           description: Complete PostgreSQL connection string (alternative to individual parameters)
-          example: "postgresql://user:pass@localhost:5432/dbname"
 
     MysqlConnection:
       type: object
@@ -1876,23 +1812,18 @@ components:
         host:
           type: string
           description: MySQL server hostname or IP address
-          example: "localhost"
         port:
           type: integer
           description: MySQL server port number
-          example: 3306
         database:
           type: string
           description: Name of the MySQL database
-          example: "sales_db"
         user:
           type: string
           description: MySQL username for authentication
-          example: "malloy_user"
         password:
           type: string
           description: MySQL password for authentication
-          example: "secure_password"
 
     BigqueryConnection:
       type: object
@@ -1901,27 +1832,21 @@ components:
         defaultProjectId:
           type: string
           description: Default BigQuery project ID for queries
-          example: "my-gcp-project"
         billingProjectId:
           type: string
           description: BigQuery project ID for billing purposes
-          example: "my-gcp-project"
         location:
           type: string
           description: BigQuery dataset location/region
-          example: "US"
         serviceAccountKeyJson:
           type: string
           description: JSON string containing Google Cloud service account credentials
-          example: '{"type": "service_account", "project_id": "my-project", ...}'
         maximumBytesBilled:
           type: string
           description: Maximum bytes to bill for query execution (prevents runaway costs)
-          example: "1000000000"
         queryTimeoutMilliseconds:
           type: string
           description: Query timeout in milliseconds
-          example: "300000"
 
     SnowflakeConnection:
       type: object
@@ -1930,31 +1855,24 @@ components:
         account:
           type: string
           description: Snowflake account identifier
-          example: "myaccount.snowflakecomputing.com"
         username:
           type: string
           description: Snowflake username for authentication
-          example: "malloy_user"
         password:
           type: string
           description: Snowflake password for authentication
-          example: "secure_password"
         warehouse:
           type: string
           description: Snowflake warehouse name
-          example: "COMPUTE_WH"
         database:
           type: string
           description: Snowflake database name
-          example: "SALES_DB"
         schema:
           type: string
           description: Snowflake schema name
-          example: "PUBLIC"
         responseTimeoutMilliseconds:
           type: integer
           description: Query response timeout in milliseconds
-          example: 300000
 
     TrinoConnection:
       type: object
@@ -1963,27 +1881,21 @@ components:
         server:
           type: string
           description: Trino server hostname or IP address
-          example: "localhost"
         port:
           type: number
           description: Trino server port number
-          example: 8080
         catalog:
           type: string
           description: Trino catalog name
-          example: "hive"
         schema:
           type: string
           description: Trino schema name
-          example: "default"
         user:
           type: string
           description: Trino username for authentication
-          example: "malloy_user"
         password:
           type: string
           description: Trino password for authentication
-          example: "secure_password"
 
     SqlSource:
       type: object
@@ -2035,20 +1947,13 @@ components:
       type: object
       description: Standard error response format
       properties:
-        code:
-          type: integer
-          description: HTTP status code
-          example: 400
         message:
           type: string
           description: Human-readable error message describing what went wrong
-          example: "The request was malformed"
         details:
           type: string
           description: Additional error details or context
-          example: "Missing required parameter: projectName"
       required:
-        - code
         - message
 
     Column:
@@ -2058,11 +1963,9 @@ components:
         name:
           type: string
           description: Name of the column
-          example: "customer_id"
         type:
           type: string
           description: Data type of the column
-          example: "VARCHAR(50)"
 
     TableDescription:
       type: object
@@ -2071,11 +1974,9 @@ components:
         name:
           type: string
           description: Name of the table
-          example: "customers"
         rowCount:
           type: integer
           description: Number of rows in the table
-          example: 10000
         columns:
           type: array
           description: List of columns in the table
@@ -2089,16 +1990,13 @@ components:
         enabled:
           type: boolean
           description: Whether file watching is currently active
-          example: true
         projectName:
           type: string
           description: Name of the project being watched for file changes
-          example: "my-sales-project"
         watchingPath:
           type: string
           nullable: true
           description: The file system path being monitored for changes, null if not watching
-          example: "/path/to/project"
 
     StartWatchRequest:
       type: object
@@ -2107,7 +2005,6 @@ components:
         projectName:
           type: string
           description: Name of the project to start watching for file changes
-          example: "my-sales-project"
       required:
         - projectName
 
@@ -2119,8 +2016,6 @@ components:
           type: string
           description: Connection test result status
           enum: ["ok", "failed"]
-          example: "ok"
         errorMessage:
           type: string
           description: Error message if the connection test failed, null if successful
-          example: "Connection refused: database server not responding"
