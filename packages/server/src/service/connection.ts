@@ -50,6 +50,40 @@ export async function readConnectionConfig(
    return convertConnectionsToApiConnections(connections);
 }
 
+function validateAndBuildTrinoConfig(
+   trinoConfig: components["schemas"]["TrinoConnection"],
+) {
+   if (!trinoConfig.server?.includes(trinoConfig.port?.toString() || "")) {
+      trinoConfig.server = `${trinoConfig.server}:${trinoConfig.port}`;
+   }
+
+   if (trinoConfig.server?.startsWith("http://")) {
+      return {
+         server: trinoConfig.server,
+         port: trinoConfig.port,
+         catalog: trinoConfig.catalog,
+         schema: trinoConfig.schema,
+         user: trinoConfig.user,
+      };
+   } else if (
+      trinoConfig.server?.startsWith("https://") &&
+      trinoConfig.password
+   ) {
+      return {
+         server: trinoConfig.server,
+         port: trinoConfig.port,
+         catalog: trinoConfig.catalog,
+         schema: trinoConfig.schema,
+         user: trinoConfig.user,
+         password: trinoConfig.password,
+      };
+   } else {
+      throw new Error(
+         `Invalid Trino connection: expected "http://server:port" (no password) or "https://server:port" (with username and password).`,
+      );
+   }
+}
+
 export async function createConnections(
    basePath: string,
    defaultConnections: ApiConnection[] = [],
@@ -219,14 +253,10 @@ export async function createConnections(
             if (!connection.trinoConnection) {
                throw new Error("Trino connection configuration is missing.");
             }
-            const trinoConnectionOptions = {
-               server: connection.trinoConnection.server,
-               port: connection.trinoConnection.port,
-               catalog: connection.trinoConnection.catalog,
-               schema: connection.trinoConnection.schema,
-               user: connection.trinoConnection.user,
-               password: connection.trinoConnection.password,
-            };
+
+            const trinoConnectionOptions = validateAndBuildTrinoConfig(
+               connection.trinoConnection,
+            );
             const trinoConnection = new TrinoConnection(
                connection.name,
                {},
@@ -460,18 +490,12 @@ export async function testConnectionConfig(
             !trinoConfig.user
          ) {
             throw new Error(
-               "Trino connection requires: server, port, catalog, schema, and user",
+               "Trino connection requires server, port, catalog, schema, and user",
             );
          }
 
-         const trinoConnectionOptions = {
-            server: trinoConfig.server,
-            port: trinoConfig.port,
-            catalog: trinoConfig.catalog,
-            schema: trinoConfig.schema,
-            user: trinoConfig.user,
-            password: trinoConfig.password,
-         };
+         const trinoConnectionOptions =
+            validateAndBuildTrinoConfig(trinoConfig);
          const trinoConnection = new TrinoConnection(
             "testConnection",
             {},
@@ -480,6 +504,52 @@ export async function testConnectionConfig(
 
          try {
             await trinoConnection.test();
+            testResult = { status: "ok" };
+         } catch (error) {
+            if (error instanceof AxiosError) {
+               logAxiosError(error);
+            } else {
+               logger.error(error);
+            }
+            testResult = {
+               status: "failed",
+               errorMessage: (error as Error).message,
+            };
+         }
+         break;
+      }
+
+      case "mysql": {
+         if (!connectionConfig.mysqlConnection) {
+            throw new Error("MySQL connection configuration is missing.");
+         }
+
+         if (
+            !connectionConfig.mysqlConnection.host ||
+            !connectionConfig.mysqlConnection.port ||
+            !connectionConfig.mysqlConnection.user ||
+            !connectionConfig.mysqlConnection.password ||
+            !connectionConfig.mysqlConnection.database
+         ) {
+            throw new Error(
+               "MySQL connection requires: host, port, user, password, and database",
+            );
+         }
+
+         const mysqlConfig = connectionConfig.mysqlConnection;
+         const mysqlConnectionOptions = {
+            host: mysqlConfig.host,
+            port: mysqlConfig.port,
+            user: mysqlConfig.user,
+            password: mysqlConfig.password,
+            database: mysqlConfig.database,
+         };
+         const mysqlConnection = new MySQLConnection(
+            "testConnection",
+            mysqlConnectionOptions,
+         );
+         try {
+            await mysqlConnection.test();
             testResult = { status: "ok" };
          } catch (error) {
             if (error instanceof AxiosError) {
