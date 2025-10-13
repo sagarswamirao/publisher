@@ -21,6 +21,11 @@ export default ({ mode }) => {
             __dirname,
             "../sdk/dist/markdown-editor.css",
          ),
+         // Alias for malloy-explorer CSS to resolve from SDK dist
+         "@malloydata/malloy-explorer/styles.css": path.resolve(
+            __dirname,
+            "../sdk/dist/malloy-explorer.css",
+         ),
          "@malloy-publisher/sdk": isDev
             ? // General SDK alias for everything else
               path.resolve(__dirname, "../sdk/src")
