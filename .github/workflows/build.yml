@@ -11,75 +11,182 @@ jobs:
   lint:
     name: Typecheck
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-        # Building the SDK is necessary to generate the .d.ts files used for type checking.
-      - name: Typecheck
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install and build
         run: |
           bun install
           bun run generate-api-types
           bun run build:sdk
-          bun run typecheck
+
+      - name: Typecheck
+        run: bun run typecheck
+
   lint_format:
     name: Lint and check formatting
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
         run: bun install
+
       - name: Check formatting
         run: bunx prettier './packages/**/*.{ts,tsx}' --check
+
       - name: Lint
         run: bun run lint
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: "true" # Fetch submodules
-      - name: Spin-up services
-        run: docker compose --profile ci up -d
-      - name: Install dependencies
-        run: docker exec -t publisher-ci bun install
-      - name: Build code
-        run: docker exec -t publisher-ci bun run build
-      - name: Run tests
-        run: docker exec -t publisher-ci sh -c "cd packages/server && bun test ./src/service/model.spec.ts ./src/service/package.spec.ts ./src/__tests__/setup.spec.ts ./src/__tests__/mcp_execute_query_tool.integration.spec.ts ./src/__tests__/mcp_resource.integration.spec.ts ./src/__tests__/mcp_transport.integration.spec.ts"
-  npx_test:
-    name: npx test
-    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: "true" # Fetch submodules
+          submodules: true
+
+      - name: Spin-up services
+        run: docker compose --profile ci up -d
+
+      - name: Wait for services
+        run: |
+          timeout 30 bash -c 'until docker exec publisher-ci echo "ready" 2>/dev/null; do sleep 1; done'
+
+      - name: Install dependencies
+        run: docker exec -t publisher-ci bun install
+
+      - name: Build code
+        run: docker exec -t publisher-ci bun run build
+
+      - name: Run tests
+        run: |
+          docker exec -t publisher-ci sh -c "cd packages/server && bun test \
+            ./src/service/model.spec.ts \
+            ./src/service/package.spec.ts \
+            ./src/__tests__/setup.spec.ts \
+            ./src/__tests__/mcp_execute_query_tool.integration.spec.ts \
+            ./src/__tests__/mcp_resource.integration.spec.ts \
+            ./src/__tests__/mcp_transport.integration.spec.ts"
+
+      - name: Cleanup
+        if: always()
+        run: docker compose --profile ci down -v
+
+  npx_test:
+    name: npx test
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-      - name: Install Bun
-        run: curl -fsSL https://bun.sh/install | bash && echo "$HOME/.bun/bin" >> $GITHUB_PATH
-      - name: build server
-        run: bun install && bun run build
-      - name: Link local package
+          node-version: "20"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Spin-up services for npx test
+        run: docker compose --profile ci up -d
+
+      - name: Wait for services
         run: |
-          cd packages/server && npm link
+          timeout 30 bash -c 'until docker exec publisher-ci echo "ready" 2>/dev/null; do sleep 1; done'
+
+      - name: Build server
+        run: bun install && bun run build
+
+      - name: Link local package
+        run: cd packages/server && npm link
+
       - name: Start npx server
         run: |
-          cd packages/server && npx malloy-publisher --port 4002 --server_root ./ &
-          sleep 12
+          cd packages/server
+          npx malloy-publisher --port 4002 --server_root ./ > server.log 2>&1 &
+          echo $! > server.pid
+
+      - name: Wait for server to be ready
+        run: |
+          echo "Waiting for server to start..."
+          for i in {1..60}; do
+            if curl -sf http://localhost:4002/api/v0/projects > /dev/null 2>&1; then
+              echo "✓ Server is ready after ${i} seconds"
+              exit 0
+            fi
+            echo "Attempt $i/60: Server not ready yet..."
+            sleep 1
+          done
+          echo "✗ Server failed to start within 60 seconds"
+          echo "=== Server Log ==="
+          cat packages/server/server.log || echo "No log file found"
+          exit 1
+
       - name: Test API endpoint
         run: |
           response=$(curl -s http://localhost:4002/api/v0/projects)
           echo "API Response: $response"
-          # Check if response is a JSON array with 1 entry
+
           if echo "$response" | jq -e '. | length == 1' > /dev/null; then
             echo "✓ API test passed: Found 1 project"
           else
             echo "✗ API test failed: Expected 1 project, got different response"
             exit 1
           fi
+
+      - name: Show server logs on failure
+        if: failure()
+        run: |
+          echo "=== Server Log ==="
+          cat packages/server/server.log || echo "No log file found"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ -f packages/server/server.pid ]; then
+            kill $(cat packages/server/server.pid) 2>/dev/null || true
+          fi
+          docker compose --profile ci down -v
