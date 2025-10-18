@@ -1,18 +1,18 @@
 import CloseIcon from "@mui/icons-material/Close";
 import CodeIcon from "@mui/icons-material/Code";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import ShareIcon from "@mui/icons-material/Share";
 import {
    Box,
    Dialog,
    DialogContent,
    DialogTitle,
    IconButton,
+   Snackbar,
    Stack,
    Tooltip,
    Typography,
-   Snackbar,
 } from "@mui/material";
 import Markdown from "markdown-to-jsx";
 import React, { useEffect, useState } from "react";
@@ -176,8 +176,8 @@ export function NotebookCell({
                      justifyContent="space-between"
                   >
                      <Markdown>{cell.text}</Markdown>
-                     <Tooltip title="Click to copy and share">
-                        <ShareIcon
+                     <Tooltip title="Click to copy link">
+                        <LinkOutlinedIcon
                            sx={{
                               fontSize: "24px",
                               color: "#666666",
