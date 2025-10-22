@@ -55,10 +55,7 @@ export default function ConnectionExplorer({
          apiClients.connections.listSchemas(projectName, connectionName),
    });
 
-   const availableSchemas =
-      schemasData?.data
-         ?.map((schema: { name: string }) => schema.name)
-         .sort() || [];
+   const availableSchemas = schemasData?.data || [];
 
    return (
       <Grid container spacing={1}>
@@ -108,22 +105,31 @@ export default function ConnectionExplorer({
                         !schemasError &&
                         availableSchemas.length > 0 && (
                            <List dense disablePadding>
-                              {availableSchemas.map((schemaName: string) => {
-                                 const isSelected =
-                                    selectedSchema === schemaName;
-                                 return (
-                                    <ListItemButton
-                                       key={schemaName}
-                                       selected={isSelected}
-                                       onClick={() => {
-                                          setSelectedSchema(schemaName);
-                                          setSelectedTable(undefined);
-                                       }}
-                                    >
-                                       <ListItemText primary={schemaName} />
-                                    </ListItemButton>
-                                 );
-                              })}
+                              {availableSchemas.map(
+                                 (schema: {
+                                    name: string;
+                                    isHidden: boolean;
+                                 }) => {
+                                    const schemaName = schema.name;
+                                    const isHidden = schema.isHidden;
+                                    if (isHidden && !showHiddenSchemas) {
+                                       return null;
+                                    }
+                                    const isSelected =
+                                       selectedSchema === schemaName;
+                                    return (
+                                       <ListItemButton
+                                          key={schemaName}
+                                          selected={isSelected}
+                                          onClick={() =>
+                                             setSelectedSchema(schemaName)
+                                          }
+                                       >
+                                          <ListItemText primary={schemaName} />
+                                       </ListItemButton>
+                                    );
+                                 },
+                              )}
                            </List>
                         )}
                   </Box>
