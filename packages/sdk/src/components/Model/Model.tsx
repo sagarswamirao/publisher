@@ -1,6 +1,6 @@
 import "@malloydata/malloy-explorer/styles.css";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
-import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
+import SearchIcon from "@mui/icons-material/Search";
 import {
    Box,
    IconButton,
@@ -147,15 +147,13 @@ export default function Model({
                         }}
                         onClick={() => setDialogOpen(true)}
                      >
-                        <Tooltip title="Expanded view">
-                           <ZoomOutMapIcon
-                              sx={{
-                                 fontSize: "18px",
-                                 color: "#666666",
-                                 marginBottom: "5px",
-                              }}
-                           />
-                        </Tooltip>
+                        <SearchIcon
+                           sx={{
+                              fontSize: "18px",
+                              color: "#666666",
+                              marginBottom: "5px",
+                           }}
+                        />
                      </IconButton>
                   </Stack>
                )}
