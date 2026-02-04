@@ -1,12 +1,10 @@
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { useQueryWithApiError } from "../../hooks/useQueryWithApiError";
 import { parseResourceUri } from "../../utils/formatting";
 import { ApiErrorDisplay } from "../ApiErrorDisplay";
 import { Loading } from "../Loading";
 import ResultContainer from "../RenderedResult/ResultContainer";
 import { useServer } from "../ServerProvider";
-
-const RenderedResult = lazy(() => import("../RenderedResult/RenderedResult"));
 
 interface QueryResultProps {
    query?: string;
